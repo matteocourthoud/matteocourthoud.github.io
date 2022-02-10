@@ -1,0 +1,1566 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Intro In this session, I am going to cover demand estimation.
+ Compute equilibrium outcomes with Logit demand Simulate a dataset Estimate Logit demand Compare different instruments Include supply  Model In this first part, we are going to assume that consumer $i \in \lbrace1,&hellip;,I\rbrace$ utility from good $j \in \lbrace1,&hellip;,J\rbrace$ in market $t \in \lbrace1,&hellip;,T\rbrace$ takes the form" />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/empirical-io/11_logit_demand/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/empirical-io/11_logit_demand/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/empirical-io/11_logit_demand/" />
+  <meta property="og:title" content="Coding: Logit Demand | Matteo Courthoud" />
+  <meta property="og:description" content="Intro In this session, I am going to cover demand estimation.
+ Compute equilibrium outcomes with Logit demand Simulate a dataset Estimate Logit demand Compare different instruments Include supply  Model In this first part, we are going to assume that consumer $i \in \lbrace1,&hellip;,I\rbrace$ utility from good $j \in \lbrace1,&hellip;,J\rbrace$ in market $t \in \lbrace1,&hellip;,T\rbrace$ takes the form" /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2021-11-10T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2021-11-10T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Coding: Logit Demand | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="289c62cc59ec0e5e817ebc58bc3283ae" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/empirical-io/">Empirical IO</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/empirical-io/02_demand_estimation/">Demand Estimation</a></li>
+
+
+
+  <li class=""><a href="/course/empirical-io/07_dynamics_singleagent/">Single Agent Dynamics</a></li>
+
+
+
+  <li class=""><a href="/course/empirical-io/08_dynamics_games/">Dynamic Games</a></li>
+
+
+
+  <li class="active"><a href="/course/empirical-io/11_logit_demand/">Coding: Logit Demand</a></li>
+
+
+
+  <li class=""><a href="/course/empirical-io/12_blp_1995/">Coding: BLP (1995)</a></li>
+
+
+
+  <li class=""><a href="/course/empirical-io/17_rust_1987/">Coding: Rust (1987)</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#intro">Intro</a></li>
+        <li><a href="#model">Model</a></li>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#code-demand">Code Demand</a></li>
+        <li><a href="#code-supply">Code Supply</a></li>
+        <li><a href="#code-best-reply">Code Best Reply</a></li>
+        <li><a href="#code-equilibrium">Code Equilibrium</a></li>
+        <li><a href="#code-equilibrium-1">Code Equilibrium</a></li>
+        <li><a href="#dgp">DGP</a></li>
+        <li><a href="#equilibrium">Equilibrium</a></li>
+        <li><a href="#simulate-dataset">Simulate Dataset</a></li>
+        <li><a href="#simulate-dataset-2">Simulate Dataset (2)</a></li>
+        <li><a href="#the-data">The Data</a></li>
+        <li><a href="#estimation">Estimation</a></li>
+        <li><a href="#iv-1-cost-shifters">IV 1: Cost Shifters</a></li>
+        <li><a href="#iv-2-blp-instruments">IV 2: BLP Instruments</a></li>
+      </ul>
+    </li>
+    <li><a href="#appendix">Appendix</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Coding: Logit Demand</h1>
+
+          <p>Last updated on Nov 10, 2021</p>
+
+          <div class="article-style">
+            <h3 id="intro">Intro</h3>
+<p>In this session, I am going to cover demand estimation.</p>
+<ul>
+<li>Compute equilibrium outcomes with Logit demand</li>
+<li>Simulate a dataset</li>
+<li>Estimate Logit demand</li>
+<li>Compare different instruments</li>
+<li>Include supply</li>
+</ul>
+<h3 id="model">Model</h3>
+<p>In this first part, we are going to assume that consumer
+$i \in \lbrace1,&hellip;,I\rbrace$ utility from good
+$j \in \lbrace1,&hellip;,J\rbrace$ in market $t \in \lbrace1,&hellip;,T\rbrace$
+takes the form</p>
+<p>$$
+u_{ijt} = \boldsymbol x_{jt} \boldsymbol \beta_{it} - \alpha p_{jt} + \xi_{jt} + \epsilon_{ijt}
+$$</p>
+<p>where</p>
+<ul>
+<li>$\xi_{jt}$ is type-1 extreme value distributed</li>
+<li>$\boldsymbol \beta$ has dimension $K$
+<ul>
+<li>i.e. goods have $K$ characteristics</li>
+</ul>
+</li>
+</ul>
+<h3 id="setup">Setup</h3>
+<p>We have $J$ firms and each product has $K$ characteristics</p>
+<pre><code class="language-julia">J = 3;                            # 3 firms == products
+K = 2;                            # 2 product characteristics
+c = rand(Uniform(0, 1), J);       # Random uniform marginal costs
+ξ = rand(Normal(0, 1), J+1);      # Random normal individual shocks
+X = rand(Exponential(1), J, K);   # Random exponential product characteristics
+β = [.5, 2, -1];                  # Preferences (last one is for prices, i.e. alpha)
+</code></pre>
+<h3 id="code-demand">Code Demand</h3>
+<pre><code class="language-julia">function demand(p::Vector, X::Matrix, β::Vector, ξ::Vector)::Tuple{Vector, Number}
+    &quot;&quot;&quot;Compute demand&quot;&quot;&quot;
+    δ = 1 .+ [X p] * β              # Mean value
+    u = [δ; 0] + ξ                  # Utility
+    e = exp.(u)                     # Take exponential
+    q = e ./ sum(e)                 # Compute demand
+    return q[1:end-1], q[end]
+end;
+</code></pre>
+<p>We can try with an example.</p>
+<pre><code class="language-julia">p = 2 .* c;
+demand(p, X, β, ξ)
+</code></pre>
+<pre><code>## ([0.4120077746005573, 0.26650568009936, 0.24027826270165709], 0.08120828259842561)
+</code></pre>
+<h3 id="code-supply">Code Supply</h3>
+<pre><code class="language-julia">function profits(p::Vector, c::Vector, X::Matrix, β::Vector, ξ::Vector)::Vector
+    &quot;&quot;&quot;Compute profits&quot;&quot;&quot;
+    q, _ = demand(p, X, β, ξ)       # Compute demand
+    pr = (p - c) .* q               # Compute profits
+    return pr
+end;
+</code></pre>
+<p>We can try with an example.</p>
+<pre><code class="language-julia">profits(p, c, X, β, ξ)
+</code></pre>
+<pre><code>## 3-element Array{Float64,1}:
+##  0.20289186252172428
+##  0.1596422305025479
+##  0.1270874470740512
+</code></pre>
+<h3 id="code-best-reply">Code Best Reply</h3>
+<p>We first code the best reply of firm $j$</p>
+<pre><code class="language-julia">function profits_j(pj::Number, j::Int, p::Vector, c::Vector, X::Matrix, β::Vector, ξ::Vector)::Number
+    &quot;&quot;&quot;Compute profits of firm j&quot;&quot;&quot;
+    p[j] = pj                       # Insert price of firm j
+    pr = profits(p, c, X, β, ξ)     # Compute profits
+    return pr[j]
+end;
+</code></pre>
+<p>Let’s test it.</p>
+<pre><code class="language-julia">j = 1;
+obj_fun(pj) = - profits_j(pj[1], j, copy(p), c, X, β, ξ);
+pj = optimize(x -&gt; obj_fun(x), [1.0], LBFGS()).minimizer[1]
+</code></pre>
+<pre><code>## 1.8019637881982011
+</code></pre>
+<p>What are the implied profits now?</p>
+<pre><code class="language-julia">print(&quot;Profits old: &quot;,  round.(profits(p, c, X, β, ξ), digits=4))
+</code></pre>
+<pre><code>## Profits old: [0.2029, 0.1596, 0.1271]
+</code></pre>
+<pre><code class="language-julia">p_new = copy(p);
+p_new[j] = pj;
+print(&quot;Profits new: &quot;,  round.(profits(p_new, c, X, β, ξ), digits=4))
+</code></pre>
+<pre><code>## Profits new: [0.3095, 0.2073, 0.1651]
+</code></pre>
+<p>Indeed firm 1 has increased its profits.</p>
+<h3 id="code-equilibrium">Code Equilibrium</h3>
+<p>We can now compute equilibrium prices</p>
+<pre><code class="language-julia">function equilibrium(c::Vector, X::Matrix, β::Vector, ξ::Vector)::Vector
+    &quot;&quot;&quot;Compute equilibrium prices and profits&quot;&quot;&quot;
+    p = 2 .* c;
+    dist = 1;
+    iter = 0;
+
+    # Until convergence
+    while (dist &gt; 1e-8) &amp;&amp; (iter&lt;1000)
+
+        # Compute best reply for each firm
+        p1 = copy(p);
+        for j=1:length(p)
+            obj_fun(pj) = - profits_j(pj[1], j, p, c, X, β, ξ);
+            optimize(x -&gt; obj_fun(x), [1.0], LBFGS()).minimizer[1];
+        end
+
+        # Update distance
+        dist = max(abs.(p - p1)...);
+        iter += 1;
+    end
+    return p
+end;
+</code></pre>
+<h3 id="code-equilibrium-1">Code Equilibrium</h3>
+<p>Let’s test it</p>
+<pre><code class="language-julia"># Compute equilibrium prices
+p_eq = equilibrium(c, X, β, ξ);
+print(&quot;Equilibrium prices: &quot;,  round.(p_eq, digits=4))
+</code></pre>
+<pre><code>## Equilibrium prices: [1.9764, 1.9602, 1.8366]
+</code></pre>
+<pre><code class="language-julia"># And profits
+pi_eq = profits(p_eq, c, X, β, ξ);
+print(&quot;Equilibrium profits: &quot;,  round.(pi_eq, digits=4))
+</code></pre>
+<pre><code>## Equilibrium profits: [0.484, 0.3612, 0.3077]
+</code></pre>
+<p>As expected the prices of the first 2 firms are lower and their profits
+are higher.</p>
+<h3 id="dgp">DGP</h3>
+<p>Let’s generate our Data Generating Process (DGP).</p>
+<ul>
+<li>$\boldsymbol x \sim exp(V_{x})$</li>
+<li>$\xi \sim N(0, V_{\xi})$</li>
+<li>$w \sim N(0, 1)$</li>
+<li>$\omega \sim N(0, 1)$</li>
+</ul>
+<pre><code class="language-julia">function draw_data(J::Int, K::Int, rangeJ::Vector, varX::Number, varξ::Number)::Tuple
+    &quot;&quot;&quot;Draw data for one market&quot;&quot;&quot;
+    J_ = rand(rangeJ[1]:rangeJ[2])              # Number of firms (products)
+    X_ = rand(Exponential(varX), J_, K)         # Product characteristics
+    ξ_ = rand(Normal(0, varξ), J_+1)            # Product-level utility shocks
+    w_ = rand(Uniform(0, 1), J_)                # Cost shifters
+    ω_ = rand(Uniform(0, 1), J_)                # Cost shocks
+    c_ = w_ + ω_                                # Cost
+    j_ = sort(sample(1:J, J_, replace=false))   # Subset of firms
+    return X_, ξ_, w_, c_, j_
+end;
+</code></pre>
+<h3 id="equilibrium">Equilibrium</h3>
+<p>We first compute the equilibrium in one market.</p>
+<pre><code class="language-julia">function compute_mkt_eq(J::Int, b::Vector, rangeJ::Vector, varX::Number, varξ::Number)::DataFrame
+    &quot;&quot;&quot;Compute equilibrium one market&quot;&quot;&quot;
+
+    # Initialize variables
+    K = size(β, 1) - 1
+    X_, ξ_, w_, c_, j_ = draw_data(J, K, rangeJ, varX, varξ)
+
+    # Compute equilibrium
+    p_ = equilibrium(c_, X_, β, ξ_)      # Equilibrium prices
+    q_, q0 = demand(p_, X_, β, ξ_)       # Demand with shocks
+    pr_ = (p_ - c_) .* q_               # Profits
+
+    # Save to data
+    q0_ = ones(length(j_)) .* q0
+    df = DataFrame(j=j_, w=w_, p=p_, q=q_, q0=q0_, pr=pr_)
+    for k=1:K
+      df[!,&quot;x$k&quot;] = X_[:,k]
+      df[!,&quot;z$k&quot;] = sum(X_[:,k]) .- X_[:,k]
+    end
+    return df
+end;
+</code></pre>
+<h3 id="simulate-dataset">Simulate Dataset</h3>
+<p>We can now write the code to simulate the whole dataset.</p>
+<pre><code class="language-julia">function simulate_data(J::Int, b::Vector, T::Int, rangeJ::Vector, varX::Number, varξ::Number)
+    &quot;&quot;&quot;Simulate full dataset&quot;&quot;&quot;
+    df = compute_mkt_eq(J, β, rangeJ, varX, varξ)
+    df[!, &quot;t&quot;] = ones(nrow(df)) * 1
+    for t=2:T
+        df_temp = compute_mkt_eq(J, β, rangeJ, varX, varξ)
+        df_temp[!, &quot;t&quot;] = ones(nrow(df_temp)) * t
+        append!(df, df_temp)
+    end
+    CSV.write(&quot;../data/logit.csv&quot;, df)
+end;
+</code></pre>
+<h3 id="simulate-dataset-2">Simulate Dataset (2)</h3>
+<p>We generate the dataset by simulating many markets that differ by</p>
+<ul>
+<li>number of firms (and their identity)</li>
+<li>their marginal costs</li>
+<li>their product characteristics</li>
+</ul>
+<pre><code class="language-julia"># Set parameters
+J = 10;                 # Number of firms
+K = 2;                  # Product caracteristics
+T = 500;                # Markets
+β = [.5, 2, -1];        # Preferences
+rangeJ = [2, 6];        # Min and max firms per market
+varX = 1;               # Variance of X
+varξ = 2;               # Variance of xi
+
+# Simulate
+df = simulate_data(J, β, T, rangeJ, varX, varξ);
+</code></pre>
+<h3 id="the-data">The Data</h3>
+<p>What does the data look like? Let’s switch to R!</p>
+<pre><code class="language-r"># Read data
+df = fread(&quot;../data/logit.csv&quot;)
+kable(df[1:6,], digits=4)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">j</th>
+<th style="text-align:right">w</th>
+<th style="text-align:right">p</th>
+<th style="text-align:right">q</th>
+<th style="text-align:right">q0</th>
+<th style="text-align:right">pr</th>
+<th style="text-align:right">x1</th>
+<th style="text-align:right">z1</th>
+<th style="text-align:right">x2</th>
+<th style="text-align:right">z2</th>
+<th style="text-align:right">t</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">1</td>
+<td style="text-align:right">0.1491</td>
+<td style="text-align:right">1.9616</td>
+<td style="text-align:right">0.0932</td>
+<td style="text-align:right">0.0013</td>
+<td style="text-align:right">0.1028</td>
+<td style="text-align:right">2.4517</td>
+<td style="text-align:right">0.8219</td>
+<td style="text-align:right">1.6918</td>
+<td style="text-align:right">3.6779</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td style="text-align:right">0.8352</td>
+<td style="text-align:right">2.1112</td>
+<td style="text-align:right">0.0193</td>
+<td style="text-align:right">0.0013</td>
+<td style="text-align:right">0.0197</td>
+<td style="text-align:right">0.1328</td>
+<td style="text-align:right">3.1408</td>
+<td style="text-align:right">0.2075</td>
+<td style="text-align:right">5.1622</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:right">7</td>
+<td style="text-align:right">0.2749</td>
+<td style="text-align:right">2.2789</td>
+<td style="text-align:right">0.2710</td>
+<td style="text-align:right">0.0013</td>
+<td style="text-align:right">0.3717</td>
+<td style="text-align:right">0.1449</td>
+<td style="text-align:right">3.1287</td>
+<td style="text-align:right">1.1493</td>
+<td style="text-align:right">4.2205</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:right">10</td>
+<td style="text-align:right">0.4118</td>
+<td style="text-align:right">3.6386</td>
+<td style="text-align:right">0.6151</td>
+<td style="text-align:right">0.0013</td>
+<td style="text-align:right">1.5982</td>
+<td style="text-align:right">0.5442</td>
+<td style="text-align:right">2.7294</td>
+<td style="text-align:right">2.3212</td>
+<td style="text-align:right">3.0485</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:right">5</td>
+<td style="text-align:right">0.6071</td>
+<td style="text-align:right">2.1457</td>
+<td style="text-align:right">0.0886</td>
+<td style="text-align:right">0.0003</td>
+<td style="text-align:right">0.0972</td>
+<td style="text-align:right">0.9239</td>
+<td style="text-align:right">2.4182</td>
+<td style="text-align:right">3.6551</td>
+<td style="text-align:right">10.0474</td>
+<td style="text-align:right">2</td>
+</tr>
+<tr>
+<td style="text-align:right">6</td>
+<td style="text-align:right">0.1615</td>
+<td style="text-align:right">1.1626</td>
+<td style="text-align:right">0.0000</td>
+<td style="text-align:right">0.0003</td>
+<td style="text-align:right">0.0000</td>
+<td style="text-align:right">0.1763</td>
+<td style="text-align:right">3.1657</td>
+<td style="text-align:right">0.3629</td>
+<td style="text-align:right">13.3396</td>
+<td style="text-align:right">2</td>
+</tr>
+</tbody>
+</table>
+<h3 id="estimation">Estimation</h3>
+<p>First we need to compute the dependent variable</p>
+<pre><code class="language-r">df$y = log(df$q) - log(df$q0)
+</code></pre>
+<p>Now we can estimate the logit model. The true values are $alpha=1$.</p>
+<pre><code class="language-r">ols &lt;- lm(y ~ x1 + x2 + p, data=df)
+kable(tidy(ols), digits=4)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">term</th>
+<th style="text-align:right">estimate</th>
+<th style="text-align:right">std.error</th>
+<th style="text-align:right">statistic</th>
+<th style="text-align:right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">(Intercept)</td>
+<td style="text-align:right">-1.3558</td>
+<td style="text-align:right">0.1476</td>
+<td style="text-align:right">-9.1874</td>
+<td style="text-align:right">0e+00</td>
+</tr>
+<tr>
+<td style="text-align:left">x1</td>
+<td style="text-align:right">0.4176</td>
+<td style="text-align:right">0.0537</td>
+<td style="text-align:right">7.7782</td>
+<td style="text-align:right">0e+00</td>
+</tr>
+<tr>
+<td style="text-align:left">x2</td>
+<td style="text-align:right">1.1494</td>
+<td style="text-align:right">0.0719</td>
+<td style="text-align:right">15.9903</td>
+<td style="text-align:right">0e+00</td>
+</tr>
+<tr>
+<td style="text-align:left">p</td>
+<td style="text-align:right">0.2406</td>
+<td style="text-align:right">0.0656</td>
+<td style="text-align:right">3.6664</td>
+<td style="text-align:right">3e-04</td>
+</tr>
+</tbody>
+</table>
+<p>The estimate of $\alpha = 1$ is biased (positive and significant) since
+$p$ is endogenous. We need instruments.</p>
+<h3 id="iv-1-cost-shifters">IV 1: Cost Shifters</h3>
+<p>First set of instruments: <strong>cost shifters</strong>.</p>
+<pre><code class="language-r">fm_costiv &lt;- ivreg(y ~ x1 + x2 + p | x1 + x2 + w, data=df)
+kable(tidy(fm_costiv), digits=4)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">term</th>
+<th style="text-align:right">estimate</th>
+<th style="text-align:right">std.error</th>
+<th style="text-align:right">statistic</th>
+<th style="text-align:right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">(Intercept)</td>
+<td style="text-align:right">0.2698</td>
+<td style="text-align:right">0.4923</td>
+<td style="text-align:right">0.5480</td>
+<td style="text-align:right">0.5837</td>
+</tr>
+<tr>
+<td style="text-align:left">x1</td>
+<td style="text-align:right">0.5249</td>
+<td style="text-align:right">0.0643</td>
+<td style="text-align:right">8.1679</td>
+<td style="text-align:right">0.0000</td>
+</tr>
+<tr>
+<td style="text-align:left">x2</td>
+<td style="text-align:right">1.8178</td>
+<td style="text-align:right">0.2064</td>
+<td style="text-align:right">8.8059</td>
+<td style="text-align:right">0.0000</td>
+</tr>
+<tr>
+<td style="text-align:left">p</td>
+<td style="text-align:right">-0.7034</td>
+<td style="text-align:right">0.2800</td>
+<td style="text-align:right">-2.5123</td>
+<td style="text-align:right">0.0121</td>
+</tr>
+</tbody>
+</table>
+<p>Now the estimate of $\alpha$ is negative and significant.</p>
+<h3 id="iv-2-blp-instruments">IV 2: BLP Instruments</h3>
+<p>Second set of instruments: <strong>product characteristics of other firms in
+the same market</strong>.</p>
+<pre><code class="language-r">fm_blpiv &lt;- ivreg(y ~ x1 + x2 + p | x1 + x2 + z1 + z2, data=df)
+kable(tidy(fm_blpiv), digits=4)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">term</th>
+<th style="text-align:right">estimate</th>
+<th style="text-align:right">std.error</th>
+<th style="text-align:right">statistic</th>
+<th style="text-align:right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">(Intercept)</td>
+<td style="text-align:right">1.6616</td>
+<td style="text-align:right">0.5014</td>
+<td style="text-align:right">3.3139</td>
+<td style="text-align:right">9e-04</td>
+</tr>
+<tr>
+<td style="text-align:left">x1</td>
+<td style="text-align:right">0.6167</td>
+<td style="text-align:right">0.0698</td>
+<td style="text-align:right">8.8380</td>
+<td style="text-align:right">0e+00</td>
+</tr>
+<tr>
+<td style="text-align:left">x2</td>
+<td style="text-align:right">2.3901</td>
+<td style="text-align:right">0.2110</td>
+<td style="text-align:right">11.3279</td>
+<td style="text-align:right">0e+00</td>
+</tr>
+<tr>
+<td style="text-align:left">p</td>
+<td style="text-align:right">-1.5117</td>
+<td style="text-align:right">0.2840</td>
+<td style="text-align:right">-5.3221</td>
+<td style="text-align:right">0e+00</td>
+</tr>
+</tbody>
+</table>
+<p>Also the BLP instruments deliver an estimate of $\alpha$ is negative and
+significant.</p>
+<h2 id="appendix">Appendix</h2>
+<h3 id="references">References</h3>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/empirical-io/08_dynamics_games/" rel="next">Dynamic Games</a>
+  </div>
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/empirical-io/12_blp_1995/" rel="prev">Coding: BLP (1995)</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

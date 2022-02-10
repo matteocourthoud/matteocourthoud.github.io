@@ -1,0 +1,1575 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="The Gauss Markov Model Definition A statistical model for regression data is the Gauss Markov Model if each of its distributions satisfies the conditions
+  Linearity: a statistical model $\mathcal{F}$ over data $\mathcal{D}$ satisfies linearity if for each element of $\mathcal{F}$, the data can be decomposed in $$ \begin{aligned} y_ i &amp;= \beta_ 1 x _ {i1} &#43; \dots &#43; \beta_ k x _ {ik} &#43; \varepsilon_ i = x_ i&#39;\beta &#43; \varepsilon_ i \newline \underset{n \times 1}{\vphantom{\beta_ \beta} y} &amp;= \underset{n \times k}{\vphantom{\beta}X} \cdot \underset{k \times 1}{\beta} &#43; \underset{n \times 1}{\vphantom{\beta}\varepsilon} \end{aligned} $$" />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/metrics/05_ols_algebra/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/metrics/05_ols_algebra/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/metrics/05_ols_algebra/" />
+  <meta property="og:title" content="OLS Algebra | Matteo Courthoud" />
+  <meta property="og:description" content="The Gauss Markov Model Definition A statistical model for regression data is the Gauss Markov Model if each of its distributions satisfies the conditions
+  Linearity: a statistical model $\mathcal{F}$ over data $\mathcal{D}$ satisfies linearity if for each element of $\mathcal{F}$, the data can be decomposed in $$ \begin{aligned} y_ i &amp;= \beta_ 1 x _ {i1} &#43; \dots &#43; \beta_ k x _ {ik} &#43; \varepsilon_ i = x_ i&#39;\beta &#43; \varepsilon_ i \newline \underset{n \times 1}{\vphantom{\beta_ \beta} y} &amp;= \underset{n \times k}{\vphantom{\beta}X} \cdot \underset{k \times 1}{\beta} &#43; \underset{n \times 1}{\vphantom{\beta}\varepsilon} \end{aligned} $$" /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2021-10-29T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2021-10-29T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>OLS Algebra | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="ff820c54188a6875670d383b4784b4c5" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/metrics/">Econometrics</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/metrics/01_matrices/">Matrix Algebra</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/02_probability/">Probability Theory</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/03_asymptotics/">Asymptotic Theory</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/04_inference/">Inference</a></li>
+
+
+
+  <li class="active"><a href="/course/metrics/05_ols_algebra/">OLS Algebra</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/06_endogeneity/">Endogeneity</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/06_ols_inference/">OLS Inference</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/07_endogeneity/">Endogeneity</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/08_nonparametric/">Non-Parametric Estimation</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/09_selection/">Variable Selection</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#the-gauss-markov-model">The Gauss Markov Model</a>
+      <ul>
+        <li><a href="#definition">Definition</a></li>
+        <li><a href="#implications">Implications</a></li>
+        <li><a href="#projection">Projection</a></li>
+        <li><a href="#code---dgp">Code - DGP</a></li>
+      </ul>
+    </li>
+    <li><a href="#the-ols-estimator">The OLS estimator</a>
+      <ul>
+        <li><a href="#definition-1">Definition</a></li>
+        <li><a href="#derivation">Derivation</a></li>
+        <li><a href="#futher-objects">Futher Objects</a></li>
+        <li><a href="#notes-on-orthogonality-conditions">Notes on Orthogonality Conditions</a></li>
+        <li><a href="#the-projection-matrix">The Projection Matrix</a></li>
+        <li><a href="#the-annihilator-matrix">The Annihilator Matrix</a></li>
+        <li><a href="#estimating-beta">Estimating Beta</a></li>
+        <li><a href="#equivalent-formulation">Equivalent Formulation?</a></li>
+        <li><a href="#equivalent-formulation-correct">Equivalent Formulation (correct)</a></li>
+        <li><a href="#some-more-objects">Some More Objects</a></li>
+      </ul>
+    </li>
+    <li><a href="#ols-residuals">OLS Residuals</a>
+      <ul>
+        <li><a href="#homoskedasticity">Homoskedasticity</a></li>
+        <li><a href="#residual-variance">Residual Variance</a></li>
+        <li><a href="#sample-variance">Sample Variance</a></li>
+        <li><a href="#uncentered-r2">Uncentered R^2</a></li>
+        <li><a href="#centered-r2">Centered R^2</a></li>
+        <li><a href="#code---variance">Code - Variance</a></li>
+        <li><a href="#code---r2">Code - R^2</a></li>
+      </ul>
+    </li>
+    <li><a href="#finite-sample-properties-of-ols">Finite Sample Properties of OLS</a>
+      <ul>
+        <li><a href="#conditional-unbiasedness">Conditional Unbiasedness</a></li>
+        <li><a href="#ols-variance">OLS Variance</a></li>
+        <li><a href="#blue">BLUE</a></li>
+        <li><a href="#blue-proof">BLUE Proof</a></li>
+        <li><a href="#blue-proof-2">BLUE Proof (2)</a></li>
+        <li><a href="#code---variance-1">Code - Variance</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>OLS Algebra</h1>
+
+          <p>Last updated on Oct 29, 2021</p>
+
+          <div class="article-style">
+            <h2 id="the-gauss-markov-model">The Gauss Markov Model</h2>
+<h3 id="definition">Definition</h3>
+<p>A statistical model for regression data is the <strong>Gauss Markov Model</strong> if
+each of its distributions satisfies the conditions</p>
+<ol>
+<li>
+<p><strong>Linearity</strong>: a statistical model $\mathcal{F}$ over data
+$\mathcal{D}$ satisfies linearity if for each element of
+$\mathcal{F}$, the data can be decomposed in $$
+\begin{aligned}
+y_ i &amp;= \beta_ 1 x _ {i1} + \dots + \beta_ k x _ {ik} + \varepsilon_ i = x_ i'\beta + \varepsilon_ i \newline
+\underset{n \times 1}{\vphantom{\beta_ \beta} y} &amp;= \underset{n \times k}{\vphantom{\beta}X} \cdot \underset{k \times 1}{\beta} + \underset{n \times 1}{\vphantom{\beta}\varepsilon}
+\end{aligned}
+$$</p>
+</li>
+<li>
+<p><strong>Strict Exogeneity</strong>:
+$\mathbb E [\varepsilon_i|x_1, \dots, x_n] = 0, \forall i$.</p>
+</li>
+<li>
+<p><strong>No Multicollinerity</strong>: $\mathbb E_n [x_i x_i']$ is strictly
+positive definite almost surely. Equivalent to require $rank(X)=k$
+with probability $p \to 1$. Intuition: no regressor is a linear
+combination of other regressors.</p>
+</li>
+<li>
+<p><strong>Spherical Error Variance</strong>:
+-$\mathbb E[\varepsilon_i^2 | x] = \sigma^2 &gt; 0, \ \forall i$
+-$\mathbb E [\varepsilon_i \varepsilon_j |x ] = 0, \ \forall$
+$1 \leq i &lt; j \leq n$</p>
+</li>
+</ol>
+<p>The <strong>Extended Gauss Markov Model</strong> also satisfies assumption</p>
+<ol>
+<li><strong>Normal error term</strong>: $\varepsilon|X \sim N(0, \sigma^2 I_n)$ and
+$\varepsilon \perp X$.</li>
+</ol>
+<h3 id="implications">Implications</h3>
+<ul>
+<li>Note that by (2) and (4) you get <strong>homoskedasticity</strong>:</li>
+</ul>
+<p>$$
+Var(\varepsilon_i|x) = \mathbb E[\varepsilon_i^2|x]- \mathbb E[\varepsilon_i|x]^2 = \sigma^2 I \qquad \forall i
+$$</p>
+<ul>
+<li>Strict exogeneity is not restrictive since it is sufficient to
+include a constant in the regression to enforce it $$
+y_i = \alpha + x_i'\beta + (\varepsilon_i - \alpha) \quad \Rightarrow \quad \mathbb E[\varepsilon_i] = \mathbb E_x [ \mathbb E[ \varepsilon_i | x]] = 0
+$$</li>
+<li>This implies $\mathbb E[x _ {jk} \varepsilon_i ] = 0$ by the LIE.</li>
+<li>These two conditions together imply
+$Cov (x _ {jk} \varepsilon_i ) = 0$.</li>
+</ul>
+<h3 id="projection">Projection</h3>
+<p>A map $\Pi: V \to V$ is a <strong>projection</strong> if $\Pi \circ \Pi = \Pi$.</p>
+<p>The Gauss Markov Model assumes that the <strong>conditional expectation
+function (CEF)</strong> $f(X) = \mathbb E[Y|X]$ and the <strong>linear projection</strong>
+$g(X) = X \beta$ coincide.</p>
+<h3 id="code---dgp">Code - DGP</h3>
+<p>This code draws 100 observations from the model
+$y = 2 x_1 - x_2 + \varepsilon$ where $x_1, x_2 \sim U[0,1]$ and
+$\varepsilon \sim N(0,1)$.</p>
+<pre><code class="language-julia"># Set seed
+Random.seed!(123);
+
+# Set the number of observations
+n = 100;
+
+# Set the dimension of X
+k = 2;
+
+# Draw a sample of explanatory variables
+X = rand(Uniform(0,1), n, k);
+
+# Draw the error term
+σ = 1;
+ε = rand(Normal(0,1), n, 1) * sqrt(σ);
+
+# Set the parameters
+β = [2; -1];
+
+# Calculate the dependent variable
+y = X*β + ε;
+</code></pre>
+<h2 id="the-ols-estimator">The OLS estimator</h2>
+<h3 id="definition-1">Definition</h3>
+<p>The <strong>sum of squared residuals (SSR)</strong> is given by $$
+Q_n (\beta) \equiv   \frac{1}{n} \sum _ {i=1}^n \left( y_i - x_i'\beta \right)^2 = \frac{1}{n} (y - X\beta)' (y - X \beta)
+$$</p>
+<p>Consider a dataset $\mathcal{D}$ and define
+$Q_n(\beta) = \mathbb E_n[(y_i - x_i'\beta )^2 ]$. Then the <strong>ordinary
+least squares (OLS)</strong> estimator $\hat \beta _ {OLS}$ is the value of
+$\beta$ that minimizes $Q_n(\beta)$.</p>
+<p>When we can write $D = (y, X)$ in matrix form, then $$
+\hat \beta _ {OLS} = \arg \min_\beta \frac{1}{n} (y - X \beta)' (y - X\beta)
+$$</p>
+<h3 id="derivation">Derivation</h3>
+<p><strong>Theorem</strong></p>
+<p>Under the assumption that $X$ has full rank, the OLS estimator is unique
+and it is determined by the normal equations. More explicitly,
+$\hat \beta$ is the OLS estimate precisely when $X&rsquo;X \hat \beta = X&rsquo;y$.</p>
+<p><strong>Proof</strong></p>
+<p>Taking the FOC: $$
+\frac{\partial Q_n (\beta)}{\partial \beta} = -\frac{2}{n} X' y  + \frac{2}{n} X&rsquo;X\beta = 0 \quad \Leftrightarrow \quad X&rsquo;X \beta = X&rsquo;y
+$$ Since $(X&rsquo;X)^{-1}$ exists by assumption,</p>
+<p>Finally,
+$\frac{\partial^2 Q_n (\beta)}{\partial \beta \partial \beta'} = X&rsquo;X/n$
+is positive definite since $X&rsquo;X$ is positive semi-definite and
+$(X&rsquo;X)^{-1}$ exists because $X$ is full rank. Therefore, $Q_n(\beta)$
+minimized at $\hat \beta_n$. $$\tag*{$\blacksquare$}$$</p>
+<p>The $k$ equations $X&rsquo;X \hat \beta = X&rsquo;y$ are called <strong>normal
+equations</strong>.</p>
+<h3 id="futher-objects">Futher Objects</h3>
+<ul>
+<li>Fitted coefficient:
+$\hat \beta _ {OLS} = (X&rsquo;X)^{-1} X&rsquo;y = \mathbb E_n [x_i x_i'] \mathbb E_n [x_i y_i]$</li>
+<li>Fitted residual: $\hat \varepsilon_i = y_i - x_i'\hat \beta$</li>
+<li>Fitted value: $\hat y_i = x_i' \hat \beta$</li>
+<li>Predicted coefficient:
+$\hat \beta _ {-i} = \mathbb E_n [x _ {-i} x' _ {-i}] \mathbb E_n [x _ {-i} y _ {-i}]$</li>
+<li>Prediction error:
+$\hat \varepsilon _ {-i} = y_i - x_i'\hat \beta _ {-i}$</li>
+<li>Predicted value: $\hat y_i = x_i' \hat \beta _ {-i}$</li>
+</ul>
+<h3 id="notes-on-orthogonality-conditions">Notes on Orthogonality Conditions</h3>
+<ul>
+<li>The normal equations are equivalent to the moment condition
+$\mathbb E_n [x_i \varepsilon_i]= 0$.</li>
+<li>The algebraic result $\mathbb E_n [x_i \hat \varepsilon_i]= 0$ is
+called <strong>ortogonality property</strong> of the OLS residual
+$\hat \varepsilon_i$.</li>
+<li>If we have included a constant in the regression,
+$\mathbb E_n [\hat \varepsilon_i] = 0$.</li>
+<li>$\mathbb E \Big[\mathbb E_n [x_i \varepsilon_i ] \Big] = 0$ by
+strict exogeneity (assumed in GM), but
+$\mathbb E_n [x_i \varepsilon_i] \ne \mathbb E [x_i \varepsilon_i] = 0$.
+This is why $\hat \beta _ {OLS}$ is just an estimate of $\beta_0$.</li>
+<li>Calculating OLS is like replacing the $j$ equations
+$\mathbb E [x _ {ij} \varepsilon_i] = 0$ $\forall j$ with
+$\mathbb E_n [x _ {ij} \varepsilon_i] = 0$ $\forall j$ and forcing
+them to hold (remindful of GMM).</li>
+</ul>
+<h3 id="the-projection-matrix">The Projection Matrix</h3>
+<p>The <strong>projection matrix</strong> is given by $P = X(X&rsquo;X)^{-1} X'$. It has the
+following properties: - $PX = X$ - $P \hat \varepsilon = 0 \quad$ ($P$,
+$\varepsilon$ orthogonal) -
+$P y = X(X&rsquo;X)^{-1} X&rsquo;y = X\hat \beta = \hat y$ - Symmetric: $P=P'$,
+Idempotent: $PP = P$ -
+$tr(P) = tr( X(X&rsquo;X)^{-1} X') = tr( X&rsquo;X(X&rsquo;X)^{-1}) = tr(I_k) = k$ - Its
+diagonal elements are $h_{ii} = x_i (X&rsquo;X)^{-1} x_i'$ and are called
+<strong>leverage</strong>.</p>
+<blockquote>
+<p>$h _ {ii} \in [0,1]$ is a normalized length of the observed regressor
+vector $x_i$. In the OLS regression framework it captures the relative
+influence of observation $i$ on the estimated coefficient. Note that
+$\sum _ n h_{ii} = k$.</p>
+</blockquote>
+<h3 id="the-annihilator-matrix">The Annihilator Matrix</h3>
+<p>The <strong>annihilator matrix</strong> is given by $M = I_n - P$. It has the
+following properties: - $MX = 0 \quad$ ($M$, $X$ orthogonal) -
+$M \hat \varepsilon = \hat \varepsilon$ - $M y = \hat \varepsilon$ -
+Symmetric: $M=M'$, idempotent: $MM = M$ - $tr(M) = n - k$ - Its diagonal
+elements are $1 - h_{ii} \in [0,1]$</p>
+<blockquote>
+<p>Then we can equivalently write $\hat y$ (defined by stacking
+$\hat y_i$ into a vector) as $\hat y = Py$.</p>
+</blockquote>
+<h3 id="estimating-beta">Estimating Beta</h3>
+<pre><code class="language-julia"># Estimate beta
+β_hat = inv(X'*X)*(X'*y)
+</code></pre>
+<pre><code>## 2×1 Array{Float64,2}:
+##   1.8821600407711814
+##  -0.9429354944506099
+</code></pre>
+<pre><code class="language-julia"># Equivalent but faster formulation
+β_hat = (X'*X)\(X'*y)
+</code></pre>
+<pre><code>## 2×1 Array{Float64,2}:
+##   1.8821600407711816
+##  -0.9429354944506098
+</code></pre>
+<pre><code class="language-julia"># Even faster (but less intuitive) formulation
+β_hat = X\y
+</code></pre>
+<pre><code>## 2×1 Array{Float64,2}:
+##   1.8821600407711807
+##  -0.9429354944506088
+</code></pre>
+<h3 id="equivalent-formulation">Equivalent Formulation?</h3>
+<p>Generally it’s not true that $$
+\hat \beta_{OLS} = \frac{Var(X)}{Cov(X,y)}
+$$</p>
+<pre><code class="language-julia"># Wrong formulation
+β_wrong = inv(cov(X)) * cov(X, y)
+</code></pre>
+<pre><code>## 2×1 Array{Float64,2}:
+##   1.8490257777704475
+##  -0.9709213554007003
+</code></pre>
+<h3 id="equivalent-formulation-correct">Equivalent Formulation (correct)</h3>
+<p>But it’s true if you include a constant, $\alpha$ $$
+y = \alpha + X \beta  + \varepsilon
+$$</p>
+<pre><code class="language-julia"># Correct, with constant
+α = 3;
+y1 = α .+ X*β + ε;
+β_hat1 = [ones(n,1) X] \ y1
+</code></pre>
+<pre><code>## 3×1 Array{Float64,2}:
+##   3.0362313477745615
+##   1.8490257777704477
+##  -0.9709213554007007
+</code></pre>
+<pre><code class="language-julia">β_correct1 = inv(cov(X)) * cov(X, y1)
+</code></pre>
+<pre><code>## 2×1 Array{Float64,2}:
+##   1.8490257777704477
+##  -0.9709213554007006
+</code></pre>
+<h3 id="some-more-objects">Some More Objects</h3>
+<pre><code class="language-julia"># Predicted y
+y_hat = X*β_hat;
+
+# Residuals
+ε_hat = y - X*β_hat;
+
+# Projection matrix
+P = X * inv(X'*X) * X';
+
+# Annihilator matrix
+M = I - P;
+
+# Leverage
+h = diag(P);
+</code></pre>
+<h2 id="ols-residuals">OLS Residuals</h2>
+<h3 id="homoskedasticity">Homoskedasticity</h3>
+<p>The error is <strong>homoskedastic</strong> if
+$\mathbb E [\varepsilon^2 | x] = \sigma^2$ does not depend on $x$. $$
+Var(\varepsilon) = I \sigma^2 = \begin{bmatrix}
+\sigma^2 &amp; \dots &amp; 0 \newline\newline<br>
+\vdots &amp; \ddots &amp; \vdots \newline
+0 &amp; \dots &amp; \sigma^2
+\end{bmatrix}
+$$</p>
+<p>The error is <strong>heteroskedastic</strong> if
+$\mathbb E [\varepsilon^2 | x] = \sigma^2(x)$ does depend on $x$. $$
+Var(\varepsilon) = I \sigma_i^2 =
+\begin{bmatrix}
+\sigma_1^2 &amp; \dots &amp; 0 \newline
+\vdots &amp; \ddots &amp; \vdots \newline
+0 &amp; \dots &amp; \sigma_n^2
+\end{bmatrix}
+$$</p>
+<h3 id="residual-variance">Residual Variance</h3>
+<p>The OLS <strong>residual variance</strong> can be an object of interest even in a
+heteroskedastic regression. Its method of moments estimator is given by
+$$
+\hat \sigma^2 = \frac{1}{n} \sum _ {i=1}^n \hat \varepsilon_i^2
+$$</p>
+<blockquote>
+<p>Note that $\hat \sigma^2$ can be rewritten as $$
+\hat \sigma^2 = \frac{1}{n} \varepsilon' M' M \varepsilon = \frac{1}{n} tr(\varepsilon' M \varepsilon) = \frac{1}{n} tr(M \varepsilon' \varepsilon)
+$$</p>
+</blockquote>
+<p>However, the method of moments estimator is a biesed estimator. In fact
+$$
+\mathbb E[\hat \sigma^2 | X] = \frac{1}{n} \mathbb E [ tr(M \varepsilon' \varepsilon) | X] =  \frac{1}{n} tr( M\mathbb E[\varepsilon' \varepsilon |X]) = \frac{1}{n} \sum _ {i=1}^n (1-h_{ii}) \sigma^2_i
+$$</p>
+<p>Under conditional homoskedasticity, the above expression simplifies to
+$$
+\mathbb E[\hat \sigma^2 | X] = \frac{1}{n} tr(M) \sigma^2 = \frac{n-k}{n} \sigma^2
+$$</p>
+<h3 id="sample-variance">Sample Variance</h3>
+<p>The OLS <strong>residual sample variance</strong> is denoted by $s^2$ and is given by
+$$
+s^2 = \frac{SSR}{n-k} = \frac{\hat \varepsilon'\hat \varepsilon}{n-k} = \frac{1}{n-k}\sum _ {i=1}^n \hat \varepsilon_i^2
+$$ Furthermore, the square root of $s^2$, denoted $s$, is called the
+standard error of the regression (SER) or the standard error of the
+equation (SEE). Not to be confused with other notions of standard error
+to be defined later in the course.</p>
+<blockquote>
+<p>The sum of squared residuals can be rewritten as:
+$SSR = \hat \varepsilon' \hat \varepsilon = \varepsilon' M \varepsilon$.</p>
+</blockquote>
+<p>The OLS residual sample variance is an unbiased estimator of the error
+variance $\sigma^2$.</p>
+<p>Another unbiased estimator of $\sigma^2$ is given by $$
+\bar \sigma^2 = \frac{1}{n} \sum _ {i=1}^n (1-h_{ii})^{-1} \hat \varepsilon_i^2
+$$</p>
+<h3 id="uncentered-r2">Uncentered R^2</h3>
+<p>One measure of the variability of the dependent variable $y_i$ is the
+sum of squares $\sum _ {i=1}^n y_i^2 = y&rsquo;y$. There is a decomposition:
+$$
+\begin{aligned}
+y&rsquo;y &amp;= (\hat y + e)' (\hat y + \hat \varepsilon) \newline
+&amp;= \hat y' \hat y + 2 \hat y' \hat \varepsilon + \hat \varepsilon' \hat \varepsilon e \newline
+&amp;= \hat y' \hat y + 2 b&rsquo;X'\hat \varepsilon + \hat \varepsilon' \hat \varepsilon \ \ (\text{since} \ \hat y = Xb) \newline
+&amp;= \hat y' \hat y + \hat \varepsilon'\hat \varepsilon \ \ (\text{since} \ X'\hat \varepsilon =0)
+\end{aligned}
+$$</p>
+<p>The <strong>uncentered</strong> $\mathbf{R^2}$ is defined as: $$
+R^2 _ {uc} \equiv 1 - \frac{\hat \varepsilon'\hat \varepsilon}{y&rsquo;y} = 1 - \frac{\mathbb E_n[\hat \varepsilon_i^2]}{\mathbb E_n[y_i^2]} = \frac{ \mathbb E [\hat y_i^2]}{ \mathbb E [y_i^2]}
+$$</p>
+<h3 id="centered-r2">Centered R^2</h3>
+<p>A more natural measure of variability is the sum of centered squares
+$\sum _ {i=1}^n (y_i - \bar y)^2,$ where
+$\bar y := \frac{1}{n}\sum _ {i=1}^n y_i$. If the regressors include a
+constant, it can be decomposed as $$
+\sum _ {i=1}^n (y_i - \bar y)^2 = \sum _ {i=1}^n (\hat y_i - \bar y)^2 + \sum _ {i=1}^n \hat \varepsilon_i^2
+$$</p>
+<p>The <strong>coefficient of determination</strong>, $\mathbf{R^2}$, is defined as $$
+R^2 \equiv 1 - \frac{\sum _ {i=1}^n \hat \varepsilon_i^2}{\sum _ {i=1}^n (y_i - \bar y)^2 }= \frac{  \sum _ {i=1}^n (\hat y_i - \bar y)^2 } { \sum _ {i=1}^n (y_i - \bar y)^2} = \frac{\mathbb E_n[(\hat y_i - \bar y)^2]}{\mathbb E_n[(y_i - \bar y)^2]}
+$$</p>
+<blockquote>
+<p>Always use the centered $R^2$ unless you really know what you are
+doing.</p>
+</blockquote>
+<h3 id="code---variance">Code - Variance</h3>
+<pre><code class="language-julia"># Biased variance estimator
+σ_hat = ε_hat'*ε_hat / n;
+
+# Unbiased estimator 1
+σ_hat_2 = ε_hat'*ε_hat / (n-k);
+
+# Unbiased estimator 2
+σ_hat_3 = mean( ε_hat.^2 ./ (1 .- h) );
+</code></pre>
+<h3 id="code---r2">Code - R^2</h3>
+<pre><code class="language-julia"># R squared - uncentered
+R2_uc = (y_hat'*y_hat)/ (y'*y);
+
+# R squared
+y_bar = mean(y);
+R2 = ((y_hat .- y_bar)'*(y_hat .- y_bar))/ ((y .- y_bar)'*(y .- y_bar));
+</code></pre>
+<h2 id="finite-sample-properties-of-ols">Finite Sample Properties of OLS</h2>
+<h3 id="conditional-unbiasedness">Conditional Unbiasedness</h3>
+<p><strong>Theorem</strong></p>
+<p>Under the GM assumptions (1)-(3), the OLS estimator is <strong>conditionally
+unbiased</strong>, i.e. the distribution of $\hat \beta _ {OLS}$ is centered at
+$\beta_0$: $\mathbb E [\hat \beta | X] = \beta_0$.</p>
+<p><strong>Proof</strong> $$
+\begin{aligned}
+\mathbb E [\hat \beta  | X] &amp;= \mathbb E [ (X&rsquo;X)^{-1} X&rsquo;y | X] = \newline
+&amp;= (X&rsquo;X)^{-1} X ' \mathbb E  [y | X] = \newline
+&amp;= (X&rsquo;X)^{-1} X' \mathbb E  [X \beta + \varepsilon | X] = \newline
+&amp;= (X&rsquo;X)^{-1} X&rsquo;X \beta + (X&rsquo;X)^{-1} X' \mathbb E  [\varepsilon | X] = \newline
+&amp;= \beta
+\end{aligned}
+$$ $$\tag*{$\blacksquare$}$$</p>
+<h3 id="ols-variance">OLS Variance</h3>
+<p><strong>Theorem</strong></p>
+<p>Under the GM assumptions (1)-(3),
+$Var(\hat \beta |X) = \sigma^2 (X&rsquo;X)^{-1}$.</p>
+<p><strong>Proof</strong>: $$
+\begin{aligned}
+Var(\hat \beta |X) &amp;= Var( (X&rsquo;X)^{-1} X&rsquo;y|X) = \newline
+&amp;= ((X&rsquo;X)^{-1} X' ) Var(y|X) ((X&rsquo;X)^{-1} X' )' = \newline
+&amp;= ((X&rsquo;X)^{-1} X' ) Var(X\beta + \varepsilon|X) ((X&rsquo;X)^{-1} X' )' = \newline
+&amp;= ((X&rsquo;X)^{-1} X' ) Var(\varepsilon|X) ((X&rsquo;X)^{-1} X' )' = \newline
+&amp;= ((X&rsquo;X)^{-1} X' ) \sigma^2 I ((X&rsquo;X)^{-1} X' )' =  \newline
+&amp;= \sigma^2 (X&rsquo;X)^{-1}
+\end{aligned}
+$$ $$\tag*{$\blacksquare$}$$</p>
+<p>Higher correlation of the $X$ implies higher variance of the OLS
+estimator.</p>
+<blockquote>
+<p>Intuition: individual observations carry less information. You are
+exploring a smaller region of the $X$ space.</p>
+</blockquote>
+<h3 id="blue">BLUE</h3>
+<p><strong>Theorem</strong></p>
+<p>Under the GM assumptions (1)-(3),
+$Cov (\hat \beta, \hat \varepsilon ) = 0$.</p>
+<p><strong>Theorem</strong></p>
+<p>Under the GM assumptions (1)-(3), $\hat \beta _ {OLS}$ is the best (most
+efficient) linear, unbiased estimator (<strong>BLUE</strong>), i.e., for any unbiased
+linear estimator $b$: $Var (b|X) \geq Var (\hat \beta |X)$.</p>
+<h3 id="blue-proof">BLUE Proof</h3>
+<p>Consider four steps:</p>
+<ol>
+<li>Define three objects: (i) $b= Cy$, (ii) $A = (X&rsquo;X)^{-1} X'$ such
+that $\hat \beta = A y$, and (iii) $D = C-A$.</li>
+<li>Decompose $b$ as $$
+\begin{aligned}
+b &amp;= (D + A) y = \newline
+&amp;=  Dy + Ay = \newline<br>
+&amp;= D (X\beta + \varepsilon) + \hat \beta = \newline
+&amp;= DX\beta + D \varepsilon + \hat \beta
+\end{aligned}
+$$</li>
+<li>By assumption, $b$ must be unbiased: $$
+\begin{aligned}
+\mathbb E [b|X] &amp;= \mathbb E [D(X\beta + \varepsilon) + Ay |X] = \newline
+&amp;= \mathbb E [DX\beta|X] + \mathbb E [D\varepsilon |X] + \mathbb E [\hat \beta |X] = \newline
+&amp;= DX\beta + D \mathbb E [\varepsilon |X] +\beta \newline<br>
+&amp;= DX\beta + \beta
+\end{aligned}
+$$ Hence, it must be that $DX = 0$</li>
+</ol>
+<h3 id="blue-proof-2">BLUE Proof (2)</h3>
+<ol>
+<li>We know by (2)-(3) that $b = D \varepsilon + \hat \beta$. We can now
+calculate its variance. $$
+\begin{aligned}
+Var (b|X) &amp;= Var (\hat \beta + D\varepsilon|X) = \newline
+&amp;= Var (Ay + D\varepsilon|X) = \newline
+&amp;= Var (AX\beta + (D + A)\varepsilon|X) = \newline
+&amp;= Var((D+A)\varepsilon |X) = \newline
+&amp;= (D+A)\sigma^2 I (D+A)' = \newline
+&amp;= \sigma^2 I (DD' + AA' + DA' + AD') = \newline
+&amp;= \sigma^2 I (DD' + AA') \geq \newline
+&amp;\geq \sigma^2 AA'= \newline
+&amp;= \sigma^2 (X&rsquo;X)^{-1} = \newline
+&amp;= Var (\hat \beta|X)
+\end{aligned}
+$$ since $DA'= AD' = 0$, $DX = 0$ and $AA' = (X&rsquo;X)^{-1}$.
+$$\tag*{$\blacksquare$}$$</li>
+</ol>
+<blockquote>
+<p>$Var(b | X) \geq Var (\hat{\beta} | X)$ is meant in a positive
+definite sense.</p>
+</blockquote>
+<h3 id="code---variance-1">Code - Variance</h3>
+<pre><code class="language-julia"># Ideal variance of the OLS estimator
+var_β = σ * inv(X'*X)
+</code></pre>
+<pre><code>## 2×2 Array{Float64,2}:
+##   0.0609402  -0.0467732
+##  -0.0467732   0.0656808
+</code></pre>
+<pre><code class="language-julia"># Standard errors
+std_β = sqrt.(diag(var_β))
+</code></pre>
+<pre><code>## 2-element Array{Float64,1}:
+##  0.24686077212177054
+##  0.25628257446345265
+</code></pre>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/metrics/04_inference/" rel="next">Inference</a>
+  </div>
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/metrics/06_endogeneity/" rel="prev">Endogeneity</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

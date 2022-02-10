@@ -1,0 +1,2881 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="import os import re import time import requests import pandas as pd from bs4 import BeautifulSoup from pprint import pprint from selenium import webdriver  There is no silver bullet to getting info from the internet." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/data-science/06_web_scraping/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/data-science/06_web_scraping/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/data-science/06_web_scraping/" />
+  <meta property="og:title" content="Web Scraping | Matteo Courthoud" />
+  <meta property="og:description" content="import os import re import time import requests import pandas as pd from bs4 import BeautifulSoup from pprint import pprint from selenium import webdriver  There is no silver bullet to getting info from the internet." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2022-02-10T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2022-02-10T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Web Scraping | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="eb538e0a1c9b8dc74363888040190513" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/data-science/">Data Science</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/data-science/01_data_exploration/">Data Exploration</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/02_data_types/">Data Types</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/03_data_wrangling/">Data Wrangling</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/04_plotting/">Plotting</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/05_ml_pipeline/">Machine Learning Pipeline</a></li>
+
+
+
+  <li class="active"><a href="/course/data-science/06_web_scraping/">Web Scraping</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/07_regression/">Regression</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#pandas">Pandas</a></li>
+    <li><a href="#specific-libraries">Specific Libraries</a></li>
+    <li><a href="#apis">APIs</a></li>
+    <li><a href="#static-webscraping">Static Webscraping</a>
+      <ul>
+        <li><a href="#http">HTTP</a></li>
+        <li><a href="#requests">Requests</a></li>
+        <li><a href="#html">HTML</a></li>
+        <li><a href="#regular-expressions">Regular Expressions</a></li>
+        <li><a href="#attributes">Attributes</a></li>
+        <li><a href="#css-selectors">CSS Selectors</a></li>
+        <li><a href="#forms-and-post-requests">Forms and post requests</a></li>
+        <li><a href="#proxies">Proxies</a></li>
+      </ul>
+    </li>
+    <li><a href="#dynamic-webscraping">Dynamic Webscraping</a>
+      <ul>
+        <li><a href="#selenium">Selenium</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Web Scraping</h1>
+
+          <p>Last updated on Feb 10, 2022</p>
+
+          <div class="article-style">
+            <pre><code class="language-python">import os
+import re
+import time
+import requests
+import pandas as pd
+
+from bs4 import BeautifulSoup
+from pprint import pprint
+from selenium import webdriver
+</code></pre>
+<p>There is no silver bullet to getting info from the internet.
+The coding requirements in these notes start easy and will gradually become more demanding. We will cover the following web scraping techniques:</p>
+<ol>
+<li>Pandas</li>
+<li>APIs</li>
+<li>Scraping static webpages with BeautifulSoup</li>
+<li>Scraping dynamic wepages with Selenium</li>
+</ol>
+<h2 id="pandas">Pandas</h2>
+<p>The Pandas library has a very useful webscraping command: <code>read_html</code>. The <code>read_html</code> command works for webpages that contain tables that are particularly well behaved. Let&rsquo;s see an example: <a href="https://en.wikipedia.org/wiki/List_of_countries_by_GDP_%28nominal%29" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/List_of_countries_by_GDP_(nominal)</a></p>
+<p>At first glance, it seems that there are three tables in this Wikipedia page:</p>
+<ol>
+<li>data from the IMF</li>
+<li>data from the World Bank</li>
+<li>data from the UN</li>
+</ol>
+<p>Let&rsquo;s see which tables pandas recognizes.</p>
+<pre><code class="language-python"># Scrape all tables from Wikipedia page
+url = 'https://en.wikipedia.org/wiki/List_of_countries_by_GDP_(nominal)'
+df_list = pd.read_html(url)
+
+# Check number of tables on the page
+print(len(df_list))
+</code></pre>
+<pre><code>7
+</code></pre>
+<p>Apparently Pandas has found 10 tables in this webpage. Let&rsquo;s see what is their content.</p>
+<pre><code class="language-python"># Check headers of each table
+for df in df_list: print(df.shape)
+</code></pre>
+<pre><code>(1, 1)
+(1, 3)
+(216, 9)
+(9, 2)
+(7, 2)
+(13, 2)
+(2, 2)
+</code></pre>
+<p>It seems that pandas has found many more tables that we could see. The ones that are of interest to us are probably the 3rd, 4th and 5th. But that are the others? Let&rsquo;s look at the them.</p>
+<pre><code class="language-python"># Check first
+df_list[0].head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Largest economies by nominal GDP in 2021[1]</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<pre><code class="language-python"># Check second
+df_list[1].head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>.mw-parser-output .legend{page-break-inside:av...</td>
+      <td>$750 billion – $1 trillion $500–50 billion $25...</td>
+      <td>$50–100 billion $25–50 billion $5–25 billion &lt;...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Apparently, the first two are simply picture captions.</p>
+<pre><code class="language-python"># Check third
+df_list[2].head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead tr th {
+    text-align: left;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Country/Territory</th>
+      <th>Subregion</th>
+      <th>Region</th>
+      <th colspan="2" halign="left">IMF[1]</th>
+      <th colspan="2" halign="left">United Nations[12]</th>
+      <th colspan="2" halign="left">World Bank[13][14]</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th>Country/Territory</th>
+      <th>Subregion</th>
+      <th>Region</th>
+      <th>Estimate</th>
+      <th>Year</th>
+      <th>Estimate</th>
+      <th>Year</th>
+      <th>Estimate</th>
+      <th>Year</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>United States</td>
+      <td>Northern America</td>
+      <td>Americas</td>
+      <td>22939580.0</td>
+      <td>2021</td>
+      <td>20893746.0</td>
+      <td>2020</td>
+      <td>20936600.0</td>
+      <td>2020</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>China</td>
+      <td>Eastern Asia</td>
+      <td>Asia</td>
+      <td>16862979.0</td>
+      <td>[n 2]2021</td>
+      <td>14722801.0</td>
+      <td>[n 3]2020</td>
+      <td>14722731.0</td>
+      <td>2020</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Japan</td>
+      <td>Eastern Asia</td>
+      <td>Asia</td>
+      <td>5103110.0</td>
+      <td>2021</td>
+      <td>5057759.0</td>
+      <td>2020</td>
+      <td>4975415.0</td>
+      <td>2020</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Germany</td>
+      <td>Western Europe</td>
+      <td>Europe</td>
+      <td>4230172.0</td>
+      <td>2021</td>
+      <td>3846414.0</td>
+      <td>2020</td>
+      <td>3806060.0</td>
+      <td>2020</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>United Kingdom</td>
+      <td>Western Europe</td>
+      <td>Europe</td>
+      <td>3108416.0</td>
+      <td>2021</td>
+      <td>2764198.0</td>
+      <td>2020</td>
+      <td>2707744.0</td>
+      <td>2020</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>This is clearly what we were looking for. A part from the footnotes, the table is already clean and organized.</p>
+<p>If we knew the name of the table, we could directly retrieve it. However, we will see more about it in the next lecture.</p>
+<h2 id="specific-libraries">Specific Libraries</h2>
+<p>Sometimes, there are libraries that are already written down to do the scraping for you. Each one is tailored for a specific website and they are usually userwritten and prone to bugs and errors. However, they are often efficient and save you the time to worry about getting around some website-specific issues.</p>
+<p>One example is the <code>pytrends</code> library for scraping Google Trends. Let&rsquo;s first install it</p>
+<pre><code class="language-python">pip3 install pytrends
+</code></pre>
+<p>Let&rsquo;s see how it works. Imagine we want to do the following search:</p>
+<ul>
+<li>words &ldquo;python&rdquo;, &ldquo;matlab&rdquo;, &ldquo;stata&rdquo;</li>
+<li>the the second half of in 2019</li>
+<li>daily</li>
+<li>in the US</li>
+</ul>
+<p>We can get more details on how pytrends works <a href="https://github.com/GeneralMills/pytrends#historical-hourly-interest" target="_blank" rel="noopener">here</a>. The important thing to know is that if you query a time period of more than 200 days, Google will give you weekly results, instead of daily.</p>
+<pre><code class="language-python"># Pytrends search
+from pytrends.request import TrendReq
+
+# Set parameters
+words = ['python', 'matlab', 'stata']
+timeframe = '2019-07-01 2019-12-31'
+country = 'US'
+
+# Get data
+pytrend = TrendReq()
+pytrend.build_payload(kw_list=words, timeframe=timeframe, geo=country)
+df_trends = pytrend.interest_over_time()
+
+# Plot
+trends_plot = df_trends.plot.line()
+</code></pre>
+<p><img src="../img/06_web_scraping_16_0.png" alt="png"></p>
+<p>Apparently people don&rsquo;t code during the weekend&hellip;.</p>
+<h2 id="apis">APIs</h2>
+<p>From Wikipedia</p>
+<blockquote>
+<p>An application programming interface (API) is an interface or communication protocol between different parts of a computer program intended to simplify the implementation and maintenance of software.</p>
+</blockquote>
+<p>In practice, it means that the are some webpages that are structured not to be user-readable but to be computer-readable. Let&rsquo;s see one example.</p>
+<p>Google provides many APIs for its services. However, they now all need identification, which means that you have to log in into your Google account and request an API key from there. This allows Google to monitor your behavior since the number of API requests is limited and beyond a certain treshold, one need to pay (a lot).</p>
+<p>There are however some free APIs. One</p>
+<p>Let&rsquo;s have a look at one of these: zippopotam. Zippopotam lets you retrieve location information from a zip code in the US. Other countries are supported as well.</p>
+<pre><code class="language-python"># Let's search the department locatiton
+import requests
+
+zipcode = '90210'
+url = 'https://api.zippopotam.us/us/'+zipcode
+
+response = requests.get(url)
+data = response.json()
+data
+</code></pre>
+<pre><code>{'post code': '90210',
+ 'country': 'United States',
+ 'country abbreviation': 'US',
+ 'places': [{'place name': 'Beverly Hills',
+   'longitude': '-118.4065',
+   'state': 'California',
+   'state abbreviation': 'CA',
+   'latitude': '34.0901'}]}
+</code></pre>
+<p>Data is in JSON (JavaScript Object Notation) format which is basically a nested dictionary-list format. Indeed, we see that in our case, data is a dictionary where the last elements is a list with one element - another dictionary.</p>
+<pre><code class="language-python"># Check type of value
+for d in data.values():
+    print(type(d))
+    
+# Check list length
+print(len(data['places']))
+
+# Check type of content of list
+print(type(data['places'][0]))
+</code></pre>
+<pre><code>&lt;class 'str'&gt;
+&lt;class 'str'&gt;
+&lt;class 'str'&gt;
+&lt;class 'list'&gt;
+1
+&lt;class 'dict'&gt;
+</code></pre>
+<p>The part that could be interesting to us is contained in the <code>places</code> category. We can easily extract it and transform it into a dataframe.</p>
+<pre><code class="language-python"># Add zipcode to data
+data['places'][0]['zipcode'] = zipcode
+
+# Export data
+df = pd.DataFrame(data['places'])
+df
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>place name</th>
+      <th>longitude</th>
+      <th>state</th>
+      <th>state abbreviation</th>
+      <th>latitude</th>
+      <th>zipcode</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Beverly Hills</td>
+      <td>-118.4065</td>
+      <td>California</td>
+      <td>CA</td>
+      <td>34.0901</td>
+      <td>90210</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h2 id="static-webscraping">Static Webscraping</h2>
+<p>We have so far used pre-made tools in order to do web-scraping. When the website contains the data in a nice table or an API is available, we do not need to worry much and we can directly retrieve the data. However, most of web scraping is much more complicated. Data is often the product of webscraping and is not readily available. Moreover, sometimes webscraping knowledge can supplement the need to pay for an API.</p>
+<h3 id="http">HTTP</h3>
+<p>What happens when you open a page on the internet? In short, your web browser is sending a request to the website that, in turn, sends back a reply/response. The exchange of messages is complex but its core involves a HyperText Transfer Protocol (HTTP) request message to a web server, followed by a HTTP response (or reply). All static webscraping is build on HTTP so let&rsquo;s have a closer look.</p>
+<p>An HTTP message essentially has 4 components:</p>
+<ol>
+<li>A request line</li>
+<li>A number of request headers</li>
+<li>An empty line</li>
+<li>An optional message</li>
+</ol>
+<p><em>Example</em></p>
+<p>A request message could be</p>
+<pre><code>GET /hello.htm HTTP/1.1
+</code></pre>
+<p>The response would be</p>
+<pre><code>HTTP/1.1 200 OK
+Date: Sun, 10 Oct 2010 23:26:07 GMT
+Server: Apache/2.2.8 (Ubuntu) mod_ssl/2.2.8 OpenSSL/0.9.8g
+Last-Modified: Sun, 26 Sep 2010 22:04:35 GMT
+ETag: &quot;45b6-834-49130cc1182c0&quot;
+Accept-Ranges: bytes
+Content-Length: 12
+Connection: close
+Content-Type: text/html
+
+&lt;html&gt;
+   &lt;body&gt;
+   
+      &lt;h1&gt;Hello, World!&lt;/h1&gt;
+   
+   &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>So, in this case the parts are:</p>
+<ol>
+<li>The <strong>request line</strong></li>
+</ol>
+<pre><code>HTTP/1.1 200 OK
+</code></pre>
+<ol start="2">
+<li>The <strong>request headers</strong></li>
+</ol>
+<pre><code>Date: Sun, 10 Oct 2010 23:26:07 GMT
+Server: Apache/2.2.8 (Ubuntu) mod_ssl/2.2.8 OpenSSL/0.9.8g
+Last-Modified: Sun, 26 Sep 2010 22:04:35 GMT
+ETag: &quot;45b6-834-49130cc1182c0&quot;
+Accept-Ranges: bytes
+Content-Length: 12
+Connection: close
+Content-Type: text/html
+</code></pre>
+<ol start="3">
+<li>The <strong>empty line</strong></li>
+<li>The <strong>optional message</strong></li>
+</ol>
+<pre><code>&lt;html&gt;
+   &lt;body&gt;
+   
+      &lt;h1&gt;Hello, World!&lt;/h1&gt;
+   
+   &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>We are interested in the optional message, which is essentially the content of the page we want to scrape. The content is usually written in HTML which is not a proper programming language but rather a <em>typesetting language</em> since it is the language underlying web pages and is usually generated from other programming languages.</p>
+<h3 id="requests">Requests</h3>
+<p>There are many different packages in python to send requests to a web page and read its response. The most user-friendly is the <code>requests</code> package. You can find plenty of useful information on the <code>requests</code> library on its website: <a href="https://requests.readthedocs.io/en/master/" target="_blank" rel="noopener">https://requests.readthedocs.io/en/master/</a>.</p>
+<p>We are now going to have a look at a simple example: <a href="http://pythonscraping.com/pages/page1.html" target="_blank" rel="noopener">http://pythonscraping.com/pages/page1.html</a>.</p>
+<pre><code class="language-python"># Request a simple web page
+url1 = 'http://pythonscraping.com/pages/page1.html'
+response = requests.get(url1)
+print(response)
+</code></pre>
+<pre><code>&lt;Response [200]&gt;
+</code></pre>
+<p>We are (hopefully) getting a <code>&lt;Response [200]&gt;</code> message. In short, what we got is the status code of the request we sent to the website. The status code is a 3-digit code and essentially there are two broad categories of status codes:</p>
+<ul>
+<li>2XX: success</li>
+<li>4XX, 5XX: failure</li>
+</ul>
+<p>It can be useful to know this codes as they are a fast way to check whether your request has failed or not. When webscraping the most common reasons you get an error are</p>
+<ol>
+<li>The link does not exist: wither the link is old/expired or you misspelled it and hence there is no page to request</li>
+<li>You have been &ldquo;caught&rdquo;. This is pretty common when webscraping and happens every time you are too aggressive with your scraping. How much &ldquo;aggressive&rdquo; is &ldquo;too agrressive&rdquo; depends on the website. Usually big tech websites are particularly hard to scrape and anything that is &ldquo;faster than human&rdquo; gets blocked. Sometimes also slow but persistent requests get blocked as well.</li>
+</ol>
+<p>We have now analyzed the response status but, what is actually the response content? Let&rsquo;s inspect the response object more in detail.</p>
+<pre><code class="language-python"># Print response attributes
+dir(response)
+</code></pre>
+<pre><code>['__attrs__',
+ '__bool__',
+ '__class__',
+ '__delattr__',
+ '__dict__',
+ '__dir__',
+ '__doc__',
+ '__enter__',
+ '__eq__',
+ '__exit__',
+ '__format__',
+ '__ge__',
+ '__getattribute__',
+ '__getstate__',
+ '__gt__',
+ '__hash__',
+ '__init__',
+ '__init_subclass__',
+ '__iter__',
+ '__le__',
+ '__lt__',
+ '__module__',
+ '__ne__',
+ '__new__',
+ '__nonzero__',
+ '__reduce__',
+ '__reduce_ex__',
+ '__repr__',
+ '__setattr__',
+ '__setstate__',
+ '__sizeof__',
+ '__str__',
+ '__subclasshook__',
+ '__weakref__',
+ '_content',
+ '_content_consumed',
+ '_next',
+ 'apparent_encoding',
+ 'close',
+ 'connection',
+ 'content',
+ 'cookies',
+ 'elapsed',
+ 'encoding',
+ 'headers',
+ 'history',
+ 'is_permanent_redirect',
+ 'is_redirect',
+ 'iter_content',
+ 'iter_lines',
+ 'json',
+ 'links',
+ 'next',
+ 'ok',
+ 'raise_for_status',
+ 'raw',
+ 'reason',
+ 'request',
+ 'status_code',
+ 'text',
+ 'url']
+</code></pre>
+<p>We are actually interested in the text of the response.</p>
+<pre><code class="language-python"># Print response content
+response.text
+</code></pre>
+<pre><code>'&lt;html&gt;\n&lt;head&gt;\n&lt;title&gt;A Useful Page&lt;/title&gt;\n&lt;/head&gt;\n&lt;body&gt;\n&lt;h1&gt;An Interesting Title&lt;/h1&gt;\n&lt;div&gt;\nLorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n&lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;\n'
+</code></pre>
+<p>This is the whole content of the table. There is a large chunk of text and other parts which look more obscure. In order to understand the structure of the page, we need to have a closer look at the language in which the webpage is written: HTML. We will do it in the next section.</p>
+<p>However, let&rsquo;s first analyze the other relevant components of the response. We have already had a look at the status. Let&rsquo;s inspect the headers.</p>
+<pre><code class="language-python"># Print response headers
+response.headers
+</code></pre>
+<pre><code>{'Server': 'nginx', 'Date': 'Thu, 10 Feb 2022 11:11:41 GMT', 'Content-Type': 'text/html', 'Content-Length': '361', 'Connection': 'keep-alive', 'X-Accel-Version': '0.01', 'Last-Modified': 'Sat, 09 Jun 2018 19:15:58 GMT', 'ETag': '&quot;234-56e3a58a63780-gzip&quot;', 'Accept-Ranges': 'bytes', 'Vary': 'Accept-Encoding', 'Content-Encoding': 'gzip', 'X-Powered-By': 'PleskLin'}
+</code></pre>
+<p>From the headers we can see</p>
+<ul>
+<li>the present date</li>
+<li>the name of the server hosting the page</li>
+<li>the last time the page was modified</li>
+<li>other stuff</li>
+</ul>
+<p>Let&rsquo;s now look at the headers of our request.</p>
+<pre><code class="language-python"># Request headers
+def check_headers(r):
+    test_headers = dict(zip(r.request.headers.keys(), r.request.headers.values()))
+    pprint(test_headers)
+    
+check_headers(response)
+</code></pre>
+<pre><code>{'Accept': '*/*',
+ 'Accept-Encoding': 'gzip, deflate, br',
+ 'Connection': 'keep-alive',
+ 'User-Agent': 'python-requests/2.27.1'}
+</code></pre>
+<p>The headers of our request are pretty minimal. In order to see what normal headers look like, go to <a href="https://www.whatismybrowser.com/developers/what-http-headers-is-my-browser-sending" target="_blank" rel="noopener">https://www.whatismybrowser.com/developers/what-http-headers-is-my-browser-sending</a></p>
+<p>Normal headers look something like:</p>
+<pre><code>{'Accept': 'text/html,application/xhtml+xml,application/xml;q = 0.9, image / '
+           'webp, * / *;q = 0.8',
+ 'Accept-Encoding': 'gzip, deflate, br',
+ 'Accept-Language': 'en-US,en;q=0.9,it-IT;q=0.8,it;q=0.7,de-DE;q=0.6,de;q=0.5',
+ 'Connection': 'keep-alive',
+ 'Host': 'www.whatismybrowser.com',
+ 'Referer': 'http://localhost:8888/',
+ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) '
+               'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 '
+               'Safari/537.36'}
+</code></pre>
+<p>The most important difference is that the <code>requests</code> model default <em>User-Agent</em> is <code>python-requests/2.22.0</code> which means that we are walking around the web with a big <strong>WARNING: web scrapers</strong> sign. This is the simplest way to get caught and blocked by a website. Luckily, we can easily change our headers in order to be more subtle.</p>
+<pre><code class="language-python"># Change headers
+headers = {&quot;User-Agent&quot;: &quot;Mozilla/5.0&quot;,
+               &quot;Accept&quot;: &quot;webp, * / *;q = 0.8&quot;,
+               &quot;Accept-Language&quot;: &quot;en-US,en;q=0.9&quot;,
+               &quot;Accept-Encoding&quot;: &quot;br, gzip, deflate&quot;,
+               &quot;Referer&quot;: &quot;https://www.google.ch/&quot;}
+
+# Test if change worked
+response = requests.get(url1, headers=headers)
+check_headers(response)
+</code></pre>
+<pre><code>{'Accept': 'webp, * / *;q = 0.8',
+ 'Accept-Encoding': 'br, gzip, deflate',
+ 'Accept-Language': 'en-US,en;q=0.9',
+ 'Connection': 'keep-alive',
+ 'Referer': 'https://www.google.ch/',
+ 'User-Agent': 'Mozilla/5.0'}
+</code></pre>
+<p>Nice! Now we are a little more stealthy.</p>
+<p>You might now be asking yourself what are the ethical limits of webscraping. Information on the internet is public but scraping a website imposes a workload on the website&rsquo;s server. If the website is not protected against aggressive scrapers (most websites are), your activity could significantly slower the website or even crash it.</p>
+<p>Usually websites include their policies for scraping in a text file named <code>robots.txt</code>.</p>
+<p>Let&rsquo;s have a look at the <code>robots.txt</code> file of <a href="http://pythonscraping.com/" target="_blank" rel="noopener">http://pythonscraping.com/</a>.</p>
+<pre><code class="language-python"># Read robots.txt
+response = requests.get('http://pythonscraping.com/robots.txt')
+print(response.text)
+</code></pre>
+<pre><code>#
+# robots.txt
+#
+# This file is to prevent the crawling and indexing of certain parts
+# of your site by web crawlers and spiders run by sites like Yahoo!
+# and Google. By telling these &quot;robots&quot; where not to go on your site,
+# you save bandwidth and server resources.
+#
+# This file will be ignored unless it is at the root of your host:
+# Used:    http://example.com/robots.txt
+# Ignored: http://example.com/site/robots.txt
+#
+# For more information about the robots.txt standard, see:
+# http://www.robotstxt.org/robotstxt.html
+#
+# For syntax checking, see:
+# http://www.frobee.com/robots-txt-check
+
+User-agent: *
+Crawl-delay: 10
+# Directories
+Disallow: /includes/
+Disallow: /misc/
+Disallow: /modules/
+Disallow: /profiles/
+Disallow: /scripts/
+Disallow: /themes/
+# Files
+Disallow: /CHANGELOG.txt
+Disallow: /cron.php
+Disallow: /INSTALL.mysql.txt
+Disallow: /INSTALL.pgsql.txt
+Disallow: /INSTALL.sqlite.txt
+Disallow: /install.php
+Disallow: /INSTALL.txt
+Disallow: /LICENSE.txt
+Disallow: /MAINTAINERS.txt
+Disallow: /update.php
+Disallow: /UPGRADE.txt
+Disallow: /xmlrpc.php
+# Paths (clean URLs)
+Disallow: /admin/
+Disallow: /comment/reply/
+Disallow: /filter/tips/
+Disallow: /node/add/
+Disallow: /search/
+Disallow: /user/register/
+Disallow: /user/password/
+Disallow: /user/login/
+Disallow: /user/logout/
+# Paths (no clean URLs)
+Disallow: /?q=admin/
+Disallow: /?q=comment/reply/
+Disallow: /?q=filter/tips/
+Disallow: /?q=node/add/
+Disallow: /?q=search/
+Disallow: /?q=user/password/
+Disallow: /?q=user/register/
+Disallow: /?q=user/login/
+Disallow: /?q=user/logout/
+</code></pre>
+<p>As we can see, this <code>robots.txt</code> file mostly deals with crawlers, i.e. scripts that are designed to recover the structure of a website by exploring it. Crawlers are mostly used by browsers that want to index websites.</p>
+<p>Now we have explored most of the issues around HTTP requests. We can now proceed to what we are interested in: the content of the web page. In order to do that, we need to know the language in which wabpages are written: HTML.</p>
+<h3 id="html">HTML</h3>
+<p>Hypertext Markup Language (HTML) is the standard markup language for documents designed to be displayed in a web browser. Web browsers receive HTML documents from a web server or from local storage and render the documents into multimedia web pages. HTML describes the structure of a web page semantically and originally included cues for the appearance of the document.</p>
+<p>HTML elements are delineated by tags, written using angle brackets.</p>
+<h4 id="tags">Tags</h4>
+<p>Tags are the cues that HTML uses to surround content and provide information about its nature. There is a very large amount of tags but some of the most common are:</p>
+<ul>
+<li><code>&lt;head&gt;</code> and <code>&lt;body&gt;</code> for head and body of the page</li>
+<li><code>&lt;p&gt;</code> for paragraphs</li>
+<li><code>&lt;br&gt;</code> for line breaks</li>
+<li><code>&lt;table&gt;</code> for tables. These are the ones that <code>pandas</code> reads. However, we have seen that not all elements that look like tables are actually <code>&lt;table&gt;</code> and viceversa. Table elements are tagged as <code>&lt;th&gt;</code> (table header), <code>&lt;tr&gt;</code> (table row) and <code>&lt;td&gt;</code> (table data: a cell)</li>
+<li><code>&lt;img&gt;</code> for images</li>
+<li><code>&lt;h1&gt;</code> to <code>&lt;h6&gt;</code> for headers (titles and subtitles)</li>
+<li><code>&lt;div&gt;</code> dor divisions, i.e. for grouping elements</li>
+<li><code>&lt;a&gt;</code> for hyperlinks</li>
+<li><code>&lt;ul&gt;</code> and <code>&lt;ol&gt;</code> for unordered and ordered lists where list elements are tagged as <code>&lt;li&gt;</code></li>
+</ul>
+<p>Let&rsquo;s have a look at the previous page</p>
+<pre><code class="language-python"># Inspect HTML
+response.text
+</code></pre>
+<pre><code>'#\n# robots.txt\n#\n# This file is to prevent the crawling and indexing of certain parts\n# of your site by web crawlers and spiders run by sites like Yahoo!\n# and Google. By telling these &quot;robots&quot; where not to go on your site,\n# you save bandwidth and server resources.\n#\n# This file will be ignored unless it is at the root of your host:\n# Used:    http://example.com/robots.txt\n# Ignored: http://example.com/site/robots.txt\n#\n# For more information about the robots.txt standard, see:\n# http://www.robotstxt.org/robotstxt.html\n#\n# For syntax checking, see:\n# http://www.frobee.com/robots-txt-check\n\nUser-agent: *\nCrawl-delay: 10\n# Directories\nDisallow: /includes/\nDisallow: /misc/\nDisallow: /modules/\nDisallow: /profiles/\nDisallow: /scripts/\nDisallow: /themes/\n# Files\nDisallow: /CHANGELOG.txt\nDisallow: /cron.php\nDisallow: /INSTALL.mysql.txt\nDisallow: /INSTALL.pgsql.txt\nDisallow: /INSTALL.sqlite.txt\nDisallow: /install.php\nDisallow: /INSTALL.txt\nDisallow: /LICENSE.txt\nDisallow: /MAINTAINERS.txt\nDisallow: /update.php\nDisallow: /UPGRADE.txt\nDisallow: /xmlrpc.php\n# Paths (clean URLs)\nDisallow: /admin/\nDisallow: /comment/reply/\nDisallow: /filter/tips/\nDisallow: /node/add/\nDisallow: /search/\nDisallow: /user/register/\nDisallow: /user/password/\nDisallow: /user/login/\nDisallow: /user/logout/\n# Paths (no clean URLs)\nDisallow: /?q=admin/\nDisallow: /?q=comment/reply/\nDisallow: /?q=filter/tips/\nDisallow: /?q=node/add/\nDisallow: /?q=search/\nDisallow: /?q=user/password/\nDisallow: /?q=user/register/\nDisallow: /?q=user/login/\nDisallow: /?q=user/logout/\n'
+</code></pre>
+<p>The response looks a little bit messy and not really readable.</p>
+<p><code>BeautifulSoup</code> is a python library that renders http responses in a user friendly format and helps recovering elements from tags and attributes.</p>
+<pre><code>pip3 install bs4
+</code></pre>
+<p>Let&rsquo;s have a look.</p>
+<pre><code class="language-python"># Make response readable
+soup = BeautifulSoup(response.text, 'lxml')
+print(soup)
+</code></pre>
+<pre><code>&lt;html&gt;&lt;body&gt;&lt;p&gt;#
+# robots.txt
+#
+# This file is to prevent the crawling and indexing of certain parts
+# of your site by web crawlers and spiders run by sites like Yahoo!
+# and Google. By telling these &quot;robots&quot; where not to go on your site,
+# you save bandwidth and server resources.
+#
+# This file will be ignored unless it is at the root of your host:
+# Used:    http://example.com/robots.txt
+# Ignored: http://example.com/site/robots.txt
+#
+# For more information about the robots.txt standard, see:
+# http://www.robotstxt.org/robotstxt.html
+#
+# For syntax checking, see:
+# http://www.frobee.com/robots-txt-check
+
+User-agent: *
+Crawl-delay: 10
+# Directories
+Disallow: /includes/
+Disallow: /misc/
+Disallow: /modules/
+Disallow: /profiles/
+Disallow: /scripts/
+Disallow: /themes/
+# Files
+Disallow: /CHANGELOG.txt
+Disallow: /cron.php
+Disallow: /INSTALL.mysql.txt
+Disallow: /INSTALL.pgsql.txt
+Disallow: /INSTALL.sqlite.txt
+Disallow: /install.php
+Disallow: /INSTALL.txt
+Disallow: /LICENSE.txt
+Disallow: /MAINTAINERS.txt
+Disallow: /update.php
+Disallow: /UPGRADE.txt
+Disallow: /xmlrpc.php
+# Paths (clean URLs)
+Disallow: /admin/
+Disallow: /comment/reply/
+Disallow: /filter/tips/
+Disallow: /node/add/
+Disallow: /search/
+Disallow: /user/register/
+Disallow: /user/password/
+Disallow: /user/login/
+Disallow: /user/logout/
+# Paths (no clean URLs)
+Disallow: /?q=admin/
+Disallow: /?q=comment/reply/
+Disallow: /?q=filter/tips/
+Disallow: /?q=node/add/
+Disallow: /?q=search/
+Disallow: /?q=user/password/
+Disallow: /?q=user/register/
+Disallow: /?q=user/login/
+Disallow: /?q=user/logout/
+&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre>
+<p>First of all, what is the <code>html5lib</code> option? It&rsquo;s the parser. In short, there are often small mistakes/variations in HTML and each parser interprets it differently. In principles, the latest HTML standard is HTML5, therefore the <code>html5lib</code> parser should be the most &ldquo;correct&rdquo; parser. It might happen that the same code does not work for another person if you use a different parser.</p>
+<p>This is much better but it can be improved.</p>
+<pre><code class="language-python"># Prettify response
+print(soup.prettify())
+</code></pre>
+<pre><code>&lt;html&gt;
+ &lt;body&gt;
+  &lt;p&gt;
+   #
+# robots.txt
+#
+# This file is to prevent the crawling and indexing of certain parts
+# of your site by web crawlers and spiders run by sites like Yahoo!
+# and Google. By telling these &quot;robots&quot; where not to go on your site,
+# you save bandwidth and server resources.
+#
+# This file will be ignored unless it is at the root of your host:
+# Used:    http://example.com/robots.txt
+# Ignored: http://example.com/site/robots.txt
+#
+# For more information about the robots.txt standard, see:
+# http://www.robotstxt.org/robotstxt.html
+#
+# For syntax checking, see:
+# http://www.frobee.com/robots-txt-check
+
+User-agent: *
+Crawl-delay: 10
+# Directories
+Disallow: /includes/
+Disallow: /misc/
+Disallow: /modules/
+Disallow: /profiles/
+Disallow: /scripts/
+Disallow: /themes/
+# Files
+Disallow: /CHANGELOG.txt
+Disallow: /cron.php
+Disallow: /INSTALL.mysql.txt
+Disallow: /INSTALL.pgsql.txt
+Disallow: /INSTALL.sqlite.txt
+Disallow: /install.php
+Disallow: /INSTALL.txt
+Disallow: /LICENSE.txt
+Disallow: /MAINTAINERS.txt
+Disallow: /update.php
+Disallow: /UPGRADE.txt
+Disallow: /xmlrpc.php
+# Paths (clean URLs)
+Disallow: /admin/
+Disallow: /comment/reply/
+Disallow: /filter/tips/
+Disallow: /node/add/
+Disallow: /search/
+Disallow: /user/register/
+Disallow: /user/password/
+Disallow: /user/login/
+Disallow: /user/logout/
+# Paths (no clean URLs)
+Disallow: /?q=admin/
+Disallow: /?q=comment/reply/
+Disallow: /?q=filter/tips/
+Disallow: /?q=node/add/
+Disallow: /?q=search/
+Disallow: /?q=user/password/
+Disallow: /?q=user/register/
+Disallow: /?q=user/login/
+Disallow: /?q=user/logout/
+  &lt;/p&gt;
+ &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>This is much better. Now the tree structure of the HTML page is clearly visible and we can visually separate the different elements.</p>
+<p>In particular, the structure of the page is:</p>
+<ul>
+<li>page head
+<ul>
+<li>with ttle: &ldquo;A Useful Page&rdquo;</li>
+</ul>
+</li>
+<li>page body
+<ul>
+<li>with level 1 header &ldquo;An Interesting Title&rdquo;</li>
+<li>a division with text &ldquo;Lorem ipsum&hellip;&rdquo;</li>
+</ul>
+</li>
+</ul>
+<p>How do we work with these elements? Suppose we want to recover the title and the text. The requests library has some useful functions.</p>
+<pre><code class="language-python"># Find the title
+url = 'http://pythonscraping.com/pages/page1.html'
+response = requests.get(url)
+soup = BeautifulSoup(response.text, 'lxml')
+soup.find('title')
+</code></pre>
+<pre><code>&lt;title&gt;A Useful Page&lt;/title&gt;
+</code></pre>
+<pre><code class="language-python"># Extract text
+soup.find('title').text
+</code></pre>
+<pre><code>'A Useful Page'
+</code></pre>
+<pre><code class="language-python"># Find all h1 elements
+soup.find_all('h1')
+</code></pre>
+<pre><code>[&lt;h1&gt;An Interesting Title&lt;/h1&gt;]
+</code></pre>
+<pre><code class="language-python"># Find all title or h1 elements
+soup.find_all(['title','h1'])
+</code></pre>
+<pre><code>[&lt;title&gt;A Useful Page&lt;/title&gt;, &lt;h1&gt;An Interesting Title&lt;/h1&gt;]
+</code></pre>
+<h3 id="regular-expressions">Regular Expressions</h3>
+<p>Note that there is always a more direct alternative: using regular expressions directly on the response!</p>
+<pre><code class="language-python"># Find the title
+re.findall('&lt;title&gt;(.*)&lt;/title&gt;', response.text)[0]
+</code></pre>
+<pre><code>'A Useful Page'
+</code></pre>
+<pre><code class="language-python"># Find all h1 elements
+re.findall('&lt;h1&gt;(.*)&lt;/h1&gt;', response.text)
+</code></pre>
+<pre><code>['An Interesting Title']
+</code></pre>
+<pre><code class="language-python"># Find all title or h1 elements
+[x[1] for x in re.findall('&lt;(title|h1)&gt;(.*)&lt;', response.text)]
+</code></pre>
+<pre><code>['A Useful Page', 'An Interesting Title']
+</code></pre>
+<p>This was a very simple page and there was not so much to look for. Let&rsquo;s now look at a more realistic example.</p>
+<h3 id="attributes">Attributes</h3>
+<p>Let&rsquo;s inspect a slightly more complicated page: <a href="http://pythonscraping.com/pages/page3.html" target="_blank" rel="noopener">http://pythonscraping.com/pages/page3.html</a>.</p>
+<p>In this page, there is much more content than in the previous one. There seems to be a table, there are images, hyperlinks, etc&hellip; It&rsquo;s the perfect playground. Let&rsquo;s have a look at what does the HTML code look like.</p>
+<pre><code class="language-python"># Inspect HTML code
+url2 = 'http://pythonscraping.com/pages/page3.html'
+response = requests.get(url2)
+soup = BeautifulSoup(response.text,'lxml')
+print(soup.prettify())
+</code></pre>
+<pre><code>&lt;html&gt;
+ &lt;head&gt;
+  &lt;style&gt;
+   img{
+	width:75px;
+}
+table{
+	width:50%;
+}
+td{
+	margin:10px;
+	padding:10px;
+}
+.wrapper{
+	width:800px;
+}
+.excitingNote{
+	font-style:italic;
+	font-weight:bold;
+}
+  &lt;/style&gt;
+ &lt;/head&gt;
+ &lt;body&gt;
+  &lt;div id=&quot;wrapper&quot;&gt;
+   &lt;img src=&quot;../img/gifts/logo.jpg&quot; style=&quot;float:left;&quot;/&gt;
+   &lt;h1&gt;
+    Totally Normal Gifts
+   &lt;/h1&gt;
+   &lt;div id=&quot;content&quot;&gt;
+    Here is a collection of totally normal, totally reasonable gifts that your friends are sure to love! Our collection is
+hand-curated by well-paid, free-range Tibetan monks.
+    &lt;p&gt;
+     We haven't figured out how to make online shopping carts yet, but you can send us a check to:
+     &lt;br/&gt;
+     123 Main St.
+     &lt;br/&gt;
+     Abuja, Nigeria
+We will then send your totally amazing gift, pronto! Please include an extra $5.00 for gift wrapping.
+    &lt;/p&gt;
+   &lt;/div&gt;
+   &lt;table id=&quot;giftList&quot;&gt;
+    &lt;tr&gt;
+     &lt;th&gt;
+      Item Title
+     &lt;/th&gt;
+     &lt;th&gt;
+      Description
+     &lt;/th&gt;
+     &lt;th&gt;
+      Cost
+     &lt;/th&gt;
+     &lt;th&gt;
+      Image
+     &lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr class=&quot;gift&quot; id=&quot;gift1&quot;&gt;
+     &lt;td&gt;
+      Vegetable Basket
+     &lt;/td&gt;
+     &lt;td&gt;
+      This vegetable basket is the perfect gift for your health conscious (or overweight) friends!
+      &lt;span class=&quot;excitingNote&quot;&gt;
+       Now with super-colorful bell peppers!
+      &lt;/span&gt;
+     &lt;/td&gt;
+     &lt;td&gt;
+      $15.00
+     &lt;/td&gt;
+     &lt;td&gt;
+      &lt;img src=&quot;../img/gifts/img1.jpg&quot;/&gt;
+     &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr class=&quot;gift&quot; id=&quot;gift2&quot;&gt;
+     &lt;td&gt;
+      Russian Nesting Dolls
+     &lt;/td&gt;
+     &lt;td&gt;
+      Hand-painted by trained monkeys, these exquisite dolls are priceless! And by &quot;priceless,&quot; we mean &quot;extremely expensive&quot;!
+      &lt;span class=&quot;excitingNote&quot;&gt;
+       8 entire dolls per set! Octuple the presents!
+      &lt;/span&gt;
+     &lt;/td&gt;
+     &lt;td&gt;
+      $10,000.52
+     &lt;/td&gt;
+     &lt;td&gt;
+      &lt;img src=&quot;../img/gifts/img2.jpg&quot;/&gt;
+     &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr class=&quot;gift&quot; id=&quot;gift3&quot;&gt;
+     &lt;td&gt;
+      Fish Painting
+     &lt;/td&gt;
+     &lt;td&gt;
+      If something seems fishy about this painting, it's because it's a fish!
+      &lt;span class=&quot;excitingNote&quot;&gt;
+       Also hand-painted by trained monkeys!
+      &lt;/span&gt;
+     &lt;/td&gt;
+     &lt;td&gt;
+      $10,005.00
+     &lt;/td&gt;
+     &lt;td&gt;
+      &lt;img src=&quot;../img/gifts/img3.jpg&quot;/&gt;
+     &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr class=&quot;gift&quot; id=&quot;gift4&quot;&gt;
+     &lt;td&gt;
+      Dead Parrot
+     &lt;/td&gt;
+     &lt;td&gt;
+      This is an ex-parrot!
+      &lt;span class=&quot;excitingNote&quot;&gt;
+       Or maybe he's only resting?
+      &lt;/span&gt;
+     &lt;/td&gt;
+     &lt;td&gt;
+      $0.50
+     &lt;/td&gt;
+     &lt;td&gt;
+      &lt;img src=&quot;../img/gifts/img4.jpg&quot;/&gt;
+     &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr class=&quot;gift&quot; id=&quot;gift5&quot;&gt;
+     &lt;td&gt;
+      Mystery Box
+     &lt;/td&gt;
+     &lt;td&gt;
+      If you love suprises, this mystery box is for you! Do not place on light-colored surfaces. May cause oil staining.
+      &lt;span class=&quot;excitingNote&quot;&gt;
+       Keep your friends guessing!
+      &lt;/span&gt;
+     &lt;/td&gt;
+     &lt;td&gt;
+      $1.50
+     &lt;/td&gt;
+     &lt;td&gt;
+      &lt;img src=&quot;../img/gifts/img6.jpg&quot;/&gt;
+     &lt;/td&gt;
+    &lt;/tr&gt;
+   &lt;/table&gt;
+   &lt;div id=&quot;footer&quot;&gt;
+    © Totally Normal Gifts, Inc.
+    &lt;br/&gt;
+    +234 (617) 863-0736
+   &lt;/div&gt;
+  &lt;/div&gt;
+ &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>As we can see, now the page is much more complicated than before. An important distintion is that now some tags have classes. For example, the first <code>&lt;img&gt;</code> tag now has a class <code>src</code> and a class <code>style</code>.</p>
+<pre><code>&lt;img src=&quot;../img/gifts/logo.jpg&quot; style=&quot;float:left;&quot;&gt;
+</code></pre>
+<p>Moreover, even though <code>BeautifulSoup</code> is formatting the page in a nicer way, it&rsquo;s still pretty hard to go through it. How can one locate one specific element? And, most importantly, if you know the element only graphically, how do you recover the equivalent in the HTML code?</p>
+<p>The best way is to use the <code>inspect</code> function from Chrome. Firefox has an equivalent function. Let&rsquo;s inspect the original page.</p>
+<hr>
+<p>Suppose now you want to recover all item names. Let&rsquo;s inspect the first. The corresponding line looks like this:</p>
+<pre><code>    &lt;tr class=&quot;gift&quot; id=&quot;gift1&quot;&gt;
+     &lt;td&gt;
+      Vegetable Basket
+     &lt;/td&gt;
+     &lt;td&gt;
+      This vegetable basket is the perfect gift for your health conscious (or overweight) friends!
+      &lt;span class=&quot;excitingNote&quot;&gt;
+       Now with super-colorful bell peppers!
+      &lt;/span&gt;
+     &lt;/td&gt;
+     &lt;td&gt;
+      $15.00
+     &lt;/td&gt;
+     &lt;td&gt;
+</code></pre>
+<p>Let&rsquo;s see some alternative ways.</p>
+<pre><code class="language-python"># Select the first td element
+soup.find('td')
+</code></pre>
+<pre><code>&lt;td&gt;
+Vegetable Basket
+&lt;/td&gt;
+</code></pre>
+<pre><code class="language-python"># Select the first td element of the second tr element (row)
+second_row = soup.find_all('tr')[1]
+second_row.find('td')
+</code></pre>
+<pre><code>&lt;td&gt;
+Vegetable Basket
+&lt;/td&gt;
+</code></pre>
+<pre><code class="language-python"># Select the first element of the table with id=&quot;giftList&quot;
+table = soup.find('table', {&quot;id&quot;:&quot;giftList&quot;})
+table.find('td')
+</code></pre>
+<pre><code>&lt;td&gt;
+Vegetable Basket
+&lt;/td&gt;
+</code></pre>
+<p>The last is the most robust way to scrape. In fact, the first two methods are likely to fail if the page gets modified. If another <code>td</code> element gets added on top of the table, the code will recover something else entirely. In general it&rsquo;s a good practice, to look if the element we want to scrape can be identified by some attribute that is likely to be invariant to changes to other parts of the web page. In this case, the table with <code>id=&quot;giftList&quot;</code> is likely to be our object of interest even if another table id added, for example.</p>
+<p>Let&rsquo;s say no we want to recover the whole table. What would you do?</p>
+<pre><code class="language-python">import pandas as pd
+
+# Shortcut
+df = pd.read_html(url2)[0]
+df
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Item Title</th>
+      <th>Description</th>
+      <th>Cost</th>
+      <th>Image</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Vegetable Basket</td>
+      <td>This vegetable basket is the perfect gift for ...</td>
+      <td>$15.00</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Russian Nesting Dolls</td>
+      <td>Hand-painted by trained monkeys, these exquisi...</td>
+      <td>$10,000.52</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Fish Painting</td>
+      <td>If something seems fishy about this painting, ...</td>
+      <td>$10,005.00</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Dead Parrot</td>
+      <td>This is an ex-parrot! Or maybe he's only resting?</td>
+      <td>$0.50</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Mystery Box</td>
+      <td>If you love suprises, this mystery box is for ...</td>
+      <td>$1.50</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<pre><code class="language-python"># Scraping with response
+table = soup.find('table', {&quot;id&quot;:&quot;giftList&quot;})
+
+# Create empty dataframe
+col_names = [x.text.strip() for x in table.find_all('th')]
+df = pd.DataFrame(columns=col_names)
+
+# Loop over rows and append them to dataframe
+for row in table.find_all('tr')[1:]:
+    columns = [x.text.strip() for x in row.find_all('td')]
+    df_row = dict(zip(col_names, columns))
+    df = df.append(df_row, ignore_index=True)
+
+df
+</code></pre>
+<pre><code>/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/3999490009.py:12: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df = df.append(df_row, ignore_index=True)
+/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/3999490009.py:12: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df = df.append(df_row, ignore_index=True)
+/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/3999490009.py:12: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df = df.append(df_row, ignore_index=True)
+/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/3999490009.py:12: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df = df.append(df_row, ignore_index=True)
+/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/3999490009.py:12: FutureWarning: The frame.append method is deprecated and will be removed from pandas in a future version. Use pandas.concat instead.
+  df = df.append(df_row, ignore_index=True)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Item Title</th>
+      <th>Description</th>
+      <th>Cost</th>
+      <th>Image</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Vegetable Basket</td>
+      <td>This vegetable basket is the perfect gift for ...</td>
+      <td>$15.00</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Russian Nesting Dolls</td>
+      <td>Hand-painted by trained monkeys, these exquisi...</td>
+      <td>$10,000.52</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Fish Painting</td>
+      <td>If something seems fishy about this painting, ...</td>
+      <td>$10,005.00</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Dead Parrot</td>
+      <td>This is an ex-parrot! Or maybe he's only resting?</td>
+      <td>$0.50</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Mystery Box</td>
+      <td>If you love suprises, this mystery box is for ...</td>
+      <td>$1.50</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<pre><code class="language-python"># Compact alternative
+table = soup.find('table', {&quot;id&quot;:&quot;giftList&quot;})
+content = [[x.text.strip() for x in row.find_all(['th','td'])] for row in table.find_all('tr')]
+df = pd.DataFrame(content[1:], columns=content[0])
+
+df
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Item Title</th>
+      <th>Description</th>
+      <th>Cost</th>
+      <th>Image</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Vegetable Basket</td>
+      <td>This vegetable basket is the perfect gift for ...</td>
+      <td>$15.00</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Russian Nesting Dolls</td>
+      <td>Hand-painted by trained monkeys, these exquisi...</td>
+      <td>$10,000.52</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Fish Painting</td>
+      <td>If something seems fishy about this painting, ...</td>
+      <td>$10,005.00</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Dead Parrot</td>
+      <td>This is an ex-parrot! Or maybe he's only resting?</td>
+      <td>$0.50</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Mystery Box</td>
+      <td>If you love suprises, this mystery box is for ...</td>
+      <td>$1.50</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We have now seen how to scrape a simple but realistic webpage. Let&rsquo;s proceed with a practical example.</p>
+<h3 id="css-selectors">CSS Selectors</h3>
+<p>One alternative way of doing exactly the same thing is to use <code>select</code>. The <code>select</code> function is very similar to <code>find_all</code> but has a different syntax. In particular, to search an element with a certain <code>tag</code> and <code> attribute</code>, we have to pass the following input:</p>
+<pre><code>soup.select(tag[attribute=&quot;attribute_name&quot;])
+</code></pre>
+<pre><code class="language-python"># Select the first element of the table whose id contains &quot;List&quot;
+table = soup.select('table[id*=&quot;List&quot;]')[0]
+table.find('td')
+</code></pre>
+<pre><code>&lt;td&gt;
+Vegetable Basket
+&lt;/td&gt;
+</code></pre>
+<h3 id="forms-and-post-requests">Forms and post requests</h3>
+<p>When you are scraping, you sometimes have to fill-in forms, either to log-in into an account, or to input the arguments for a search query. Often forms are dynamic objects, but not always. Sometimes we can fill in forms also using the <code>requests</code> library. In whis section we see a simple example.</p>
+<h4 id="shortcut">Shortcut</h4>
+<p>Often we can bypass forms, if the form redirects us to another page whose URL contains the parameters of the form. These are &ldquo;well-behaved&rdquo; forms and are actually quite frequent.</p>
+<p>We can find a simple example at: <a href="http://www.webscrapingfordatascience.com/basicform/" target="_blank" rel="noopener">http://www.webscrapingfordatascience.com/basicform/</a>. This form takes as input a bunch of information and when we click on &ldquo;<em>Submit my information</em>&rdquo;, we get exactly the same page but with a different URL that contains the information we have inserted.</p>
+<p>Suppose I insert the following information:</p>
+<ul>
+<li>Your gender: &ldquo;Male&rdquo;</li>
+<li>Food you like: &ldquo;Pizza!&rdquo; and &ldquo;Fries please&rdquo;</li>
+</ul>
+<p>We should get the following url: <a href="http://www.webscrapingfordatascience.com/basicform/?name=&amp;gender=M&amp;pizza=like&amp;fries=like&amp;haircolor=black&amp;comments=" target="_blank" rel="noopener">http://www.webscrapingfordatascience.com/basicform/?name=&gender=M&pizza=like&fries=like&haircolor=black&comments=</a></p>
+<p>We can decompose the url in various components, separated by one &ldquo;?&rdquo; and multiple &ldquo;&amp;&quot;:</p>
+<ul>
+<li><a href="http://www.webscrapingfordatascience.com/basicform/" target="_blank" rel="noopener">http://www.webscrapingfordatascience.com/basicform/</a></li>
+<li>name=</li>
+<li>gender=M</li>
+<li>pizza=like</li>
+<li>fries=like</li>
+<li>haircolor=black</li>
+<li>comments=</li>
+</ul>
+<p>We can clearly see a pattern: the first component is the cose of the url and the other components are the form options. The ones we didn&rsquo;t fill have the form <code>option=</code> while the ones we did fill are <code>option=value</code>. Knowing the syntax of a particular form we could fill it ourselves.</p>
+<p>For example, we could remove the fries and change the hair color to <em>brown</em>: <a href="http://www.webscrapingfordatascience.com/basicform/?name=&amp;gender=M&amp;pizza=like&amp;fries=&amp;haircolor=brown&amp;comments=" target="_blank" rel="noopener">http://www.webscrapingfordatascience.com/basicform/?name=&gender=M&pizza=like&fries=&haircolor=brown&comments=</a></p>
+<p>Moreover, most forms work even if you remove the empty options. For example, the url above is equivalent to:http://www.webscrapingfordatascience.com/basicform/?gender=M&amp;pizza=like&amp;haircolor=brown&amp;comments=</p>
+<p>One way to scrape websites with such forms is to create a string with the url with all the empty options and fill them using string formatting functions.</p>
+<pre><code class="language-python"># Building form url
+url_core = 'http://www.webscrapingfordatascience.com/basicform/?'
+url_options = 'name=%s&amp;gender=%s&amp;pizza=%s&amp;fries=%s&amp;haircolor=%s&amp;comments=%s'
+options = ('','M','like','','brown','')
+url = url_core + url_options % options
+
+print(url)
+</code></pre>
+<pre><code>http://www.webscrapingfordatascience.com/basicform/?name=&amp;gender=M&amp;pizza=like&amp;fries=&amp;haircolor=brown&amp;comments=
+</code></pre>
+<p>An alternative way is to name the options. This alternative is more verbose but more precise and does not require you to provide always all the options, even if empty.</p>
+<pre><code class="language-python"># Alternative 1
+url_core = 'http://www.webscrapingfordatascience.com/basicform/?'
+url_options = 'name={name}&amp;gender={gender}&amp;pizza={pizza}&amp;fries={fries}&amp;haircolor={haircolor}&amp;comments={comments}'
+options = {
+    'name': '',
+    'gender': 'M',
+    'pizza': 'like',
+    'fries': '',
+    'haircolor': 'brown',
+    'comments': ''
+    }
+url = url_core + url_options.format(**options)
+
+print(url)
+</code></pre>
+<pre><code>http://www.webscrapingfordatascience.com/basicform/?name=&amp;gender=M&amp;pizza=like&amp;fries=&amp;haircolor=brown&amp;comments=
+</code></pre>
+<p>Lastly, one could build the url on the go.</p>
+<pre><code class="language-python"># Alternative 2
+url = 'http://www.webscrapingfordatascience.com/basicform/?'
+options = {
+    'gender': 'M',
+    'pizza': 'like',
+    'haircolor': 'brown',
+    }
+for key, value in options.items():
+    url += key + '=' + value + '&amp;'
+
+print(url)
+</code></pre>
+<pre><code>http://www.webscrapingfordatascience.com/basicform/?gender=M&amp;pizza=like&amp;haircolor=brown&amp;
+</code></pre>
+<h4 id="post-forms">Post forms</h4>
+<p>Sometimes however, forms do not provide nice URLs as output. This is particularly true for login forms. There is however still a method, for some of them, to deal with them.</p>
+<p>For this section, we will use the same form example as before: <a href="http://www.webscrapingfordatascience.com/postform2/" target="_blank" rel="noopener">http://www.webscrapingfordatascience.com/postform2/</a>.</p>
+<p>This looks like the same form but now when the user clicks on &ldquo;<em>Submit my information</em>&rdquo;, we get a page with a summary of the information. The biggest difference however, is that the output URL is exactly the same. Hence, we cannot rely on the same URL-bulding strategy as before.</p>
+<p>If we inspect the page, we observe the following line at the very beginning</p>
+<pre><code>&lt;form method=&quot;POST&quot;&gt;
+[...]
+&lt;/form&gt;
+</code></pre>
+<p>And inside there are various input fields:</p>
+<ul>
+<li><code>&lt;input type=&quot;text&quot;&gt;</code> for name</li>
+<li><code>&lt;input type=&quot;radio&quot;&gt;</code> for gender</li>
+<li><code>&lt;input type=&quot;checkbox&quot;&gt;</code> for food</li>
+<li><code>&lt;select&gt;...&lt;/select&gt;</code> for the hair color</li>
+<li><code>&lt;textarea&gt;...&lt;/textarea&gt;</code> for comments</li>
+</ul>
+<p>These are all fields with which we can interact using the <code>response</code> package. The main difference is that we won&rsquo;t use the <code>get</code> method to get the response from the URL but we will use the <code>post</code> method to post our form parameters and get a response.</p>
+<p>If we input the following options:</p>
+<ul>
+<li><em>gender</em>: male</li>
+<li><em>pizza</em>: yes</li>
+<li><em>hair color</em>: brown hair</li>
+</ul>
+<p>and we click &ldquo;<em>Submit my information</em>&rdquo; we get to a page with the following text:</p>
+<pre><code>Thanks for submitting your information
+Here's a dump of the form data that was submitted:
+
+array(5) {
+  [&quot;name&quot;]=&gt;
+  string(0) &quot;&quot;
+  [&quot;gender&quot;]=&gt;
+  string(1) &quot;M&quot;
+  [&quot;pizza&quot;]=&gt;
+  string(4) &quot;like&quot;
+  [&quot;haircolor&quot;]=&gt;
+  string(5) &quot;brown&quot;
+  [&quot;comments&quot;]=&gt;
+  string(0) &quot;&quot;
+}
+</code></pre>
+<p>We will not try to get to the same page using the <code>requests</code> package.</p>
+<pre><code class="language-python"># URL
+url = 'http://www.webscrapingfordatascience.com/postform2/'
+
+# Options
+options = {
+    'gender': 'M',
+    'pizza': 'like',
+    'haircolor': 'brown',
+    }
+
+# Post request
+response = requests.post(url, data=options)
+print(response.text)
+</code></pre>
+<pre><code>&lt;html&gt;
+	&lt;body&gt;
+
+
+&lt;h2&gt;Thanks for submitting your information&lt;/h2&gt;
+
+&lt;p&gt;Here's a dump of the form data that was submitted:&lt;/p&gt;
+
+&lt;pre&gt;array(3) {
+  [&quot;gender&quot;]=&gt;
+  string(1) &quot;M&quot;
+  [&quot;pizza&quot;]=&gt;
+  string(4) &quot;like&quot;
+  [&quot;haircolor&quot;]=&gt;
+  string(5) &quot;brown&quot;
+}
+&lt;/pre&gt;
+
+
+	&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>We have obtained exactly what we wanted! However, sometimes, websites block direct <code>post</code> requests.</p>
+<p>One simple example is: <a href="http://www.webscrapingfordatascience.com/postform3/" target="_blank" rel="noopener">http://www.webscrapingfordatascience.com/postform3/</a>.</p>
+<pre><code class="language-python"># Post request
+url = 'http://www.webscrapingfordatascience.com/postform3/'
+response = requests.post(url, data=options)
+print(response.text)
+</code></pre>
+<pre><code>&lt;html&gt;
+	&lt;body&gt;
+
+
+Are you trying to submit information from somewhere else?
+
+	&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>What happened? If we inspect the page, we can see that there is a new line at the beginning:</p>
+<pre><code>&lt;input type=&quot;hidden&quot; name=&quot;protection&quot; value=&quot;2c17abf5d5b4e326bea802600ff88405&quot;&gt;
+</code></pre>
+<p>Now the form contains one more value - <em>protection</em> which is conventiently hidden. In order to bypass the protection, we need to provide the correct <em>protection</em> value to the form.</p>
+<pre><code class="language-python"># Post request
+url = 'http://www.webscrapingfordatascience.com/postform3/'
+response = requests.get(url)
+
+# Get out the value for protection
+soup = BeautifulSoup(response.text, 'lxml')
+options['protection'] = soup.find('input', attrs={'name': 'protection'}).get('value')
+
+# Post request
+response = requests.post(url, data=options)
+print(response.text)
+</code></pre>
+<pre><code>&lt;html&gt;
+	&lt;body&gt;
+
+
+
+&lt;h2&gt;Thanks for submitting your information&lt;/h2&gt;
+
+&lt;p&gt;Here's a dump of the form data that was submitted:&lt;/p&gt;
+
+&lt;pre&gt;array(4) {
+  [&quot;gender&quot;]=&gt;
+  string(1) &quot;M&quot;
+  [&quot;pizza&quot;]=&gt;
+  string(4) &quot;like&quot;
+  [&quot;haircolor&quot;]=&gt;
+  string(5) &quot;brown&quot;
+  [&quot;protection&quot;]=&gt;
+  string(32) &quot;16c87fc858e4d9fcb8d9c920b699388d&quot;
+}
+&lt;/pre&gt;
+
+
+
+	&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Indeed, now the post request was successful.</p>
+<h3 id="proxies">Proxies</h3>
+<p>We have discussed at the beginning how to be more subtle while scraping, by changing headers. In this section we will explore one step forward in anonimity: proxies.</p>
+<p>When we send an HTTP request, first the request is sent to a proxy server. The important thing is that the destination web server will which is the origin proxy server. Therefore, when one destination web server sees too many requests coming from one machine, it will block the proxy server.</p>
+<p>How can we change proxy? There are many websites that offer proxies for money but there are also some that offer proxies for free. The problem with free proxies (but often also with premium ones) is that there are many users using the same proxy, hence they are</p>
+<ul>
+<li>slow</li>
+<li>blocked fast by many websites</li>
+</ul>
+<p>Nevertheless, it might be still useful to know how to change proxies.</p>
+<h4 id="get-proxy-list">Get proxy list</h4>
+<p>One website where we can get some free proxies to use for scraping is <a href="https://free-proxy-list.net/" target="_blank" rel="noopener">https://free-proxy-list.net/</a>.</p>
+<p>If we open the page, we see that there is a long list of proxies, from different countries and with different characteristics. Importantly, we are mostly interested in <em>https</em> proxies. We are now going to retrieve a list of them. Note that the proxy list of this website is updated quite often. However, free proxies usually &ldquo;expire&rdquo; even faster.</p>
+<pre><code class="language-python"># Retrieve proxy list
+def get_proxies():
+    response = requests.get('https://free-proxy-list.net/')
+    soup = BeautifulSoup(response.text, 'lxml')
+    table = soup.find('table', {'class':'table'})
+    proxies = []
+    rows = table.find_all('tr')
+    for row in rows:
+        cols = row.find_all('td')
+        if len(cols)&gt;0:
+            line = [col.text for col in cols]
+            if line[6]=='yes':
+                proxies += [line[0]+':'+line[1]]
+    return proxies
+            
+len(get_proxies())
+</code></pre>
+<pre><code>176
+</code></pre>
+<p>We have found many proxies. How do we use them? We have to provide them as an argment to a <code>requests</code> session.</p>
+<pre><code class="language-python"># Test proxies
+url = 'https://www.google.com'
+proxies = get_proxies()
+
+for proxy in proxies[:10]:
+    try:
+        response = session.get(url, proxies={&quot;https&quot;: proxy}, timeout=5)
+        print(response)
+    except Exception as e:
+        print(type(e))
+</code></pre>
+<pre><code>&lt;class 'NameError'&gt;
+&lt;class 'NameError'&gt;
+&lt;class 'NameError'&gt;
+&lt;class 'NameError'&gt;
+&lt;class 'NameError'&gt;
+&lt;class 'NameError'&gt;
+&lt;class 'NameError'&gt;
+&lt;class 'NameError'&gt;
+&lt;class 'NameError'&gt;
+&lt;class 'NameError'&gt;
+</code></pre>
+<p>Yes, most proxies were extremely slow (and consider we are opening <em>Google</em>&hellip;) and we got a <code>ConnetTimeout</code> error. Other proxies worked and for one or two of the others we might have got  a <code>ProxyError</code>.</p>
+<h2 id="dynamic-webscraping">Dynamic Webscraping</h2>
+<p>Let&rsquo;s try to scrape the quotes from this link: <a href="http://www.webscrapingfordatascience.com/simplejavascript/" target="_blank" rel="noopener">http://www.webscrapingfordatascience.com/simplejavascript/</a>. It seems like a straightforward job.</p>
+<pre><code class="language-python"># Scrape javascript page
+url = 'http://www.webscrapingfordatascience.com/simplejavascript/'
+response = requests.get(url)
+print(response.text)
+</code></pre>
+<pre><code>&lt;html&gt;
+
+&lt;head&gt;
+	&lt;script src=&quot;https://code.jquery.com/jquery-3.2.1.min.js&quot;&gt;&lt;/script&gt;
+	&lt;script&gt;
+	$(function() {
+	document.cookie = &quot;jsenabled=1&quot;;
+	$.getJSON(&quot;quotes.php&quot;, function(data) {
+		var items = [];
+		$.each(data, function(key, val) {
+			items.push(&quot;&lt;li id='&quot; + key + &quot;'&gt;&quot; + val + &quot;&lt;/li&gt;&quot;);
+		});
+		$(&quot;&lt;ul/&gt;&quot;, {
+			html: items.join(&quot;&quot;)
+			}).appendTo(&quot;body&quot;);
+		});
+	});
+	&lt;/script&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;h1&gt;Here are some quotes&lt;/h1&gt;
+
+&lt;/body&gt;
+
+&lt;/html&gt;
+</code></pre>
+<p>Weird. Our response does not contain the quotes on the page, even though they are clearly visible when we open it in our browser.</p>
+<h3 id="selenium">Selenium</h3>
+<p>Selenium is a python library that emulates a browser and lets us see pages exactly as with a normal browser. This is the most user-friendly way to do web scraping, however it has a huge cost: speed. This is by far the slowest way to do web scraping.</p>
+<p>After installing <code>selenium</code>, we need to download a browser to simulate. We will use Google&rsquo;s chromedriver. You can download it from here: <a href="https://sites.google.com/a/chromium.org/chromedriver/" target="_blank" rel="noopener">https://sites.google.com/a/chromium.org/chromedriver/</a>. Make sure to select &ldquo;<strong>latest stable release</strong>&rdquo; and not &ldquo;latest beta release&rdquo;.</p>
+<p>Move the downloaded <code>chromedriver</code> in the current directory (&quot;<em>/11-python-webscraping</em>&rdquo; for me). We will now try open the url above with selenium and see if we can scrape the quotes in it.</p>
+<pre><code class="language-python"># Set your chromedriver name
+chromedriver_name = '/chromedriver_mac'
+</code></pre>
+<pre><code class="language-python"># Open url
+path = os.getcwd()
+print(path)
+driver = webdriver.Chrome(path+chromedriver_name)
+</code></pre>
+<pre><code>/Users/mcourt/Dropbox/Projects/Data-Science-Python/notebooks
+
+
+/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/2846782857.py:4: DeprecationWarning: executable_path has been deprecated, please pass in a Service object
+  driver = webdriver.Chrome(path+chromedriver_name)
+</code></pre>
+<p>Awesome! Now, if everything went smooth, you should have a new Chrome window with a banner that says &ldquo;<em>Chrome is being controlled by automated test software</em>&rdquo;. We can now open the web page and check that the list appears.</p>
+<pre><code class="language-python"># Open url
+url = 'http://www.webscrapingfordatascience.com/simplejavascript/'
+driver.get(url)
+</code></pre>
+<p>Again, if averything went well, we are now abl to see our page with all the quotes in it. How do we scrape them?</p>
+<p>If we inspect the elements of the list with the right-click <code>inspect</code> option, we should see something like:</p>
+<pre><code>&lt;html&gt;&lt;head&gt;
+	&lt;script src=&quot;https://code.jquery.com/jquery-3.2.1.min.js&quot;&gt;&lt;/script&gt;
+	&lt;script&gt;
+	$(function() {
+	document.cookie = &quot;jsenabled=1&quot;;
+	$.getJSON(&quot;quotes.php&quot;, function(data) {
+		var items = [];
+		$.each(data, function(key, val) {
+			items.push(&quot;&lt;li id='&quot; + key + &quot;'&gt;&quot; + val + &quot;&lt;/li&gt;&quot;);
+		});
+		$(&quot;&lt;ul/&gt;&quot;, {
+			html: items.join(&quot;&quot;)
+			}).appendTo(&quot;body&quot;);
+		});
+	});
+	&lt;/script&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+&lt;h1&gt;Here are some quotes&lt;/h1&gt;
+
+
+
+
+&lt;ul&gt;&lt;li id=&quot;0&quot;&gt;Every strike brings me closer to the next home run. –Babe Ruth&lt;/li&gt;&lt;li id=&quot;1&quot;&gt;The two most important days in your life are the day you are born and the day you find out why. –Mark Twain&lt;/li&gt;&lt;li id=&quot;2&quot;&gt;Whatever you can do, or dream you can, begin it.  Boldness has genius, power and magic in it. –Johann Wolfgang von Goethe&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;
+</code></pre>
+<p>Now we can see the content! Can we actually retrieve it? Let&rsquo;s try.</p>
+<p>The most common selenium functions to get elements of a page, have a very intuitive syntax and are:
+find_element_by_id</p>
+<ul>
+<li>find_element_by_name</li>
+<li>find_element_by_xpath</li>
+<li>find_element_by_link_text</li>
+<li>find_element_by_partial_link_text</li>
+<li>find_element_by_tag_name</li>
+<li>find_element_by_class_name</li>
+<li>find_element_by_css_selector</li>
+</ul>
+<p>We will not try to recover all elements with tag <code>&lt;li&gt;</code> (element of list <code>&lt;ul&gt;</code>).</p>
+<pre><code class="language-python"># Scrape content
+quotes = [li.text for li in driver.find_elements_by_tag_name('li')]
+quotes
+</code></pre>
+<pre><code>/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/157107938.py:2: DeprecationWarning: find_elements_by_* commands are deprecated. Please use find_elements() instead
+  quotes = [li.text for li in driver.find_elements_by_tag_name('li')]
+
+
+
+
+
+[]
+</code></pre>
+<p>Yes! It worked! But why?</p>
+<pre><code class="language-python"># Headless option
+headless_option = webdriver.ChromeOptions()
+headless_option.add_argument('--headless')
+
+# Scraping
+driver = webdriver.Chrome(path+chromedriver_name, options=headless_option)
+driver.get(url)
+quotes = [li.text for li in driver.find_elements_by_tag_name('li')]
+quotes
+</code></pre>
+<pre><code>/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/2173692453.py:6: DeprecationWarning: executable_path has been deprecated, please pass in a Service object
+  driver = webdriver.Chrome(path+chromedriver_name, options=headless_option)
+/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/2173692453.py:8: DeprecationWarning: find_elements_by_* commands are deprecated. Please use find_elements() instead
+  quotes = [li.text for li in driver.find_elements_by_tag_name('li')]
+
+
+
+
+
+[]
+</code></pre>
+<p>Mmm, it (probably) didn&rsquo;t work. Why?</p>
+<p>The problem is that we are trying to retrieve the content of the page too fast. The page hasn&rsquo;t loaded yet. This is a common issue with <code>selenium</code>. Where are two ways to solve it:</p>
+<ul>
+<li>waiting</li>
+<li>waiting for the element to load</li>
+</ul>
+<p>The second way is the best way but we will first try the first and simpler one: we will just ask the browser to wait for 1 second before searching for <code>&lt;li&gt;</code> tags</p>
+<pre><code class="language-python"># Scraping
+driver = webdriver.Chrome(path+chromedriver_name, options=headless_option)
+driver.get(url)
+time.sleep(1)
+quotes = [li.text for li in driver.find_elements_by_tag_name('li')]
+quotes
+</code></pre>
+<pre><code>/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/2964398594.py:2: DeprecationWarning: executable_path has been deprecated, please pass in a Service object
+  driver = webdriver.Chrome(path+chromedriver_name, options=headless_option)
+/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/2964398594.py:5: DeprecationWarning: find_elements_by_* commands are deprecated. Please use find_elements() instead
+  quotes = [li.text for li in driver.find_elements_by_tag_name('li')]
+
+
+
+
+
+['The best time to plant a tree was 20 years ago. The second best time is now. –Chinese Proverb',
+ 'The most common way people give up their power is by thinking they don’t have any. –Alice Walker',
+ 'I am not a product of my circumstances. I am a product of my decisions. –Stephen Covey']
+</code></pre>
+<p>Nice! Now you should have obtained the list that we could not scrape with <code>requests</code>. If it didn&rsquo;t work, just increase the waiting time and it should work.</p>
+<p>We can now have a look at the &ldquo;better&rdquo; way to use a series of built-in functions:</p>
+<ul>
+<li><code>WebDriverWait</code>: the waiting function. We will call the <code>until</code> method</li>
+<li><code>expected_conditions</code>: the condition function. We will call the <code>visibility_of_all_elements_located</code> method</li>
+<li><code>By</code>: the selector function. Some of the options are:
+<ul>
+<li>By.ID</li>
+<li>By.XPATH</li>
+<li>By.NAME</li>
+<li>By.TAG_NAME</li>
+<li>By.CLASS_NAME</li>
+<li>By.CSS_SELECTOR</li>
+<li>By.LINK_TEXT</li>
+<li>By.PARTIAL_LINK_TEXT</li>
+</ul>
+</li>
+</ul>
+<pre><code class="language-python">from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# Scraping
+driver = webdriver.Chrome(path+chromedriver_name, options=headless_option)
+driver.get(url)
+quotes = WebDriverWait(driver, 10).until(EC.visibility_of_all_elements_located((By.TAG_NAME, 'li')))
+quotes = [quote.text for quote in quotes]
+quotes
+</code></pre>
+<pre><code>/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_92159/152412441.py:6: DeprecationWarning: executable_path has been deprecated, please pass in a Service object
+  driver = webdriver.Chrome(path+chromedriver_name, options=headless_option)
+
+
+
+
+
+['The most common way people give up their power is by thinking they don’t have any. –Alice Walker',
+ 'The best time to plant a tree was 20 years ago. The second best time is now. –Chinese Proverb',
+ 'An unexamined life is not worth living. –Socrates']
+</code></pre>
+<p>In this case, we have told the browser to wait until either all elements with tag <code>&lt;li&gt;</code> are visible or 10 seconds have passed. After one condition is realized, the <code>WebDriverWait</code> function also automatically retrieves all the elements which the <code>expected_condition</code> function is conditioning on. There are many different conditions we can use. A list can be found here: <a href="https://selenium-python.readthedocs.io/waits.html" target="_blank" rel="noopener">https://selenium-python.readthedocs.io/waits.html</a>.</p>
+<p>We can easily generalize the function above as follows.</p>
+<pre><code class="language-python"># Find element function
+def find_elements(driver, function, identifier):
+    element = WebDriverWait(driver, 10).until(EC.visibility_of_all_elements_located((function, identifier)))
+    return element
+
+quotes = [quote.text for quote in find_elements(driver, By.TAG_NAME, 'li')]
+quotes
+</code></pre>
+<pre><code>['The most common way people give up their power is by thinking they don’t have any. –Alice Walker',
+ 'The best time to plant a tree was 20 years ago. The second best time is now. –Chinese Proverb',
+ 'An unexamined life is not worth living. –Socrates']
+</code></pre>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/data-science/05_ml_pipeline/" rel="next">Machine Learning Pipeline</a>
+  </div>
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/data-science/07_regression/" rel="prev">Regression</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

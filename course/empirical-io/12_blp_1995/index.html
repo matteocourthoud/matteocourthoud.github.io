@@ -1,0 +1,1480 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Intro In this session, I am going to cover demand estimation.
+ Compute equilibrium outcomes with RCL demand Simulate market-level data  Extremely similar to the logit demand simulation   Build the BLP estimator from Berry, Levinsohn, and Pakes (1995)  Model In this first part, we are going to assume that consumer $i \in \lbrace1,&hellip;,I\rbrace$ utility from good $j \in \lbrace1,&hellip;,J\rbrace$ in market $t \in \lbrace1,&hellip;,T\rbrace$ takes the form" />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/empirical-io/12_blp_1995/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/empirical-io/12_blp_1995/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/empirical-io/12_blp_1995/" />
+  <meta property="og:title" content="Coding: BLP (1995) | Matteo Courthoud" />
+  <meta property="og:description" content="Intro In this session, I am going to cover demand estimation.
+ Compute equilibrium outcomes with RCL demand Simulate market-level data  Extremely similar to the logit demand simulation   Build the BLP estimator from Berry, Levinsohn, and Pakes (1995)  Model In this first part, we are going to assume that consumer $i \in \lbrace1,&hellip;,I\rbrace$ utility from good $j \in \lbrace1,&hellip;,J\rbrace$ in market $t \in \lbrace1,&hellip;,T\rbrace$ takes the form" /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2021-10-29T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2021-10-29T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Coding: BLP (1995) | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="3c20ec0569d51ddc3466ae8054be35bd" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/empirical-io/">Empirical IO</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/empirical-io/02_demand_estimation/">Demand Estimation</a></li>
+
+
+
+  <li class=""><a href="/course/empirical-io/07_dynamics_singleagent/">Single Agent Dynamics</a></li>
+
+
+
+  <li class=""><a href="/course/empirical-io/08_dynamics_games/">Dynamic Games</a></li>
+
+
+
+  <li class=""><a href="/course/empirical-io/11_logit_demand/">Coding: Logit Demand</a></li>
+
+
+
+  <li class="active"><a href="/course/empirical-io/12_blp_1995/">Coding: BLP (1995)</a></li>
+
+
+
+  <li class=""><a href="/course/empirical-io/17_rust_1987/">Coding: Rust (1987)</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#intro">Intro</a></li>
+        <li><a href="#model">Model</a></li>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#demand">Demand</a></li>
+        <li><a href="#supply">Supply</a></li>
+        <li><a href="#equilibrium">Equilibrium</a></li>
+        <li><a href="#simulating-data">Simulating Data</a></li>
+        <li><a href="#simulating-data-1">Simulating Data</a></li>
+        <li><a href="#simultate-the-data-2">Simultate the Data (2)</a></li>
+        <li><a href="#simulate-the-data-3">Simulate the Data (3)</a></li>
+        <li><a href="#the-data">The Data</a></li>
+        <li><a href="#estimation">Estimation</a></li>
+        <li><a href="#from-deltas-to-shares">From deltas to shares</a></li>
+        <li><a href="#inner-loop">Inner Loop</a></li>
+        <li><a href="#compute-delta">Compute Delta</a></li>
+        <li><a href="#compute-xi">Compute Xi</a></li>
+        <li><a href="#objective-function">Objective Function</a></li>
+        <li><a href="#estimation-1">Estimation (1)</a></li>
+        <li><a href="#estimation-2">Estimation (2)</a></li>
+        <li><a href="#estimation-3">Estimation (3)</a></li>
+      </ul>
+    </li>
+    <li><a href="#appendix">Appendix</a>
+      <ul>
+        <li><a href="#references-references">References [references]</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Coding: BLP (1995)</h1>
+
+          <p>Last updated on Oct 29, 2021</p>
+
+          <div class="article-style">
+            <h3 id="intro">Intro</h3>
+<p>In this session, I am going to cover demand estimation.</p>
+<ul>
+<li>Compute equilibrium outcomes with RCL demand</li>
+<li>Simulate market-level data
+<ul>
+<li>Extremely similar to the logit demand simulation</li>
+</ul>
+</li>
+<li>Build the BLP estimator from Berry, Levinsohn, and Pakes
+(<a href="#ref-berry1995automobile">1995</a>)</li>
+</ul>
+<h3 id="model">Model</h3>
+<p>In this first part, we are going to assume that consumer
+$i \in \lbrace1,&hellip;,I\rbrace$ utility from good
+$j \in \lbrace1,&hellip;,J\rbrace$ in market $t \in \lbrace1,&hellip;,T\rbrace$
+takes the form</p>
+<p>$$
+u_{ijt} = \boldsymbol x_{jt} \boldsymbol \beta_{it} - \alpha p_{jt} + \xi_{jt} + \epsilon_{ijt}
+$$</p>
+<p>where</p>
+<ul>
+<li>$\xi_{jt}$ is type-1 extreme value distributed</li>
+<li>$\boldsymbol \beta_{it}$: has dimension $K$
+$$\beta_{it}^k = \beta_0^k + \sigma_k \zeta_{it}^k$$
+<ul>
+<li>$\beta_0^k$: fixed taste for characteristic $k$ (the usual
+$\beta$)</li>
+<li>$\zeta_{it}^k$: random taste, i.i.d. across consumers and
+markets $t$</li>
+</ul>
+</li>
+</ul>
+<h3 id="setup">Setup</h3>
+<p>We have $J$ firms and each product has $K$ characteristics.</p>
+<pre><code class="language-julia">i = 100;                # Number of consumers
+J = 10;                 # Number of firms
+K = 2;                  # Product characteristics
+T = 100;                # Number of markets
+β = [.5, 2, -1];        # Preferences
+varζ = 5;               # Variance of the random taste
+rangeJ = [2, 6];        # Min and max firms per market
+varX = 1;               # Variance of X
+varξ = 2;               # Variance of xi
+</code></pre>
+<h3 id="demand">Demand</h3>
+<p>Demand is the main difference w.r.t. the logit model. Now we have
+individual shocks $\zeta$ we have to integrate over.</p>
+<pre><code class="language-julia">function demand(p::Vector, X::Matrix, β::Vector, ξ::Matrix, ζ::Matrix)::Tuple{Vector, Number}
+    &quot;&quot;&quot;Compute demand&quot;&quot;&quot;
+    δ = [X p] * (β .+ ζ)                    # Mean value
+    δ0 = zeros(1, size(ζ, 2))               # Mean value of the outside option
+    u = [δ; δ0] + ξ                         # Utility
+    e = exp.(u)                             # Take exponential
+    q = mean(e ./ sum(e, dims=1), dims=2)   # Compute demand
+    return q[1:end-1], q[end]
+end;
+</code></pre>
+<h3 id="supply">Supply</h3>
+<p>Computing profits is instead exactly the same as before. We just have to
+save the shocks $\zeta$ to be sure demand is stable.</p>
+<pre><code class="language-julia">function profits(p::Vector, c::Vector, X::Matrix, β::Vector, ξ::Matrix, ζ::Matrix)::Vector
+    &quot;&quot;&quot;Compute profits&quot;&quot;&quot;
+    q, _ = demand(p, X, β, ξ, ζ)            # Compute demand
+    pr = (p - c) .* q                       # Compute profits
+    return pr
+end;
+</code></pre>
+<pre><code class="language-julia">function profits_j(pj::Number, j::Int, p::Vector, c::Vector, X::Matrix, β::Vector, ξ::Matrix, ζ::Matrix)::Number
+    &quot;&quot;&quot;Compute profits of firm j&quot;&quot;&quot;
+    p[j] = pj                               # Insert price of firm j
+    pr = profits(p, c, X, β, ξ, ζ)          # Compute profits
+    return pr[j]
+end;
+</code></pre>
+<h3 id="equilibrium">Equilibrium</h3>
+<p>We can now compute the equilibrium for a specific market, as before.</p>
+<pre><code class="language-julia">function equilibrium(c::Vector, X::Matrix, β::Vector, ξ::Matrix, ζ::Matrix)::Vector
+    &quot;&quot;&quot;Compute equilibrium prices and profits&quot;&quot;&quot;
+    p = 2 .* c;
+    dist = 1;
+    iter = 0;
+
+    # Iterate until convergence
+    while (dist &gt; 1e-8) &amp;&amp; (iter&lt;1000)
+
+        # Compute best reply for each firm
+        p_old = copy(p);
+        for j=1:length(p)
+            obj_fun(pj) = - profits_j(pj[1], j, p, c, X, β, ξ, ζ);
+            optimize(x -&gt; obj_fun(x), [1.0], LBFGS());
+        end
+
+        # Update distance
+        dist = max(abs.(p - p_old)...);
+        iter += 1;
+    end
+    return p
+end;
+</code></pre>
+<h3 id="simulating-data">Simulating Data</h3>
+<p>We are now ready to simulate the data, i.e. equilibrium outcomes across
+different markets. We first draw all the variables.</p>
+<pre><code class="language-julia">function draw_data(I::Int, J::Int, K::Int, rangeJ::Vector, varζ::Number, varX::Number, varξ::Number)::Tuple
+    &quot;&quot;&quot;Draw data for one market&quot;&quot;&quot;
+    J_ = rand(rangeJ[1]:rangeJ[2])              # Number of firms (products)
+    X_ = rand(Exponential(varX), J_, K)         # Product characteristics
+    ξ_ = rand(Normal(0, varξ), J_+1, I)         # Product-level utility shocks
+    # Consumer-product-level preference shocks
+    ζ_ = [rand(Normal(0,1), 1, I) * varζ; zeros(K,I)]
+    w_ = rand(Uniform(0, 1), J_)                # Cost shifters
+    ω_ = rand(Uniform(0, 1), J_)                # Cost shocks
+    c_ = w_ + ω_                                # Cost
+    j_ = sort(sample(1:J, J_, replace=false))   # Subset of firms
+    return X_, ξ_, ζ_, w_, c_, j_
+end;
+</code></pre>
+<h3 id="simulating-data-1">Simulating Data</h3>
+<p>Then we simulate the data for one market.</p>
+<pre><code class="language-julia">function compute_mkt_eq(I::Int, J::Int, β::Vector, rangeJ::Vector, varζ::Number, varX::Number, varξ::Number)::DataFrame
+    &quot;&quot;&quot;Compute equilibrium one market&quot;&quot;&quot;
+
+    # Initialize variables
+    K = size(β, 1) - 1
+    X_, ξ_, ζ_, w_, c_, j_ = draw_data(I, J, K, rangeJ, varζ, varX, varξ)
+
+    # Compute equilibrium
+    p_ = equilibrium(c_, X_, β, ξ_, ζ_)    # Equilibrium prices
+    q_, q0 = demand(p_, X_, β, ξ_, ζ_)     # Demand with shocks
+    pr_ = (p_ - c_) .* q_                       # Profits
+
+    # Save to data
+    q0_ = ones(length(j_)) .* q0
+    df = DataFrame(j=j_, w=w_, p=p_, q=q_, q0=q0_, pr=pr_)
+    for k=1:K
+      df[!,&quot;x$k&quot;] = X_[:,k]
+      df[!,&quot;z$k&quot;] = sum(X_[:,k]) .- X_[:,k]
+    end
+    return df
+end;
+</code></pre>
+<h3 id="simultate-the-data-2">Simultate the Data (2)</h3>
+<p>We repeat for $T$ markets.</p>
+<pre><code class="language-julia">function simulate_data(I::Int, J::Int, β::Vector, T::Int, rangeJ::Vector, varζ::Number, varX::Number, varξ::Number)
+    &quot;&quot;&quot;Simulate full dataset&quot;&quot;&quot;
+    df = compute_mkt_eq(I, J, β, rangeJ, varζ, varX, varξ)
+    df[!, &quot;t&quot;] = ones(nrow(df)) * 1
+    for t=2:T
+        df_temp = compute_mkt_eq(I, J, β, rangeJ, varζ, varX, varξ)
+        df_temp[!, &quot;t&quot;] = ones(nrow(df_temp)) * t
+        append!(df, df_temp)
+    end
+    CSV.write(&quot;../data/blp.csv&quot;, df)
+    return df
+end;
+</code></pre>
+<h3 id="simulate-the-data-3">Simulate the Data (3)</h3>
+<p>Now let’s run the code</p>
+<pre><code class="language-julia"># Simulate
+df = simulate_data(i, J, β, T, rangeJ, varζ, varX, varξ);
+</code></pre>
+<h3 id="the-data">The Data</h3>
+<p>What does the data look like? Let’s switch to R!</p>
+<pre><code class="language-r"># Read data
+df = fread(&quot;../data/blp.csv&quot;)
+kable(df[1:6,], digits=4)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">j</th>
+<th style="text-align:right">w</th>
+<th style="text-align:right">p</th>
+<th style="text-align:right">q</th>
+<th style="text-align:right">q0</th>
+<th style="text-align:right">pr</th>
+<th style="text-align:right">x1</th>
+<th style="text-align:right">z1</th>
+<th style="text-align:right">x2</th>
+<th style="text-align:right">z2</th>
+<th style="text-align:right">t</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">4</td>
+<td style="text-align:right">0.6481</td>
+<td style="text-align:right">3.5918</td>
+<td style="text-align:right">0.2929</td>
+<td style="text-align:right">0.4558</td>
+<td style="text-align:right">0.8165</td>
+<td style="text-align:right">0.6531</td>
+<td style="text-align:right">1.0002</td>
+<td style="text-align:right">1.7063</td>
+<td style="text-align:right">1.8207</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:right">7</td>
+<td style="text-align:right">0.9997</td>
+<td style="text-align:right">5.1926</td>
+<td style="text-align:right">0.2513</td>
+<td style="text-align:right">0.4558</td>
+<td style="text-align:right">0.8717</td>
+<td style="text-align:right">1.0002</td>
+<td style="text-align:right">0.6531</td>
+<td style="text-align:right">1.8207</td>
+<td style="text-align:right">1.7063</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td style="text-align:right">0.5842</td>
+<td style="text-align:right">2.6999</td>
+<td style="text-align:right">0.0800</td>
+<td style="text-align:right">0.3919</td>
+<td style="text-align:right">0.1572</td>
+<td style="text-align:right">0.3591</td>
+<td style="text-align:right">7.1958</td>
+<td style="text-align:right">0.4217</td>
+<td style="text-align:right">2.1996</td>
+<td style="text-align:right">2</td>
+</tr>
+<tr>
+<td style="text-align:right">4</td>
+<td style="text-align:right">0.5291</td>
+<td style="text-align:right">4.5934</td>
+<td style="text-align:right">0.1404</td>
+<td style="text-align:right">0.3919</td>
+<td style="text-align:right">0.4467</td>
+<td style="text-align:right">2.3801</td>
+<td style="text-align:right">5.1748</td>
+<td style="text-align:right">0.1283</td>
+<td style="text-align:right">2.4929</td>
+<td style="text-align:right">2</td>
+</tr>
+<tr>
+<td style="text-align:right">5</td>
+<td style="text-align:right">0.5012</td>
+<td style="text-align:right">4.4196</td>
+<td style="text-align:right">0.1368</td>
+<td style="text-align:right">0.3919</td>
+<td style="text-align:right">0.4461</td>
+<td style="text-align:right">2.2638</td>
+<td style="text-align:right">5.2911</td>
+<td style="text-align:right">0.4408</td>
+<td style="text-align:right">2.1804</td>
+<td style="text-align:right">2</td>
+</tr>
+<tr>
+<td style="text-align:right">8</td>
+<td style="text-align:right">0.9359</td>
+<td style="text-align:right">3.2923</td>
+<td style="text-align:right">0.0863</td>
+<td style="text-align:right">0.3919</td>
+<td style="text-align:right">0.1477</td>
+<td style="text-align:right">0.5182</td>
+<td style="text-align:right">7.0367</td>
+<td style="text-align:right">1.0271</td>
+<td style="text-align:right">1.5942</td>
+<td style="text-align:right">2</td>
+</tr>
+</tbody>
+</table>
+<h3 id="estimation">Estimation</h3>
+<p>The BLP estimation procedure</p>
+<h3 id="from-deltas-to-shares">From deltas to shares</h3>
+<p>First, we need to compute the shares implied by aspecific vector of
+$\delta$s</p>
+<pre><code class="language-julia">function implied_shares(Xt_::Matrix, ζt_::Matrix, δt_::Vector, δ0::Matrix)::Vector
+    &quot;&quot;&quot;Compute shares implied by deltas and shocks&quot;&quot;&quot;
+    u = [δt_ .+ (Xt_ * ζt_); δ0]                  # Utility
+    e = exp.(u)                                 # Take exponential
+    q = mean(e ./ sum(e, dims=1), dims=2)       # Compute demand
+    return q[1:end-1]
+end;
+</code></pre>
+<h3 id="inner-loop">Inner Loop</h3>
+<p>We can now compute the inner loop and invert the demand function: from
+shares $q$ to $\delta$s</p>
+<pre><code class="language-julia">function inner_loop(qt_::Vector, Xt_::Matrix, ζt_::Matrix)::Vector
+    &quot;&quot;&quot;Solve the inner loop: compute delta, given the shares&quot;&quot;&quot;
+    δt_ = ones(size(qt_))
+    δ0 = zeros(1, size(ζt_, 2))
+    dist = 1
+
+    # Iterate until convergence
+    while (dist &gt; 1e-8)
+        q = implied_shares(Xt_, ζt_, δt_, δ0)
+        δt2_ = δt_ + log.(qt_) - log.(q)
+        dist = max(abs.(δt2_ - δt_)...)
+        δt_ = δt2_
+    end
+    return δt_
+end;
+</code></pre>
+<h3 id="compute-delta">Compute Delta</h3>
+<p>We can now repeat the inversion for every market and get the vector of
+mean utilities $\delta$s from the observed market shares $q$.</p>
+<pre><code class="language-julia">function compute_delta(q_::Vector, X_::Matrix, ζ_::Matrix, T::Vector)::Vector
+    &quot;&quot;&quot;Compute residuals&quot;&quot;&quot;
+    δ_ = zeros(size(T))
+
+    # Loop over each market
+    for t in unique(T)
+        qt_ = q_[T.==t]                             # Quantity in market t
+        Xt_ = X_[T.==t,:]                           # Characteristics in mkt t
+        δ_[T.==t] = inner_loop(qt_, Xt_, ζ_)        # Solve inner loop
+    end
+    return δ_
+end;
+</code></pre>
+<h3 id="compute-xi">Compute Xi</h3>
+<p>Now that we have $\delta$, it is pretty straightforward to compute
+$\xi$. We just need to perform a linear regression (with instruments) of
+mean utilities $\delta$ on prices $p$ and product characteristics $X$
+and compute the residuals $\xi$.</p>
+<pre><code class="language-julia">function compute_xi(X_::Matrix, IV_::Matrix, δ_::Vector)::Tuple
+    &quot;&quot;&quot;Compute residual, given delta (IV)&quot;&quot;&quot;
+    β_ = inv(IV_' * X_) * (IV_' * δ_)           # Compute coefficients (IV)
+    ξ_ = δ_ - X_ * β_                           # Compute errors
+    return ξ_, β_
+end;
+</code></pre>
+<h3 id="objective-function">Objective Function</h3>
+<p>We now have all the ingredients to set up the GMM objective function.</p>
+<pre><code class="language-julia">function GMM(varζ_::Number)::Tuple
+    &quot;&quot;&quot;Compute GMM objective function&quot;&quot;&quot;
+    δ_ = compute_delta(q_, X_, ζ_ * varζ_, T)   # Compute deltas
+    ξ_, β_ = compute_xi(X_, IV_, δ_)            # Compute residuals
+    gmm = ξ_' * Z_ * Z_' * ξ_ / length(ξ_)^2    # Compute ortogonality condition
+    return gmm, β_
+end;
+</code></pre>
+<h3 id="estimation-1">Estimation (1)</h3>
+<p>First, we need to set up our objects</p>
+<pre><code class="language-julia"># Retrieve data
+T = Int.(df.t)
+X_ = [df.x1 df.x2 df.p]
+q_ = df.q
+q0_ = df.q0
+IV_ = [df.x1 df.x2 df.w]
+Z_ = [df.x1 df.x2 df.z1 df.z2]
+</code></pre>
+<h3 id="estimation-2">Estimation (2)</h3>
+<p>What would a logit regression estimate?</p>
+<pre><code class="language-julia"># Compute logit estimate
+y = log.(df.q) - log.(df.q0);
+β_logit = inv(IV_' * X_) * (IV_' * y);
+print(&quot;Estimated logit coefficients: $β_logit&quot;)
+</code></pre>
+<pre><code>## Estimated logit coefficients: [2.063144844221613, 1.2888511782561123, -0.9824308271558686]
+</code></pre>
+<h3 id="estimation-3">Estimation (3)</h3>
+<p>We can now run the BLP machinery</p>
+<pre><code class="language-julia"># Draw shocks (less)
+ζ_ = [rand(Normal(0,1), 1, i); zeros(K, i)];
+
+# Minimize GMM objective function
+varζ_ = optimize(x -&gt; GMM(x[1])[1], [2.0], LBFGS()).minimizer[1];
+β_blp = GMM(varζ_)[2];
+print(&quot;Estimated BLP coefficients: $β_blp&quot;)
+</code></pre>
+<pre><code>## Estimated BLP coefficients: [0.549234645269979, 1.1243451127088748, -0.6229637255651461]
+</code></pre>
+<h2 id="appendix">Appendix</h2>
+<h3 id="references-references">References [references]</h3>
+<div id="refs" class="references csl-bib-body hanging-indent"
+markdown="1">
+<div id="ref-berry1995automobile" class="csl-entry" markdown="1">
+<p>Berry, Steven, James Levinsohn, and Ariel Pakes. 1995. “Automobile
+Prices in Market Equilibrium.” <em>Econometrica: Journal of the Econometric
+Society</em>, 841–90.</p>
+</div>
+</div>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/empirical-io/11_logit_demand/" rel="next">Coding: Logit Demand</a>
+  </div>
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/empirical-io/17_rust_1987/" rel="prev">Coding: Rust (1987)</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

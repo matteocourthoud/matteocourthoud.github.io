@@ -1,0 +1,1557 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Lasso Issue Lasso (Least Absolute Shrinkage and Selection Operator) is a popular method for high dimensional regression. It does variable selection and estimation simultaneously. It is a non-parametric (series) estimation technique part of a general class of estimators called penalized estimators." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/metrics/09_selection/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/metrics/09_selection/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/metrics/09_selection/" />
+  <meta property="og:title" content="Variable Selection | Matteo Courthoud" />
+  <meta property="og:description" content="Lasso Issue Lasso (Least Absolute Shrinkage and Selection Operator) is a popular method for high dimensional regression. It does variable selection and estimation simultaneously. It is a non-parametric (series) estimation technique part of a general class of estimators called penalized estimators." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2021-10-29T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2021-10-29T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Variable Selection | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="836b9d8d9e375e7fccbc006323494047" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/metrics/">Econometrics</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/metrics/01_matrices/">Matrix Algebra</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/02_probability/">Probability Theory</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/03_asymptotics/">Asymptotic Theory</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/04_inference/">Inference</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/05_ols_algebra/">OLS Algebra</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/06_endogeneity/">Endogeneity</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/06_ols_inference/">OLS Inference</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/07_endogeneity/">Endogeneity</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/08_nonparametric/">Non-Parametric Estimation</a></li>
+
+
+
+  <li class="active"><a href="/course/metrics/09_selection/">Variable Selection</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#lasso">Lasso</a>
+      <ul>
+        <li><a href="#issue">Issue</a></li>
+        <li><a href="#definition">Definition</a></li>
+        <li><a href="#penalties">Penalties</a></li>
+        <li><a href="#sparsity">Sparsity</a></li>
+        <li><a href="#lasso-theorem">Lasso Theorem</a></li>
+        <li><a href="#remarks">Remarks</a></li>
+        <li><a href="#choosing-the-optimal-lambda">Choosing the Optimal Lambda</a></li>
+        <li><a href="#lasso-path">Lasso Path</a></li>
+        <li><a href="#remarks-1">Remarks</a></li>
+        <li><a href="#optimal-lambda">Optimal Lambda</a></li>
+      </ul>
+    </li>
+    <li><a href="#pre-testing">Pre-Testing</a>
+      <ul>
+        <li><a href="#omitted-variable-bias">Omitted Variable Bias</a></li>
+        <li><a href="#pre-test-bias">Pre-test bias</a></li>
+        <li><a href="#pre-testing-procedure">Pre-Testing procedure</a></li>
+        <li><a href="#bias">Bias</a></li>
+        <li><a href="#issue-1">Issue</a></li>
+        <li><a href="#uniformity">Uniformity</a></li>
+        <li><a href="#where-is-pre-testing-a-problem">Where is Pre-Testing a Problem?</a></li>
+        <li><a href="#intuition">Intuition</a></li>
+        <li><a href="#post-double-selection">Post-Double Selection</a></li>
+        <li><a href="#frisch-waugh-theorem">Frisch-Waugh Theorem</a></li>
+        <li><a href="#proof-1">Proof (1)</a></li>
+        <li><a href="#proof-1-1">Proof (1)</a></li>
+      </ul>
+    </li>
+    <li><a href="#post-double-selection-1">Post Double Selection</a>
+      <ul>
+        <li><a href="#setting">Setting</a></li>
+        <li><a href="#pds-theorem">PDS Theorem</a></li>
+        <li><a href="#proof-idea">Proof (Idea)</a></li>
+        <li><a href="#distribution">Distribution</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Variable Selection</h1>
+
+          <p>Last updated on Oct 29, 2021</p>
+
+          <div class="article-style">
+            <h2 id="lasso">Lasso</h2>
+<h3 id="issue">Issue</h3>
+<p>Lasso (Least Absolute Shrinkage and Selection Operator) is a popular
+method for high dimensional regression. It does variable selection and
+estimation simultaneously. It is a non-parametric (series) estimation
+technique part of a general class of estimators called <em>penalized
+estimators</em>. It allows the number of regressors, $p$, to be larger than
+the sample size, $n$.</p>
+<p>Consider data $D = \lbrace x_i, y_i \rbrace_{i=1}^n$ with
+$\dim (x_i) = p$. Assume that $p$ is large relative to $n$. Two possible
+reasons:</p>
+<ul>
+<li>we have an intrinsic problem of high dimensionality</li>
+<li>$p$ indicates the number of expansion terms of small number of
+underlying important variables (e.g. series estimation)</li>
+</ul>
+<p><strong>Assumption</strong>: $y_i = x_i' \beta_0 + r_i + \varepsilon_i$ where
+$\beta_0$ depends on $p$, $r_i$ is a remainder term.</p>
+<p>Note that in classic non-parametrics, we have $x_i'\beta_0$ as
+$p_1(x_i) \beta_{1,K} + \dots + p_K(x_i) \beta_{K,K}$. For simplicity,
+we assume $r_i = 0$, as if we had extreme undersmoothing. Hence the
+model becomes: $$
+y_i = x_i' \beta_0 + \varepsilon_i, \qquad p \geq n
+$$ We cannot run OLS because $p \geq n$, thus the rank condition is
+violated.</p>
+<h3 id="definition">Definition</h3>
+<p>We define the <strong>Lasso estimator</strong> as $$
+\hat{\beta}_L = \arg \min \quad \underbrace{\mathbb E_n \Big[ (y_i - x_i' \beta)^2 \Big]} _ {\text{SSR term}} + \underbrace{\frac{\lambda}{n} \sum _ {j=1}^{P} | \beta_j |} _ {\text{Penalty term}}
+$$ where $\lambda$ is called <strong>penalty parameter</strong>.</p>
+<p>The <strong>penalty term</strong> discourages large values of $| \beta_j |$. The
+choice of $\lambda$ is analogous to the choice of $K$ in series
+estimation and $h$ in kernel estimation.</p>
+<h3 id="penalties">Penalties</h3>
+<p>The shrinkage to zero of the coefficients directly follows from the
+$|| \cdot ||_1$ norm. On the contrary, another famous penalized
+estimator, <em>ridge regression</em>, uses the $|| \cdot ||_2$ norm and does
+not have this property.</p>
+<img src="../img/Fig_551.png" style="width:50.0%" />
+<blockquote>
+<p>Minimizing SSR + penalty is equivalent to minimize SSR $s.t.$ pen
+$\leq c$ (clear from the picture).</p>
+</blockquote>
+<h3 id="sparsity">Sparsity</h3>
+<p>Let $S_0 = \lbrace j: \beta_{0,j} \ne 0 \rbrace$, we define
+$s_0 = |S_0|$ as the <strong>sparsity</strong> of $\beta_0$. If $s_0/n \to 0$, we are
+dealing with a <strong>sparse regression</strong> (analogous of smooth regression).</p>
+<blockquote>
+<p>Remark on sparsity:</p>
+<ul>
+<li>In words, sparsity means that even if we have a lot of variables,
+only a small number of them (relative to $n$) have an effect on
+the dependent variable.</li>
+<li><em>Approximate sparsity imposes a restriction that only $s_0$
+variables among all of $x_{ij}$, where $s_0$ is much smaller than
+$n$, have associated coefficients $\beta_{0j}$ that are different
+from zero, while permitting a nonzero approximation error. Thus,
+estimators for this kind of model attempt to learn the identities
+of the variables with large nonzero coefficients, while
+simultaneously estimating these coefficients.</em> (Belloni et al.,
+2004)</li>
+<li>Sparsity is an assumption. $\beta_0$ is said to be $s_0$-sparse
+with $s_0 &lt; n$ if $$
+| \lbrace j: \beta_{0j} \neq 0 \rbrace | \leq s_0
+$$</li>
+</ul>
+</blockquote>
+<h3 id="lasso-theorem">Lasso Theorem</h3>
+<p><strong>Theorem</strong></p>
+<p>Suppose that for data $D_n = (y_i, x_i)<em>{i=1}^N$ with
+$y_i = x_i' \beta + \varepsilon_i$. Let $\hat{\beta}<em>L$ be the Lasso
+estimator. Let
+$\mathcal{S} = 2 \max_j | \mathbb E[ x</em>{ij} \varepsilon_i] |$. Suppose
+$|support(\beta_0) \leq s_0$ (sparsity assumption). Let
+$c_0 = (\mathcal{S} + \lambda/n )/(-\mathcal{S} + \lambda/n )$. Let $$
+\kappa</em>{c_0, s_0} = \min_{  d \in \mathbb R^p, A \subseteq \lbrace 1, &hellip; , p \rbrace : |A| \leq s_0 ,  || d_{A^c}|| \leq c_0 || d_A ||_1  }  \sqrt{  \frac{ s_0 d' \mathbb E_n [x_i x_i'] d }{|| d_A ||_1^2}  }
+$$ Then</p>
+<p>$$
+\mathbb I_{ \left\lbrace \frac{\lambda}{n} &gt; \mathcal{S}  \right\rbrace} \mathbb E_n [(x_i \beta_0 - x_i \beta_L)^2]^{\frac{1}{2}}  \leq 2 \frac{\lambda}{n} \frac{\sqrt{s_0}}{\kappa_{c_0, s_0}}
+$$</p>
+<p>Intuition: for a sufficiently high lambda the root mean squared error of
+Lasso is approximately zero.</p>
+<p>$$
+\text{ RMSE }:  \mathbb E_n [(x_i \beta_0 - x_i \beta_L)^2]^{\frac{1}{2}}  \simeq 0  \quad \Leftrightarrow \quad \frac{\lambda}{n} &gt; \mathcal{S}
+$$</p>
+<h3 id="remarks">Remarks</h3>
+<ul>
+<li>The minimization region is the set of “essentially sparse” vectors
+$d \in \mathbb R^p$, where “essentially sparse” is defined by
+$\mathcal{C}, \mathcal{S}$. In particular the condition
+$k_{\mathcal{C}, \mathcal{S}}&gt;0$ means that no essentially sparse
+vector $d$ has $\mathbb E[x_i x_i']d = 0$, i.e. regressors were not
+added multiple times.</li>
+<li>Need to dominate the score with the penalty term $\lambda$.</li>
+<li>Need no collinearity on a small ($\leq s_0$) subset of regressors
+($\to k_{c_0, s_0}&gt;0$).</li>
+</ul>
+<p><strong>When Lasso?</strong> For prediction problems in high dimensional
+environments. <strong>NB!</strong> Lasso is not good for inference, only for
+prediction.</p>
+<p>In particular, in econometrics it’s used for selecting either</p>
+<ul>
+<li>instruments (predicting $\hat{x}$ in the first stage)</li>
+<li>control variables (next section: double prediction problem, in the
+first stage and in the reduced form)</li>
+</ul>
+<h3 id="choosing-the-optimal-lambda">Choosing the Optimal Lambda</h3>
+<p>The choice of $\lambda$ determines the bias-variance tradeoff:</p>
+<ul>
+<li>if $\lambda$ is too big:
+$\lambda \approx \infty \mathbb \Rightarrow \hat{\beta} \approx 0$;</li>
+<li>if $\lambda$ is too small: $\lambda \approx 0 \mathbb \Rightarrow$
+overfitting.</li>
+</ul>
+<p>Possible solutions: Bonferroni correction, bootstrapping or
+$\frac{\lambda}{n} \asymp \sqrt{\frac{\log(p)}{n}}$ (asymptotically
+equal to), $\mathcal{S}$ behaves like the maximum of gaussians.</p>
+<h3 id="lasso-path">Lasso Path</h3>
+<p>How the estimated $\hat{\beta}$ depends on the penalty parameter
+$\lambda$?</p>
+<img src="../img/Fig_642.png" style="width:50.0%" />
+<p><strong>Post Lasso</strong>: fit OLS without the penalty with all the nonzero
+coeficients selected by Lasso in the first step.</p>
+<h3 id="remarks-1">Remarks</h3>
+<ul>
+<li>Do not do inference with post-Lasso because standard errors are not
+uniformely valid.</li>
+<li>As $n \to \infty$ the CV and the <strong>score domination</strong> bounds
+converge to a unique bound.</li>
+<li>What is the problem of cross-validation? In high dimensional
+settings you can overfit in so many ways that CV doesn’t work and
+still overfits.</li>
+<li>Using $\lambda$ with $\frac{\lambda}{n} &gt; \mathcal{S}$ small
+coefficients get shrunk to zero with high probability. In this case
+with small we mean $\propto \frac{1}{\sqrt{n}}$ or
+$2 \max_j | \mathbb E_n[\varepsilon_i x_{ij}] |$.</li>
+<li>If $| \beta_{0j}| \leq \frac{c}{\sqrt{n}}$ for a sufficiently small
+constant $c$, then $\hat{\beta}_{LASSO} \overset{p}{\to} 0$.</li>
+<li>In standard t-tests $c = 1.96$.</li>
+<li>$\sqrt{n}$ factor is important since it is the demarcation line for
+reliable statistical detection.</li>
+</ul>
+<h3 id="optimal-lambda">Optimal Lambda</h3>
+<p>What is the criterium that should guide the selection of $\lambda$? $$
+\frac{\lambda}{n} \geq 2 \mathbb E_n[x_{ij} \varepsilon_i] \qquad \forall j \quad \text{ if } Var(x_{ij} \varepsilon_i) = 1
+$$</p>
+<p>How to choose the optimal $\lambda$:</p>
+<ul>
+<li>Decide the coverage of the confidence intervals ($1-\alpha$): $$
+\Pr \left( \sqrt{n} \Big| \mathbb E_n [x_{ij} \varepsilon_i] \Big| &gt; t \right) = 1- \alpha
+$$</li>
+<li>Solve for $t$</li>
+<li>Get $\lambda$ such that all scores are dominated by
+$\frac{\lambda}{n}$ with $\alpha%$ probability.</li>
+</ul>
+<blockquote>
+<p>It turns out that the optimal $t \propto \sqrt{\log(p)}$</p>
+</blockquote>
+<h2 id="pre-testing">Pre-Testing</h2>
+<h3 id="omitted-variable-bias">Omitted Variable Bias</h3>
+<p>Consider two separate statistical models. Assume the following <strong>long
+regression</strong> of interest:</p>
+<p>$$
+y_i = x_i' \alpha_0+ z_i' \beta_0 + \varepsilon_i
+$$</p>
+<p>Define the corresponding <strong>short regression</strong> as</p>
+<p>$$
+y_i = x_i' \alpha_0 + v_i \quad \text{ with } v_i = z_i' \beta_0 + \varepsilon_i
+$$</p>
+<p><strong>Theorem</strong></p>
+<p>Suppose that the DGP for the long regression corresponds to $\alpha_0$,
+$\beta_0$. Suppose further that $\mathbb E[x_i] = 0$,
+$\mathbb E[z_i] = 0$, $\mathbb E[\varepsilon_i |x_i,z_i] = 0$. Then,
+unless $\beta_0 = 0$ or $z_i$ is orthogonal to $x_i$, the (sole)
+stochastic regressor $x_i$ is correlated with the error term in the
+short regression which implies that the OLS estimator of the short
+regression is inconsistent for $\alpha_0$ due to the omitted variable
+bias. In particular, one can show that the plim of the OLS estimator of
+$\hat{\alpha}<em>{SHORT}$ from the short regression is $$
+\hat{\alpha}</em>{SHORT} \overset{p}{\to} \frac{Cov(y_i, x_i)}{Var(x_i)} = \alpha_0 + \beta_0 \frac{Cov(z_i, x_i)}{Var(x_i)}
+$$</p>
+<h3 id="pre-test-bias">Pre-test bias</h3>
+<p>Consider data $D= (y_i, x_i, z_i)_{i=1}^n$, where the true model is: $$
+\begin{aligned}
+&amp; y_i = x_i' \alpha_0  + z_i' \beta_0 + \varepsilon_i \newline
+&amp; x_i = z_i' \gamma_0 + u_i
+\end{aligned}
+$$</p>
+<p>Where $x_i$ is the variable of interest (we want to make inference on
+$\alpha_0$) and $z_i$ is a high dimensional set of control variables.</p>
+<p>From now on, we will work under the following assumptions:</p>
+<ul>
+<li>$\dim(x_i)=1$ for all $n$</li>
+<li>$\beta_0$ uniformely bounded in $n$</li>
+<li>Strict exogeneity: $\mathbb E[\varepsilon_i | x_i, z_i] = 0$ and
+$\mathbb E[u_i | z_i] = 0$</li>
+<li>$\beta_0$ and $\gamma_0$ have dimension (and hence value) that
+depend on $n$</li>
+</ul>
+<h3 id="pre-testing-procedure">Pre-Testing procedure</h3>
+<ol>
+<li>Regress $y_i$ on $x_i$ and $z_i$</li>
+<li>For each $j = 1, &hellip;, p = \dim(z_i)$ calculate a test statistic
+$t_j$</li>
+<li>Let $\hat{T} = \lbrace j: |t_j| &gt; C &gt; 0 \rbrace$ for some constant
+$C$ (set of statistically significant coefficients).</li>
+<li>Re-run the new “model” using $(x_i, z_{\hat{T},i})$ (i.e. using the
+selected covariates with statistically significant coefficients).</li>
+<li>Perform statistical inference (i.e. confidence intervals and
+hypothesis tests) as if no model selection had been done.</li>
+</ol>
+<h3 id="bias">Bias</h3>
+<p><img src="../img/Fig_621.png" alt=""></p>
+<p>As we can see from the figure above (code below), running the short
+regression instead of the long one introduces Omitted Variable Bias
+(second column). Instead, the Pre-Testing estimator is consistent but
+not normally distributed (third column).</p>
+<h3 id="issue-1">Issue</h3>
+<p>Pre-testing is problematic because the post-selection estimator is not
+asymptotically normal. Moreover, for particular data generating
+processes, it even fails to be consistent at the rate of $\sqrt{n}$
+(Belloni et al., 2014).</p>
+<blockquote>
+<p>Intuition: when performing pre-testing, we might have an Omitted
+Variable Bias problem when $\beta_0&gt;0$ but we fail to reject the null
+hypothesis $H_0 : \beta_0 = 0$ because of lack of statistical power,
+i.e. $|\beta_0|$ is small with respect to the sample size. In
+particular, we fail to reject the null hypothesis for
+$\beta_0(n) = O \left( \frac{1}{\sqrt{n}}\right)$. However, note that
+the problem vanishes asymptotically, as the resulting estimator is
+consistent. In fact, if
+$\beta_0(n) = O \left( \frac{1}{\sqrt{n}}\right)$, then
+$\alpha_0 - \hat \alpha_{PRETEST} \overset{p}{\to} \lim_{n \to \infty} \beta_0 \gamma_0 = \lim_{n \to \infty} O \left( \frac{1}{\sqrt{n}} \right) = 0$.
+We now clarify what it means to have a coefficient depending on the
+sample size, $\beta_0(n)$.</p>
+</blockquote>
+<h3 id="uniformity">Uniformity</h3>
+<p>Concept of <strong>uniformity</strong>: the DGP varies with $n$. Instead of having a
+fixed “true” parameter $\beta_0$, you have a sequence $\beta_0(n)$.
+Having a cofficient that depends on the sample size $n$ is useful to
+preserve the concept of “small with respect to the sample size” in
+asymptotic theory.</p>
+<p>In the context of Pre-Testing, all problems vanish asymptotically since
+we are able to always reject the null hypothesis $H_0 : \beta_0 = 0$
+when $\beta_0 \neq 0$. In the figure below, I plot simulation results
+for $\hat \alpha_{PRETESTING}$ for a fixed coefficient $\beta_0$ (first
+row) and variable coefficient $\beta_0(n)$ that depends on the sample
+size (second row), for different sample sizes (columns). We see that if
+$\beta_0$ is independent from the sample size (first row), the
+distribution of $\hat \alpha_{PRETEST}$ is not normal in small samples
+and it displays the bimodality that characterizes pre-testing. However,
+it becomes normal in large samples. On the other hand, when $\beta_0(n)$
+depends on the sample size, and in particular
+$\beta_0 = O \left( \frac{1}{\sqrt{n}} \right)$ (second row), the
+distribution of $\hat \alpha_{PRETEST}$ stays bimodal even when the
+sample size increases.</p>
+<blockquote>
+<p>Note that the estimator is always consistent!</p>
+</blockquote>
+<h3 id="where-is-pre-testing-a-problem">Where is Pre-Testing a Problem?</h3>
+<p>If we were to draw a map of where the gaussianity assumption of
+$\beta_0(n)$ holds well and where it fails, it would look like the
+following figure.</p>
+<img src="../img/Fig_623.png" style="width:50.0%" />
+<h3 id="intuition">Intuition</h3>
+<p>The intuition for the three different regions (from bottom to top) is
+the following.</p>
+<ol>
+<li>When $\beta_0 = o \left( \frac{1}{\sqrt{n}} \right)$, $z_i$ is
+excluded with probability $p \to 1$. But, given that $\beta_0$ is
+small enough, failing to control for $z_i$ does not introduce large
+omitted variables bias (Belloni et al., 2014).</li>
+<li>If however the coefficient on the control is “moderately close to
+zero”, $\beta_0 = O \left( \frac{1}{\sqrt{n}} \right)$, the t-test
+set-up above cannot distinguish this coefficient from $0$, and the
+control $z_i$ is dropped with probability $p \to 1$. However, in
+this case the omitted variable bias generated by excluding $z_i$
+scaled by $\sqrt{n}$ does not converge to zero. That is, the
+standard post-selection estimator is not asymptotically normal and
+even fails to be consistent at the rate of $\sqrt{n}$ (Belloni et
+al., 2014).</li>
+<li>Lastly, when $\beta_0$ is large enough, the null pre-testing
+hypothesis $H_0 : \beta_0 = 0$ will be rejected sufficiently often
+so that the bias is negligible.</li>
+</ol>
+<h3 id="post-double-selection">Post-Double Selection</h3>
+<p>The post-double-selection estimator, $\hat{\alpha}_{PDS}$ solves this
+problem by doing variable selection via standard t-tests or Lasso-type
+selectors with the two “true model” equations (<strong>first stage</strong> and
+<strong>reduced form</strong>) that contain the information from the model and then
+estimating $\alpha_0$ by regressing $y_i$ on $x_i$ and the union of the
+selected controls. By doing so, $z_i$ is omitted only if its coefficient
+in both equations is small which greatly limits the potential for
+omitted variables bias (Belloni et al., 2014).</p>
+<blockquote>
+<p>Intuition: by performing post-double selection, we ensure that both
+$\beta_0 = O \left( \frac{1}{\sqrt{n}} \right)$ and
+$\gamma_0 = O \left( \frac{1}{\sqrt{n}} \right)$ so that
+$\sqrt{n} ( \hat \alpha _ {PRETEST} - \alpha _ 0) \overset{p}{\to} \lim_{n \to \infty} \sqrt{n} \beta_0 \gamma_0 = \lim_{n \to \infty} \sqrt{n} O \left( \frac{1}{n} \right) = 0$
+and the estimator is gaussian.</p>
+</blockquote>
+<h3 id="frisch-waugh-theorem">Frisch-Waugh Theorem</h3>
+<p><strong>Theorem</strong></p>
+<p>Consider the data $D = \lbrace x_i, y_i, z_i \rbrace_{i=1}^\infty$ with
+DGP: $Y = X \alpha + Z \beta + \varepsilon$. The following estimators of
+$\alpha$ are numerically equivalent (if $[X, Z]$ has full rank):</p>
+<ul>
+<li>$\hat{\alpha}$ from regressing $Y$ on $X, Z$</li>
+<li>$\tilde{\alpha}$ from regressing $Y$ on $\tilde{X}$</li>
+<li>$\bar{\alpha}$ from regressing $\tilde{Y}$ on $\tilde{X}$</li>
+</ul>
+<p>where the operation of passing to $Y, X$ to $\tilde{Y}, \tilde{X}$ is
+called <em>projection out $Z$</em>, e.g.$\tilde{X}$ are the residuals from
+regressing $X$ on $Z$.</p>
+<h3 id="proof-1">Proof (1)</h3>
+<p>We want to show that $\hat{\alpha} = \tilde{\alpha}$.</p>
+<p>Claim:
+$\hat{\alpha } = \tilde{\alpha} \Leftrightarrow \tilde{X}' \left[ (X - \tilde{X})\hat{\alpha} + Z \hat{\beta} +\hat{\varepsilon} \right] = 0$.</p>
+<p>Proof of the claim: if $\hat{\alpha} = \tilde{\alpha}$, we can write $Y$
+as $$
+Y =  X \hat{\alpha} + Z \hat{\beta} + \hat{\varepsilon}  = \tilde{X} \hat{\alpha} + \underbrace{(X - \tilde{X}) \hat{\alpha } + Z \hat{\beta} + \hat{\varepsilon}}_\text{residual of $Y$ on $\tilde{X} $} = \tilde{X} \tilde{\alpha} + \nu_i
+$$</p>
+<p>Therefore, by the orthogonality property of the OLS residual, it must be
+that $\tilde{X}'\nu_i= 0$. $$\tag*{$\blacksquare$}$$</p>
+<h3 id="proof-1-1">Proof (1)</h3>
+<p>Having established the claim, we want to show that the normal equation
+$\tilde{X}' \left[ (X - \tilde{X})\hat{\alpha} + Z \hat{\beta} +\hat{\varepsilon} \right] = 0$
+is satisfied. We follow 3 steps:</p>
+<ol>
+<li>
+<p>First we have that $\tilde{X}' (X - \tilde{X})\hat{\alpha} = 0$.
+This follows from the fact that $\tilde{X}' = X' M_Z$ and hence: $$
+\begin{aligned}
+\tilde{X}' (X - \tilde{X})  &amp;  = X' M_Z (X - M_Z) = X' M_Z X - X' \overbrace{M_Z M_Z}^{M_Z} X \newline &amp; = X&rsquo;M_Z X - X' M_Z X = 0
+\end{aligned}
+$$</p>
+</li>
+<li>
+<p>$\tilde{X}' Z \hat{\beta} = 0$ since $\tilde{X}$ is the residual
+from the regression of $X$ on $Z$, by normal equation it holds that
+$\tilde{X}' Z = 0$.</p>
+</li>
+<li>
+<p>$\tilde{X}' \hat{\varepsilon} = 0$. This follows from (i)
+$M_Z ' M_{X, Z} = M_{X,Z}$ and (ii) $X' M_{X, Z} = 0$: $$
+\tilde{X}' \hat{\varepsilon} = (M_Z X)' (M_{X, Z} \varepsilon)  = X&rsquo;M_Z' M_{X, Z} \varepsilon = \underbrace{X' M_{X, Z}}_0 \varepsilon = 0.
+$$ $$\tag*{$\blacksquare$}$$</p>
+</li>
+</ol>
+<p>The coefficient $\hat{\alpha}$ is a <em>partial regression</em> coefficient
+identified from the variation in $X$ that is orthogonal to $Z$. This is
+often known as <strong>residual variation</strong>.</p>
+<h2 id="post-double-selection-1">Post Double Selection</h2>
+<h3 id="setting">Setting</h3>
+<p>Consider again data $D= (y_i, x_i, z_i)_{i=1}^n$, where the true model
+is: $$
+\begin{aligned}
+&amp; y_i = x_i' \alpha_0  + z_i' \beta_0 + \varepsilon_i \newline
+&amp; x_i = z_i' \gamma_0 + u_i
+\end{aligned}
+$$</p>
+<p>We would like to guard against pretest bias if possible, in order to
+handle high dimensional models. A good pathway towards motivating
+procedures which guard against pretest bias is a discussion of classical
+partitioned regression.</p>
+<p>Consider a regression $y_i$ on $x_i$ and $z_i$. $x_i$ is the
+1-dimensional variable of interest, $z_i$ is a high-dimensional set of
+control variables. We have the following procedure:</p>
+<ol>
+<li><strong>First Stage</strong> selection: lasso $x_i$ on $z_i$. Let the selected
+variables be collected in the set $S_{FS} \subseteq z_i$</li>
+<li><strong>Reduced Form</strong> selection: lasso $y_i$ on $z_i$. Let the selected
+variables be collected in the set $S_{RF} \subseteq z_i$</li>
+<li>Regress $y_i$ on $x_i$ and $S_{FS} \cup S_{RF}$</li>
+</ol>
+<h3 id="pds-theorem">PDS Theorem</h3>
+<p><strong>Theorem</strong></p>
+<p>Let $\lbrace P^n\rbrace$ be a sequence of data-generating processes for
+$D_n = (y_i, x_i, z_i)^n_{i=1} \in (\mathbb R \times \mathbb R \times \mathbb R^p) ^n$
+where $p$ depends on $n$. For each $n$, the data are iid with
+$yi = x_i'\alpha_0^{(n)} + z_i' \beta_0^{(n)} + \varepsilon_i$ and
+$x_i = z_i' \gamma_0^{(n)} + u_i$ where
+$\mathbb E[\varepsilon_i | x_i,z_i] = 0$ and $\mathbb E[u_i|z_i] = 0$.
+The sparsity of the vectors $\beta_0^{(n)}$, $\gamma_0^{(n)}$ is
+controlled by $|| \beta_0^{(n)} ||_0 \leq s$ with
+$s^2 (\log p)^2/n \to 0$. Suppose that additional regularity conditions
+on the model selection procedures and moments of the random variables
+$y_i$ , $x_i$ , $z_i$ as documented in Belloni et al. (2014). Then the
+confidence intervals, CI, from the post double selection procedure are
+uniformly valid. That is, for any confidence level $\xi \in (0, 1)$ $$
+\Pr(\alpha_0 \in CI) \to 1- \xi
+$$</p>
+<p>In order to have valid confidence intervals you want their bias to be
+negligibly. Since $$
+CI = \left[ \hat{\alpha} \pm \frac{1.96 \cdot \hat{\sigma}}{\sqrt{n}} \right]
+$$</p>
+<p>If the bias is $o \left( \frac{1}{\sqrt{n}} \right)$ then there is no
+problem since it is asymptotically negligible w.r.t. the magnitude of
+the confidence interval. If however the the bias is
+$O \left( \frac{1}{\sqrt{n}} \right)$ then it has the same magnitude of
+the confidence interval and it does not asymptotically vanish.</p>
+<h3 id="proof-idea">Proof (Idea)</h3>
+<p>The idea of the proof is to use partitioned regression. An alternative
+way to think about the argument is: bound the omitted variables bias.
+Omitted variable bias comes from the product of 2 quantities related to
+the omitted variable:</p>
+<ol>
+<li>Its partial correlation with the outcome, and</li>
+<li>Its partial correlation with the variable of interest.</li>
+</ol>
+<p>If both those partial correlations are $O( \sqrt{\log p/n})$, then the
+omitted variables bias is
+$(s \times O( \sqrt{\log p/n})^2 = o \left( \frac{1}{\sqrt{n}} \right)$,
+provided $s^2 (\log p)^2/n \to 0$. Relative to the $\frac{1}{\sqrt{n}}$
+convergence rate, the omitted variables bias is negligible.</p>
+<p>In our omitted variable bias case, we want
+$| \beta_0 \gamma_0 | = o \left( \frac{1}{\sqrt{n}} \right)$.
+Post-double selection guarantees that</p>
+<ul>
+<li><em>Reduced form</em> selection (pre-testing): any “missing” variable has
+$|\beta_{0j}| \leq \frac{c}{\sqrt{n}}$</li>
+<li><em>First stage</em> selection (additional): any “missing” variable has
+$|\gamma_{0j}| \leq \frac{c}{\sqrt{n}}$</li>
+</ul>
+<p>As a consequence, as long as the number of omitted variables is finite,
+the omitted variable bias is $$
+OVB(\alpha) = |\beta_{0j}| \cdot|\gamma_{0j}| \leq \frac{c}{\sqrt{n}} \cdot \frac{c}{\sqrt{n}} = \frac{c^2}{n} = o \left(\frac{1}{\sqrt{n}}\right)
+$$</p>
+<h3 id="distribution">Distribution</h3>
+<p>We can plot the distribution of the post-double selection estimator
+against the pre-testing one.</p>
+<img src="../img/Fig_641.png" style="width:60.0%" />
+<blockquote>
+<p><strong>Remark</strong>: under homoskedasticity, the above estimator achieves the
+semiparametric efficiency bound.</p>
+</blockquote>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/metrics/08_nonparametric/" rel="next">Non-Parametric Estimation</a>
+  </div>
+  
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

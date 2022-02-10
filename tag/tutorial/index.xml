@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>tutorial | Matteo Courthoud</title>
+    <link>https://matteocourthoud.github.io/tag/tutorial/</link>
+      <atom:link href="https://matteocourthoud.github.io/tag/tutorial/index.xml" rel="self" type="application/rss+xml" />
+    <description>tutorial</description>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Mon, 06 Dec 2021 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
+      <title>tutorial</title>
+      <link>https://matteocourthoud.github.io/tag/tutorial/</link>
+    </image>
+    
+    <item>
+      <title>How to Work on a Remote Machine</title>
+      <link>https://matteocourthoud.github.io/post/remote/</link>
+      <pubDate>Mon, 06 Dec 2021 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/remote/</guid>
+      <description>&lt;p&gt;In this page I will share tips on how to set up a remote machine and deploy your code there. I will first analyze SSH and then look at two specific applications: coding in Python and Julia.&lt;/p&gt;
+&lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
+&lt;p&gt;In order to start working on a remote server you need&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the server&lt;/li&gt;
+&lt;li&gt;local shell&lt;/li&gt;
+&lt;li&gt;SSH installed&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;SSH, or Secure Shell, is a protocol designed to transfer data between a client and a server (two computers basically) over an untrusted network.&lt;/p&gt;
+&lt;p&gt;The way SSH works is it encrypts the connection using a pair of keys and the server, which is the computer you would connect to, is usually waiting for an SSH connection on Port 22.&lt;/p&gt;
+&lt;p&gt;SSH is normally installed by default. To check if you have SSH installed, open the terminal and write &lt;code&gt;ssh&lt;/code&gt;. You should receive a message that looks like this&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;usage: ssh [-1246AaCfGgKkMNnqsTtVvXxYy] [-b bind_address] [-c cipher_spec]
+[-D [bind_address:]port] [-E log_file] [-e escape_char]
+[-F configfile] [-I pkcs11] [-i identity_file]
+[-J [user@]host[:port]] [-L address] [-l login_name] [-m mac_spec] [-O ctl_cmd] [-o option] [-p port] [-Q query_option] [-R address] [-S ctl_path] [-W host:port] [-w local_tun[:remote_tun]]
+[user@]hostname [command]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If SSH is not installed, you can install it using the following commands.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;sudo apt-get install openssh-server
+sudo systemctl enable ssh
+sudo systemctl start ssh
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now that you have installed SSH, we are ready to setup a remote connection.&lt;/p&gt;
+&lt;p&gt;From the computer you want to access remotey, generate the public key.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh-keygen -t rsa
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You will be asked for a location. If you decide to enter one manually then that will be the pair’s location, if you leave the default one it will be inside the &lt;code&gt;.ssh&lt;/code&gt; hidden folder in your home directory.&lt;/p&gt;
+&lt;p&gt;Now you will be prompted for a password. If you enter one you will be asked for it every time you use the key, this works for added security. If you don’t want a password just press enter and continue without one.&lt;/p&gt;
+&lt;p&gt;Two files were created. One file ends with the ‘.pub’ extension and the other one doesn’t. The file that ends with ‘.pub’ is your public key. This key needs to be in the computer you want to connect to (the server) inside a file called &lt;code&gt;authorized_keys&lt;/code&gt; . You can accomplish this with the following command:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh-copy-id username@ip
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For example in my case to send the key to my computer it would be:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh-copy-id sergiop@132.132.132.132
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you have MacOS there’s a chance you don’t have ssh-copy-id installed, in that case you can install it using&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;brew install ssh-copy-id
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you haven&amp;rsquo;t installed &lt;code&gt;brew&lt;/code&gt;, you can install it by following &lt;a href=&#34;https://brew.sh/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;this guide&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;connect&#34;&gt;Connect&lt;/h2&gt;
+&lt;p&gt;To permanently add the SSH key, you can use the follwing command&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh-add directory\key.pem
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Lastly, to connect, just type the following command.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;ssh username@ip
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Where &lt;code&gt;username&lt;/code&gt; is the server name and &lt;code&gt;ip&lt;/code&gt; is the public IP adress, e.g. 132.132.132.132.&lt;/p&gt;
+&lt;p&gt;If your server is not public, you will not be able to access it.&lt;/p&gt;
+&lt;p&gt;If your server is password protected, you will be prompted to insert a password when you connect. If not, you should protect it with a password.&lt;/p&gt;
+&lt;h2 id=&#34;managing-screens&#34;&gt;Managing screens&lt;/h2&gt;
+&lt;p&gt;While you are connected to the remote terminal, any disturbance to your connection will interrupt the code. In order to avoid that, you want to create separate screens. This will allow your code to run remotely undisturbed, irrespectively of your connection.&lt;/p&gt;
+&lt;p&gt;First, you need to install &lt;code&gt;screen&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;brew install screen
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To create a new screen, just type&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;screen
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you can lunch your code.&lt;/p&gt;
+&lt;p&gt;After that, you want to detach from that screen so that the code can run remotely undisturbed.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;screen -d
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Another option is to use &lt;code&gt;ctrl+a&lt;/code&gt; followed by &lt;code&gt;ctrl+d&lt;/code&gt;. This will detach the screen without the need to type anythin in the terminal, in case the terminal is busy (most likely).&lt;/p&gt;
+&lt;p&gt;To list the current active screens type&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;screen -ls
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you want to check at any time that your code is running, without re-attaching to the screen, you can just type&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;top
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;which is the general command to check active processes. To exit, use &lt;code&gt;ctrl+z&lt;/code&gt;, which generally terminates processes in the terminal.&lt;/p&gt;
+&lt;p&gt;To reattach to your screen, type&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;screen -r
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In case you have multiple screens (you can check with &lt;code&gt;screen -ls&lt;/code&gt;), you can reattach to a specific one by typing&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;screen -r 12345
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;where &lt;code&gt;12345&lt;/code&gt; is the id of the screen.&lt;/p&gt;
+&lt;p&gt;To kill a screen, type&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;screen -XS 12345 quit
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;where again &lt;code&gt;12345&lt;/code&gt; is the id of the screen.&lt;/p&gt;
+&lt;h2 id=&#34;python-and-pycharm&#34;&gt;Python and Pycharm&lt;/h2&gt;
+&lt;p&gt;If you are coding in Python, &lt;a href=&#34;https://www.jetbrains.com/pycharm/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyCharm&lt;/a&gt; is one of the best IDEs. Among many features, it offers the possibility to set a remote compiler for your pthon console and to sync input and output files automatically.&lt;/p&gt;
+&lt;p&gt;First, you need to have setup a remote SSH connection following the steps above. Importantly, you need to have added the public key to your machine using the &lt;code&gt;ssh-add&lt;/code&gt; command, as explained above.&lt;/p&gt;
+&lt;p&gt;Then open Pytharm, go to the lower-right corner, where the current interpreter is listed (e.g. Pytohn 3.8), click it and select &lt;code&gt;interpreter settings&lt;/code&gt;.&lt;/p&gt;
+&lt;img src=&#34;files/interpreter_settings.png&#34; alt=&#34;interpreter_settings&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;Click on the gear icon ⚙️ on the top-right corner and select &lt;code&gt;add&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;files/add.png&#34; alt=&#34;add&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Insert the server &lt;code&gt;host&lt;/code&gt; (IP address, e.g. 132.132.132.132) and &lt;code&gt;username&lt;/code&gt; (e.g. sergiop).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;files/configuration.png&#34; alt=&#34;configuration&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Next, you have to insert your credentials. If you have a password, insert it, otherwise you have to insert the path to your SSH key file.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;files/password.png&#34; alt=&#34;configuration&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Lastly, select the remote interpreter. If you are using a python version that is not default, browse to the preferred python installation folder. Also, check the box for &lt;code&gt;execute code giving this interpreter with root privileges via sudo&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;You can also select which remote folder to sync with your local project. By default, you are given a &lt;code&gt;tmp/pycharm_project_XX&lt;/code&gt; folder. You can change it if you want. I recommend also to have the last option checked: &lt;code&gt;automatically sync project files to the server&lt;/code&gt;. This will automatically synch all remote changes with your local machine, in your local project folder.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;files/folder.png&#34; alt=&#34;configuration&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;julia-and-juno&#34;&gt;Julia and Juno&lt;/h2&gt;
+&lt;p&gt;If you are coding in Julia, &lt;a href=&#34;https://junolab.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Juno&lt;/a&gt; is the best IDE around. It&amp;rsquo;s an integration with &lt;a href=&#34;https://atom.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Atom&lt;/a&gt; with a dedicated compiler, local variables, syntax highlight, autocompletion.&lt;/p&gt;
+&lt;p&gt;On Atom, you first need to install the &lt;a href=&#34;https://github.com/h3imdall/ftp-remote-edit&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;ftp-remote-edit&lt;/code&gt;&lt;/a&gt; package.&lt;/p&gt;
+&lt;p&gt;Then go to the menu item &lt;code&gt;Packages &amp;gt; Ftp-Remote-Edit &amp;gt; Toggle&lt;/code&gt;.&lt;/p&gt;
+&lt;img src=&#34;files/toggle.png&#34; alt=&#34;julia&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;A new &lt;code&gt;Remote&lt;/code&gt; panel will open with the default button to &lt;code&gt;Edit a new server&lt;/code&gt;.&lt;/p&gt;
+&lt;img src=&#34;files/edit.png&#34; alt=&#34;julia&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;Click it and you will be able to set up your remote connection.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Press &lt;code&gt;New&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Insert your username in &lt;code&gt;The name of the server&lt;/code&gt;, for example &lt;code&gt;sergiop&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Insert your ip adress  in &lt;code&gt;The hostname or IP adress of the server&lt;/code&gt;, for example &lt;code&gt;123.123.123.123&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Select &lt;code&gt;SFTP - SSH File Transfer Protocol&lt;/code&gt; under &lt;code&gt;Protocol&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Select your &lt;code&gt;Logon&lt;/code&gt; option. You can either insert your password every time, just once, or use a keyfile.&lt;/li&gt;
+&lt;li&gt;Insert again your username in &lt;code&gt;Username for autentication&lt;/code&gt;, again for example &lt;code&gt;sergiop&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;If you don&amp;rsquo;t want to start from the root folder, you can change the &lt;code&gt;Initial Directory&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;files/julia.png&#34; alt=&#34;julia&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now you will be able to see your remote directory (named for example &lt;code&gt;sergiop&lt;/code&gt;) in the &lt;code&gt;Remote&lt;/code&gt; panel.&lt;/p&gt;
+&lt;p&gt;To start using Julia remotely, just start a new remote Julia process from the menu on the left.&lt;/p&gt;
+&lt;img src=&#34;files/remote.png&#34; alt=&#34;julia&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;Now you are ready to deploy your Julia code on your remote server!&lt;/p&gt;
+&lt;h2 id=&#34;jupyter-notebooks&#34;&gt;Jupyter Notebooks&lt;/h2&gt;
+&lt;p&gt;If you want to have a &lt;a href=&#34;https://jupyter.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Jupyter Notebook&lt;/a&gt; running remotely, the steps are the following. The main advantage of a Jupyter Notebook is that it allows you to mix text and code in a single file, similarly to &lt;a href=&#34;https://rmarkdown.rstudio.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;RMarkdown&lt;/a&gt;, with the advantage of not being contrained to use a R (or Python) kernel. For example, I often use Jupyter Notebook with Julia or Matlab Kernels. Moreover, you can also make nice slides out of it!&lt;/p&gt;
+&lt;p&gt;First, connect to the remote machine. Look at &lt;a href=&#34;#setup&#34;&gt;section 1&lt;/a&gt; to set up your SSH connection.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh username@ip
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Start a Jupyter Notebook in the remote machine.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jupyter notebook --no-browser
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The command will open a jupyter notebook in the remote machine. To connect to it, we need to know which port it used. The default port is &lt;code&gt;8888&lt;/code&gt;. If that port is busy, it will look for another available one. We can see the port from the output in terminal.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Jupyter Notebook is running at:  http://localhost:XXXX/&amp;hellip;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Where &lt;code&gt;XXXX&lt;/code&gt; is the repote port used.&lt;/p&gt;
+&lt;p&gt;Now we need to forward the remote port &lt;code&gt;XXXX&lt;/code&gt; to our local &lt;code&gt;YYYY&lt;/code&gt; port.&lt;/p&gt;
+&lt;p&gt;Open a new &lt;em&gt;local&lt;/em&gt; shell. Type&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh -L localhost:YYYY:localhost:XXXX username@ip
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Where &lt;code&gt;YYYY&lt;/code&gt; can be anything. I&amp;rsquo;d use the default port &lt;code&gt;8888&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh -L localhost:8889:localhost:8888 username@ip
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now go to your browser and type&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;localhost:YYYY
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Which in my case is&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;localhost:8889
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will open the remote Jupyter Notebook.&lt;/p&gt;
+&lt;p&gt;Done!&lt;/p&gt;
+&lt;p&gt;In case you want to check which Jupiter notebooks are running, type&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jupyter notebook list
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To kill a notebook use&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;jupyter notebook stop XXXX
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;sources&#34;&gt;Sources&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/@SergioPietri/how-to-setup-and-use-ssh-for-remote-connections-e86556d804dd&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;How To Setup And Use SSH For Remote Connections&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://docs.junolab.org/stable/man/remote/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Connecting to a Julia session on a remote machine&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://ljvmiranda921.github.io/notebook/2018/01/31/running-a-jupyter-notebook/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Running a Jupyter notebook from a remote server&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Frequently Asked Questions in a PhD</title>
+      <link>https://matteocourthoud.github.io/post/faq/</link>
+      <pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/faq/</guid>
+      <description>&lt;p&gt;In this page I will collect anquestions that I frequently asked myself during my PhD, possibly with answers.&lt;/p&gt;
+&lt;p&gt;Personally, the article for PhD students that helped me the most is &lt;a href=&#34;https://medium.com/@paul.niehaus/doing-research-18cb310529e0&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Doing research”&lt;/a&gt; by Paul Niehaus. But beware, it might not work for everyone.&lt;/p&gt;
+&lt;h2 id=&#34;starting-the-phd&#34;&gt;Starting the PhD&lt;/h2&gt;
+&lt;h3 id=&#34;information&#34;&gt;Information&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/d41586-019-03459-7?sf223557541=1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;PhDs: the tortuous truth&amp;rdquo;&lt;/a&gt;, Chris Woolston, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.economist.com/why-doing-a-phd-is-often-a-waste-of-time-349206f9addb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Why doing a PhD is often a waste of time&amp;rdquo;&lt;/a&gt;, The Economist, 2016&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.theguardian.com/careers/phd-right-career-option&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Should you do a PhD?&amp;quot;&lt;/a&gt;, Daniel K. Sokol, 2012.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://tertilt.vwl.uni-mannheim.de/bachelor/GradSchoolGuide.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;So, you want to go to a grad school in economics?&amp;quot;&lt;/a&gt;, Ceyhun Elgin and Mario Solis-Garcia, 2007.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;applying&#34;&gt;Applying&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://james-tierney.medium.com/how-to-ask-your-professor-for-a-letter-of-recommendation-f06e8b2f2c64&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to Ask Your Professor for a Letter of Recommendation&amp;rdquo;&lt;/a&gt;, James Tierney, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://drive.google.com/file/d/16eUvtahziPyBTpX_ZeyXjPck2OyinfHH/view&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Pre-Doc Guide&amp;rdquo;&lt;/a&gt;, Alvin Christian, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://athey.people.stanford.edu/professional-advice&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Advice for Applying to Grad School in Economics&amp;rdquo;&lt;/a&gt;, Susan Athey, 2016.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://qz.com/116081/the-complete-guide-to-getting-into-an-economics-phd-program/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The complete guide to getting into an economics PhD program&amp;rdquo;&lt;/a&gt;, Miles Kimball, 2013.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.ericzwick.com/public_goods/twelve_steps.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The 12 Step Program for Grad School&amp;rdquo;&lt;/a&gt;, Erik Zwick.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;starting&#34;&gt;Starting&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/hagertynw/grad-school-reflections/blob/master/grad_school_reflections.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Reflections on Grad School in Economics&amp;rdquo;&lt;/a&gt;, Nick Hagerty, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://law.vanderbilt.edu/phd/How_to_Survive_1st_Year.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to survive your first year of graduate school in economics&amp;rdquo;&lt;/a&gt;, Matthew Pearson, 2005.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;during-the-phd&#34;&gt;During the PhD&lt;/h2&gt;
+&lt;h3 id=&#34;mental-health&#34;&gt;Mental Health&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://scholar.harvard.edu/files/bolotnyy/files/bbb_mentalhealth_paper.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Graduate Student Mental Health: Lessons from American Economics Departments&amp;rdquo;&lt;/a&gt;, Bolotnyy, Valentin, Matthew Basilico, and Paul Barreira, 2021.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.insidehighered.com/news/2019/11/14/phd-student-poll-finds-mental-health-bullying-and-career-uncertainty-are-top&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Mental Health, Bullying, Career Uncertainty&amp;rdquo;&lt;/a&gt;, Colleen Flahert, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.sciencemag.org/careers/2019/03/how-mindfulness-can-help-phd-students-deal-mental-health-challenges&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How mindfulness can help Ph.D. students deal with mental health challenges&amp;rdquo;&lt;/a&gt;, Katie Langin, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.phdstudies.com/article/managing-your-mental-health-as-a-phd-student/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Managing Your Mental Health as a PhD Student&amp;rdquo;&lt;/a&gt;, Joanna Hughes, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.psychologytoday.com/us/blog/emotional-mastery/201904/what-makes-it-so-hard-ask-help&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;What Makes It So Hard to Ask for Help?&amp;quot;&lt;/a&gt;, Joan Rosenberg, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.sciencemag.org/careers/2018/11/grad-school-depression-almost-took-me-end-road-i-found-new-start&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Grad school depression almost took me to the end of the road—but I found a new start&amp;rdquo;&lt;/a&gt;, Francis Aguisanda, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/nj7587-555a.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Faking it&amp;rdquo;&lt;/a&gt;, Chris Woolston, 2016.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://blogs.nature.com/naturejobs/2016/09/14/panic-and-a-phd/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Panic and a PhD&amp;rdquo;&lt;/a&gt;, Jack Leeming, 2016.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://qz.com/547641/theres-an-awful-cost-to-getting-a-phd-that-no-one-talks-about/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;There’s an awful cost to getting a PhD that no one talks about&amp;rdquo;&lt;/a&gt;, Jennifer Walker, 2015.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;research-and-ideas&#34;&gt;Research and Ideas&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.ricardodahis.com/files/papers/Dahis_Advice_Research.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Advice for Academic Research&amp;rdquo;&lt;/a&gt;, Ricardo Dahis, 2021.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.20191573&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Sins of Omission and the Practice of Economics&amp;rdquo;&lt;/a&gt;, George A. Akerlof, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/@paul.niehaus/doing-research-18cb310529e0&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Doing research&amp;rdquo;&lt;/a&gt;, Paul Niehaus, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://static1.squarespace.com/static/55c143d9e4b0cb07521c6d17/t/5b4f409f575d1ff83c2f12d8/1531920545061/PhDGuidebook.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;An unofficial guidebook for PhD students in economics and education&amp;rdquo;&lt;/a&gt;, Alex Eble, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/0ha9gcq0t22kyyy1rqv15mkmauw1py18&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Research Productivity of New PhDs in Economics: The Surprisingly High Non-Success of the Successful&amp;rdquo;&lt;/a&gt;, John P. Conley and Ali Sina Önder, 2014.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://econ.lse.ac.uk/staff/spischke/phds/How%20to%20start.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to get started on research in economics?&amp;quot;&lt;/a&gt;, Steve Pischke, 2009.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/km7cxhcxgfcdpk4cp38b47x7is7lum11&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Importance of Stupidity in Scientific Research&amp;rdquo;&lt;/a&gt;, Martin A. Schwartz, 2008.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://stevepavlina.com/blog/2007/01/7-rules-for-maximizing-your-creative-output/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;7 Rules for Maximizing Your Creative Output&amp;rdquo;&lt;/a&gt;, Steve Pavlina, 2007.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://people.ischool.berkeley.edu/~hal/Papers/how.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How To Build An Economic Model in Your Spare Time&amp;rdquo;&lt;/a&gt;, Hal. R. Varian, 1998.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.columbia.edu/~drd28/Thesis%20Research.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Ph.D. Thesis Research: Where do I Start?&amp;quot;&lt;/a&gt;, Don Davis.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;presenting&#34;&gt;Presenting&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://david-schindler.de/unfair-questions/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Unfair Questions&amp;rdquo;&lt;/a&gt;, David Schindler, 2021.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/paulgp/beamer-tips/blob/master/slides.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Beamer Tips for Presentations&amp;rdquo;&lt;/a&gt;, Paul Goldsmith-Pinkham, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.princeton.edu/~reddings/tradephd/public_speaking_for_academic_economists.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Public Speaking for Academic Economists&amp;rdquo;&lt;/a&gt;, Rachel Meager, 2017.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.europeanjobmarketofeconomists.org/uploads/HowToPresent_LaFerrara.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to present your job market paper&amp;rdquo;&lt;/a&gt;, Eliana La Ferrara, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://people.bu.edu/guren/Guren_HowToGiveALunchTalk.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How To Give a Lunch Talk&amp;rdquo;&lt;/a&gt;, Adam Guren, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://chrisblattman.com/2010/02/22/the-discussants-art/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Discussant&amp;rsquo;s Art&amp;rdquo;&lt;/a&gt;, Chris Blattman, 2010.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1332144&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to be a Great Conference Participants&amp;rdquo;&lt;/a&gt;, Art Carden, 2009.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://econ.lse.ac.uk/staff/spischke/phds/The%20Big%205.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The &amp;ldquo;Big 5&amp;rdquo; and Other Ideas For Presentations&amp;rdquo;&lt;/a&gt;, Cox, Donald,  2000.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/aw92d7kl7xh5s4zsub8jq3qnknq9zcsi&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to Give an Applied Micro Talk&amp;rdquo;&lt;/a&gt;, Jesse M. Shapiro.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/37j3eip7x9fdg30n4eeepu92228eb999&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Tips on How to Avoid Disaster in Presentations&amp;rdquo;&lt;/a&gt;, Monika Piazzesi.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.ssc.wisc.edu/~bhansen/placement/Seminar%20Slides.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Seminar Slides &amp;ldquo;&lt;/a&gt;, Bruce Hansen.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;writing&#34;&gt;Writing&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.google.com/url?q=https%3A%2F%2Fwww.dropbox.com%2Fs%2Fq7wjaidl5w91srt%2FGuest%20lecture%20FS.pdf%3Fdl%3D0&amp;amp;sa=D&amp;amp;sntz=1&amp;amp;usg=AFQjCNG_nRs6QlkZzWBHAy0PjF4jfEYBAw&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;5 Steps Toward a Paper&amp;rdquo;&lt;/a&gt;, Frank Schilbach, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/d41586-019-02918-5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Novelist Cormac McCarthy’s tips on how to write a great science paper&amp;rdquo;&lt;/a&gt;, Van Savage and Pamela Yeh, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://marcfbellemare.com/wordpress/12797&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The “Middle Bits” Formula for Applied Papers&amp;rdquo;&lt;/a&gt;, Marc Bellamare, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://marcfbellemare.com/wordpress/12060&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Conclusion Formula&amp;rdquo;&lt;/a&gt;, Marc Bellamare, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.albany.edu/spatial/training/5-The%20Introduction%20Formula.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Introduction Formula&amp;rdquo;&lt;/a&gt;, Keith Head, 2015.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.people.fas.harvard.edu/~pnikolov/resources/writingtips.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Writing Tips For Economics Research Papers&amp;rdquo;&lt;/a&gt;, Plamen Nikolov, 2013.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://economics.harvard.edu/files/economics/files/tenruleswriting.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Ten Most Important Rules of Writing Your Job Market Paper&amp;rdquo;&lt;/a&gt;, Goldin, Claudia and Lawrence Katz, 2008.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://schwert.ssb.rochester.edu/aec510/phd_paper_writing.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Writing Tips for Ph.D. Students&amp;rdquo;&lt;/a&gt;, John Cochrane, 2005.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://qed.econ.queensu.ca/pub/faculty/sumon/mkremer_checklist_paper.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Writing Papers: A Checklist&amp;rdquo;&lt;/a&gt;, Michael Kremer.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;referiing&#34;&gt;Referiing&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.academicsequitur.com/2019/06/30/how-to-write-a-good-referee-report/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How To Write A Good Referee Report&amp;rdquo;&lt;/a&gt;, Tatyana Deryugina, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/lgmhqw5uxvrb7qdrhxxskzki9pcwx7o6&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to Review Manuscripts&amp;rdquo;&lt;/a&gt;, Elsevier, 2015.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://marcfbellemare.com/wordpress/5542&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Contributing to Public Goods: My 20 Rules for Refereeing&amp;rdquo;&lt;/a&gt;, Marc F. Bellemare, 2012&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;finishing-the-phd&#34;&gt;Finishing the PhD&lt;/h2&gt;
+&lt;h3 id=&#34;the-job-market&#34;&gt;The Job Market&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.aeaweb.org/content/file?id=869&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;A Guide and Advice for Economists on the U.S. Junior Academic Job Market 2018-2019 Edition&amp;rdquo;&lt;/a&gt;, John Cawley, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://chrisblattman.com/job-market/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Academic job market advice for economics, political science, public policy, and other professional schools&amp;rdquo;&lt;/a&gt;, Blattman, Christopher,  2015.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.ericzwick.com/public_goods/love_the_market.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How I Learned to Stop Worrying and Love the Job Market&amp;rdquo;&lt;/a&gt;, Erik Zwick, 2014.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;the-private-sector&#34;&gt;The Private Sector&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.linkedin.com/pulse/my-journey-from-economics-phd-data-scientist-tech-rose-tan&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;My Journey from Economics PhD to Data Scientist in Tech&amp;rdquo;&lt;/a&gt;, Rose Tan, 2021.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://scarlet-chen.medium.com/tech-industry-jobs-for-econ-phds-54a276dda80b&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Tech Industry Jobs for Econ PhDs&amp;rdquo;&lt;/a&gt;, Scarlet Chen, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://scarlet-chen.medium.com/my-journey-from-econ-phd-to-tech-part-1-interview-prep-networking-d256918410a2&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;My Journey from Econ PhD to Tech&amp;rdquo;&lt;/a&gt;, Scarlet Chen, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/d41586-018-05838-y&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Why it is not a ‘failure’ to leave academia&amp;rdquo;&lt;/a&gt;, Philipp Kruger, 2018.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;the-tenure-track&#34;&gt;The Tenure Track&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://blogs.scientificamerican.com/guest-blog/the-awesomest-7-year-postdoc-or-how-i-learned-to-stop-worrying-and-love-the-tenure-track-faculty-life/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Awesomest 7-Year Postdoc or: How I Learned to Stop Worrying and Love the Tenure-Track Faculty Life&amp;rdquo;&lt;/a&gt;, Radhika Nagpal, 2013.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;more&#34;&gt;More&lt;/h2&gt;
+&lt;p&gt;You can find more resources here:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;AEA &lt;a href=&#34;https://www.aeaweb.org/about-aea/committees/cswep/mentoring/reading&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Mentoring Reading Materials&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Johannes Pfeifer &lt;a href=&#34;https://sites.google.com/site/pfeiferecon/job-market-resources&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Job Market Resources&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Kristoph Kronenberg &lt;a href=&#34;https://sites.google.com/view/christoph-kronenberg/home/resources&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Resources&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Patrick Button &lt;a href=&#34;https://www.patrickbutton.com/resources&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Resources&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Ryan Edwards &lt;a href=&#34;http://www.ryanbedwards.com/resources&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Resources&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Jennifer Doleac &lt;a href=&#34;http://jenniferdoleac.com/resources/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Resources&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Amanda Agan &lt;a href=&#34;https://sites.google.com/site/amandayagan/writingadvice&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Writing and Presentation Advice&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Random forum &lt;a href=&#34;http://www.inhe365.com/thread-17506-1-1.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Resource Collection&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>How To Make A Personal Website with Hugo</title>
+      <link>https://matteocourthoud.github.io/post/website/</link>
+      <pubDate>Thu, 23 Sep 2021 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/website/</guid>
+      <description>&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;In this tutorial, I am going to explain how to build a personal website on &lt;a href=&#34;https://www.github.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt; using the &lt;strong&gt;&lt;a href=&#34;https://wowchemy.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Wowchemy&lt;/a&gt;&lt;/strong&gt; theme from &lt;a href=&#34;https://gohugo.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Hugo&lt;/a&gt;, also known as &lt;a href=&#34;https://themes.gohugo.io/academic/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Hugo Academic&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Note that Hugo offers &lt;a href=&#34;https://themes.gohugo.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;many other website templates&lt;/a&gt;. I suggest checking them out. Some interesting alternatives are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://themes.gohugo.io/theme/hugo-story/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://themes.gohugo.io/theme/hugo-story/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://themes.gohugo.io/theme/somrat/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://themes.gohugo.io/theme/somrat/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://themes.gohugo.io/theme/hugo-uilite/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://themes.gohugo.io/theme/hugo-uilite/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://themes.gohugo.io/theme/story/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://themes.gohugo.io/theme/story/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;However, I will concentrate on the Hugo Academic theme, since it&amp;rsquo;s the one I used for this website and it&amp;rsquo;s the the best one for building academic profile pages. I also suggest checking out &lt;a href=&#34;https://sites.google.com/new&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google Sites&lt;/a&gt; as they are a valid alternative.&lt;/p&gt;
+&lt;p&gt;The first part of this guide is general and valid for any Hugo theme. The original guide can be found &lt;a href=&#34;https://wowchemy.com/docs/getting-started/install/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;create-website&#34;&gt;Create Website&lt;/h2&gt;
+&lt;h3 id=&#34;0-prerequisites&#34;&gt;0. Prerequisites&lt;/h3&gt;
+&lt;p&gt;Before we start, I will take for granted the following:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;that you have an account on &lt;a href=&#34;https://www.github.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;that you have &lt;a href=&#34;https://www.r-project.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;R&lt;/a&gt; installed&lt;/li&gt;
+&lt;li&gt;that you have  &lt;a href=&#34;https://www.rstudio.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;RStudio&lt;/a&gt; installed&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;1-create-github-repository&#34;&gt;1. Create Github Repository&lt;/h3&gt;
+&lt;p&gt;First, go to your &lt;a href=&#34;https://www.github.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt; page and create a new repository (&lt;code&gt;+&lt;/code&gt; button in the top-right corner).&lt;/p&gt;
+&lt;img src=&#34;img/new_repo.png&#34; alt=&#34;new_repo&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;Name the repository &lt;code&gt;username.github.io&lt;/code&gt; where &lt;code&gt;username&lt;/code&gt; is your Github username.&lt;/p&gt;
+&lt;img src=&#34;img/name_repo.png&#34; alt=&#34;name_repo&#34; style=&#34;zoom:40%;&#34; /&gt;
+&lt;p&gt;In my case, my github username is &lt;code&gt;matteocourthoud&lt;/code&gt;, therefore the repository is &lt;code&gt;matteocourthoud.github.io&lt;/code&gt; and my personal website is &lt;a href=&#34;https://matteocourthoud.github.io&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://matteocourthoud.github.io&lt;/a&gt;. Use the default settings when creating the repository.&lt;/p&gt;
+&lt;h3 id=&#34;2-install-blogdown-and-hugo&#34;&gt;2. Install Blogdown and Hugo&lt;/h3&gt;
+&lt;p&gt;Now you need to install Blogdown, which is the program what will allow you to build and deploy your website, and Hugo, which is the template generator.&lt;/p&gt;
+&lt;p&gt;Switch to RStudio and type the following commands&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# Install blogdown
+install.packages(&amp;quot;blogdown&amp;quot;)
+
+# Install Hugo
+blogdown::install_hugo()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now everything should be ready.&lt;/p&gt;
+&lt;h3 id=&#34;3-setup-folder&#34;&gt;3. Setup folder&lt;/h3&gt;
+&lt;p&gt;Open RStudio and select &lt;code&gt;New Project&lt;/code&gt;&lt;/p&gt;
+&lt;img src=&#34;img/new_project.png&#34; alt=&#34;new_project&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;Select &lt;code&gt;New Directory&lt;/code&gt; when asked where to create the project&lt;/p&gt;
+&lt;img src=&#34;img/new_project2.png&#34; alt=&#34;new_project2&#34; style=&#34;zoom:40%;&#34; /&gt;
+&lt;p&gt;Then select &lt;code&gt;Website using blogdown&lt;/code&gt; as project type&lt;/p&gt;
+&lt;img src=&#34;img/new_project3.png&#34; alt=&#34;new_project3&#34; style=&#34;zoom:40%;&#34; /&gt;
+&lt;p&gt;Now you have to select a couple of options&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Directory name&lt;/code&gt;: here input the name of the folder which will contain all the website files. The name is irrelevant. I called mine &lt;code&gt;website&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Create project as a subdirectory of&lt;/code&gt;: select the directory in which you want to put the website folder.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Theme&lt;/code&gt;: input &lt;code&gt;wowchemy/starter-academic&lt;/code&gt; instead of the default theme.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img src=&#34;img/new_project4.png&#34; alt=&#34;new_project4&#34; style=&#34;zoom:40%;&#34; /&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: if you want to install a different theme, just go on the corresponding Github page (for example &lt;a href=&#34;https://github.com/caressofsteel/hugo-story&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/caressofsteel/hugo-story&lt;/a&gt;) and instead of &lt;code&gt;gcushen/hugo-academic&lt;/code&gt;, insert the corresponding Github repository (for example &lt;code&gt;caressofsteel/hugo-story&lt;/code&gt;).&lt;/p&gt;
+&lt;p&gt;If you go into the website folder, it should look something like this.&lt;/p&gt;
+&lt;img src=&#34;img/folder.png&#34; alt=&#34;folder&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;h3 id=&#34;4-build-website&#34;&gt;4. Build website&lt;/h3&gt;
+&lt;p&gt;To build the website, open the RProject file &lt;code&gt;website.Rproj&lt;/code&gt; in RStudio and type&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;blogdown::hugo_build(local=TRUE)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;img src=&#34;img/hugo_build.png&#34; alt=&#34;hugo_build&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;This command will generate a &lt;code&gt;public/&lt;/code&gt; subfolder in which the actual code of the website is stored.&lt;/p&gt;
+&lt;p&gt;Don&amp;rsquo;t ask me why, but the option &lt;code&gt;local=TRUE&lt;/code&gt; seems to make a difference. Updating without it sometimes does not change the content in the &lt;code&gt;\public&lt;/code&gt; subfolder.&lt;/p&gt;
+&lt;img src=&#34;img/folder2.png&#34; alt=&#34;folder2&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;To preview the website, type in RStudio&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;blogdown::serve_site()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The following preview should automatically open in your browser.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/prevew.png&#34; alt=&#34;prevew&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Previewing the website is very useful as it allows you to see live changes locally inside RStudio, before publishing them. This is the &lt;strong&gt;main advantage of working in RStudio&lt;/strong&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;5-publish-website&#34;&gt;5. Publish website&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;Importantly&lt;/strong&gt;, before pushing the code online, you need to open the file &lt;code&gt;config.yaml&lt;/code&gt; and change the &lt;code&gt;baseurl&lt;/code&gt; to your future website url, which will be &lt;code&gt;https://username.github.io/&lt;/code&gt;, where &lt;code&gt;username&lt;/code&gt; is our Github username.&lt;/p&gt;
+&lt;img src=&#34;img/username.png&#34; alt=&#34;username&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;Now that you have set the correct url, you have to push the changes from the &lt;code&gt;public/&lt;/code&gt; folder to your &lt;code&gt;username.github.io&lt;/code&gt; repository on Github.&lt;/p&gt;
+&lt;p&gt;To do that, you need to get to the website folder. Let&amp;rsquo;s assume that the path to your folder is &lt;code&gt;Documents/website&lt;/code&gt;. Open the Terminal and type&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;cd Documents/website/public
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The following code will link the &lt;code&gt;public/&lt;/code&gt; folder, containing the actual code of the website, to your  &lt;code&gt;username.github.io&lt;/code&gt; repository.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# Init git in the /website/public/ folder
+git init
+
+# Add and commit the changes
+git add .
+git commit -m &amp;quot;first commit&amp;quot;
+
+# Set origin
+git remote add origin https://github.com/username/username.github.io.git
+
+# Rename local branch
+git branch -M main
+
+# And push your updates online
+git push -u origin main
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Wait a few seconds (or minutes for heavy changes) and your website should be online!&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;If the website is not working&lt;/strong&gt;, you can check the following:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Is there anything in your &lt;code&gt;\public&lt;/code&gt; folder? (does it even exist?) If not, something went wrong when compiling the website with &lt;code&gt;blogdown::hugo_build()&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Inside your &lt;code&gt;\public&lt;/code&gt; folder, there should be an &lt;code&gt;index.html&lt;/code&gt; file. If you double-click on it, you should see a local preview of your website in your browser. If not, something in the website code is wrong.&lt;/li&gt;
+&lt;li&gt;Is the content of your &lt;code&gt;\public&lt;/code&gt; folder exactly the same of the content of your Github repository? If not, something went wrong when pushing to Github.&lt;/li&gt;
+&lt;li&gt;Did you name your Github repository &lt;code&gt;username.github.io&lt;/code&gt;, where &lt;code&gt;username&lt;/code&gt; is your Github username?&lt;/li&gt;
+&lt;li&gt;Did you change the &lt;code&gt;baseurl&lt;/code&gt; option in the file &lt;code&gt;config.yaml&lt;/code&gt; to &lt;code&gt;https://username.github.io/&lt;/code&gt;, where &lt;code&gt;username&lt;/code&gt; is your Github username?&lt;/li&gt;
+&lt;li&gt;You can check the list of websites deployments at &lt;code&gt;https://github.com/username/username.github.io/deployments&lt;/code&gt;. Control that they correspond with your commits.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;If all the conditions are satisfied, but the website is still not online, maybe it&amp;rsquo;s just a matter of time. Have some patience.&lt;/p&gt;
+&lt;h2 id=&#34;basic-customization&#34;&gt;Basic Customization&lt;/h2&gt;
+&lt;p&gt;The basic files that you want to modify to customize your website are the following:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;config.yaml&lt;/code&gt;: general website information&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;config/_default/params.yaml&lt;/code&gt;: website customization&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;config/_default/menus.yaml&lt;/code&gt;: top bar / menu customization&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;content/authors/admin/_index.md&lt;/code&gt;: personal information&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img src=&#34;img/files.png&#34; alt=&#34;files&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;For what concerns &lt;strong&gt;images&lt;/strong&gt;, there are two main things you might want to modify:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Profile picture: change the &lt;code&gt;content/authors/admin/avatar.jpg&lt;/code&gt; picture&lt;/li&gt;
+&lt;li&gt;Website icon: change the &lt;code&gt;assets/media/icon.png&lt;/code&gt; picture&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img src=&#34;img/images.png&#34; alt=&#34;images&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;In order to modify the &lt;strong&gt;widgets&lt;/strong&gt; on your homepage, go to &lt;code&gt;content/home/&lt;/code&gt; and modify the files inside. If you want to remove a section, just open the corresponding file and select &lt;code&gt;active: false&lt;/code&gt;. If there is no &lt;code&gt;active&lt;/code&gt; option, just copy the line &lt;code&gt;active: false&lt;/code&gt; in the corresponding file.&lt;/p&gt;
+&lt;img src=&#34;img/widgets.png&#34; alt=&#34;widgets&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;In my website I have only the following sections set to true:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;about&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;projects&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;posts&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;contact&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;To change the &lt;strong&gt;color palette&lt;/strong&gt; of the website, go to &lt;code&gt;data\theme&lt;/code&gt; and generate a &lt;code&gt;custom.toml&lt;/code&gt; file with the following content:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-toml&#34;&gt;# Theme metadata
+name = &amp;quot;Custom&amp;quot;
+
+# Is theme light or dark?
+light = true
+
+# Primary
+primary = &amp;quot;#284f7a&amp;quot;
+
+# Menu
+menu_primary = &amp;quot;#fff&amp;quot;
+menu_text = &amp;quot;#34495e&amp;quot;
+menu_text_active = &amp;quot;#284f7a&amp;quot;
+menu_title = &amp;quot;#2b2b2b&amp;quot;
+
+# Home sections
+home_section_odd = &amp;quot;rgb(255, 255, 255)&amp;quot;
+home_section_even = &amp;quot;rgb(247, 247, 247)&amp;quot;
+
+[dark]
+  link = &amp;quot;#bbdefb&amp;quot;
+  link_hover = &amp;quot;#bbdefb&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then go to the &lt;code&gt;config/_default/params.yaml&lt;/code&gt; file and set the &lt;code&gt;theme&lt;/code&gt; to &lt;code&gt;custom&lt;/code&gt;.&lt;/p&gt;
+&lt;img src=&#34;img/custom_theme.png&#34; alt=&#34;custom_theme&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;You can get more information on how to personalize it &lt;a href=&#34;https://wowchemy.com/docs/getting-started/customization/#custom-theme&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;To change the &lt;strong&gt;font&lt;/strong&gt;, go to &lt;code&gt;data\fonts&lt;/code&gt; and generate a &lt;code&gt;custom.toml&lt;/code&gt; file with the following content:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-toml&#34;&gt;# Font style metadata
+name = &amp;quot;Custom&amp;quot;
+
+# Optional Google font URL
+google_fonts = &amp;quot;family=Roboto+Mono&amp;amp;family=Source+Sans+Pro:wght@200;300;400;700&amp;quot;
+
+# Font families
+heading_font = &amp;quot;Source Sans Pro&amp;quot;
+body_font = &amp;quot;Source Sans Pro&amp;quot;
+nav_font = &amp;quot;Source Sans Pro&amp;quot;
+mono_font = &amp;quot;Roboto Mono&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then go to the &lt;code&gt;config/_default/params.yaml&lt;/code&gt; file and set the &lt;code&gt;font&lt;/code&gt; to &lt;code&gt;Custom&lt;/code&gt;.&lt;/p&gt;
+&lt;img src=&#34;img/custom_font.png&#34; alt=&#34;custom_font&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;You can get more information on how to personalize it &lt;a href=&#34;https://wowchemy.com/docs/getting-started/customization/#custom-font&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;. Importantly, by default the website supports only fonts of weight 400 and 700. If you want a lighter font, as the &lt;a href=&#34;https://fonts.google.com/specimen/Source&amp;#43;Sans&amp;#43;Pro&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Source Sans Pro&lt;/a&gt; I use for my website, you have to dig into the advanced customization (which requires HTML and CSS skills).&lt;/p&gt;
+&lt;h2 id=&#34;advanced-customization&#34;&gt;Advanced Customization&lt;/h2&gt;
+&lt;p&gt;Advanced customization is possible but &lt;strong&gt;it&amp;rsquo;s a pain&lt;/strong&gt;. You basically want to go inside &lt;code&gt;themes\github.com\wowchemy\wowchemy-hugo-modules\wowchemy&lt;/code&gt; and start digging. Tip: you want to start digging in the folowing places:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;In &lt;code&gt;layouts\partials&lt;/code&gt; to edit the HTML files&lt;/li&gt;
+&lt;li&gt;In &lt;code&gt;assets\scss&lt;/code&gt; to edit the SCSS code&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If you want to copy my exact theme, I have published my custom theme here: &lt;a href=&#34;https://github.com/matteocourthoud/custom-wowchemy-settings&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/custom-wowchemy-settings&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;You have to do the following:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;go inside the &lt;code&gt;theme&lt;/code&gt; folder&lt;/li&gt;
+&lt;li&gt;copy the content of the &lt;code&gt;custom-wowchemy-theme&lt;/code&gt; repository in a folder there&lt;/li&gt;
+&lt;li&gt;go to the &lt;code&gt;custom_toml&lt;/code&gt; file into the MODULES section&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img src=&#34;img/config_before.png&#34; alt=&#34;config_before&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;ul&gt;
+&lt;li&gt;change the second link to the folder with the custom settings&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img src=&#34;img/config_after.png&#34; alt=&#34;config_after&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;Now your website should look quite similar to mine! :)&lt;/p&gt;
+&lt;h2 id=&#34;google-analytics&#34;&gt;Google Analytics&lt;/h2&gt;
+&lt;p&gt;In order for the website to be displayed in Google searches, you need to ask Google to track it.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Go to the &lt;a href=&#34;https://search.google.com/search-console&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google Search Console website&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Use the &lt;a href=&#34;https://search.google.com/search-console?action=inspect&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;URL Inspection tool&lt;/a&gt; to inspect the URL of your personal website: &lt;code&gt;https://username.github.io&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Use &lt;strong&gt;Request indexing&lt;/strong&gt; to request Google to index your website so that it will apprear in Google searches.&lt;/li&gt;
+&lt;li&gt;Under &lt;strong&gt;Sitemap&lt;/strong&gt; provide the link to your website sitemap to Google. It should be &lt;code&gt;https://username.github.io/sitemap.xml&lt;/code&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In order to receive statistics on your website, you first need to get your associated tracking code.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Go to the &lt;a href=&#34;https://www.google.com/analytics/web/#home/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google Analytics website&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Click &lt;a href=&#34;https://support.google.com/analytics/answer/6132368&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Admin&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Select an account from the menu in the &lt;strong&gt;ACCOUNT&lt;/strong&gt; column.&lt;/li&gt;
+&lt;li&gt;Select a property from the menu in the &lt;strong&gt;PROPERTY&lt;/strong&gt; column.&lt;/li&gt;
+&lt;li&gt;Under &lt;strong&gt;PROPERTY&lt;/strong&gt;, click Tracking Info &amp;gt; Tracking Code.&lt;/li&gt;
+&lt;li&gt;Your tracking ID and property number are displayed at the top of the page. It should have the form &lt;code&gt;UA-xxxxxxxxx-1&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Now that we have the website tracking code, we need to insert it into the &lt;code&gt;googleAnalytics&lt;/code&gt; section of the &lt;code&gt;config/_default/params.yaml&lt;/code&gt; file.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;marketing:
+  google_analytics: &#39;UA-xxxxxxxxx-1&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The mobile application of &lt;a href=&#34;https://analytics.google.com/analytics/web/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google Analytics&lt;/a&gt; is particular intuitive and allows you to monitor your website traffic in detail. You just need to link the website from the &lt;a href=&#34;https://search.google.com/search-console&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google Sesarch Console&lt;/a&gt; and then you can motitor you website from this platform. There is also a very nice mobile app for both &lt;a href=&#34;https://play.google.com/store/apps/details?id=com.google.android.apps.giant&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Android&lt;/a&gt; and &lt;a href=&#34;https://apps.apple.com/us/app/google-analytics/id881599038&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;iOS&lt;/a&gt; to monitor your website from your smartphone.&lt;/p&gt;
+&lt;p&gt;Another good free tool to analyze the &amp;ldquo;quality&amp;rdquo; of your website is &lt;a href=&#34;https://www.seomechanic.com/seo-analyzer/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;SEO Mechanic&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;p&gt;Here are the main resources I used to write this guide:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Wowchemy website: &lt;a href=&#34;https://wowchemy.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://wowchemy.com/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Old Academic website: &lt;a href=&#34;https://sourcethemes.com/academic/docs/install/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://sourcethemes.com/academic/docs/install/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Guide for the Terminal: &lt;a href=&#34;https://github.com/fliptanedo/FlipWebsite2017&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/fliptanedo/FlipWebsite2017&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;iframe src=&#34;https://docs.google.com/forms/d/e/1FAIpQLSdKqWZQAbHkcNLYvjxZ_fVrAZCJkNmsBtUBCCcfZxYzJCaqIQ/viewform?embedded=true&#34; width=&#34;640&#34; height=&#34;530&#34; frameborder=&#34;0&#34; marginheight=&#34;0&#34; marginwidth=&#34;0&#34;&gt;Loading…&lt;/iframe&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Coding Resources for Social Sciences</title>
+      <link>https://matteocourthoud.github.io/post/coding/</link>
+      <pubDate>Tue, 24 Aug 2021 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/coding/</guid>
+      <description>&lt;p&gt;In this page I will collect useful resources for coding for researchers in social sciences. A mention goes to &lt;a href=&#34;https://maxkasy.github.io/home/computationlinks/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Maximilian Kasy&lt;/a&gt; that inspired me to build this page.&lt;/p&gt;
+&lt;p&gt;A quick legend:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;📗 book&lt;/li&gt;
+&lt;li&gt;🌐 webpage&lt;/li&gt;
+&lt;li&gt;📈 charts&lt;/li&gt;
+&lt;li&gt;🎥 videos&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;econometrics-and-statistics&#34;&gt;Econometrics and Statistics&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;📗&lt;a href=&#34;https://www.ssc.wisc.edu/~bhansen/econometrics/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Bruce Hansen&amp;rsquo;s Econometrics&lt;/strong&gt;&lt;/a&gt;:
+By far the best freely available and regularly updated resource for Econometrics&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;machine-learning&#34;&gt;Machine Learning&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;https://web.stanford.edu/~hastie/Papers/ESLII.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;The Elements of Statistical Learning&lt;/strong&gt;&lt;/a&gt;:
+General introduction to machine learning&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;http://www.gaussianprocess.org/gpml/chapters/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Gaussian Processes for Machine Learning&lt;/strong&gt;&lt;/a&gt;:
+Extremely useful tools for nonparametric Bayesian modeling&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;https://www.deeplearningbook.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Deep Learning&lt;/strong&gt;&lt;/a&gt;:
+The theory and implementation of neural nets&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;https://www.cs.huji.ac.il/~shais/UnderstandingMachineLearning/understanding-machine-learning-theory-algorithms.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Understanding Machine Learning: From Theory to Algorithms&lt;/strong&gt;&lt;/a&gt;:
+An introduction to statistical learning theory in the tradition of Vapnik&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;http://www.incompleteideas.net/book/RLbook2018.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Reinforcement Learning - An Introduction&lt;/strong&gt;&lt;/a&gt;:
+Adaptive learning for Markov decision problems&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;http://jeffe.cs.illinois.edu/teaching/algorithms/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Algorithms&lt;/strong&gt;&lt;/a&gt;:
+Introduction to the theory of algorithms&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://playground.tensorflow.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Tensorflow Playground&lt;/strong&gt;&lt;/a&gt;:
+Visualisation tool for neural networks&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://www.fast.ai/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Artificial Intelligence&lt;/strong&gt;&lt;/a&gt;:
+Online lectures on AI&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://global.oup.com/academic/product/the-ethical-algorithm-9780190948207&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;The Ethical Algorithm&lt;/strong&gt;&lt;/a&gt;:
+How to impose normative constraints on ML and other algorithms&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;python&#34;&gt;Python&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://realpython.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;RealPython&lt;/strong&gt;&lt;/a&gt;:
+Collection of Python tutorials, from introductory to advanced. Also contains &lt;a href=&#34;https://realpython.com/learning-paths/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;learning paths&lt;/a&gt; for specific topics&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://python.quantecon.org/intro.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;QuantEcon Python&lt;/strong&gt;&lt;/a&gt;
+Tutorials and economic applications in Python, especially for macroeconomics&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://blog.finxter.com/python-cheat-sheets/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Cheat Sheets&lt;/strong&gt;&lt;/a&gt;:
+Collection of cheat sheets for python&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://docs.python-guide.org/writing/structure/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Structuring a Python project&lt;/strong&gt;&lt;/a&gt;:
+Advanced tutorial on how to structure a Python program&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://www.softwaretestinghelp.com/python-ide-code-editors/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;IDE Guide&lt;/strong&gt;&lt;/a&gt;:
+Comparison of IDEs for Python. Suggested: &lt;a href=&#34;https://www.jetbrains.com/pycharm/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyCharm&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://www.jetbrains.com/help/pycharm/configuring-remote-interpreters-via-ssh.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Configuring remote interpreters via SSH&lt;/strong&gt;&lt;/a&gt;:
+How to use Python remotely via SSH via PyCharm&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📈&lt;a href=&#34;https://www.kaggle.com/maheshdadhich/strength-of-visualization-python-visuals-tutorial/notebook&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Visualization in Python&lt;/strong&gt;&lt;/a&gt;:
+How to make nice graphs in Python, with a dedicated jupyter notebook&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📈&lt;a href=&#34;https://python-graph-gallery.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Python Graph Gallery&lt;/strong&gt;&lt;/a&gt;:
+Graph examples in Python&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;matlab&#34;&gt;Matlab&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://mathworks.com/help/matlab/matlab_oop/user-defined-classes.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;User defined classes in Matlab&lt;/strong&gt;&lt;/a&gt;:
+How to work with classes in Matlab&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://am111.readthedocs.io/en/latest/jmatlab_use.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Julyter Notebooks&lt;/strong&gt;&lt;/a&gt;:
+How to run a jupyter notebook with Matlab kernel&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📈&lt;a href=&#34;https://www.bradleymonk.com/wp/how-to-make-professional-looking-plots-for-journal-publication-using-matlab-r2014a-and-r2014b/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Graph Tips in Matlab&lt;/strong&gt;&lt;/a&gt; and &lt;a href=&#34;https://mathworks.com/matlabcentral/answers/133372-how-to-make-nice-plots&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;link2&lt;/a&gt;:
+Suggestions on how to make pretty graphs in Matlab&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;julia&#34;&gt;Julia&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://docs.julialang.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Julia Manual&lt;/strong&gt;&lt;/a&gt;:
+Julia unfortunately lacks a big community and tutorials, but it has a very good manual&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://julia.quantecon.org/index_toc.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;QuantEcon Julia&lt;/strong&gt;&lt;/a&gt;
+Tutorials and economic applications in Julia, especially for macroeconomics&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://medium.com/dev-genius/what-is-the-best-ide-for-developing-in-the-programming-language-julia-484c913f07bc&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;IDE Guide&lt;/strong&gt;&lt;/a&gt;:
+Guide for IDEs for Julia. Suggested: Juno for Atom.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;r&#34;&gt;R&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;https://cran.r-project.org/doc/manuals/r-release/R-intro.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;An Introduction to R&lt;/strong&gt;&lt;/a&gt;:
+Complete introduction to base R&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;http://r4ds.had.co.nz/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;R for Data Science&lt;/strong&gt;&lt;/a&gt;
+Introduction to data analysis using R, focused on the tidyverse packages&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;https://adv-r.hadley.nz/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Advanced R&lt;/strong&gt;&lt;/a&gt;:
+In depth discussion of programming in R&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;https://bradleyboehmke.github.io/HOML/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Hands-On Machine Learning with R&lt;/strong&gt;&lt;/a&gt;:
+Fitting ML models in R&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Bayesian statistics using Stan&lt;/strong&gt;&lt;/a&gt; and &lt;a href=&#34;https://mc-stan.org/docs/2_20/stan-users-guide/index.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;link&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://www.rstudio.com/resources/cheatsheets/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;RStudio Cheat Sheets&lt;/strong&gt;&lt;/a&gt;
+for various extensions, including data processing, visualization, writing web apps, …&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📈&lt;a href=&#34;https://www.r-graph-gallery.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;R Graph Gallery&lt;/strong&gt;&lt;/a&gt;:
+Graph examples in R&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📈&lt;a href=&#34;https://www.christophenicault.com/pages/visualizations/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Nice Graphs with code&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;A collection of elaborate graphs with code in R&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;others&#34;&gt;Others&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;📗&lt;a href=&#34;https://git-scm.com/book/en/v2&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Github Advanced&lt;/strong&gt;&lt;/a&gt;:
+Advanced guide for version control with Github&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🎥&lt;a href=&#34;https://missing.csail.mit.edu/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;The Missing Semester of Your CS Education&lt;/strong&gt;&lt;/a&gt;
+Video lectures and notes on tools for computer scientists (version control, debugging, &amp;hellip;)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;📈&lt;a href=&#34;http://pgfplots.sourceforge.net/gallery.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;PGF plots in Latex&lt;/strong&gt;&lt;/a&gt;:
+Gallery and examples to make plots directly in Latex&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://medium.com/@SergioPietri/how-to-setup-and-use-ssh-for-remote-connections-e86556d804dd&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Work remotely from server&lt;/strong&gt;&lt;/a&gt;:
+How to setup SSH for remote computing&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>How to access WRDS in Python</title>
+      <link>https://matteocourthoud.github.io/post/wrds/</link>
+      <pubDate>Tue, 09 Mar 2021 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/wrds/</guid>
+      <description>&lt;p&gt;In this page, I explain how to work with the WRDS database using Python.&lt;/p&gt;
+&lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
+&lt;p&gt;The first thing we need to do, is to set up a connection to the &lt;a href=&#34;https://wrds-www.wharton.upenn.edu/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;WRDS database&lt;/a&gt;. I am assuming you have credentials to log in. Check the &lt;a href=&#34;https://wrds-www.wharton.upenn.edu/login/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;log in page&lt;/a&gt; to make sure.&lt;/p&gt;
+&lt;p&gt;The second requirement is the &lt;a href=&#34;https://pypi.org/project/wrds/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;wrds&lt;/a&gt; Python package.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;pip3 install wrds
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now, in order to connect to the WRDS database, you just need to run the following commang in Python.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import wrds
+db = wrds.Connection() 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then, you will be propted to input your WRDS username and password.&lt;/p&gt;
+&lt;p&gt;However, if you are using a Python IDE such as &lt;a href=&#34;https://www.jetbrains.com/pycharm/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyCharm&lt;/a&gt;, you cannot run the command from the Python Console. Moreover, you might want to save your credentials once and for all, so that you don&amp;rsquo;t have to log in every time.&lt;/p&gt;
+&lt;p&gt;First, walk to your home directory from the Terminal (&lt;code&gt;/Users/username&lt;/code&gt;).&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;cd
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now create an empty &lt;code&gt;.pgpass&lt;/code&gt; file.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;touch .pgpass
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you write &lt;code&gt;your_username&lt;/code&gt; and &lt;code&gt;your_password&lt;/code&gt; into the &lt;code&gt;.pgpass&lt;/code&gt; file.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;echo &amp;quot;wrds-pgdata.wharton.upenn.edu:9737:wrds:your_username:your_password&amp;quot; &amp;gt;&amp;gt; .pgpass
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You also need to restrict permissions to the file.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;chmod 600 ~/.pgpass
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you can go back to your Python IDE and access the database by just inputing your username.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import wrds
+db = wrds.Connection(wrds_username=&#39;your_username&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If everything works, you should see the following output.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Loading library list...
+Done
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;query&#34;&gt;Query&lt;/h2&gt;
+&lt;p&gt;The available functions are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;db.connection() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.list_libraries()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.list_tables() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.get_table() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.describe_table() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.raw_sql() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.close()&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I make a simple example of how they work. Suppose first you want to list all the libraries in the WRDS database.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;db.list_libraries()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then you can list all the datasets within a given library.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;db.list_tables(library=&#39;comp&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Before downloading a table, you can describe it.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;df = db.describe_table(library=&#39;comp&#39;, table=&#39;funda&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To download the dataset you can use the &lt;code&gt;get_table()&lt;/code&gt; function.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;df = db.get_table(library=&#39;comp&#39;, table=&#39;funda&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can restrict both the rows and the columns you want to query.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;df_short = db.get_table(library=&#39;comp&#39;, table=&#39;funda&#39;, columns = [&#39;conm&#39;, &#39;gvkey&#39;, &#39;cik&#39;], obs=5)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can also query the database directly using SQL.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;df_sql = db.raw_sql(&#39;&#39;&#39;select conm, gvkey, cik FROM comp.funda WHERE fyear&amp;gt;2010 AND (indfmt=&#39;INDL&#39;)&#39;&#39;&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;sources&#34;&gt;Sources&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://wrds-www.wharton.upenn.edu/pages/support/programming-wrds/programming-python/querying-wrds-data-python/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Querying WRDS Data using Python&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://wrds-www.wharton.upenn.edu/documents/1443/wrds_connection.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Using Python on WRDS Platform&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://sites.duke.edu/kevinstandridge/2020/03/07/introduction-to-the-wrds-python-package/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Introduction to the WRDS Python Package&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://wizardkingz.github.io/wrdsdataaccesspython-tutorial/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;WRDS Data Access Via Python API&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

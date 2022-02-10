@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>wrds | Matteo Courthoud</title>
+    <link>https://matteocourthoud.github.io/tag/wrds/</link>
+      <atom:link href="https://matteocourthoud.github.io/tag/wrds/index.xml" rel="self" type="application/rss+xml" />
+    <description>wrds</description>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 09 Mar 2021 00:00:00 +0000</lastBuildDate>
+    <image>
+      <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
+      <title>wrds</title>
+      <link>https://matteocourthoud.github.io/tag/wrds/</link>
+    </image>
+    
+    <item>
+      <title>How to access WRDS in Python</title>
+      <link>https://matteocourthoud.github.io/post/wrds/</link>
+      <pubDate>Tue, 09 Mar 2021 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/wrds/</guid>
+      <description>&lt;p&gt;In this page, I explain how to work with the WRDS database using Python.&lt;/p&gt;
+&lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
+&lt;p&gt;The first thing we need to do, is to set up a connection to the &lt;a href=&#34;https://wrds-www.wharton.upenn.edu/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;WRDS database&lt;/a&gt;. I am assuming you have credentials to log in. Check the &lt;a href=&#34;https://wrds-www.wharton.upenn.edu/login/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;log in page&lt;/a&gt; to make sure.&lt;/p&gt;
+&lt;p&gt;The second requirement is the &lt;a href=&#34;https://pypi.org/project/wrds/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;wrds&lt;/a&gt; Python package.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;pip3 install wrds
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now, in order to connect to the WRDS database, you just need to run the following commang in Python.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import wrds
+db = wrds.Connection() 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then, you will be propted to input your WRDS username and password.&lt;/p&gt;
+&lt;p&gt;However, if you are using a Python IDE such as &lt;a href=&#34;https://www.jetbrains.com/pycharm/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyCharm&lt;/a&gt;, you cannot run the command from the Python Console. Moreover, you might want to save your credentials once and for all, so that you don&amp;rsquo;t have to log in every time.&lt;/p&gt;
+&lt;p&gt;First, walk to your home directory from the Terminal (&lt;code&gt;/Users/username&lt;/code&gt;).&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;cd
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now create an empty &lt;code&gt;.pgpass&lt;/code&gt; file.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;touch .pgpass
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you write &lt;code&gt;your_username&lt;/code&gt; and &lt;code&gt;your_password&lt;/code&gt; into the &lt;code&gt;.pgpass&lt;/code&gt; file.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;echo &amp;quot;wrds-pgdata.wharton.upenn.edu:9737:wrds:your_username:your_password&amp;quot; &amp;gt;&amp;gt; .pgpass
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You also need to restrict permissions to the file.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;chmod 600 ~/.pgpass
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you can go back to your Python IDE and access the database by just inputing your username.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import wrds
+db = wrds.Connection(wrds_username=&#39;your_username&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If everything works, you should see the following output.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Loading library list...
+Done
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;query&#34;&gt;Query&lt;/h2&gt;
+&lt;p&gt;The available functions are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;db.connection() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.list_libraries()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.list_tables() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.get_table() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.describe_table() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.raw_sql() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.close()&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I make a simple example of how they work. Suppose first you want to list all the libraries in the WRDS database.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;db.list_libraries()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then you can list all the datasets within a given library.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;db.list_tables(library=&#39;comp&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Before downloading a table, you can describe it.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;df = db.describe_table(library=&#39;comp&#39;, table=&#39;funda&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To download the dataset you can use the &lt;code&gt;get_table()&lt;/code&gt; function.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;df = db.get_table(library=&#39;comp&#39;, table=&#39;funda&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can restrict both the rows and the columns you want to query.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;df_short = db.get_table(library=&#39;comp&#39;, table=&#39;funda&#39;, columns = [&#39;conm&#39;, &#39;gvkey&#39;, &#39;cik&#39;], obs=5)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can also query the database directly using SQL.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;df_sql = db.raw_sql(&#39;&#39;&#39;select conm, gvkey, cik FROM comp.funda WHERE fyear&amp;gt;2010 AND (indfmt=&#39;INDL&#39;)&#39;&#39;&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;sources&#34;&gt;Sources&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://wrds-www.wharton.upenn.edu/pages/support/programming-wrds/programming-python/querying-wrds-data-python/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Querying WRDS Data using Python&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://wrds-www.wharton.upenn.edu/documents/1443/wrds_connection.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Using Python on WRDS Platform&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://sites.duke.edu/kevinstandridge/2020/03/07/introduction-to-the-wrds-python-package/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Introduction to the WRDS Python Package&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://wizardkingz.github.io/wrdsdataaccesspython-tutorial/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;WRDS Data Access Via Python API&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

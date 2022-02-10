@@ -1,0 +1,1739 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Instrumental Variables Endogeneity We say that there is endogeneity in the linear regression model if $\mathbb E[x_i \varepsilon_i] \neq 0$.
+The random vector $z_i$ is an instrumental variable in the linear regression model if the following conditions are met." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/metrics/06_endogeneity/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/metrics/06_endogeneity/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/metrics/06_endogeneity/" />
+  <meta property="og:title" content="Endogeneity | Matteo Courthoud" />
+  <meta property="og:description" content="Instrumental Variables Endogeneity We say that there is endogeneity in the linear regression model if $\mathbb E[x_i \varepsilon_i] \neq 0$.
+The random vector $z_i$ is an instrumental variable in the linear regression model if the following conditions are met." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2021-10-29T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2021-10-29T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Endogeneity | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="07162f3680824234e3d24605eb09ffd5" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/metrics/">Econometrics</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/metrics/01_matrices/">Matrix Algebra</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/02_probability/">Probability Theory</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/03_asymptotics/">Asymptotic Theory</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/04_inference/">Inference</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/05_ols_algebra/">OLS Algebra</a></li>
+
+
+
+  <li class="active"><a href="/course/metrics/06_endogeneity/">Endogeneity</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/06_ols_inference/">OLS Inference</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/07_endogeneity/">Endogeneity</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/08_nonparametric/">Non-Parametric Estimation</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/09_selection/">Variable Selection</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#instrumental-variables">Instrumental Variables</a>
+      <ul>
+        <li><a href="#endogeneity">Endogeneity</a></li>
+        <li><a href="#iv-and-2sls">IV and 2SLS</a></li>
+        <li><a href="#2sls-algebra">2SLS Algebra</a></li>
+        <li><a href="#rule-of-thumb">Rule of Thumb</a></li>
+        <li><a href="#equivalence">Equivalence</a></li>
+        <li><a href="#demand-example">Demand Example</a></li>
+        <li><a href="#demand-example-2">Demand Example (2)</a></li>
+        <li><a href="#demand-example-3">Demand Example (3)</a></li>
+        <li><a href="#demand-example-4">Demand Example (4)</a></li>
+        <li><a href="#code---dgp">Code - DGP</a></li>
+        <li><a href="#code---iv">Code - IV</a></li>
+        <li><a href="#code---2sls">Code - 2SLS</a></li>
+      </ul>
+    </li>
+    <li><a href="#gmm">GMM</a>
+      <ul>
+        <li><a href="#setting">Setting</a></li>
+        <li><a href="#options">Options</a></li>
+        <li><a href="#1-step-gmm">1-step GMM</a></li>
+        <li><a href="#convergence">Convergence</a></li>
+        <li><a href="#2-step-gmm">2-step GMM</a></li>
+        <li><a href="#code---1-step-gmm">Code - 1-step GMM</a></li>
+        <li><a href="#code---2-step-gmm">Code - 2-step GMM</a></li>
+        <li><a href="#testing-overidentifying-restrictions">Testing Overidentifying Restrictions</a></li>
+        <li><a href="#naive-test">Naive Test</a></li>
+        <li><a href="#example">Example</a></li>
+        <li><a href="#hansens-test">Hansen’s Test</a></li>
+        <li><a href="#comments">Comments</a></li>
+        <li><a href="#special-case-conditional-homoskedasticity">Special Case: Conditional Homoskedasticity</a></li>
+        <li><a href="#small-sample-properties-of-2sls">Small-Sample Properties of 2SLS</a></li>
+        <li><a href="#example-from-angrist-1992">Example from Angrist (1992)</a></li>
+        <li><a href="#example-from-angrist-1992-1">Example from Angrist (1992)</a></li>
+      </ul>
+    </li>
+    <li><a href="#many-instrument-robust-estimation">Many Instrument Robust Estimation</a>
+      <ul>
+        <li><a href="#issue">Issue</a></li>
+        <li><a href="#liml">LIML</a></li>
+        <li><a href="#k-class-estimators">K-class Estimators</a></li>
+        <li><a href="#comments-on-liml">Comments on LIML</a></li>
+        <li><a href="#jive">JIVE</a></li>
+        <li><a href="#comments-on-jive">Comments on JIVE:</a></li>
+        <li><a href="#hausman-test">Hausman Test</a></li>
+        <li><a href="#comments-1">Comments</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Endogeneity</h1>
+
+          <p>Last updated on Oct 29, 2021</p>
+
+          <div class="article-style">
+            <h2 id="instrumental-variables">Instrumental Variables</h2>
+<h3 id="endogeneity">Endogeneity</h3>
+<p>We say that there is <strong>endogeneity</strong> in the linear regression model if
+$\mathbb E[x_i \varepsilon_i] \neq 0$.</p>
+<p>The random vector $z_i$ is an <strong>instrumental variable</strong> in the linear
+regression model if the following conditions are met.</p>
+<ul>
+<li><strong>Exclusion restriction</strong>: the instruments are uncorrelated with the
+regression error $$
+\mathbb E_n[z_i \varepsilon_i] = 0
+$$ almost surely, i.e. with probability $p \to 1$.</li>
+<li><strong>Rank condition</strong>: no linearly redundant instruments $$
+\mathbb E_n[z_i z_i'] \neq 0
+$$ almost surely, i.e. with probability $p \to 1$.</li>
+<li><strong>Relevance condition</strong> (need $L &gt; K$): $$
+rank \ (\mathbb E_n[z_i x_i']) = K
+$$ almost surely, i.e. with probability $p \to 1$.</li>
+</ul>
+<h3 id="iv-and-2sls">IV and 2SLS</h3>
+<p>Let $K = dim(x_i)$ and $L = dim(z_i)$. We say that the model is
+<strong>just-identified</strong> if $L = K$ (method: IV) and <strong>over-identified</strong> if
+$L &gt; K$ (method: 2SLS).</p>
+<p>Assume $z_i$ satisfies the instrumental variable assumptions above and
+$dim(z_i) = dim(x_i)$, then the <strong>instrumental variables (IV)</strong>
+estimator $\hat{\beta} _ {IV}$ is given by $$
+\begin{aligned}
+\hat{\beta} _ {IV} &amp;= \mathbb E_n[z_i x_i']^{-1} \mathbb E_n[z_i y_i] = \newline
+&amp;= \left( \frac{1}{n} \sum _ {i=1}^n z_i x_i\right)^{-1} \left( \frac{1}{n} \sum _ {i=1}^n z_i y_i\right) = \newline
+&amp;= (Z&rsquo;X)^{-1} (Z&rsquo;y)
+\end{aligned}
+$$</p>
+<p>Assume $z_i$ satisfies the instrumental variable assumptions above and
+$dim(z_i) &gt; dim(x_i)$, then the <strong>two-stage-least squares (2SLS)</strong>
+estimator $\hat{\beta} _ {2SLS}$ is given by $$
+\hat{\beta} _ {2SLS} =  \Big( X&rsquo;Z (Z&rsquo;Z)^{-1} Z&rsquo;X \Big)^{-1} \Big( X&rsquo;Z (Z&rsquo;Z)^{-1} Z&rsquo;y \Big)
+$$ Where $\hat{x}_i$ is the predicted $x_i$ from the <strong>first stage</strong>
+regression of $x_i$ on $z_i$. This is equivalent to the IV estimator
+using $\hat{x}_i$ as an instrument for $x_i$.</p>
+<h3 id="2sls-algebra">2SLS Algebra</h3>
+<ul>
+<li>
+<p>The estimator is called <strong>two-stage-least squares</strong> since it can be
+rewritten as an IV estimator that uses $\hat{X}$ as instrument: $$
+\begin{aligned}
+\hat{\beta} _ {\text{2SLS}} &amp;= \Big( X&rsquo;Z (Z&rsquo;Z)^{-1} Z&rsquo;X \Big)^{-1} \Big( X&rsquo;Z (Z&rsquo;Z)^{-1} Z&rsquo;y \Big) = \newline
+&amp;= (\hat{X}' X)^{-1} \hat{X}' y = \newline
+&amp;= \mathbb E_n[\hat{x}_i x_i']^{-1} \mathbb E_n[\hat{x}_i y_i]
+\end{aligned}
+$$</p>
+</li>
+<li>
+<p>Moreover it can be rewritten as $$
+\begin{aligned}
+\hat{\beta} _ {\text{2SLS}} &amp;= (\hat{X}' X)^{-1} \hat{X}' y = \newline
+&amp;= (X' P_Z X)^{-1} X' P_Z y = \newline
+&amp;= (X' P_Z P_Z X)^{-1} X' P_Z y = \newline
+&amp;= (\hat{X}' \hat{X})^{-1} \hat{X}' y = \newline
+&amp;= \mathbb E_n [\hat{x}_i \hat{x}_i]^{-1} \mathbb E_n[\hat{x}_i y_i]
+\end{aligned}
+$$</p>
+</li>
+</ul>
+<h3 id="rule-of-thumb">Rule of Thumb</h3>
+<p>How to the test the relevance condition? Rule of thumb: $F$-test in the
+first stage $&gt;10$ (joint test on $z_i$).</p>
+<blockquote>
+<p><strong>Problem</strong>: as $n \to \infty$, with finite $L$, $F \to \infty$ (bad
+rule of thumb).</p>
+</blockquote>
+<h3 id="equivalence">Equivalence</h3>
+<p><strong>Theorem</strong></p>
+<p>If $K=L$, $\hat{\beta} _ {\text{2SLS}} = \hat{\beta} _ {\text{IV}}$.</p>
+<p><strong>Proof</strong></p>
+<p>If $K=L$, $X&rsquo;Z$ and $Z&rsquo;X$ are squared matrices and, by the relevance
+condition, non-singular (invertible). $$
+\begin{aligned}
+\hat{\beta} _ {\text{2SLS}} &amp;= \Big( X&rsquo;Z (Z&rsquo;Z)^{-1} Z&rsquo;X \Big)^{-1} \Big( X&rsquo;Z (Z&rsquo;Z)^{-1} Z&rsquo;y \Big) = \newline
+&amp;= (Z&rsquo;X)^{-1} (Z&rsquo;Z) (X&rsquo;Z)^{-1} X&rsquo;Z (Z&rsquo;Z)^{-1} Z&rsquo;y = \newline
+&amp;= (Z&rsquo;X)^{-1} (Z&rsquo;Z) (Z&rsquo;Z)^{-1} Z&rsquo;y = \newline
+&amp;= (Z&rsquo;X)^{-1} (Z&rsquo;y) = \newline
+&amp;= \hat{\beta} _ {\text{IV}}
+\end{aligned}
+$$ $$\tag*{$\blacksquare$}$$</p>
+<h3 id="demand-example">Demand Example</h3>
+<p><strong>Example</strong> from Hayiashi (2000) page 187: demand and supply
+simultaneous equations. $$
+\begin{aligned}
+&amp; q_i^D(p_i) = \alpha_0 + \alpha_1 p_i + u_i \newline
+&amp; q_i^S(p_i) = \beta_0 + \beta_1 p_i + v_i
+\end{aligned}
+$$</p>
+<p>We have an endogeneity problem. To see why, we solve the system of
+equations for $(p_i, q_i)$: $$
+\begin{aligned}
+&amp; p_i = \frac{\beta_0 - \alpha_0}{\alpha_1 - \beta_1} + \frac{v_i - u_i}{\alpha_1 - \beta_1 } \newline
+&amp; q_i = \frac{\alpha_1\beta_0 - \alpha_0 \beta_1}{\alpha_1 - \beta_1} + \frac{\alpha_1 v_i - \beta_1 u_i}{\alpha_1 - \beta_1 }
+\end{aligned}
+$$</p>
+<h3 id="demand-example-2">Demand Example (2)</h3>
+<p>Then the price variable is not independent from the error term in
+neither equation: $$
+\begin{aligned}
+&amp; Cov(p_i, u_i) = - \frac{Var(u_i)}{\alpha_1 - \beta_1 } \newline
+&amp; Cov(p_i, v_i) = \frac{Var(v_i)}{\alpha_1 - \beta_1 }
+\end{aligned}
+$$</p>
+<p>As a consequence, the OLS estimators are not consistent: $$
+\begin{aligned}
+&amp; \hat{\alpha} _ {1, OLS} \overset{p}{\to} \alpha_1 + \frac{Cov(p_i, u_i)}{Var(p_i)} \newline
+&amp; \hat{\beta} _ {1, OLS} \overset{p}{\to} \beta_1 + \frac{Cov(p_i, v_i)}{Var(p_i)}
+\end{aligned}
+$$</p>
+<h3 id="demand-example-3">Demand Example (3)</h3>
+<p>In general, running regressing $q$ on $p$ you estimate $$
+\begin{aligned}
+\hat{\gamma} _ {OLS} &amp;\overset{p}{\to} \frac{Cov(p_i, q_i)}{Var(p_i)} = \newline
+&amp;= \frac{\alpha_1 Var(v_i) + \beta_1 Var(u_i)}{(\alpha_1 - \beta_1)^2} \left( \frac{Var(v_i) + Var(u_i)}{(\alpha_1 - \beta_1)^2} \right)^{-1} = \newline
+&amp;= \frac{\alpha_1 Var(v_i) + \beta_1 Var(u_i)}{Var(v_i) + Var(u_i)}
+\end{aligned}
+$$ Which is neither $\alpha_1$ nor $\beta_1$ but a variance weighted
+average of the two.</p>
+<h3 id="demand-example-4">Demand Example (4)</h3>
+<p>Suppose we have a supply shifter $z_i$ such that</p>
+<ul>
+<li>$\mathbb E[z_i v_i] \neq 0$</li>
+<li>$\mathbb E[z_i u_i] = 0$.</li>
+</ul>
+<p>We combine the second condition and $\mathbb E[u_i] = 0$ to get a system
+of 2 equations in 2 unknowns: $\alpha_0$ and $\alpha_1$. $$
+\begin{aligned}
+&amp; \mathbb E[z_i u_i] = \mathbb E[ z_i (q_i^D(p_i) - \alpha_0 - \alpha_1 p_i) ] = 0 \newline
+&amp; \mathbb E[u_i] = \mathbb E[q_i^D(p_i) - \alpha_0 - \alpha_1 p_i] = 0<br>
+\end{aligned}
+$$</p>
+<p>We could try to solve for the vector $\alpha$ that solves $$
+\begin{aligned}
+&amp; \mathbb E_n[z_i (q_i^D - x_i\alpha)] = 0 \newline
+&amp; \mathbb E_n[z_i q_i^D] -  \mathbb E_n[z_ix_i\alpha] = 0
+\end{aligned}
+$$</p>
+<p>If $\mathbb E_n[z_ix_i]$ is invertible, we get
+$\hat{\alpha} = \mathbb E_n[z_ix_i]^{-1} \mathbb E_n[z_i q^D_i]$ which
+is indeed the IV estimator of $\alpha$ using $z_i$ as an instrument for
+the endogenous variable $p_i$.</p>
+<h3 id="code---dgp">Code - DGP</h3>
+<p>This code draws 100 observations from the model
+$y = 2 x_1 - x_2 + \varepsilon$ where $x_1, x_2 \sim U[0,1]$ and
+$\varepsilon \sim N(0,1)$.</p>
+<pre><code class="language-julia"># Set seed
+Random.seed!(123);
+
+# Set the number of observations
+n = 100;
+
+# Set the dimension of Z
+l = 3;
+
+# Draw instruments
+Z = rand(Uniform(0,1), n, l);
+
+# Correlation matrix for error terms
+S = [1 0.8; 0.8 1];
+
+# Endogenous X
+γ = [2 0; 0 -1; -1 3];
+ε = rand(Normal(0,1), n, 2) * cholesky(S).U;
+X = Z*γ .+ ε[:,1];
+
+# Calculate y
+y = X*β .+ ε[:,2];
+</code></pre>
+<h3 id="code---iv">Code - IV</h3>
+<pre><code class="language-julia"># Estimate beta OLS
+β_OLS = (X'*X)\(X'*y)
+</code></pre>
+<pre><code>## 2-element Array{Float64,1}:
+##   2.335699233358403
+##  -0.8576266209987325
+</code></pre>
+<pre><code class="language-julia"># IV: l=k=2 instruments
+Z_IV = Z[:,1:k];
+β_IV = (Z_IV'*X)\(Z_IV'*y)
+</code></pre>
+<pre><code>## 2-element Array{Float64,1}:
+##   1.6133344277861439
+##  -0.6678537395714547
+</code></pre>
+<pre><code class="language-julia"># Calculate standard errors
+ε_hat = y - X*β_IV;
+V_NHC_IV = var(ε_hat) * inv(Z_IV'*X)*Z_IV'*Z_IV*inv(Z_IV'*X);
+V_HC0_IV = inv(Z_IV'*X)*Z_IV' * (I(n) .* ε_hat.^2) * Z_IV*inv(Z_IV'*X);
+</code></pre>
+<h3 id="code---2sls">Code - 2SLS</h3>
+<pre><code class="language-julia"># 2SLS: l=3 instruments
+Pz = Z*inv(Z'*Z)*Z';
+β_2SLS = (X'*Pz*X)\(X'*Pz*y)
+</code></pre>
+<pre><code>## 2-element Array{Float64,1}:
+##   1.904553638377971
+##  -0.8810907510370429
+</code></pre>
+<pre><code class="language-julia"># Calculate standard errors
+ε_hat = y - X*β_2SLS;
+V_NCH_2SLS = var(ε_hat) * inv(X'*Pz*X);
+V_HC0_2SLS = inv(X'*Pz*X)*X'*Pz * (I(n) .* ε_hat.^2) *Pz*X*inv(X'*Pz*X);
+</code></pre>
+<h2 id="gmm">GMM</h2>
+<h3 id="setting">Setting</h3>
+<p>We have a system of $L$ moment conditions $$
+\begin{aligned}
+&amp; \mathbb E[g_1(\omega_i, \delta_0)] = 0 \newline
+&amp; \vdots \newline
+&amp; \mathbb E[g_L(\omega_i, \delta_0)] = 0
+\end{aligned}
+$$</p>
+<p>If $L = \dim (\delta_0)$, no problem. If $L &gt; \dim (\delta_0)$, there
+may be no solution to the system of equations.</p>
+<h3 id="options">Options</h3>
+<p>There are two possibilities.</p>
+<ol>
+<li><strong>First Solution</strong>: add moment conditions until the system is
+identified $$
+\mathbb E[ a' g(\omega_i, \delta_0)] = 0
+$$ Solve $\mathbb E[Ag(\omega_i, \delta)] = 0$ for $\hat{\delta}$.
+How to choose $A$? Such that it minimizes $Var(\hat{\delta})$.</li>
+<li><strong>Second Solution</strong>: generalized method of moments (GMM) $$
+\begin{aligned}
+\hat{\delta} _ {GMM} &amp;= \arg \min _ \delta \quad  \Big| \Big| \mathbb E_n [ g(\omega_i, \delta) ] \Big| \Big| = \newline
+&amp;= \arg \min _ \delta \quad n \mathbb E_n[g(\omega_i, \delta)]' W \mathbb E_n [g(\omega_i, \delta)]
+\end{aligned}
+$$</li>
+</ol>
+<blockquote>
+<p>The choice of $A$ and $W$ are closely related to each other.</p>
+</blockquote>
+<h3 id="1-step-gmm">1-step GMM</h3>
+<p>Since $J(\delta,W)$ is a quadratic form, a closed form solution exists:
+$$
+\hat{\delta}(W) = \Big(\mathbb E_n[z_i x_i'] W \mathbb E_n[z_i x_i'] \Big)^{-1}\mathbb E_n[z_i x_i'] W \mathbb E_n[z_i y_i]
+$$</p>
+<p><strong>Assumptions</strong> for consistency of the GMM estimator given data
+$\mathcal D = \lbrace y_i, x_i, z_i \rbrace _ {i=1}^n$:</p>
+<ul>
+<li><strong>Linearity</strong>: $y_i = x_i\gamma_0 + \varepsilon_i$</li>
+<li><strong>IID</strong>: $(y_i, x_i, z_i)$ iid</li>
+<li><strong>Orthogonality</strong>:
+$\mathbb E [z_i(y_i - x_i\gamma_0)] = \mathbb E[z_i \varepsilon_i] = 0$</li>
+<li><strong>Rank identification</strong>: $\Sigma_{xz} = \mathbb E[z_i x_i']$ has
+full rank</li>
+</ul>
+<h3 id="convergence">Convergence</h3>
+<p><strong>Theorem</strong></p>
+<p>Under linearity, independence, orthogonality and rank conditions, if
+$\hat{W} \overset{p}{\to} W$ positive definite, then $$
+\hat{\delta}(\hat{W}) \to \delta(W)
+$$ If in addition to the above assumption,
+$\sqrt{n} \mathbb E_n [g(\omega_i, \delta_0)] \overset{d}{\to} N(0,S)$
+for a fixed positive definite $S$, then $$
+\sqrt{n} (\hat{\delta} (\hat{W}) - \delta(W)) \overset{d}{\to} N(0,V)
+$$ where
+$V = (\Sigma' _ {xz} W \Sigma _ {xz})^{-1} \Sigma _ {xz} W S W \Sigma _ {xz}(\Sigma' _ {xz} W \Sigma _ {xz})^{-1}$.</p>
+<p>Finally, if a consistent estimator $\hat{S}$ of $S$ is available, then
+using sample analogues $\hat{\Sigma}_{xz}$ it follows that $$
+\hat{V} \overset{p}{\to} V
+$$</p>
+<blockquote>
+<p>If $W = S^{-1}$ then $V$ reduces to
+$V = (\Sigma' _ {xz} W \Sigma _ {xz})^{-1}$. Moreover,
+$(\Sigma' _ {xz} W \Sigma _ {xz})^{-1}$ is the smallest possible form
+of $V$, in a positive definite sense.</p>
+</blockquote>
+<p>Therefore, to have an efficient estimator, you want to construct
+$\hat{W}$ such that $\hat{W} \overset{p}{\to} S^{-1}$.</p>
+<h3 id="2-step-gmm">2-step GMM</h3>
+<p>Estimation steps:</p>
+<ul>
+<li>Choose an arbitrary weighting matrix $\hat{W}_{init}$ (usually the
+identity matrix $I_K$)</li>
+<li>Estimate $\hat{\delta} _ {init}(\hat{W} _ {init})$</li>
+<li>Estimate $\hat{S}$ (asymptotic variance of the moment condition)</li>
+<li>Estimate $\hat{\delta}(\hat{S}^{-1})$</li>
+</ul>
+<blockquote>
+<p>On the procedure:</p>
+<ul>
+<li>This estimator achieves the semiparametric efficiency bound.</li>
+<li>This strategy works only if $\hat{S} \overset{p}{\to} S$ exists.</li>
+<li>For iid cases: we can use
+$\hat{\delta} = \mathbb E_n[(\hat{\varepsilon}_i z_i)(\hat{\varepsilon}_i z_i) ' ]$
+where
+$\hat{\varepsilon}_i = y_i - x_i \hat{\delta}(\hat{W} _ {init})$.</li>
+</ul>
+</blockquote>
+<h3 id="code---1-step-gmm">Code - 1-step GMM</h3>
+<pre><code class="language-julia"># GMM 1-step: inefficient weighting matrix
+W_1 = I(l);
+
+# Objective function
+gmm_1(b) = ( y - X*b )' * Z * W_1 *  Z' * ( y - X*b );
+
+# Estimate GMM
+β_gmm_1 = optimize(gmm_1, β_OLS).minimizer
+</code></pre>
+<pre><code>## 2-element Array{Float64,1}:
+##   1.91556882526808
+##  -0.8769689391885799
+</code></pre>
+<pre><code class="language-julia"># Standard errors GMM
+ε_hat = y - X*β_gmm_1;
+S_hat = Z' * (I(n) .* ε_hat.^2) * Z;
+d_hat = -X'*Z;
+V_gmm_1 = inv(d_hat * inv(S_hat) * d_hat')
+</code></pre>
+<pre><code>## 2×2 Array{Float64,2}:
+##   0.0158497   -0.00346601
+##  -0.00346601   0.00616531
+</code></pre>
+<h3 id="code---2-step-gmm">Code - 2-step GMM</h3>
+<pre><code class="language-julia"># GMM 2-step: efficient weighting matrix
+W_2 = inv(S_hat);
+
+# Objective function
+gmm_2(b) = ( y - X*b )' * Z * W_2 *  Z' * ( y - X*b );
+
+# Estimate GMM
+β_gmm_2 = optimize(gmm_2, β_OLS).minimizer
+</code></pre>
+<pre><code>## 2-element Array{Float64,1}:
+##   1.905326742963115
+##  -0.881808949213345
+</code></pre>
+<pre><code class="language-julia"># Standard errors GMM
+ε_hat = y - X*β_gmm_2;
+S_hat = Z' * (I(n) .* ε_hat.^2) * Z;
+d_hat = -X'*Z;
+V_gmm_2 = inv(d_hat * inv(S_hat) * d_hat')
+</code></pre>
+<pre><code>## 2×2 Array{Float64,2}:
+##   0.0162603   -0.00357632
+##  -0.00357632   0.00631259
+</code></pre>
+<h3 id="testing-overidentifying-restrictions">Testing Overidentifying Restrictions</h3>
+<p>If the equations are <strong>exactly identified</strong>, then it is possible to
+choose $\delta$ so that all the elements of the sample moments
+$\mathbb E_n[g(\omega_i; \delta)]$ are zero and thus that the distance
+$$
+J(\delta, \hat{W}) = n \mathbb E_n[g(\omega_i, \delta)]' \hat{W} \mathbb E_n[g(\omega_i, \delta)]
+$$ is zero. (The $\delta$ that does it is the IV estimator.)</p>
+<p>If the equations are <strong>overidentified</strong>, i.e. $L$ (number of
+instruments) $&gt; K$ (number of equations), then the distance cannot be
+zero exactly in general, but we would expect the minimized distance to
+be <em>close</em> to zero.</p>
+<h3 id="naive-test">Naive Test</h3>
+<p>Suppose your model is overidentified ($L &gt; K$) and you use the following
+naive testing procedure:</p>
+<ol>
+<li>Estimate $\hat{\delta}$ using a subset of dimension $K$ of
+instruments $\lbrace z_1 , .. , z_K\rbrace$ for
+$\lbrace x_1 , &hellip; , x_K\rbrace$</li>
+<li>Set $\hat{\varepsilon}_i = y_i - x_i \hat{\delta} _ {\text{GMM}}$</li>
+<li>Infer the size of the remaining $L-K$ moment conditions
+$\mathbb E[z _{i, K+1} \varepsilon_i], &hellip;, \mathbb E[z _{i, L} \varepsilon_i]$
+looking at their empirical counterparts
+$\mathbb E_n[z _{i, K+1} \hat{\varepsilon}_i], &hellip;, \mathbb E_n[z _{i, L} \hat{\varepsilon}_i]$</li>
+<li>Reject exogeneity if the empirical expectations are high. How high?
+Calculate p-values.</li>
+</ol>
+<h3 id="example">Example</h3>
+<p>If you have two invalid instruments and you use one to test the validity
+of the other, it might happen by chance that you don’t reject it.</p>
+<ul>
+<li>
+<p>Model: $y_i = x_i + \varepsilon_i$ and
+$x_i = \frac{1}{2} z _{i1} - \frac{1}{2} z _{i2} + u_i$</p>
+</li>
+<li>
+<p>Have $$
+Cov (z _{i1}, z _{i2}, \varepsilon_i, u_i) =
+\begin{bmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \newline 0 &amp; 1 &amp; 0 &amp; 0 \newline 0 &amp; 0 &amp; 1 &amp; 0.5 \newline 0 &amp; 0 &amp; 0.5 &amp; 1
+\end{bmatrix}
+$$</p>
+</li>
+<li>
+<p>You want to test whether the second instrument is valid (is not
+since $\mathbb E[z_2 \varepsilon] \neq 0$). You use $z_1$ and
+estimate $\hat{\beta} \to$ the estimator is consistent.</p>
+</li>
+<li>
+<p>You obtain $\mathbb E_n[z _{i2} \hat{\varepsilon}_i] \simeq 0$ even
+if $z_2$ is invalid</p>
+</li>
+<li>
+<p>Problem: you are using an invalid instrument in the first place.</p>
+</li>
+</ul>
+<h3 id="hansens-test">Hansen’s Test</h3>
+<p><strong>Theorem</strong>: We are interested in testing
+$H_0: \mathbb E[z_i \varepsilon_i] = 0$ against
+$H_1: \mathbb E[z_i \varepsilon_i] \neq 0$. Suppose
+$\hat{S} \overset{p}{\to} S$. Then $$
+J(\hat{\delta}(\hat{S}^{-1}) , \hat{S}^{-1}) \overset{d}{\to} \chi^2 _ {L-K}
+$$ For $c$ satisfying $\alpha = 1- G_{L - K} ( c )$,
+$\Pr(J&gt;c | H_0) \to \alpha$ so the test <em>reject $H_0$ if $J &gt; c$</em> has
+asymptotic size $\alpha$.</p>
+<h3 id="comments">Comments</h3>
+<ul>
+<li>The degrees of freedom of the asymptotic distribution are the number
+of overidentifying restrictions.</li>
+<li>This is a specification test, testing whether all model assumptions
+are true jointly. Only when we are confident that about the other
+assumptions, can we interpret a large $J$ statistic as evidence for
+the endogeneity of some of the $L$ instruments included in $x$.</li>
+<li>Unlike the tests we have encountered so far, the test is not
+consistent against some failures of the orthogonality conditions
+(that is, it is not consistent against some fixed elements of the
+alternative).</li>
+<li>Several papers in the July 1996 issue of JBES report that the
+finite-sample null rejection probability of the test can far exceed
+the nominal significance level $\alpha$.</li>
+</ul>
+<h3 id="special-case-conditional-homoskedasticity">Special Case: Conditional Homoskedasticity</h3>
+<p>The main implication of conditional homoskedasticity is that efficient
+GMM becomes 2SLS. With efficient GMM estimation, the weighting matrix is
+$\hat{S}^{-1} = \mathbb En [z_i z_i' \varepsilon_i^2]^{-1}$. With
+conditional homoskedasticity, the efficient weighting matrix is
+$\mathbb E_n[z_iz_i']^{-1} \sigma^{-2}$, or equivalently
+$\mathbb E_n[z_iz_i']^{-1}$. Then, the GMM estimator becomes $$
+\hat{\delta}(\hat{S}^{-1}) = \Big(\mathbb E_n[z_i x_i']' \underbrace{\mathbb E_n[z_iz_i']^{-1} \mathbb E[z_i x_i']} _ {\text{ols of } x_i \text{ on }z_i} \Big)^{-1}\mathbb E_n[z_i x_i']' \underbrace{\mathbb E_n[z_iz_i']^{-1} \mathbb E[z_i y_i']} _ {\text{ols of } y_i \text{ on }z_i}= \hat{\delta} _ {2SLS}
+$$</p>
+<p><strong>Proof</strong>: Consider the matrix notation. $$
+\begin{aligned}
+\hat{\delta} \left( \frac{Z&rsquo;Z}{n}\right) &amp;= \left( \frac{X&rsquo;Z}{n} \left( \frac{Z&rsquo;Z}{n}\right)^{-1} \frac{Z&rsquo;X}{n} \right)^{-1} \frac{X&rsquo;Z}{n} \left( \frac{Z&rsquo;Z}{n}\right)^{-1} \frac{Z&rsquo;Y}{n} = \newline
+&amp;= \left( X&rsquo;Z(Z&rsquo;Z)^{-1} Z&rsquo;X \right)^{-1} X&rsquo;Z(Z&rsquo;Z)^{-1} Z&rsquo;Y = \newline
+&amp;= \left(X&rsquo;P_ZX\right)^{-1} X&rsquo;P_ZY = \newline
+&amp;= \left(X&rsquo;P_ZP_ZX\right)^{-1} X&rsquo;P_ZY = \newline
+&amp;= \left(\hat{X}'_Z \hat{X}_Z\right)^{-1} \hat{X}'_ZY = \newline
+&amp;= \hat{\delta} _ {2SLS}
+\end{aligned}
+$$ $$\tag*{$\blacksquare$}$$</p>
+<h3 id="small-sample-properties-of-2sls">Small-Sample Properties of 2SLS</h3>
+<p><strong>Theorem</strong>: When the number of instruments is equal to the sample size
+($L = n$), then $\hat{\delta} _ {2SLS} = \hat{\delta} _ {OLS}$</p>
+<p><strong>Proof</strong>: We have a perfect prediction problem. The first stage
+estimated coefficient $\hat{\gamma}$ is such that it solves the normal
+equations: $\hat{\gamma} = z_i^{-1} x_i$. Then $$
+\begin{aligned}
+\hat{\delta} _ {2SLS} &amp;= \mathbb E_n[\hat{x}_i x'_i]^{-1} \mathbb E_n[\hat{x}_i y_i] = \newline
+&amp;= \mathbb E_n[z_i z_i^{-1} x_i x'_i]^{-1} \mathbb E_n[z_i z_i^{-1} x_i y_i] = \newline
+&amp;= \mathbb E_n[x_i x'_i]^{-1} \mathbb E_n[x_i y_i] = \newline
+&amp;= \hat{\delta} _ {OLS}
+\end{aligned}
+$$ $$\tag*{$\blacksquare$}$$</p>
+<blockquote>
+<p>You have this overfitting problem in general when the number of
+instruments is large relative to the sample size. This problem arises
+even if the instruments are valid.</p>
+</blockquote>
+<h3 id="example-from-angrist-1992">Example from Angrist (1992)</h3>
+<ul>
+<li>They regress wages on years of schooling.</li>
+<li><strong>Problem</strong>: endogeneity: both variables are correlated with skills
+which are unobserved.</li>
+<li><strong>Solution</strong>: instrument years of schooling with the quarter of
+birth.
+<ul>
+<li><strong>Idea</strong>: if born in the first three quarters, can attend school
+from the year of your sixth birthday. Otherwise, you have to
+wait one more year.</li>
+</ul>
+</li>
+<li><strong>Problem</strong>: quarters of birth are three dummies.
+<ul>
+<li>In order to ``improve the first stage fit” they interact them
+with year of birth (180 effective instruments) and also with the
+state (1527 effective instruments).</li>
+<li>This mechanically increases the $R^2$ but also increases the
+bias of the 2SLS estimator.</li>
+</ul>
+</li>
+<li><strong>Solutions</strong>: LIML, JIVE, RJIVE (Hansen et al., 2014), Post-Lasso
+(Belloni et al., 2012).</li>
+</ul>
+<h3 id="example-from-angrist-1992-1">Example from Angrist (1992)</h3>
+<img src="../img/Fig_441.png" style="width:80.0%" />
+<h2 id="many-instrument-robust-estimation">Many Instrument Robust Estimation</h2>
+<h3 id="issue">Issue</h3>
+<p>Why having too many instruments is problematic? As the number of
+instruments increases, the estimated coefficient gets closer to OLS
+which is biased. As seen in the theorem above, for $L=n$, the two
+estimators coincide.</p>
+<p><img src="../img/Fig_451.png" alt=""></p>
+<h3 id="liml">LIML</h3>
+<p>An alternative method to estimate the parameters of the structural
+equation is by maximum likelihood. Anderson and Rubin (1949) derived the
+maximum likelihood estimator for the joint distribution of $(y_i, x_i)$.
+The estimator is known as <strong>limited information maximum likelihood</strong>, or
+<strong>LIML</strong>.</p>
+<p>This estimator is called “limited information” because it is based on
+the structural equation for $(y_i, x_i)$ combined with the reduced form
+equation for $x_i$. If maximum likelihood is derived based on a
+structural equation for $x_i$ as well, then this leads to what is known
+as <strong>full information maximum likelihood (FIML)</strong>. The advantage of the
+LIML approach relative to FIML is that the former does not require a
+structural model for $x_i$, and thus allows the researcher to focus on
+the structural equation of interest - that for $y_i$.</p>
+<h3 id="k-class-estimators">K-class Estimators</h3>
+<p>The <strong>k-class</strong> estimators have the form $$
+\hat{\delta}(\alpha) = (X' P_Z X - \alpha X' X)^{-1} (X' P_Z Y - \alpha X' Y)
+$$</p>
+<p>The limited information maximum likelihood estimator <strong>LIML</strong> is the
+k-class estimator $\hat{\delta}(\alpha)$ where $$
+\alpha = \lambda_{min} \Big( ([X' , Y]^{-1} [X' , Y])^{-1} [X' , Y]^{-1} P_Z [X' , Y] \Big)
+$$</p>
+<p>If $\alpha = 0$ then
+$\hat{\delta} _ {\text{LIML}} = \hat{\delta} _ {\text{2SLS}}$ while for
+$\alpha \to \infty$,
+$\hat{\delta} _ {\text{LIML}} \to \hat{\delta} _ {\text{OLS}}$.</p>
+<h3 id="comments-on-liml">Comments on LIML</h3>
+<ul>
+<li>The particular choice of $\alpha$ gives a many instruments robust
+estimate</li>
+<li>The LIML estimator has no finite sample moments.
+$\mathbb E[\delta(\alpha_{LIML})]$ does not exist in general</li>
+<li>In simulation studies performs well</li>
+<li>Has good asymptotic properties</li>
+</ul>
+<p>Asymptotically the LIML estimator has the same distribution as 2SLS.
+However, they can have quite different behaviors in finite samples.
+There is considerable evidence that the LIML estimator has superior
+finite sample performance to 2SLS when there are many instruments or the
+reduced form is weak. However, on the other hand there is worry that
+since the LIML estimator is derived under normality it may not be robust
+in non-normal settings.</p>
+<h3 id="jive">JIVE</h3>
+<p>The <strong>Jacknife IV</strong> procedure is the following</p>
+<ul>
+<li>Regress $\lbrace x_j \rbrace _ {j \neq i}$ on
+$\lbrace z_j \rbrace _ {j \neq i}$ and estimate $\pi_{-i}$ (leave
+the $i^{th}$ observation out).</li>
+<li>Form $\hat{x}_i = \hat{\pi} _ {-i} z_i$.</li>
+<li>Run IV using $\hat{x}_i$ as instruments. $$
+\hat{\delta} _ {JIVE} = \mathbb E_n[\hat{x}_i x_i']^{-1} \mathbb E_n[\hat{x}_i y_i']
+$$</li>
+</ul>
+<h3 id="comments-on-jive">Comments on JIVE:</h3>
+<ul>
+<li>Prevents overfitting.</li>
+<li>With many instruments you get bad out of sample prediction which
+implies low correlation between $\hat{x}_i$ and $x_i$:
+$\mathbb E_n[\hat{x}_i x_i'] \simeq 0$.</li>
+<li>Use lasso/ridge regression in the first stage in case of too many
+instruments.</li>
+</ul>
+<h3 id="hausman-test">Hausman Test</h3>
+<p>Here we consider testing the validity of OLS. OLS is generally preferred
+to IV in terms of precision. Many researchers only doubt the (joint)
+validity of the regressor $z_i$ instead of being certain that it is
+invalid (in the sense of not being predetermined). So then they wish to
+choose between OLS and 2SLS, assuming that they have an instrument
+vector $x_i$ whose validity is not in question. Further, assume for
+simplicity that $L = K$ so that the efficient GMM estimator is the IV
+estimator.</p>
+<p>The <strong>Hausman test statistic</strong> $$
+H \equiv n (\hat{\delta} _ {IV} - \hat{\delta} _ {OLS})' [\hat{Avar} (\hat{\delta} _ {IV} - \hat{\delta} _ {OLS})]^{-1} (\hat{\delta} _ {IV} - \hat{\delta} _ {OLS})
+$$ is asymptotically distributed as a $\chi^2_{L-s}$ under the null
+where $s = | z_i \cup x_i |$: the number of regressors that are retained
+as instruments in $x_i$.</p>
+<h3 id="comments-1">Comments</h3>
+<p>In general, the idea of the Hausman test is the following. If you have
+two estimators, one which is efficient under $H_0$ but inconsistent
+under $H_1$ (in this case, OLS), and another which is consistent under
+$H_1$ (in this case, IV), then construct a test as a quadratic form in
+the differences of the estimators. Another classic example arises in
+panel data with the hypothesis $H_0$ of unconditional strict exogeneity.
+In that case, under $H_0$ Random Effects estimators are efficient but
+under $H_1$ they are inconsistent. Fixed Effects estimators instead are
+consistent under $H_1$.</p>
+<p>The Hausman test statistic can be used as a pretest procedure: select
+either OLS or IV according to the outcome of the test. Although widely
+used, this pretest procedure is not advisable. When the null is false,
+it is still possible that the test <em>accepts</em> the null (committing a Type
+2 error). In particular, this can happen with a high probability when
+the sample size is <em>small</em> and/or when the regressor $z_i$ is <em>almost
+valid</em>. In such an instance, estimation and also inference will be based
+on incorrect methods. Therefore, the overall properties of the Hausman
+pretest procedure are undesirable.</p>
+<p>The Hausman test is an example of a specification test. There are many
+other specification tests. One could for example test for conditional
+homoskedasticity. Unlike for the OLS case, there does not exist a
+convenient test for conditional homoskedasticity for the GMM case. A
+test statistic that is asymptotically chi-squared under the null is
+available but is extremely cumbersome; see White (1982, note 2). If in
+doubt, it is better to use the more generally valid inference methods
+that allow for conditional heteroskedasticity. Similarly, there does not
+exist a convenient test for serial correlation for the GMM case. If in
+doubt, it is better to use the more generally valid inference methods
+that allow for serial correlation; for example, when data are collected
+over time (that is, time-series data).</p>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/metrics/05_ols_algebra/" rel="next">OLS Algebra</a>
+  </div>
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/metrics/06_ols_inference/" rel="prev">OLS Inference</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

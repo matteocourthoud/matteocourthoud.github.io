@@ -1,0 +1,1704 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Introduction Non-parametric regression is a flexible estimation procedure for
+ regression functions $\mathbb E [y|x ] = g (x)$ and density functions $f(x)$.  You want to let your data to tell you how flexible you can afford to be in terms of estimation procedures." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/metrics/08_nonparametric/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/metrics/08_nonparametric/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/metrics/08_nonparametric/" />
+  <meta property="og:title" content="Non-Parametric Estimation | Matteo Courthoud" />
+  <meta property="og:description" content="Introduction Non-parametric regression is a flexible estimation procedure for
+ regression functions $\mathbb E [y|x ] = g (x)$ and density functions $f(x)$.  You want to let your data to tell you how flexible you can afford to be in terms of estimation procedures." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2021-10-29T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2021-10-29T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Non-Parametric Estimation | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="486b7a0f83ad926dab18785e2fbd49e6" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/metrics/">Econometrics</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/metrics/01_matrices/">Matrix Algebra</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/02_probability/">Probability Theory</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/03_asymptotics/">Asymptotic Theory</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/04_inference/">Inference</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/05_ols_algebra/">OLS Algebra</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/06_endogeneity/">Endogeneity</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/06_ols_inference/">OLS Inference</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/07_endogeneity/">Endogeneity</a></li>
+
+
+
+  <li class="active"><a href="/course/metrics/08_nonparametric/">Non-Parametric Estimation</a></li>
+
+
+
+  <li class=""><a href="/course/metrics/09_selection/">Variable Selection</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#discrete-x---cell-estimator">Discrete x - Cell Estimator</a></li>
+      </ul>
+    </li>
+    <li><a href="#local-non-parametric-estimation">Local Non-Parametric Estimation</a>
+      <ul>
+        <li><a href="#kernels">Kernels</a></li>
+        <li><a href="#optimal-h">Optimal h</a></li>
+        <li><a href="#locally-constant-estimator">Locally Constant Estimator</a></li>
+        <li><a href="#cef">CEF</a></li>
+        <li><a href="#locally-linear-estimator">Locally Linear Estimator</a></li>
+        <li><a href="#cef-1">CEF</a></li>
+        <li><a href="#uniform-kernel">Uniform Kernel</a></li>
+        <li><a href="#other-kernels">Other Kernels</a></li>
+        <li><a href="#example">Example</a></li>
+        <li><a href="#choice-of-the-optimal-bandwidth">Choice of the optimal bandwidth</a></li>
+        <li><a href="#practical-tips">Practical Tips</a></li>
+        <li><a href="#inference">Inference</a></li>
+        <li><a href="#remarks">Remarks</a></li>
+        <li><a href="#bias-variance-trade-off">Bias-Variance Trade-off</a></li>
+        <li><a href="#proof">Proof</a></li>
+        <li><a href="#criteria">Criteria</a></li>
+        <li><a href="#comments">Comments</a></li>
+        <li><a href="#trade-off">Trade-Off</a></li>
+      </ul>
+    </li>
+    <li><a href="#global-non-parametric-estimation">Global Non-Parametric Estimation</a>
+      <ul>
+        <li><a href="#series">Series</a></li>
+        <li><a href="#in-practice">In Practice</a></li>
+        <li><a href="#examples">Examples</a></li>
+        <li><a href="#hermite-polynomials">Hermite Polynomials</a></li>
+        <li><a href="#estimation">Estimation</a></li>
+        <li><a href="#consistency">Consistency</a></li>
+        <li><a href="#imse">IMSE</a></li>
+        <li><a href="#choice-of-the-optimal-k">Choice of the optimal $K$</a></li>
+        <li><a href="#inference-1">Inference</a></li>
+        <li><a href="#inference-2">Inference</a></li>
+        <li><a href="#undersmoothing">Undersmoothing</a></li>
+        <li><a href="#delta-method">Delta Method</a></li>
+        <li><a href="#remark">Remark</a></li>
+        <li><a href="#more-remarks">More Remarks</a></li>
+        <li><a href="#kernel-vs-series">Kernel vs Series</a></li>
+        <li><a href="#advantages-of-kernels">Advantages of Kernels</a></li>
+        <li><a href="#advantages-of-series">Advantages of Series</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Non-Parametric Estimation</h1>
+
+          <p>Last updated on Oct 29, 2021</p>
+
+          <div class="article-style">
+            <h3 id="introduction">Introduction</h3>
+<p>Non-parametric regression is a flexible estimation procedure for</p>
+<ol>
+<li>regression functions $\mathbb E [y|x ] = g (x)$ and</li>
+<li>density functions $f(x)$.</li>
+</ol>
+<p>You want to let your data to tell you how flexible you can afford to be
+in terms of estimation procedures. Non-parametric regression is
+naturally introduced in terms of fitting a curve.</p>
+<p>Consider the problem of estimating the Conditional Expectation Function,
+defined as $\mathbb E [y_i |x_i ] = g(x_i)$ given data
+$D = (x_i, y_i)_{i=1}^n$ under minimal assumption of $g(\cdot)$,
+e.g. smoothness. There are two main methods:</p>
+<ol>
+<li>Local methods: Kernel-based estimation</li>
+<li>Global methods: Series-based estimation</li>
+</ol>
+<p>Another way of looking at non-parametrics is to do estimation/inference
+without specifying functional forms. With no assumptions, informative
+inference is impossible. Non parametrics tries to work with functional
+restrictions—continuity, differentiability, etc.—rather than
+pre-specifying functional form.</p>
+<h3 id="discrete-x---cell-estimator">Discrete x - Cell Estimator</h3>
+<p>Suppose that $x$ can take $R$ distinct values, e.g. gender $R=2$, years
+of schooling $R=20$, gender $\times$ years of schooling
+$R = 2 \times 20$.</p>
+<p>A simple way for estimating $\mathbb E \left[ y |x \right] = g(x)$ is to
+split the sample to include observations with $x_i = x$ and calculate
+the sample mean of $\bar{y}$ for these observations. Note that this
+requires no assumptions about how $\mathbb E [y_i |x_i]$ varies with $x$
+since we fit a different value for each value $x$. $$
+\hat{g}(x) = \frac{1}{| i: x_i = x |} \sum_{i : x_i = x} y_i
+$$</p>
+<p>Issues:</p>
+<ul>
+<li><strong>Curse of dimensionality</strong>: if $R$ is big compared to $n$, there
+will be only a small number of observations per $x$ values. If $x_i$
+is continuous, $R=n$ with probability 1. Solution: we can borrow
+information about $g_0(x)$ using neighboring observations of $x$.</li>
+<li>Averaging for each separate $x_r$ value is only feasible in cases
+where $x_i$ is coarsely discrete.</li>
+</ul>
+<h2 id="local-non-parametric-estimation">Local Non-Parametric Estimation</h2>
+<h3 id="kernels">Kernels</h3>
+<p>Suppose we believe that $\mathbb E [y_i |x_i]$ is a smooth function of
+$x_i$ – e.g. continuous, differentiable, etc. Then it should not change
+too much across values of $x$ that are close to each other: we can
+estimate the conditional expectation at $x = \bar{x}$ by averaging $y$’s
+over the values of $x$ that are “close”” to $\bar{x}$. This procedure
+relies on two (three) arbitrary choices:</p>
+<ul>
+<li>Choice of the <strong>kernel function</strong> $K (\cdot)$; it is used to weight
+“far out”” observations, such that
+<ul>
+<li>$K: \mathbb R \to \mathbb R$</li>
+<li>$K$ is symmetric: $K(\bar{x} + x_i) = K(\bar{x} - x_i)$</li>
+<li>$\lim_{x_i \to \infty}K(x_i - \bar{x}) = 0$</li>
+</ul>
+</li>
+<li>Choice of the <strong>bandwidth</strong> $h$: it measures the size of a
+``small’’ window around $\bar{x}$,
+e.g. $(\bar{x} - h, \bar{x} + h)$.</li>
+<li>Choice of the local estimation procedure. Examples are locally
+constant, a.k.a. Nadaraya-Watson (<strong>NW</strong>), and locally linear
+(<strong>LL</strong>).</li>
+</ul>
+<blockquote>
+<p>Generally, the choice of $h$ is more important than $K(\cdot)$ in low
+dimensional settings.</p>
+</blockquote>
+<h3 id="optimal-h">Optimal h</h3>
+<p>We need to define what is an “optimal” $h$, depending on the smoothness
+level of $g_0$, typically unknown. The choice of $h$ relates to the
+bias-variance trade-off:</p>
+<ul>
+<li>large $h$: small variance, higher bias;</li>
+<li>small $h$: high variance, smaller bias.</li>
+</ul>
+<blockquote>
+<p>Note that $K_h (\cdot) = K (\cdot / h)$.</p>
+</blockquote>
+<h3 id="locally-constant-estimator">Locally Constant Estimator</h3>
+<ul>
+<li><strong>Nadaraya-Watson</strong> estimator, or locally constant estimator. It
+assumes the CEF locally takes the form $g(x) = \beta_0(x)$. The
+local parameter is estimated as: $$
+\hat{\beta}<em>0 (\bar{x}) = \arg\min</em>{\beta_0}  \quad  \mathbb E_n \Big[ K_h (x_i - \bar{x}) \cdot  \big(y_i - \beta_0 \big)^2 \Big]
+$$</li>
+</ul>
+<img src="../img/Fig_521.png" style="width:50.0%" />
+<h3 id="cef">CEF</h3>
+<p>The Nadaraya-Watson estimate of the CEF takes the form: $$
+\mathbb E_n \left[ y | x = \bar{x}\right] = \hat{g}(\bar{x}) = \frac{\sum_{i=1}^n y_i K_h (x_i - \bar{x})}{\sum_{i=1}^n K_h (x_i - \bar{x})}
+$$</p>
+<h3 id="locally-linear-estimator">Locally Linear Estimator</h3>
+<ul>
+<li><strong>Local Linear</strong> estimator. It assumes the CEF locally takes the
+form $g(x) = \beta_0(x) + \beta_1(x) x$. The local parameters are
+estimated as:</li>
+</ul>
+<p>$$
+\left( \hat{\beta}_0 (\bar{x}), \hat{\beta}<em>1 (\bar{x}) \right) = \arg\min</em>{\beta_0, \beta_1}  \quad   \mathbb E_n \Big[ K_h (x_i - \bar{x}) \cdot  \big(y_i - \beta_0 - (x_i - \bar{x}) \beta_1 \big)^2 \Big]
+$$</p>
+<img src="../img/Fig_522.png" style="width:50.0%" />
+<h3 id="cef-1">CEF</h3>
+<p>In this case, we do LS estimate with $i$’s contribution of residual
+weighted by the kernel $K_h (x_i - \bar{x})$. The final estimate at
+$\bar{x}$ is given by: $$
+\hat{g} (\bar{x}) = \hat{\beta}_0 (\bar{x}) + (\bar{x} - \bar{x}) \hat{\beta}_1 (\bar{x}) = \hat{\beta}_0 (\bar{x})
+$$ since we have centered the $x_s$ at $\bar{x}$ in the kernel. - It is
+possible to add linearly higher order polynomials, e.g. do locally
+quadratic least squares using loss function:</p>
+<p>$$
+\mathbb E_n \left[ K_h (x_i - \bar{x}) \big(y_i - \beta_0 - (x_i - \bar{x}) \beta_1 - (x_i - \bar{x})^2 \beta_2 \big)^2 \right]
+$$</p>
+<h3 id="uniform-kernel">Uniform Kernel</h3>
+<p>LS restricted to sample $i$ such that $x_i$ within $h$ of $\bar{x}$. $$
+\begin{aligned}
+&amp; K (\cdot) = \mathbb I\lbrace \cdot \in [-1, 1] \rbrace  \newline
+&amp; K_h (\cdot) = \mathbb I\lbrace \cdot/h \in [-1, 1] \rbrace = \mathbb I\lbrace \cdot \in [-h, h] \rbrace  \newline
+&amp; K_h (x_i - \bar{x}) = \mathbb I\lbrace x_i - \bar{x} \in [-h, h] \rbrace  = \mathbb I\lbrace x_i \in [\bar{x}-h, \bar{x} + h] \rbrace
+\end{aligned}
+$$ Employed together with the locally linear estimator, the estimation
+procedure reduces to **local least squares}. The loss function is: $$
+\mathbb E_n \Big[ K_n (x_i - \bar{x}) \big(y_i -\beta_0 - \beta_1 (x_i - \bar{x}) \big)^2 \Big] = \frac{1}{n} \sum_{i: x_i \in [\bar{x}-h, \bar{x} +h ]}  \big(y_i -\beta_0 - \beta_1 (x_i - \bar{x}) \big)^2
+$$</p>
+<p>The more local is the estimation, the more appropriate the linear
+regression: if $g_0$ is smooth,
+$g_0(\bar{x}) + g_0'(\bar{x}) (x_i - \bar{x})$ is a better approximation
+for $g_0 (x_i)$.</p>
+<p>However, the uniform density is not a good kernel choice as it produces
+discontinuous CEF estimates. The following are two popular alternative
+choices that produce continuous CEF estimates.</p>
+<h3 id="other-kernels">Other Kernels</h3>
+<ul>
+<li>
+<p><strong>Epanechnikov kernel</strong> $$
+K_h(x_i - \bar{x}) = \frac { 3 } { 4 } \left( 1 - (x_i - \bar{x}) ^ { 2 } \right)  \mathbb I\lbrace x_i \in [\bar{x}-h, \bar{x} + h] \rbrace
+$$</p>
+</li>
+<li>
+<p><strong>Normal or Gaussian kernel</strong> $$
+K_\phi (x_i - \bar{x})  = \frac { 1 } { \sqrt { 2 \pi } } \exp \left( - \frac { (x_i - \bar{x}) ^ { 2 } } { 2 } \right)
+$$</p>
+</li>
+<li>
+<p><strong>K-Nearest Neighbors (KNN)</strong>: choose bandwidth so that there is a
+fixed number of observations in each kernel. This kernel is
+different from the others since it takes a nonparamentric form.</p>
+</li>
+</ul>
+<h3 id="example">Example</h3>
+<p><img src="../img/Fig_523.png" alt=""></p>
+<h3 id="choice-of-the-optimal-bandwidth">Choice of the optimal bandwidth</h3>
+<p>Practical methods:</p>
+<ul>
+<li>
+<p><strong>Eyeball Method.</strong> (i) Choose a bandwidth (ii) Estimate the
+regression function (iii) Look at the result: if it looks more
+wiggly than you would like, increase the bandwidth: if it looks more
+smooth than you would like, decrease the bandwidth. Con: It only
+works for $\dim(x_i) = 1$ or $2$.</p>
+</li>
+<li>
+<p><strong>Rule of Thumb.</strong> For example, Silverman’s rule of thumb:
+$h = \left( \frac{4 \hat{\sigma}^5}{3n} \right)^{\frac{1}{5}}$. Con:
+It requires too much knowledge about $g_0$ (i.e. normality) which
+you don’t have.</p>
+</li>
+<li>
+<p><strong>Cross Validation.</strong> Under some assumptions, CV will approximately
+gives the MSE optimal bandwidth. The basic idea is to evaluate
+quality of the bandwidth by looking at how well the resulting
+estimator forecasts in the given sample.</p>
+</li>
+</ul>
+<p>Leave-one-out CV. For each $h &gt; 0$ and each $i$, $\hat{g}<em>{-i} (x_i)$ is
+the estimate of the conditional expectation at $x_i$ using bandwidth $h$
+and all observations expect observation $i$. The CV bandwidth is defined
+as $$
+\hat{h} = \arg \min_h CV(h) = \arg \min_h \sum</em>{i=1}^n  \Big( y_i -  \hat{g}_{-i} (x_i) \Big)^2
+$$</p>
+<h3 id="practical-tips">Practical Tips</h3>
+<ul>
+<li>Select a value for $h$.</li>
+<li>For each observation $i$, calculate $$
+\hat{g}<em>{-i} (x_i) = \frac{\sum</em>{j \ne i} y_j K_h (x_j - x_i) }{\sum_{i=1}^n K_h (x_j - x_i)}, \qquad e_{i,h}^2 = \left(y_i - \hat{g}_{-i} (x_i) \right)^2
+$$</li>
+<li>Calculate $\text{CV}(h) = \sum_{i=1}^n e^2_{i,h}$.</li>
+<li>Repeat for each $h$ and choose the one that minimizes
+$\text{CV}(h)$.</li>
+</ul>
+<img src="../img/Fig_524.png" style="width:50.0%" />
+<h3 id="inference">Inference</h3>
+<p><strong>Theorem</strong>: Consider data $\lbrace y_i, x_i \rbrace_{i=1}^n$, iid and
+suppose that $y_i = g(x_i) + \varepsilon_i$ where
+$\mathbb E[\varepsilon_i|x_i] = 0$. Assume that $x_i \in Interior(X)$
+where $X \subseteq \mathbb R$, $g(x)$ and $f(x)$ are three times
+continuously differentiable, and $f(x) &gt; 0$ on $X$. $f(x)$ is the
+probability density of $x \in X$ , and $g(x)$ is the function of
+interest. Suppose that $K(\cdot)$ is a kernel function. Suppose
+$n\to\infty$, $h\to0$ , $nh\to\infty$, and $nh^7\to0$. Then for any
+fixed $x\in X$, $$
+AMSE = \sqrt{nh} \Big( \hat{g}(x) - g(x) - h^2 B(x)\Big) \overset{d}{\to} N \left( 0, \frac{\kappa \sigma^2(x)}{f(x)}\right)
+$$ for $\sigma^2(x) = Var(y_i|x_i = x)$, $\kappa = \int K^2(v)dv$, and
+$B(x) = \frac{\kappa_2}{2} \frac{f'(x)g'(x) + f(x) g''(x)}{f(x)}$ where
+$\kappa_2 = \int v^2 K(v)dv$.</p>
+<h3 id="remarks">Remarks</h3>
+<ul>
+<li>If the function is smooth enough and the bandwidth small enough, you
+can ignore the bias relative to sampling variation. To make this
+plausible, use a smaller bandwidth than would be the “optimal”.</li>
+<li>All kernel regression estimators can be written as a weighted
+average $$
+\hat{g}(x) = \frac{1}{n} \sum_{i=1}^n w_i (x) y_i, \quad \text{ with } \quad w_i (x) = \frac{n K_h (x_i - x)}{\sum_{i=1}^n K_h (x_i - x)}
+$$ Do inference as if you were estimating a mean $\mathbb E[z_i]$
+with sample mean $\frac{1}{n} \sum_{i=1}^n z_i$ using
+$z_i = w_i (x) y_i$.</li>
+<li>If you are doing inference at more than one value of $x$, do
+inference as in the previous point, treating each value of $x$ as a
+different sample mean and note that even with independent data,
+these means will be correlated in general because there will
+generally be some common observations in to each of the averages. If
+you have a time series, make sure you account for correlation
+between the observations going in the different averages even if
+they don’t overlap.</li>
+</ul>
+<p>Issue when doing inference: the estimation of the bandwidth from the
+data is generally not accounted for in the distributional approximation
+(when doing inference). In large-samples, this is unlikely to lead to
+large changes, but uncertainty is understated in small samples.</p>
+<h3 id="bias-variance-trade-off">Bias-Variance Trade-off</h3>
+<p><strong>Theorem</strong></p>
+<p>For any estimator mean-square error MSE is decomposable into variance
+and bias-squared: $$
+\text{MSE} (\bar{x}, \hat{g}) = \mathbb E \left[ \left( \hat{g}(\bar{x}) - g_0 (\bar{x}) \right)^2 \right] = \mathbb E \Big[\underbrace{ \hat{g}(\bar{x}) - g_0 (\bar{x}) }_{\text{Bias}} \Big]^2 +  Var (\hat{g} (\bar{x})).
+$$</p>
+<h3 id="proof">Proof</h3>
+<p>The theorem follows from the following corollary.</p>
+<p><strong>Corollary</strong></p>
+<p>Let $A$ be a random variable and $\theta_0$ a fixed parameter. Then, $$
+\mathbb E [ (A - \theta_0)^2] = Var (A) + \mathbb E [A-\theta_0]^2
+$$</p>
+<p><strong>Proof</strong> $$
+\begin{aligned}
+\mathbb E [ (A - \theta_0)^2] &amp; = \mathbb E[A^2] - 2 \mathbb E [A \theta_0] + \mathbb E [\theta_0] \newline
+&amp;  = \mathbb E[A^2] \underbrace{-  \mathbb E[A]^2 + E[A]^2}_{\text{add and subtract}} - 2 \mathbb E [A \theta_0] + \mathbb E [\theta_0] \newline
+&amp;  = Var(A) + \mathbb E [A]^2 - 2 \theta_0 \mathbb E [A ] + \mathbb E [\theta_0] \newline
+&amp; = Var(A) + \mathbb E [A - \theta_0]^2
+\end{aligned}
+$$</p>
+<p>Note that $\mathbb E [ (A - \theta_0)^2] = \mathbb E [A - \theta_0]^2$.
+$$\tag*{$\blacksquare$}$$</p>
+<h3 id="criteria">Criteria</h3>
+<p>Which criteria should we use with non-parametric estimators?</p>
+<ul>
+<li>
+<p><strong>Mean squared error (MSE)</strong>: $$
+\text{MSE} (\bar{x}) (\hat{g}) = \mathbb E \left[ \left( \hat{g}(\bar{x}) - g_0 (\bar{x}) \right)^2 \right]
+$$ <strong>NB!</strong> This is the criterium we are going to use.</p>
+</li>
+<li>
+<p><strong>Integrated mean squared error (IMSE)</strong>: $$
+\text{IMSE} ( \hat{g} ) = \mathbb E \left[ \int | \hat{g} (x) - g_0 (x) |^2 \mathrm{d} F(x)  \right]
+$$</p>
+</li>
+<li>
+<p>Type I - Type II error.</p>
+</li>
+</ul>
+<h3 id="comments">Comments</h3>
+<p>Hansen (2019): the theorem above implies that we can asymptotically
+approximate the MSE as $$
+\text{AMSE} = \Big( h^2 \sigma_k^2 B(x) \Big)^2 + \frac{\kappa \sigma^2(x)}{nh f(x)} \approx \text{const} \cdot \left( h^4 + \frac{1}{n h} \right)
+$$</p>
+<p>Where</p>
+<ul>
+<li>$Var \propto \frac{1}{h n}$, where you can think of $n h$ as the
+<strong>effective sample size</strong>.</li>
+<li>Bias $\propto h^2$, derived if $g_0$ is twice continuously
+differentiable using Taylor expansion.</li>
+</ul>
+<h3 id="trade-off">Trade-Off</h3>
+<p>The asymptotic MSE is dominated by the larger of $h^4$ and
+$\frac{1}{h n}$. Notice that the bias is increasing in $h$ and the
+variance is decreasing in $h$ (more smoothing means more observations
+are used for local estimation: this increases the bias but decreases
+estimation variance). To select $h$ to minimize the asymptotic MSE,
+these two components should balance each other: $$
+\frac{1}{h n} \propto h^4 \quad \Rightarrow \quad  h \propto n^{-1/5}
+$$</p>
+<p>This result means that the bandwidth should take the form
+$h = c \cdot n^{-1/5}$. The optimal constant $c$ depends on the kernel
+$k$ the bias function $B(x)$ and the marginal density $f_x(x)$. A common
+misinterpretation is to set $h = n^{-1/5}$ which is equivalent to
+setting $c = 1$ and is completely arbitrary. Instead, an empirical
+bandwidth selection rule such as cross-validation should be used in
+practice.</p>
+<h2 id="global-non-parametric-estimation">Global Non-Parametric Estimation</h2>
+<h3 id="series">Series</h3>
+<p>The goal is to try to globally approximate the CEF with a function
+$g(x)$. Series methods are based on the <strong>Stone-Weierstrass theorem</strong>: a
+real-valued continuous function $g(x)$ defined in a compact set can be
+approximated with polynomials for any degree of accuracy $$
+g_0 (x) = p_1 (x) \beta _1 + \dots + p_K (x) \beta_K + r(x)
+$$ where $p_1(x), \dots, p_K(x)$ are called ``a dictionary of
+approximating series’’ and $r(x)$ is a remainder function. If
+$p_1(x), \dots, p_K(x)$ are sufficiently rich, $r(x)$ will be small. If
+$K \to \infty$, then $r \to 0$.</p>
+<blockquote>
+<p>Example - Taylor series: if $g(x)$ is infinitely differentiable, then
+$$
+g(x) = \sum_{k=0}^{\infty } a_k x^k
+$$ where $a_k = \frac{1}{k!} \frac{\partial^k g_0}{\partial x^k}$.</p>
+</blockquote>
+<h3 id="in-practice">In Practice</h3>
+<p>The basic idea is to approximate the infinite sum by chopping it off
+after $K$ terms and then estimate the coefficients by OLS.</p>
+<p><strong>Series estimation</strong>:</p>
+<ul>
+<li>Choose $K$, i.e. the number of series terms, and an approximating
+dictionary $p_1(x), \dots, p_K(x)$</li>
+<li>Expand data to
+$D = \left( y_i, p_1(x_i), \dots, p_K(x_i) \right)_{i=1}^n$</li>
+<li>Estimate OLS to get $\hat{\beta}_1, \dots, \hat{\beta}_K$</li>
+<li>Set
+$\hat{g}(x) = p_1 (x)\hat{\beta}_1 + \dots + p_K(x) \hat{\beta}_K$</li>
+</ul>
+<h3 id="examples">Examples</h3>
+<ul>
+<li>
+<p><strong>Monomials</strong>: $p_1(x) = 1, p_2(x) = x, p_3(x)=x^2, \dots$</p>
+</li>
+<li>
+<p><strong>Hermite Polynomials</strong>: $p_1(x) = 1$, $p_2(x) = x$,
+$p_3(x)=x^2 -1$, $p_4(x)= x^3 - 3x, \dots$. Con: <strong>edge effects</strong>.
+The estimated function is particularly volatile at the edges of the
+sample space (Gibbs effect)</p>
+</li>
+<li>
+<p><strong>Trig Polynomials</strong>: $p_1(x) = 1$, $p_2(x) = \cos 2 \pi x$,
+$p_3(x)= \sin 2 \pi x$, $p_4(x) = \cos 2 \pi x \cdot 2 x \dots$.
+Pro: cyclical therefore good for series. Con: edge effects</p>
+</li>
+<li>
+<p><strong>B-splines</strong>: recursively constructed using knot points $$
+B_{i, 0} = \begin{cases}
+1 &amp; \text{if } t_i \leq x &lt; t_{i+1} \newline 0 &amp; \text{otherwise}
+\end{cases} \qquad B_{i_k} (x) = \frac{x - t_i}{ t_{i+k} - t_i} B_{i, k-1} (x) +  \frac{t_{i+k+1}-x}{t_{i+k+1} - t_{i+1}} B_{i+1, k-1} (x)
+$$ where $t_0, \dots, t_i, \dots$ are knot points and $k$ is the
+order of the spline. Pro: faster rate of convergence and lower
+asymptotic bias.</p>
+</li>
+</ul>
+<h3 id="hermite-polynomials">Hermite Polynomials</h3>
+<img src="../img/Fig_531.png" style="width:50.0%" />
+<h3 id="estimation">Estimation</h3>
+<p>Given $K$, inference proceeds exactly as if one had run an OLS of $y$ on
+$(p_k)_{k=1}^K$. The idea is that you ignore that you are doing
+non-parametric regression as long as you believe you have put enough
+terms (high $K$). Then the function is smooth enough so that the bias of
+the approximation is small relative to the variance (see Newey, 1997).
+Note that his approximation does not account for data-dependent
+estimation of the bandwidth.</p>
+<h3 id="consistency">Consistency</h3>
+<p>Newey (1997): results about consistency of $\hat{g}$ and asymptotic
+normality of $\hat{g}$.</p>
+<ul>
+<li>OLS: $\hat{\beta} \overset{p}{\to} \beta_0$</li>
+<li>Non-parametric: you have a sequence $\lbrace\beta_k\rbrace_{k=1}^K$
+with $\hat{\beta}_k \overset{p}{\to} \beta_k$ as $n \to \infty$ (as
+$k \to \infty$). However, this does not make sense because
+$\lbrace\beta_k\rbrace$ is not constant. Moreover, $\beta_k$ is not
+the quantity of interest. We want to make inference on $\hat{g}(x)$.</li>
+</ul>
+<p><strong>Theorem</strong></p>
+<p>Under regularity conditions, including
+$| | \hat{\beta} - \beta_0 | | \overset{p}{\to} 0$,</p>
+<ul>
+<li>Uniform Consistency:
+$\sup_x | \hat{g}(x) - g_0(x)| \overset{p}{\to} 0$</li>
+<li>Mean-square Consistency:
+$\int | \hat{g}(x) - g_0(x)|^2 \mathrm{d} F(x) \overset{p}{\to} 0$</li>
+</ul>
+<h3 id="imse">IMSE</h3>
+<p><strong>Theorem</strong></p>
+<p>Under the following assumptions:</p>
+<ul>
+<li>$(x_i, y_i)$ are iid and $Var(y_i|x_i)$ is bounded;</li>
+<li>For all $K$, there exists a non-singular matrix $B$ such that
+$A = \left[ (B p(x)) (B p(x))' \right]$ where
+$p(x) = \left( p_1(x), \dots, p_K (x) \right)$ has the properties
+that $\lambda_{\min} (A)^{-1} = O(1)$. In addition,
+$\sup_x | | B p(x) | | = o(\sqrt{K/n})$.</li>
+<li>There exists $\alpha$ and $\beta_K$ for all $K$ such that $$
+\sup_x | g_0 (x) - p(x) \beta_K | = O_p(K^{-\alpha})
+$$</li>
+</ul>
+<p>Then, it holds that</p>
+<p>$$
+\text{IMSE = }\int \left( g_0 (x) - \hat{g} (x) \right)^2 \mathrm{d} F(x) = O_p \left( \frac{K}{n} + K^{-2\alpha}\right)
+$$</p>
+<h3 id="choice-of-the-optimal-k">Choice of the optimal $K$</h3>
+<p>The bias-variance trade-off for series comes in through the choice of
+$K$:</p>
+<ul>
+<li>Higher $K$: smaller bias, since we are leaving out less terms form
+the infinite sum.</li>
+<li>Smaller $K$: smaller variance, since we are estimating less
+regression coefficients from the same amount of data.</li>
+</ul>
+<p><strong>Cross-validation for series</strong>: For each $K \geq 0$ and for each
+$i=1, \dots, n$, consider</p>
+<p>$$
+D_{-i} = \lbrace (x_1, y_1), \dots, (x_{i-1}, y_{i-1}),(x_{i+1}, y_{i+1}), \dots (x_n, y_n) \rbrace
+$$ and calculate $\hat{g}^{(K)}_{-i} (x)$ using series estimate with
+$p_1(x), \dots, p_K (x)$ in order to get
+$e^{(K)}<em>i = y_i - \hat{g}^{(K)}</em>{-i} (x_i)$. Choose $\hat{K}$ such that</p>
+<p>$$
+\hat{K} = \arg \min_K \mathbb E_n \left[ {e^{(K)}_i}^2 \right]
+$$</p>
+<h3 id="inference-1">Inference</h3>
+<p>Consider the data $D = \lbrace (x_i, y_i) \rbrace_{i=1}^n$ such that
+$y_i = g_0 (x_i) + \varepsilon_i$. You may want to form confidence
+intervals for quantities that depends on $g_0$.</p>
+<blockquote>
+<p>Example: $\theta_0$ functional forms of interests:</p>
+<ul>
+<li>Point estimate: $\theta_0 = g_0 (\bar{x} )$ for fixed $\bar{x}$</li>
+<li>Interval estimate: $\theta_0 = g_0 (\bar{x}_2) - g_0 (\bar{x}_1)$</li>
+<li>Point derivative estimate: $\theta_0 = g_0 ' (\bar{x})$ at
+$\bar{x}$</li>
+<li>Average derivative $\theta_0 = \mathbb E [g_0 ' (x) ]$</li>
+<li>Consumer surplus: $\theta_0 = \int_a^b g_0(x)dx \quad$ when $g_0$
+is a demand function.</li>
+</ul>
+</blockquote>
+<p>Those estimates are functionals: maps from a function to a real number.
+We are doing inference on a function now, not on a point estimate.</p>
+<h3 id="inference-2">Inference</h3>
+<p>In order to form a confidence interval for $\theta_0$, with series you
+can</p>
+<ul>
+<li><strong>Undersmooth</strong>: in order to apply a
+<code>\textit{central limit theorem}</code>{=tex}, you need deviations around
+the function to be approximately gaussian. Undersmoothing makes the
+function oscillate much more than the curve you are estimating in
+order to obtain such guassian deviations.</li>
+<li>Use the <strong>delta method</strong>. It would usually require more series terms
+than a criterion like cross-validation would suggest.</li>
+</ul>
+<h3 id="undersmoothing">Undersmoothing</h3>
+<img src="../img/Fig_541.png" style="width:50.0%" />
+<p>If on the contrary you oversmooth (e.g. $g_0$ linear), errors are going
+to constantly be on either one or the other side of the curve $\to$ not
+gaussian!</p>
+<h3 id="delta-method">Delta Method</h3>
+<p><strong>Theorem</strong>: Under the assumptions of the consistency theorem $$
+\frac{\sqrt{n} \Big(\hat{\theta} - \theta_0 + B(r_K) \Big)}{\sqrt{v_K}} \overset{d}{\to} N (0,1)
+$$</p>
+<p><strong>Theorem</strong>: Under the assumptions of the consistency theorem and
+$\sqrt{n} K^{-\alpha} = o(1)$ (or equivalently $n K^{-2\alpha} = O(1)$
+in Hansen), $$
+\frac{\sqrt{n} \Big(\hat{\theta} - \theta_0 \Big)}{\sqrt{v_K}} \overset{d}{\to} N (0,1)
+$$</p>
+<h3 id="remark">Remark</h3>
+<ul>
+<li>The rate of convergence of splines is faster than for power series
+(Newey 1997).</li>
+<li>We have <strong>undersmoothing</strong> if $\sqrt{n} K^{\alpha} = o(1)$ (see
+comment below)</li>
+<li>Usually, in order to prove asymptotic normality, we first prove
+unbiasedness. However here we have a <strong>biased</strong> estimator but we
+make the bias converge to zero faster than the variance.</li>
+</ul>
+<p>Hansen (2019): The critical condition is the assumption that
+$\sqrt{n} K^{\alpha} = o(1)$ This requires that $K \to \infty$ at a rate
+faster than $n^{\frac{1}{2\alpha}}$ This is a troubling condition. The
+optimal rate for estimation of $g(x)$ is
+$K = O(n^{\frac{1}{1+ 2\alpha}})$. If we set
+$K = n^{\frac{1}{1+ 2\alpha}}$ by this rule then
+$n K^{-2\alpha} = n^{\frac{1}{1+ 2\alpha}} \to \infty$ not zero. Thus
+this assumption is equivalent to assuming that $K$ is much larger than
+optimal. The reason why this trick works (that is, why the bias is
+negligible) is that by increasing $K$ the asymptotic bias decreases and
+the asymptotic variance increases and thus the variance dominates.
+Because $K$ is larger than optimal, we typically say that $\hat{g}(x)$
+is <strong>undersmoothed</strong> relative to the optimal series estimator.</p>
+<h3 id="more-remarks">More Remarks</h3>
+<blockquote>
+<p>Many authors like to focus their asymptotic theory on the assumptions
+in the theorem, as the distribution of $\theta$ appears cleaner.
+However, it is a poor use of asymptotic theory. There are three
+problems with the assumption $\sqrt{n} K^{-\alpha} = o(1)$ and the
+approximation of the theorem.</p>
+<ul>
+<li>First, it says that if we intentionally pick $K$ to be larger than
+optimal, we can increase the estimation variance relative to the
+bias so the variance will dominate the bias. But why would we want
+to intentionally use an estimator which is sub-optimal?</li>
+<li>Second, the assumption $\sqrt{n} K^{-\alpha} = o(1)$ does not
+eliminate the asymptotic bias, it only makes it of lower order
+than the variance. So the approximation of the theorem is
+technically valid, but the missing asymptotic bias term is just
+slightly smaller in asymptotic order, and thus still relevant in
+finite samples.</li>
+<li>Third, the condition $\sqrt{n} K^{\alpha} = o(1)$ is just an
+assumption, it has nothing to do with actual empirical practice.
+Thus the difference between the two theorems is in the
+assumptions, not in the actual reality or in the actual empirical
+practice. Eliminating a nuisance (the asymptotic bias) through an
+assumption is a trick, not a substantive use of theory. My strong
+view is that the result (1) is more informative than (2). It shows
+that the asymptotic distribution is normal but has a non-trivial
+finite sample bias.</li>
+</ul>
+</blockquote>
+<h3 id="kernel-vs-series">Kernel vs Series</h3>
+<p>Hansen (2019): in this and the previous chapter we have presented two
+distinct methods of nonparametric regression based on kernel methods and
+series methods. Which should be used in practice? Both methods have
+advantages and disadvantages and there is no clear overall winner.</p>
+<p>First, while the asymptotic theory of the two estimators appear quite
+different, they are actually rather closely related. When the regression
+function $g(x)$ is twice differentiable $(s = 2)$ then the rate of
+convergence of both the MSE of the kernel regression estimator with
+optimal bandwidth $h$ and the series estimator with optimal $K$ is
+$n^{-\frac{2}{k+4}}$ (where $k = \dim(x)$). There is no difference. If
+the regression function is smoother than twice differentiable ($s &gt; 2$)
+then the rate of the convergence of the series estimator improves. This
+may appear to be an advantage for series methods, but kernel regression
+can also take advantage of the higher smoothness by using so-called
+higher-order kernels or local polynomial regression, so perhaps this
+advantage is not too large.</p>
+<p>Both estimators are asymptotically normal and have straightforward
+asymptotic standard error formulae. The series estimators are a bit more
+convenient for this purpose, as classic parametric standard error
+formula work without amendment.</p>
+<h3 id="advantages-of-kernels">Advantages of Kernels</h3>
+<p>An advantage of kernel methods is that their distributional theory is
+easier to derive. The theory is all based on local averages which is
+relatively straightforward. In contrast, series theory is more
+challenging, dealing with increasing parameter spaces. An important
+difference in the theory is that for kernel estimators we have explicit
+representations for the bias while we only have rates for series
+methods. This means that plug-in methods can be used for bandwidth
+selection in kernel regression. However, typically we rely on
+cross-validation, which is equally applicable in both kernel and series
+regression.</p>
+<p>Kernel methods are also relatively easy to implement when the dimension
+of $x$, $k$, is large. There is not a major change in the methodology as
+$k$ increases. In contrast, series methods become quite cumbersome as
+$k$ increases as the number of cross-terms increases exponentially. E.g
+($K=2$) with $k=1$ you have only $\lbrace x_1, x_1^2\rbrace$; with $k=2$
+you have to add $\lbrace x_2, x_2^2, x_1 x_2 \rbrace$; with $k=3$ you
+have to add $\lbrace x_3, x_3^2, x_1 x_3, x_2 x_3\rbrace$, etc..</p>
+<h3 id="advantages-of-series">Advantages of Series</h3>
+<p>A major advantage of series methods is that it has inherently a high
+degree of flexibility, and the user is able to implement shape
+restrictions quite easily. For example, in series estimation it is
+relatively simple to implement a partial linear CEF, an additively
+separable CEF, monotonicity, concavity or convexity. These restrictions
+are harder to implement in kernel regression.</p>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/metrics/07_endogeneity/" rel="next">Endogeneity</a>
+  </div>
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/metrics/09_selection/" rel="prev">Variable Selection</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

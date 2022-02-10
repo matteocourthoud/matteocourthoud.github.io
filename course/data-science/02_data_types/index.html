@@ -1,0 +1,1772 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="import numpy as np import pandas as pd  Setup For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at Inside AirBnb: http://insideairbnb." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/data-science/02_data_types/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/data-science/02_data_types/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/data-science/02_data_types/" />
+  <meta property="og:title" content="Data Types | Matteo Courthoud" />
+  <meta property="og:description" content="import numpy as np import pandas as pd  Setup For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at Inside AirBnb: http://insideairbnb." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2022-02-10T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2022-02-10T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Data Types | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="314d1f9b520f88f83b052d261bcae7f1" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/data-science/">Data Science</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/data-science/01_data_exploration/">Data Exploration</a></li>
+
+
+
+  <li class="active"><a href="/course/data-science/02_data_types/">Data Types</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/03_data_wrangling/">Data Wrangling</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/04_plotting/">Plotting</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/05_ml_pipeline/">Machine Learning Pipeline</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/06_web_scraping/">Web Scraping</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/07_regression/">Regression</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#setup">Setup</a></li>
+    <li><a href="#numerical-data">Numerical Data</a></li>
+    <li><a href="#string-data">String Data</a></li>
+    <li><a href="#time-data">Time Data</a></li>
+    <li><a href="#missing-data">Missing Data</a></li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Data Types</h1>
+
+          <p>Last updated on Feb 10, 2022</p>
+
+          <div class="article-style">
+            <pre><code class="language-python">import numpy as np
+import pandas as pd
+</code></pre>
+<h2 id="setup">Setup</h2>
+<p>For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at <strong>Inside AirBnb</strong>: <a href="http://insideairbnb.com/get-the-data.html" target="_blank" rel="noopener">http://insideairbnb.com/get-the-data.html</a>.</p>
+<p>A description of all variables in all datasets is avaliable <a href="https://docs.google.com/spreadsheets/d/1iWCNJcSutYqpULSQHlNyGInUvHg2BoUGoNRIGa6Szc4/edit#gid=982310896" target="_blank" rel="noopener">here</a>.</p>
+<p>We are going to use 2 datasets:</p>
+<ul>
+<li>listing dataset: contains listing-level information</li>
+<li>pricing dataset: contains pricing data, over time</li>
+</ul>
+<pre><code class="language-python"># Import listings data
+url_listings = &quot;http://data.insideairbnb.com/italy/emilia-romagna/bologna/2021-12-17/visualisations/listings.csv&quot;
+df_listings = pd.read_csv(url_listings)
+
+# Import pricing data
+url_prices = &quot;http://data.insideairbnb.com/italy/emilia-romagna/bologna/2021-12-17/data/calendar.csv.gz&quot;
+df_prices = pd.read_csv(url_prices, compression=&quot;gzip&quot;)
+</code></pre>
+<h2 id="numerical-data">Numerical Data</h2>
+<blockquote>
+<p>Methods</p>
+<ul>
+<li><code>pd.cut()</code></li>
+</ul>
+</blockquote>
+<p>Standard mathematical operations between columns are done row-wise.</p>
+<pre><code class="language-python">df_prices['maximum_nights'] - df_prices['minimum_nights']
+</code></pre>
+<pre><code>0           148
+1           357
+2           357
+3           357
+4           357
+           ... 
+1260340    1124
+1260341    1124
+1260342    1124
+1260343    1124
+1260344    1124
+Length: 1260345, dtype: int64
+</code></pre>
+<p>We can use most <code>numpy</code> operations element-wise on a single column.</p>
+<pre><code class="language-python">np.log(df_listings['price'])
+</code></pre>
+<pre><code>0       4.219508
+1       3.367296
+2       3.912023
+3       4.836282
+4       3.912023
+          ...   
+3448    3.465736
+3449    3.806662
+3450    3.912023
+3451    4.897840
+3452    4.744932
+Name: price, Length: 3453, dtype: float64
+</code></pre>
+<p>We can create a categorical variables from a numerical one using the <code>pd.cut()</code> function.</p>
+<pre><code class="language-python">pd.cut(df_listings['price'], 
+       bins = [0, 50, 100, np.inf], 
+       labels=['cheap', 'ok', 'expensive'])
+</code></pre>
+<pre><code>0              ok
+1           cheap
+2           cheap
+3       expensive
+4           cheap
+          ...    
+3448        cheap
+3449        cheap
+3450        cheap
+3451    expensive
+3452    expensive
+Name: price, Length: 3453, dtype: category
+Categories (3, object): ['cheap' &lt; 'ok' &lt; 'expensive']
+</code></pre>
+<h2 id="string-data">String Data</h2>
+<blockquote>
+<p>Methods</p>
+<ul>
+<li><code>.str()</code></li>
+</ul>
+</blockquote>
+<p>We can use the <code>+</code> operator between columns, to do pairwise append.</p>
+<p><strong>Note</strong>: we cannot do it with strings.</p>
+<pre><code class="language-python">df_listings['host_name'] + df_listings['neighbourhood']
+</code></pre>
+<pre><code>0                     CarloSanto Stefano
+1              EleonoraPorto - Saragozza
+2                     PaoloSanto Stefano
+3                Anna MariaSanto Stefano
+4               ValerioPorto - Saragozza
+                      ...               
+3448                        IleanaNavile
+3449           FernandaPorto - Saragozza
+3450                        IleanaNavile
+3451        Wonderful ItalySanto Stefano
+3452    Wonderful ItalyPorto - Saragozza
+Length: 3453, dtype: object
+</code></pre>
+<p>Pandas Series have a lot of vectorized string functions you can call on them.</p>
+<pre><code class="language-python">[i for i in dir(pd.Series.str) if '_' not in i]
+</code></pre>
+<pre><code>['capitalize',
+ 'casefold',
+ 'cat',
+ 'center',
+ 'contains',
+ 'count',
+ 'decode',
+ 'encode',
+ 'endswith',
+ 'extract',
+ 'extractall',
+ 'find',
+ 'findall',
+ 'fullmatch',
+ 'get',
+ 'index',
+ 'isalnum',
+ 'isalpha',
+ 'isdecimal',
+ 'isdigit',
+ 'islower',
+ 'isnumeric',
+ 'isspace',
+ 'istitle',
+ 'isupper',
+ 'join',
+ 'len',
+ 'ljust',
+ 'lower',
+ 'lstrip',
+ 'match',
+ 'normalize',
+ 'pad',
+ 'partition',
+ 'repeat',
+ 'replace',
+ 'rfind',
+ 'rindex',
+ 'rjust',
+ 'rpartition',
+ 'rsplit',
+ 'rstrip',
+ 'slice',
+ 'split',
+ 'startswith',
+ 'strip',
+ 'swapcase',
+ 'title',
+ 'translate',
+ 'upper',
+ 'wrap',
+ 'zfill']
+</code></pre>
+<p>For example, we want to remove the dollar symbol from the <code>price</code> variable in the <code>df_prices</code> dataset.</p>
+<pre><code class="language-python">df_prices['price'].str.replace('$', '')
+</code></pre>
+<pre><code>/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_74833/117745113.py:1: FutureWarning: The default value of regex will change from True to False in a future version. In addition, single character regular expressions will*not* be treated as literal strings when regex=True.
+  df_prices['price'].str.replace('$', '')
+
+
+
+
+
+0           70.00
+1           68.00
+2           68.00
+3           68.00
+4           68.00
+            ...  
+1260340    115.00
+1260341    115.00
+1260342    115.00
+1260343    115.00
+1260344    115.00
+Name: price, Length: 1260345, dtype: object
+</code></pre>
+<p>Some of these functions use regular expressions.</p>
+<ul>
+<li><code>match()</code>: Call re.match() on each element, returning a boolean.</li>
+<li><code>extract()</code>: Call re.match() on each element, returning matched groups as strings.</li>
+<li><code>findall()</code>: Call re.findall() on each element</li>
+<li><code>replace()</code>: Replace occurrences of pattern with some other string</li>
+<li><code>contains()</code>: Call re.search() on each element, returning a boolean</li>
+<li><code>count()</code>: Count occurrences of pattern</li>
+<li><code>split()</code>: Equivalent to str.split(), but accepts regexps
+rsplit()</li>
+</ul>
+<p>For example, the next code checks whether in the word <code>centre</code> or <code>center</code> are contained in the text description.</p>
+<pre><code class="language-python">df_listings['name'].str.contains('centre|center')
+</code></pre>
+<pre><code>0        True
+1       False
+2        True
+3       False
+4       False
+        ...  
+3448    False
+3449    False
+3450    False
+3451    False
+3452    False
+Name: name, Length: 3453, dtype: bool
+</code></pre>
+<p>Lastly, we can (try to) convert string variables to numeric using <code>astype(float)</code>.</p>
+<pre><code class="language-python">df_prices['price'].str.replace('[$|,]', '', regex=True).astype(float)
+</code></pre>
+<pre><code>0           70.0
+1           68.0
+2           68.0
+3           68.0
+4           68.0
+           ...  
+1260340    115.0
+1260341    115.0
+1260342    115.0
+1260343    115.0
+1260344    115.0
+Name: price, Length: 1260345, dtype: float64
+</code></pre>
+<p>We can also use it to convert numerics to strings using <code>astype(str)</code>.</p>
+<pre><code class="language-python">df_listings['id'].astype(str)
+</code></pre>
+<pre><code>0          42196
+1          46352
+2          59697
+3          85368
+4         145779
+          ...   
+3448    53810648
+3449    53820830
+3450    53837098
+3451    53837654
+3452    53854962
+Name: id, Length: 3453, dtype: object
+</code></pre>
+<h2 id="time-data">Time Data</h2>
+<blockquote>
+<p>Methods</p>
+<ul>
+<li><code>pd.to_datetime()</code></li>
+<li><code>.dt.year()</code></li>
+<li><code>pd.to_timedelta()</code></li>
+</ul>
+</blockquote>
+<p>In the <code>df_prices</code> we have a date variable, <code>date</code>. Which format is it in? We can check it with the <code>.dtypes</code> attribute.</p>
+<pre><code class="language-python">df_prices['date'].dtypes
+</code></pre>
+<pre><code>dtype('O')
+</code></pre>
+<p>We can convert a variable into a date using the</p>
+<pre><code class="language-python">df_prices['datetime'] = pd.to_datetime(df_prices['date'])
+</code></pre>
+<p>Indeed, if we now check the format of the <code>datetime</code> variable, it&rsquo;s <code>datetime</code>.</p>
+<pre><code class="language-python">df_prices['datetime'].dtypes
+</code></pre>
+<pre><code>dtype('&lt;M8[ns]')
+</code></pre>
+<p>Once we have a variable in <code>datetime</code> format, we gain plenty of datetime operations through the <code>dt</code> library. For example, we can extract the year using <code>.dt.year</code>.</p>
+<pre><code class="language-python">df_prices['datetime'].dt.year
+</code></pre>
+<pre><code>0          2021
+1          2021
+2          2021
+3          2021
+4          2021
+           ... 
+1260340    2022
+1260341    2022
+1260342    2022
+1260343    2022
+1260344    2022
+Name: datetime, Length: 1260345, dtype: int64
+</code></pre>
+<p>We can add or subtract time periods from a date using the <code>pd.to_timedelta()</code> function. We need to specify the unit of measurement with the <code>unit</code> option.</p>
+<pre><code class="language-python">df_prices['datetime'] -  pd.to_timedelta(3, unit='d')
+</code></pre>
+<pre><code>0         2021-12-14
+1         2021-12-14
+2         2021-12-15
+3         2021-12-16
+4         2021-12-17
+             ...    
+1260340   2022-12-09
+1260341   2022-12-10
+1260342   2022-12-11
+1260343   2022-12-12
+1260344   2022-12-13
+Name: datetime, Length: 1260345, dtype: datetime64[ns]
+</code></pre>
+<h2 id="missing-data">Missing Data</h2>
+<blockquote>
+<p>Methods</p>
+<ul>
+<li><code>.isna()</code></li>
+<li><code>.dropna()</code></li>
+<li><code>.fillna()</code></li>
+</ul>
+</blockquote>
+<p>The function <code>isna()</code> reports missing values.</p>
+<pre><code class="language-python">df_listings.isna().head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>name</th>
+      <th>host_id</th>
+      <th>host_name</th>
+      <th>neighbourhood_group</th>
+      <th>neighbourhood</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>room_type</th>
+      <th>price</th>
+      <th>minimum_nights</th>
+      <th>number_of_reviews</th>
+      <th>last_review</th>
+      <th>reviews_per_month</th>
+      <th>calculated_host_listings_count</th>
+      <th>availability_365</th>
+      <th>number_of_reviews_ltm</th>
+      <th>license</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>To get a quick description of the amount of missing data in the dataset, we can use</p>
+<pre><code class="language-python">df_listings.isna().sum()
+</code></pre>
+<pre><code>id                                   0
+name                                 0
+host_id                              0
+host_name                            9
+neighbourhood_group               3453
+neighbourhood                        0
+latitude                             0
+longitude                            0
+room_type                            0
+price                                0
+minimum_nights                       0
+number_of_reviews                    0
+last_review                        409
+reviews_per_month                  409
+calculated_host_listings_count       0
+availability_365                     0
+number_of_reviews_ltm                0
+license                           3318
+dtype: int64
+</code></pre>
+<p>We can drop missing values using <code>dropna()</code>. It drops all rows with at least one missing value.</p>
+<pre><code class="language-python">df_listings.dropna().shape
+</code></pre>
+<pre><code>(0, 18)
+</code></pre>
+<p>In this case unfortunately, it drops all the rows. If we wa to drop only rows with all missing values, we can use the parameter <code>how='all'</code>.</p>
+<pre><code class="language-python">df_listings.dropna(how='all').shape
+</code></pre>
+<pre><code>(3453, 18)
+</code></pre>
+<p>If we want to drop only missing values for one particular value, we can use the <code>subset</code> option.</p>
+<pre><code class="language-python">df_listings.dropna(subset=['reviews_per_month']).shape
+</code></pre>
+<pre><code>(3044, 18)
+</code></pre>
+<p>We can also fill the missing values instead of dropping them, using <code>fillna()</code>.</p>
+<pre><code class="language-python">df_listings.fillna(' -- This was NA  -- ').head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>name</th>
+      <th>host_id</th>
+      <th>host_name</th>
+      <th>neighbourhood_group</th>
+      <th>neighbourhood</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>room_type</th>
+      <th>price</th>
+      <th>minimum_nights</th>
+      <th>number_of_reviews</th>
+      <th>last_review</th>
+      <th>reviews_per_month</th>
+      <th>calculated_host_listings_count</th>
+      <th>availability_365</th>
+      <th>number_of_reviews_ltm</th>
+      <th>license</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>42196</td>
+      <td>50 sm Studio in the historic centre</td>
+      <td>184487</td>
+      <td>Carlo</td>
+      <td>-- This was NA  --</td>
+      <td>Santo Stefano</td>
+      <td>44.48507</td>
+      <td>11.34786</td>
+      <td>Entire home/apt</td>
+      <td>68</td>
+      <td>3</td>
+      <td>180</td>
+      <td>2021-11-12</td>
+      <td>1.32</td>
+      <td>1</td>
+      <td>161</td>
+      <td>6</td>
+      <td>-- This was NA  --</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>46352</td>
+      <td>A room in Pasolini's house</td>
+      <td>467810</td>
+      <td>Eleonora</td>
+      <td>-- This was NA  --</td>
+      <td>Porto - Saragozza</td>
+      <td>44.49168</td>
+      <td>11.33514</td>
+      <td>Private room</td>
+      <td>29</td>
+      <td>1</td>
+      <td>300</td>
+      <td>2021-11-30</td>
+      <td>2.2</td>
+      <td>2</td>
+      <td>248</td>
+      <td>37</td>
+      <td>-- This was NA  --</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>59697</td>
+      <td>COZY LARGE BEDROOM in the city center</td>
+      <td>286688</td>
+      <td>Paolo</td>
+      <td>-- This was NA  --</td>
+      <td>Santo Stefano</td>
+      <td>44.48817</td>
+      <td>11.34124</td>
+      <td>Private room</td>
+      <td>50</td>
+      <td>1</td>
+      <td>240</td>
+      <td>2020-10-04</td>
+      <td>2.18</td>
+      <td>2</td>
+      <td>327</td>
+      <td>0</td>
+      <td>-- This was NA  --</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>85368</td>
+      <td>Garden House Bologna</td>
+      <td>467675</td>
+      <td>Anna Maria</td>
+      <td>-- This was NA  --</td>
+      <td>Santo Stefano</td>
+      <td>44.47834</td>
+      <td>11.35672</td>
+      <td>Entire home/apt</td>
+      <td>126</td>
+      <td>2</td>
+      <td>40</td>
+      <td>2019-11-03</td>
+      <td>0.34</td>
+      <td>1</td>
+      <td>332</td>
+      <td>0</td>
+      <td>-- This was NA  --</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>145779</td>
+      <td>SINGLE ROOM</td>
+      <td>705535</td>
+      <td>Valerio</td>
+      <td>-- This was NA  --</td>
+      <td>Porto - Saragozza</td>
+      <td>44.49306</td>
+      <td>11.33786</td>
+      <td>Private room</td>
+      <td>50</td>
+      <td>10</td>
+      <td>69</td>
+      <td>2021-12-05</td>
+      <td>0.55</td>
+      <td>9</td>
+      <td>365</td>
+      <td>5</td>
+      <td>-- This was NA  --</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can also make missing values if we want.</p>
+<pre><code class="language-python">df_listings.iloc[2, 2] = np.nan
+df_listings.iloc[:3, :3]
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>name</th>
+      <th>host_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>42196</td>
+      <td>50 sm Studio in the historic centre</td>
+      <td>184487.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>46352</td>
+      <td>A room in Pasolini's house</td>
+      <td>467810.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>59697</td>
+      <td>COZY LARGE BEDROOM in the city center</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/data-science/01_data_exploration/" rel="next">Data Exploration</a>
+  </div>
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/data-science/03_data_wrangling/" rel="prev">Data Wrangling</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

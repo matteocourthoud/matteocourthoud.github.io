@@ -1,0 +1,2032 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="# Remove warnings import warnings warnings.filterwarnings(&#39;ignore&#39;)  # Import import pandas as pd import numpy as np import seaborn as sns import time from sklearn.preprocessing import scale from sklearn.decomposition import PCA from sklearn." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/" />
+  <meta property="og:title" content="Unsupervised Learning | Matteo Courthoud" />
+  <meta property="og:description" content="# Remove warnings import warnings warnings.filterwarnings(&#39;ignore&#39;)  # Import import pandas as pd import numpy as np import seaborn as sns import time from sklearn.preprocessing import scale from sklearn.decomposition import PCA from sklearn." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2022-01-03T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2022-01-03T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Unsupervised Learning | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="7ac490af7d8081e38d0778e24284cbbb" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/ml-econ/">ML for Economics</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/ml-econ/01_regression/">Linear Regression</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/02_iv/">Instrumental Variables</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/03_nonparametric/">Non-Parametric Regression</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/04_crossvalidation/">Resampling Methods</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/05_regularization/">Model Selection and Regularization</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/06_convexity/">Convexity and Optimization</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/07_trees/">Tree-based Methods</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/08_neuralnets/">Neural Networks</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/09_postdoubleselection/">Post-Double Selection</a></li>
+
+
+
+  <li class="active"><a href="/course/ml-econ/10_unsupervised/">Unsupervised Learning</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#102-principal-component-analysis">10.2 Principal Component Analysis</a>
+      <ul>
+        <li><a href="#pca-and-spectral-analysis">PCA and Spectral Analysis</a></li>
+        <li><a href="#more-on-pca">More on PCA</a></li>
+        <li><a href="#the-proportion-of-variance-explained">The Proportion of Variance Explained</a></li>
+        <li><a href="#deciding-how-many-principal-components-to-use">Deciding How Many Principal Components to Use</a></li>
+      </ul>
+    </li>
+    <li><a href="#clustering">Clustering</a>
+      <ul>
+        <li><a href="#k-means-clustering">K-Means Clustering</a></li>
+        <li><a href="#algorithm">Algorithm</a></li>
+        <li><a href="#hierarchical-clustering">Hierarchical Clustering</a></li>
+        <li><a href="#the-dendogram">The Dendogram</a></li>
+        <li><a href="#the-hierarchical-clustering-algorithm">The Hierarchical Clustering Algorithm</a></li>
+        <li><a href="#the-linkage-function">The Linkage Function</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Unsupervised Learning</h1>
+
+          <p>Last updated on Jan 3, 2022</p>
+
+          <div class="article-style">
+            <pre><code class="language-python"># Remove warnings
+import warnings
+warnings.filterwarnings('ignore')
+</code></pre>
+<pre><code class="language-python"># Import
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import time
+
+from sklearn.preprocessing import scale
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+from scipy.cluster import hierarchy
+from scipy.cluster.hierarchy import linkage, dendrogram, cut_tree
+</code></pre>
+<pre><code class="language-python"># Import matplotlib for graphs
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
+from IPython.display import clear_output
+
+# Set global parameters
+%matplotlib inline
+plt.style.use('seaborn-white')
+plt.rcParams['lines.linewidth'] = 3
+plt.rcParams['figure.figsize'] = (10,6)
+plt.rcParams['figure.titlesize'] = 20
+plt.rcParams['axes.titlesize'] = 18
+plt.rcParams['axes.labelsize'] = 14
+plt.rcParams['legend.fontsize'] = 14
+</code></pre>
+<p>The difference between <em>supervised learning</em> and <em>unsupervised learning</em> is that in the first case we have a variable $y$ which we want to predict, given a set of variables ${ X_1, . . . , X_p }$.</p>
+<p>In <em>unsupervised learning</em> are not interested in prediction, because we do not have an associated response variable $y$. Rather, the goal is to discover interesting things about the measurements on ${ X_1, . . . , X_p }$. Question that we can answer are:</p>
+<ul>
+<li>Is there an informative way to visualize the data?</li>
+<li>Can we discover subgroups among the variables or among the observations?</li>
+</ul>
+<p>We are going to answe these questions with two main methods, respectively:</p>
+<ul>
+<li>Principal Components Analysis</li>
+<li>Clustering</li>
+</ul>
+<h2 id="102-principal-component-analysis">10.2 Principal Component Analysis</h2>
+<p>Suppose that we wish to visualize $n$ observations with measurements on a set of $p$ features, ${X_1, . . . , X_p}$, as part of an exploratory data analysis.</p>
+<p>We could do this by examining two-dimensional scatterplots of the data, each of which contains the n observations’ measurements on two of the features. However, there are $p(p−1)/2$ such scatterplots; for example,
+with $p = 10$ there are $45$ plots!</p>
+<p>PCA provides a tool to do just this. It finds a low-dimensional represen- tation of a data set that contains as much as possible of the variation.</p>
+<p>The <strong>first principal component</strong> of a set of features ${X_1, . . . , X_p}$ is the normalized linear combination of the features</p>
+<p>$$
+Z_1 = \phi_{11} X_1 + \phi_{21} X_2 + &hellip; + \phi_{p1} X_p
+$$</p>
+<p>that has the largest variance. By normalized, we mean that $\sum_{i=1}^p \phi^2_{i1} = 1$.</p>
+<p>In other words, the first principal component loading vector solves the optimization problem</p>
+<p>$$
+\underset{\phi_{11}, \ldots, \phi_{p 1}}{\max} \ \left{\frac{1}{n} \sum _ {i=1}^{n}\left(\sum _ {j=1}^{p} \phi _ {j1} x _ {ij} \right)^{2}\right} \quad \text { subject to } \quad \sum _ {j=1}^{p} \phi _ {j1}^{2}=1
+$$</p>
+<p>The objective that we are maximizing is just the sample variance of the $n$ values of $z_{i1}$.</p>
+<p>After the first principal component $Z_1$ of the features has been determined, we can find the second principal component $Z_2$. The <strong>second principal component</strong> is the linear combination of ${X_1, . . . , X_p}$ that has maximal variance out of all linear combinations that are <em>uncorrelated</em> with $Z_1$.</p>
+<p>We illustrate the use of PCA on the <code>USArrests</code> data set. For each of the 50 states in the United States, the data set contains the number of arrests per $100,000$ residents for each of three crimes: <code>Assault</code>, <code>Murder</code>, and <code>Rape.</code> We also record the percent of the population in each state living in urban areas, <code>UrbanPop</code>.</p>
+<pre><code class="language-python"># Load crime data
+df = pd.read_csv('data/USArrests.csv', index_col=0)
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Murder</th>
+      <th>Assault</th>
+      <th>UrbanPop</th>
+      <th>Rape</th>
+    </tr>
+    <tr>
+      <th>State</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Alabama</th>
+      <td>13.2</td>
+      <td>236</td>
+      <td>58</td>
+      <td>21.2</td>
+    </tr>
+    <tr>
+      <th>Alaska</th>
+      <td>10.0</td>
+      <td>263</td>
+      <td>48</td>
+      <td>44.5</td>
+    </tr>
+    <tr>
+      <th>Arizona</th>
+      <td>8.1</td>
+      <td>294</td>
+      <td>80</td>
+      <td>31.0</td>
+    </tr>
+    <tr>
+      <th>Arkansas</th>
+      <td>8.8</td>
+      <td>190</td>
+      <td>50</td>
+      <td>19.5</td>
+    </tr>
+    <tr>
+      <th>California</th>
+      <td>9.0</td>
+      <td>276</td>
+      <td>91</td>
+      <td>40.6</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<pre><code class="language-python"># Scale data
+X_scaled = pd.DataFrame(scale(df), index=df.index, columns=df.columns).values
+</code></pre>
+<p>Let&rsquo;s fit PCA with 2 components.</p>
+<pre><code class="language-python"># Fit PCA with 2 components
+pca2 = PCA(n_components=2).fit(X_scaled)
+</code></pre>
+<pre><code class="language-python"># Get weights
+weights = pca2.components_.T
+df_weights = pd.DataFrame(weights, index=df.columns, columns=['PC1', 'PC2'])
+df_weights
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>PC1</th>
+      <th>PC2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Murder</th>
+      <td>0.535899</td>
+      <td>0.418181</td>
+    </tr>
+    <tr>
+      <th>Assault</th>
+      <td>0.583184</td>
+      <td>0.187986</td>
+    </tr>
+    <tr>
+      <th>UrbanPop</th>
+      <td>0.278191</td>
+      <td>-0.872806</td>
+    </tr>
+    <tr>
+      <th>Rape</th>
+      <td>0.543432</td>
+      <td>-0.167319</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>What does the trasformed data looks like?</p>
+<pre><code class="language-python"># Transform X to get the principal components
+X_dim2 = pca2.transform(X_scaled)
+df_dim2 = pd.DataFrame(X_dim2, columns=['PC1', 'PC2'], index=df.index)
+df_dim2.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>PC1</th>
+      <th>PC2</th>
+    </tr>
+    <tr>
+      <th>State</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Alabama</th>
+      <td>0.985566</td>
+      <td>1.133392</td>
+    </tr>
+    <tr>
+      <th>Alaska</th>
+      <td>1.950138</td>
+      <td>1.073213</td>
+    </tr>
+    <tr>
+      <th>Arizona</th>
+      <td>1.763164</td>
+      <td>-0.745957</td>
+    </tr>
+    <tr>
+      <th>Arkansas</th>
+      <td>-0.141420</td>
+      <td>1.119797</td>
+    </tr>
+    <tr>
+      <th>California</th>
+      <td>2.523980</td>
+      <td>-1.542934</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>The advantage og PCA is that it allows us to see the variation in lower dimesions.</p>
+<pre><code class="language-python"># Figure 10.1 a
+def make_figure_10_1a():
+
+    # Init
+    fig, ax1 = plt.subplots(figsize=(10,10))
+    ax1.set_title('Figure 10.1');
+
+    # Plot Principal Components 1 and 2
+    for i in df_dim2.index:
+        ax1.annotate(i, (df_dim2.PC1.loc[i], -df_dim2.PC2.loc[i]), ha='center', fontsize=14)
+
+    # Plot reference lines
+    m = np.max(np.abs(df_dim2.values))*1.2
+    ax1.hlines(0,-m,m, linestyles='dotted', colors='grey')
+    ax1.vlines(0,-m,m, linestyles='dotted', colors='grey')
+    ax1.set_xlabel('First Principal Component')
+    ax1.set_ylabel('Second Principal Component')
+    ax1.set_xlim(-m,m); ax1.set_ylim(-m,m)
+
+    # Plot Principal Component loading vectors, using a second y-axis.
+    ax1b = ax1.twinx().twiny() 
+    ax1b.set_ylim(-1,1); ax1b.set_xlim(-1,1)
+    for i in df_weights[['PC1', 'PC2']].index:
+        ax1b.annotate(i, (df_weights.PC1.loc[i]*1.05, -df_weights.PC2.loc[i]*1.05), color='orange', fontsize=16)
+        ax1b.arrow(0,0,df_weights.PC1[i], -df_weights.PC2[i], color='orange', lw=2)
+</code></pre>
+<pre><code class="language-python">make_figure_10_1a()
+</code></pre>
+<p><img src="../img/10_unsupervised_19_0.png" alt="png"></p>
+<h3 id="pca-and-spectral-analysis">PCA and Spectral Analysis</h3>
+<p>In case you haven&rsquo;t noticed, calculating principal components, is equivalent to calculating the eigenvectors of the design matrix $X&rsquo;X$, i.e. the variance-covariance matrix of $X$. Indeed what we performed above is a decomposition of the variance of $X$ into orthogonal components.</p>
+<p>The constrained maximization problem above can be re-written in matrix notation as</p>
+<p>$$
+\max \ \phi' X&rsquo;X \phi \quad \text{ s. t. } \quad \phi'\phi = 1
+$$</p>
+<p>Which has the following dual representation</p>
+<p>$$
+\mathcal L (\phi, \lambda) = \phi' X&rsquo;X \phi - \lambda (\phi'\phi - 1)
+$$</p>
+<p>If we take the first order conditions</p>
+<p>$$
+\begin{align}
+&amp; \frac{\partial \mathcal L}{\partial \lambda} = \phi'\phi - 1 \
+&amp; \frac{\partial \mathcal L}{\partial \phi} = 2 X&rsquo;X \phi - 2 \lambda \phi
+\end{align}
+$$</p>
+<p>Setting the derivatives to zero at the optimum, we get</p>
+<p>$$
+\begin{align}
+&amp; \phi'\phi = 1 \
+&amp; X&rsquo;X \phi = \lambda \phi
+\end{align}
+$$</p>
+<p>Thus, $\phi$ is an <strong>eigenvector</strong> of the covariance matrix $X&rsquo;X$, and the maximizing vector will be the one associated with the largest <strong>eigenvalue</strong> $\lambda$.</p>
+<p>We can now double-check it using <code>numpy</code> linear algebra package.</p>
+<pre><code class="language-python">eigenval, eigenvec = np.linalg.eig(X_scaled.T @ X_scaled)
+data = np.concatenate((eigenvec,eigenval.reshape(1,-1)))
+idx = list(df.columns) + ['Eigenvalue']
+df_eigen = pd.DataFrame(data, index=idx, columns=['PC1', 'PC2','PC3','PC4'])
+
+df_eigen
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>PC1</th>
+      <th>PC2</th>
+      <th>PC3</th>
+      <th>PC4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Murder</th>
+      <td>0.535899</td>
+      <td>0.418181</td>
+      <td>0.649228</td>
+      <td>-0.341233</td>
+    </tr>
+    <tr>
+      <th>Assault</th>
+      <td>0.583184</td>
+      <td>0.187986</td>
+      <td>-0.743407</td>
+      <td>-0.268148</td>
+    </tr>
+    <tr>
+      <th>UrbanPop</th>
+      <td>0.278191</td>
+      <td>-0.872806</td>
+      <td>0.133878</td>
+      <td>-0.378016</td>
+    </tr>
+    <tr>
+      <th>Rape</th>
+      <td>0.543432</td>
+      <td>-0.167319</td>
+      <td>0.089024</td>
+      <td>0.817778</td>
+    </tr>
+    <tr>
+      <th>Eigenvalue</th>
+      <td>124.012079</td>
+      <td>49.488258</td>
+      <td>8.671504</td>
+      <td>17.828159</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>The spectral decomposition of the variance of $X$ generates a set of orthogonal vectors (eigenvectors) with different magnitudes (eigenvalues). The eigenvalues tell us the amount of variance of the data in that direction.</p>
+<p>If we combine the eigenvectors together, we form a projection matrix $P$ that we can use to transform the original variables: $\tilde X = P X$</p>
+<pre><code class="language-python">X_transformed = X_scaled @ eigenvec
+df_transformed = pd.DataFrame(X_transformed, index=df.index, columns=['PC1', 'PC2','PC3','PC4'])
+
+df_transformed.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>PC1</th>
+      <th>PC2</th>
+      <th>PC3</th>
+      <th>PC4</th>
+    </tr>
+    <tr>
+      <th>State</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Alabama</th>
+      <td>0.985566</td>
+      <td>1.133392</td>
+      <td>0.156267</td>
+      <td>-0.444269</td>
+    </tr>
+    <tr>
+      <th>Alaska</th>
+      <td>1.950138</td>
+      <td>1.073213</td>
+      <td>-0.438583</td>
+      <td>2.040003</td>
+    </tr>
+    <tr>
+      <th>Arizona</th>
+      <td>1.763164</td>
+      <td>-0.745957</td>
+      <td>-0.834653</td>
+      <td>0.054781</td>
+    </tr>
+    <tr>
+      <th>Arkansas</th>
+      <td>-0.141420</td>
+      <td>1.119797</td>
+      <td>-0.182811</td>
+      <td>0.114574</td>
+    </tr>
+    <tr>
+      <th>California</th>
+      <td>2.523980</td>
+      <td>-1.542934</td>
+      <td>-0.341996</td>
+      <td>0.598557</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>This is exactly the dataset that we obtained before.</p>
+<h3 id="more-on-pca">More on PCA</h3>
+<h4 id="scaling-the-variables">Scaling the Variables</h4>
+<p>The results obtained when we perform PCA will also depend on whether the variables have been individually scaled. In fact, the variance of a variable depends on its magnitude.</p>
+<pre><code class="language-python"># Variables variance
+df.var(axis=0)
+</code></pre>
+<pre><code>Murder        18.970465
+Assault     6945.165714
+UrbanPop     209.518776
+Rape          87.729159
+dtype: float64
+</code></pre>
+<p>Consequently, if we perform PCA on the unscaled variables, then the first principal component loading vector will have a very large loading for <code>Assault</code>, since that variable has by far the highest variance.</p>
+<pre><code class="language-python"># Fit PCA with unscaled varaibles
+X = df.values
+pca2_u = PCA(n_components=2).fit(X)
+</code></pre>
+<pre><code class="language-python"># Get weights
+weights_u = pca2_u.components_.T
+df_weights_u = pd.DataFrame(weights_u, index=df.columns, columns=['PC1', 'PC2'])
+df_weights_u
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>PC1</th>
+      <th>PC2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Murder</th>
+      <td>0.041704</td>
+      <td>0.044822</td>
+    </tr>
+    <tr>
+      <th>Assault</th>
+      <td>0.995221</td>
+      <td>0.058760</td>
+    </tr>
+    <tr>
+      <th>UrbanPop</th>
+      <td>0.046336</td>
+      <td>-0.976857</td>
+    </tr>
+    <tr>
+      <th>Rape</th>
+      <td>0.075156</td>
+      <td>-0.200718</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can have a look at the transformed dataset.</p>
+<pre><code class="language-python"># Transform X to get the principal components
+X_dim2_u = pca2_u.transform(X)
+df_dim2_u = pd.DataFrame(X_dim2_u, columns=['PC1', 'PC2'], index=df.index)
+df_dim2_u.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>PC1</th>
+      <th>PC2</th>
+    </tr>
+    <tr>
+      <th>State</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Alabama</th>
+      <td>64.802164</td>
+      <td>11.448007</td>
+    </tr>
+    <tr>
+      <th>Alaska</th>
+      <td>92.827450</td>
+      <td>17.982943</td>
+    </tr>
+    <tr>
+      <th>Arizona</th>
+      <td>124.068216</td>
+      <td>-8.830403</td>
+    </tr>
+    <tr>
+      <th>Arkansas</th>
+      <td>18.340035</td>
+      <td>16.703911</td>
+    </tr>
+    <tr>
+      <th>California</th>
+      <td>107.422953</td>
+      <td>-22.520070</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can plot the lower dimensional representation of the data.</p>
+<pre><code class="language-python"># Figure 10.1 b
+def make_figure_10_1b():
+
+    # Init
+    fig, (ax1,ax2) = plt.subplots(1,2,figsize=(18,9))
+
+    # Scaled PCA
+    for i in df_dim2.index:
+        ax1.annotate(i, (df_dim2.PC1.loc[i], -df_dim2.PC2.loc[i]), ha='center', fontsize=14)
+    ax1b = ax1.twinx().twiny() 
+    ax1b.set_ylim(-1,1); ax1b.set_xlim(-1,1)
+    for i in df_weights[['PC1', 'PC2']].index:
+        ax1b.annotate(i, (df_weights.PC1.loc[i]*1.05, -df_weights.PC2.loc[i]*1.05), color='orange', fontsize=16)
+        ax1b.arrow(0,0,df_weights.PC1[i], -df_weights.PC2[i], color='orange', lw=2)
+    ax1.set_title('Scaled')
+
+    # Unscaled PCA
+    for i in df_dim2_u.index:
+        ax2.annotate(i, (df_dim2_u.PC1.loc[i], -df_dim2_u.PC2.loc[i]), ha='center', fontsize=14)
+    ax2b = ax2.twinx().twiny() 
+    ax2b.set_ylim(-1,1); ax2b.set_xlim(-1,1)
+    for i in df_weights_u[['PC1', 'PC2']].index:
+        ax2b.annotate(i, (df_weights_u.PC1.loc[i]*1.05, -df_weights_u.PC2.loc[i]*1.05), color='orange', fontsize=16)
+        ax2b.arrow(0,0,df_weights_u.PC1[i], -df_weights_u.PC2[i], color='orange', lw=2)
+    ax2.set_title('Unscaled')
+
+    # Plot reference lines
+    for ax,df in zip((ax1,ax2), (df_dim2,df_dim2_u)):
+        m = np.max(np.abs(df.values))*1.2
+        ax.hlines(0,-m,m, linestyles='dotted', colors='grey')
+        ax.vlines(0,-m,m, linestyles='dotted', colors='grey')
+        ax.set_xlabel('First Principal Component')
+        ax.set_ylabel('Second Principal Component')
+        ax.set_xlim(-m,m); ax.set_ylim(-m,m)
+</code></pre>
+<pre><code class="language-python">make_figure_10_1b()
+</code></pre>
+<p><img src="../img/10_unsupervised_38_0.png" alt="png"></p>
+<p>As predicted, the first principal component loading vector places almost all of its weight on <code>Assault</code>, while the second principal component loading vector places almost all of its weight on <code>UrpanPop</code>. Comparing this to the left-hand plot, we see that scaling does indeed have a substantial effect on the results obtained. However, this result is simply a consequence of the scales on which the variables were measured.</p>
+<h3 id="the-proportion-of-variance-explained">The Proportion of Variance Explained</h3>
+<p>We can now ask a natural question: how much of the information in a given data set is lost by projecting the observations onto the first few principal components? That is, how much of the variance in the data is not contained in the first few principal components? More generally, we are interested in knowing the <strong>proportion of variance explained (PVE)</strong> by each principal component.</p>
+<pre><code class="language-python"># Four components
+pca4 = PCA(n_components=4).fit(X_scaled)
+</code></pre>
+<pre><code class="language-python"># Variance of the four principal components
+pca4.explained_variance_
+</code></pre>
+<pre><code>array([2.53085875, 1.00996444, 0.36383998, 0.17696948])
+</code></pre>
+<p>We can compute it in percentage of the total variance.</p>
+<pre><code class="language-python"># As a percentage of the total variance
+pca4.explained_variance_ratio_
+</code></pre>
+<pre><code>array([0.62006039, 0.24744129, 0.0891408 , 0.04335752])
+</code></pre>
+<p>In the <code>Arrest</code> dataset, the first principal component explains $62.0%$ of the variance in the data, and the next principal component explains $24.7%$ of the variance. Together, the first two principal components explain almost $87%$ of the variance in the data, and the last two principal components explain only $13%$ of the variance.</p>
+<p>We can plot in a graph the percentage of the variance explained, relative to the number of components.</p>
+<pre><code class="language-python"># Figure 10.2
+def make_figure_10_2():
+
+    # Init
+    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(12,5))
+    fig.suptitle('Figure 10.2');
+
+    # Relative 
+    ax1.plot([1,2,3,4], pca4.explained_variance_ratio_)
+    ax1.set_ylabel('Prop. Variance Explained')
+    ax1.set_xlabel('Principal Component');
+
+    # Cumulative
+    ax2.plot([1,2,3,4], np.cumsum(pca4.explained_variance_ratio_))
+    ax2.set_ylabel('Cumulative Variance Explained');
+    ax2.set_xlabel('Principal Component');
+</code></pre>
+<pre><code class="language-python">make_figure_10_2()
+</code></pre>
+<p><img src="../img/10_unsupervised_49_0.png" alt="png"></p>
+<h3 id="deciding-how-many-principal-components-to-use">Deciding How Many Principal Components to Use</h3>
+<p>In general, a $n \times p$ data matrix $X$ has $\min{n − 1, p}$ distinct principal components. However, we usually are not interested in all of them; rather, we would like to use just the first few principal components in order to visualize or interpret the data.</p>
+<p>We typically decide on the number of principal components required to visualize the data by examining a <em>scree plot</em>.</p>
+<p>However, there is no well-accepted objective way to decide how many principal com- ponents are enough.</p>
+<h2 id="clustering">Clustering</h2>
+<p>Clustering refers to a very broad set of techniques for finding subgroups, or clusters, in a data set. When we cluster the observations of a data set, we seek to partition them into distinct groups so that the observations within each group are quite similar to each other, while observations in different groups are quite different from each other.</p>
+<p>In this section we focus on perhaps the two best-known clustering approaches:</p>
+<ol>
+<li><strong>K-means clustering</strong>: we seek to partition the observations into a pre-specified clustering number of clusters</li>
+<li><strong>Hierarchical clustering</strong>: we do not know in advance how many clusters we want; in fact, we end up with a tree-like visual representation of the observations, called a dendrogram, that allows us to view at once the clusterings obtained for each possible number of clusters, from 1 to n.</li>
+</ol>
+<h3 id="k-means-clustering">K-Means Clustering</h3>
+<p>The idea behind K-means clustering is that a good clustering is one for which the within-cluster variation is as small as possible. Hence we want to solve the problem</p>
+<p>$$
+\underset{C_{1}, \ldots, C_{K}}{\operatorname{minimize}}\left{\sum_{k=1}^{K} W\left(C_{k}\right)\right}
+$$</p>
+<p>where $C_k$ is a cluster and $ W(C_k)$ is a measure of the amount by which the observations within a cluster differ from each other.</p>
+<p>There are many possible ways to define this concept, but by far the most common choice involves <strong>squared Euclidean distance</strong>. That is, we define</p>
+<p>$$
+W\left(C_{k}\right)=\frac{1}{\left|C_{k}\right|} \sum_{i, i^{\prime} \in C_{k}} \sum_{j=1}^{p}\left(x_{i j}-x_{i^{\prime} j}\right)^2
+$$</p>
+<p>where $|C_k|$ denotes the number of observations in the $k^{th}$ cluster.</p>
+<h3 id="algorithm">Algorithm</h3>
+<ol>
+<li>
+<p>Randomly assign a number, from $1$ to $K$, to each of the observations. These serve as initial cluster assignments for the observations.</p>
+</li>
+<li>
+<p>Iterate until the cluster assignments stop changing:</p>
+<p>a) For each of the $K$ clusters, compute the cluster centroid. The kth cluster centroid is the vector of the $p$ feature means for the observations in the $k^{th}$ cluster.</p>
+<p>b) Assign each observation to the cluster whose centroid is closest (where closest is defined using Euclidean distance).</p>
+</li>
+</ol>
+<pre><code class="language-python">np.random.seed(123)
+
+# Simulate data
+X = np.random.randn(50,2)
+X[0:25, 0] = X[0:25, 0] + 3
+X[0:25, 1] = X[0:25, 1] - 4
+</code></pre>
+<p>This is what the baseline data looks like.</p>
+<pre><code class="language-python"># Figure new 1
+def make_new_figure_1():
+    
+    # Init
+    fig, ax = plt.subplots(figsize=(6, 5))
+    fig.suptitle(&quot;Baseline&quot;)
+
+    # Plot
+    ax.scatter(X[:,0], X[:,1], s=50, alpha=0.5, c='k') 
+    ax.set_xlabel('X0'); ax.set_ylabel('X1');
+</code></pre>
+<pre><code class="language-python">make_new_figure_1()
+</code></pre>
+<p><img src="../img/10_unsupervised_61_0.png" alt="png"></p>
+<p>Now let&rsquo;s randomly assign the data to two clusters, at random.</p>
+<pre><code class="language-python">np.random.seed(1)
+
+# Init clusters
+K = 2
+clusters0 = np.random.randint(K,size=(np.size(X,0)))
+</code></pre>
+<pre><code class="language-python"># Figure new 2
+def make_new_figure_2():
+    
+    # Init
+    fig, ax = plt.subplots(figsize=(6, 5))
+    fig.suptitle(&quot;Random assignment&quot;)
+
+    # Plot
+    ax.scatter(X[clusters0==0,0], X[clusters0==0,1], s=50, alpha=0.5) 
+    ax.scatter(X[clusters0==1,0], X[clusters0==1,1], s=50, alpha=0.5)
+    ax.set_xlabel('X0'); ax.set_ylabel('X1');
+</code></pre>
+<pre><code class="language-python">make_new_figure_2()
+</code></pre>
+<p><img src="../img/10_unsupervised_65_0.png" alt="png"></p>
+<p>What are the new centroids?</p>
+<pre><code class="language-python"># Compute new centroids
+def compute_new_centroids(X, clusters):
+    K = len(np.unique(clusters))
+    centroids = np.zeros((K,np.size(X,1)))
+    for k in range(K):
+        if sum(clusters==k)&gt;0:
+            centroids[k,:] = np.mean(X[clusters==k,:], axis=0)
+        else:
+            centroids[k,:] = np.mean(X, axis=0)
+    return centroids
+</code></pre>
+<pre><code class="language-python"># Print
+centroids0 = compute_new_centroids(X, clusters0)
+print(centroids0)
+</code></pre>
+<pre><code>[[ 1.35725989 -2.15281035]
+ [ 1.84654757 -1.99437838]]
+</code></pre>
+<p>Let&rsquo;s add the centroids to the graph.</p>
+<pre><code class="language-python"># Plot assignment
+def plot_assignment(X, centroids, clusters, d, i):
+    clear_output(wait=True)
+    fig, ax = plt.subplots(figsize=(6, 5))
+    fig.suptitle(&quot;Iteration %.0f: inertia=%.1f&quot; % (i,d))
+
+    # Plot
+    ax.clear()
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color'];
+    K = np.size(centroids,0)
+    for k in range(K):
+        ax.scatter(X[clusters==k,0], X[clusters==k,1], s=50, c=colors[k], alpha=0.5) 
+        ax.scatter(centroids[k,0], centroids[k,1], marker = '*', s=300, color=colors[k])
+        ax.set_xlabel('X0'); ax.set_ylabel('X1');
+    
+    # Show
+    plt.show();
+</code></pre>
+<pre><code class="language-python"># Plot
+plot_assignment(X, centroids0, clusters0, 0, 0)
+</code></pre>
+<p><img src="../img/10_unsupervised_71_0.png" alt="png"></p>
+<p>Now we can assign the data to the centroids.</p>
+<pre><code class="language-python"># Assign X to clusters
+def assign_to_cluster(X, centroids):
+    K = np.size(centroids,0)
+    dist = np.zeros((np.size(X,0),K))
+    for k in range(K):
+        dist[:,k] = np.mean((X - centroids[k,:])**2, axis=1)
+    clusters = np.argmin(dist, axis=1)
+    
+    # Compute inertia
+    inertia = 0
+    for k in range(K):
+        if sum(clusters==k)&gt;0:
+            inertia += np.sum((X[clusters==k,:] - centroids[k,:])**2)
+    return clusters, inertia
+</code></pre>
+<pre><code class="language-python"># Get cluster assignment
+[clusters1,d] = assign_to_cluster(X, centroids0)
+</code></pre>
+<pre><code class="language-python"># Plot
+plot_assignment(X, centroids0, clusters1, d, 1)
+</code></pre>
+<p><img src="../img/10_unsupervised_75_0.png" alt="png"></p>
+<p>We now have all the components to proceed iteratively.</p>
+<pre><code class="language-python">def kmeans_manual(X, K):
+
+    # Init
+    i = 0
+    d0 = 1e4
+    d1 = 1e5
+    clusters = np.random.randint(K,size=(np.size(X,0)))
+
+    # Iterate until convergence
+    while np.abs(d0-d1) &gt; 1e-10:
+        d1 = d0
+        centroids = compute_new_centroids(X, clusters)
+        [clusters, d0] = assign_to_cluster(X, centroids)
+        plot_assignment(X, centroids, clusters, d0, i)
+        i+=1
+</code></pre>
+<pre><code class="language-python"># Test
+kmeans_manual(X, K)
+</code></pre>
+<p><img src="../img/10_unsupervised_78_0.png" alt="png"></p>
+<p>Here the observations can be easily plotted because they are two-dimensional.
+If there were more than two variables then we could instead perform PCA
+and plot the first two principal components score vectors.</p>
+<p>In the previous example, we knew that there really were two clusters because
+we generated the data. However, for real data, in general we do not know
+the true number of clusters. We could instead have performed K-means
+clustering on this example with <code>K  =  3</code>. If we do this, K-means clustering will split up the two &ldquo;real&rdquo; clusters, since it has no information about them:</p>
+<pre><code class="language-python"># K=3
+kmeans_manual(X, 3)
+</code></pre>
+<p><img src="../img/10_unsupervised_81_0.png" alt="png"></p>
+<p>The automated function in <code>sklearn</code> to persorm $K$-means clustering is <code>KMeans</code>.</p>
+<pre><code class="language-python"># SKlearn algorithm
+km1 = KMeans(n_clusters=3, n_init=1, random_state=1)
+km1.fit(X)
+</code></pre>
+<pre><code>KMeans(n_clusters=3, n_init=1, random_state=1)
+</code></pre>
+<p>We can plot the asssignment generated by the <code>KMeans</code> function.</p>
+<pre><code class="language-python"># Plot
+plot_assignment(X, km1.cluster_centers_, km1.labels_, km1.inertia_, km1.n_iter_)
+</code></pre>
+<p><img src="../img/10_unsupervised_85_0.png" alt="png"></p>
+<p>As we can see, the results are different in the two algorithms? Why? $K$-means is susceptible to the initial values. One way to solve this problem is to run the algorithm multiple times and report only the best results</p>
+<p>To run the <code>Kmeans()</code> function in python with multiple initial cluster assignments, we use the <code>n_init</code> argument (default: 10). If a value of <code>n_init</code> greater than one is used, then K-means clustering will be performed using multiple random assignments, and the <code>Kmeans()</code> function will report only the best results.</p>
+<pre><code class="language-python"># 30 runs
+km_30run = KMeans(n_clusters=3, n_init=30, random_state=1).fit(X)
+plot_assignment(X, km_30run.cluster_centers_, km_30run.labels_, km_30run.inertia_, km_30run.n_iter_)
+</code></pre>
+<p><img src="../img/10_unsupervised_88_0.png" alt="png"></p>
+<p>It is generally recommended to always run K-means clustering with a large value of <code>n_init</code>, such as 20 or 50 to avoid getting stuck in an undesirable local optimum.</p>
+<p>When performing K-means clustering, in addition to using multiple initial cluster assignments, it is also important to set a random seed using the <code>random_state</code> parameter. This way, the initial cluster assignments can be replicated, and the K-means output will be fully reproducible.</p>
+<h3 id="hierarchical-clustering">Hierarchical Clustering</h3>
+<p>One potential disadvantage of K-means clustering is that it requires us to pre-specify the number of clusters $K$. Hierarchical clustering is an alternative approach which does not require that we commit to a particular choice of $K$</p>
+<h3 id="the-dendogram">The Dendogram</h3>
+<p>Hierarchical clustering has an added advantage over K-means clustering in that it results in an attractive tree-based representation of the observations, called a <strong>dendrogram</strong>.</p>
+<pre><code class="language-python"># Figure new 3
+def make_new_figure_3():
+    
+    # Init
+    plt.figure(figsize=(25, 10))
+    plt.title('Hierarchical Clustering Dendrogram')
+
+    # calculate full dendrogram
+    plt.xlabel('sample index')
+    plt.ylabel('distance')
+    dendrogram(
+        linkage(X, &quot;complete&quot;),
+        leaf_rotation=90.,  # rotates the x axis labels
+        leaf_font_size=8.,  # font size for the x axis labels
+    )
+    plt.show()
+</code></pre>
+<pre><code class="language-python">make_new_figure_3()
+</code></pre>
+<p><img src="../img/10_unsupervised_95_0.png" alt="png"></p>
+<p>Each leaf of the <em>dendrogram</em> represents one observation.</p>
+<p>As we move up the tree, some leaves begin to fuse into branches. These correspond to observations that are similar to each other. As we move higher up the tree, branches themselves fuse, either with leaves or other branches. The earlier (lower in the tree) fusions occur, the more similar the groups of observations are to each other.</p>
+<p>We can use de <em>dendogram</em> to understand how similar two observations are: we can look for the point in the tree where branches containing those two obse rvations are first fused. The height of this fusion, as measured on the vertical axis, indicates how different the two observations are. Thus, observations that fuse at the very bottom of the tree are quite similar to each other, whereas observations that fuse close to the top of the tree will tend to be quite different.</p>
+<p>The term <strong>hierarchical</strong> refers to the fact that clusters obtained by cutting the dendrogram at a given height are necessarily nested within the clusters obtained by cutting the dendrogram at any greater height.</p>
+<h3 id="the-hierarchical-clustering-algorithm">The Hierarchical Clustering Algorithm</h3>
+<ol>
+<li>
+<p>Begin with $n$ observations and a measure (such as Euclidean distance) of all the $n(n − 1)/2$ pairwise dissimilarities. Treat each 2 observation as its own cluster.</p>
+</li>
+<li>
+<p>For $i=n,n−1,&hellip;,2$</p>
+<p>a) Examine all pairwise inter-cluster dissimilarities among the $i$ clusters and identify the <strong>pair of clusters that are least dissimilar</strong> (that is, most similar). Fuse these two clusters. The dissimilarity between these two clusters indicates the height in the dendrogram at which the fusion should be placed.</p>
+<p>b) Compute the new pairwise inter-cluster dissimilarities among the $i−1$ remaining clusters.</p>
+</li>
+</ol>
+<h3 id="the-linkage-function">The Linkage Function</h3>
+<p>We have a concept of the dissimilarity between pairs of observations, but how do we define the dissimilarity between two clusters if one or both of the clusters contains multiple observations?</p>
+<p>The concept of dissimilarity between a pair of observations needs to be extended to a pair of groups of observations. This extension is achieved by developing the notion of <strong>linkage</strong>, which defines the dissimilarity between two groups of observations.</p>
+<p>The four most common types of linkage are:</p>
+<ol>
+<li><strong>Complete</strong>: Maximal intercluster dissimilarity. Compute all pairwise dissimilarities between the observations in cluster A and the observations in cluster B, and record the largest of these dissimilarities.</li>
+<li><strong>Single</strong>: Minimal intercluster dissimilarity. Compute all pairwise dissimilarities between the observations in cluster A and the observations in cluster B, and record the smallest of these dissimilarities.</li>
+<li><strong>Average</strong>: Mean intercluster dissimilarity. Compute all pairwise dissimilarities between the observations in cluster A and the observations in cluster B, and record the average of these dissimilarities.</li>
+<li><strong>Centroid</strong>: Dissimilarity between the centroid for cluster A (a mean vector of length p) and the centroid for cluster B. Centroid linkage can result in undesirable inversions.</li>
+</ol>
+<p>Average, complete, and single linkage are most popular among statisticians. Average and complete linkage are generally preferred over single linkage, as they tend to yield more balanced dendrograms. Centroid linkage is often used in genomics, but suffers from a major drawback in that an inversion can occur, whereby two clusters are fused at a height below either of the individual clusters in the dendrogram. This can lead to difficulties in visualization as well as in interpretation of the dendrogram.</p>
+<p>Let&rsquo;s plot the dendogram for each of the different linkages.</p>
+<pre><code class="language-python"># Init
+linkages = [hierarchy.complete(X), hierarchy.average(X), hierarchy.single(X)]
+titles = ['Complete Linkage', 'Average Linkage', 'Single Linkage']
+</code></pre>
+<pre><code class="language-python"># Figure new 4
+def make_new_figure_4():
+    
+    # Init
+    fig, (ax1,ax2,ax3) = plt.subplots(1,3, figsize=(18,10))
+
+    # Plot
+    for linkage, t, ax in zip(linkages, titles, (ax1,ax2,ax3)):
+        dendrogram(linkage, ax=ax)
+        ax.set_title(t)
+</code></pre>
+<pre><code class="language-python">make_new_figure_4()
+</code></pre>
+<p><img src="../img/10_unsupervised_106_0.png" alt="png"></p>
+<p>For this data, complete and average linkage generally separates the observations into their correct groups.</p>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/ml-econ/09_postdoubleselection/" rel="next">Post-Double Selection</a>
+  </div>
+  
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

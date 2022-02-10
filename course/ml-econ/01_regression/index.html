@@ -1,0 +1,2919 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="This chapter follows closely Chapter 3 of An Introduction to Statistical Learning by James, Witten, Tibshirani, Friedman.
+# Remove warnings import warnings warnings.filterwarnings(&#39;ignore&#39;)  # Import everything import pandas as pd import numpy as np import seaborn as sns import statsmodels." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/ml-econ/01_regression/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/ml-econ/01_regression/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/ml-econ/01_regression/" />
+  <meta property="og:title" content="Linear Regression | Matteo Courthoud" />
+  <meta property="og:description" content="This chapter follows closely Chapter 3 of An Introduction to Statistical Learning by James, Witten, Tibshirani, Friedman.
+# Remove warnings import warnings warnings.filterwarnings(&#39;ignore&#39;)  # Import everything import pandas as pd import numpy as np import seaborn as sns import statsmodels." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2022-01-03T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2022-01-03T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Linear Regression | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="39506bbd73c328171beb64584765d130" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/ml-econ/">ML for Economics</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class="active"><a href="/course/ml-econ/01_regression/">Linear Regression</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/02_iv/">Instrumental Variables</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/03_nonparametric/">Non-Parametric Regression</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/04_crossvalidation/">Resampling Methods</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/05_regularization/">Model Selection and Regularization</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/06_convexity/">Convexity and Optimization</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/07_trees/">Tree-based Methods</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/08_neuralnets/">Neural Networks</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/09_postdoubleselection/">Post-Double Selection</a></li>
+
+
+
+  <li class=""><a href="/course/ml-econ/10_unsupervised/">Unsupervised Learning</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#11-simple-linear-regression">1.1 Simple Linear Regression</a>
+      <ul>
+        <li><a href="#estimating-the-coefficients">Estimating the Coefficients</a></li>
+        <li><a href="#assessing-the-accuracy-of-the-coefficient-estimates">Assessing the Accuracy of the Coefficient Estimates</a></li>
+        <li><a href="#assessing-the-accuracy-of-the-model">Assessing the Accuracy of the Model</a></li>
+      </ul>
+    </li>
+    <li><a href="#22-multiple-linear-regression">2.2 Multiple Linear Regression</a>
+      <ul>
+        <li><a href="#estimating-the-regression-coefficients">Estimating the Regression Coefficients</a></li>
+        <li><a href="#some-important-questions">Some Important Questions</a></li>
+      </ul>
+    </li>
+    <li><a href="#23-other-considerations-in-the-regression-model">2.3 Other Considerations in the Regression Model</a>
+      <ul>
+        <li><a href="#qualitative-predictors">Qualitative Predictors</a></li>
+        <li><a href="#relaxing-the-additive-assumption">Relaxing the Additive Assumption</a></li>
+        <li><a href="#heterogeneous-effects">Heterogeneous Effects</a></li>
+        <li><a href="#non-linear-relationships">Non-Linear Relationships</a></li>
+        <li><a href="#non-linearities">Non-Linearities</a></li>
+        <li><a href="#outliers">Outliers</a></li>
+        <li><a href="#high-leverage-points">High Leverage Points</a></li>
+        <li><a href="#influential-observations">Influential Observations</a></li>
+        <li><a href="#collinearity">Collinearity</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Linear Regression</h1>
+
+          <p>Last updated on Jan 3, 2022</p>
+
+          <div class="article-style">
+            <p>This chapter follows closely Chapter 3 of <a href="https://hastie.su.domains/ISLR2/ISLRv2_website.pdf" target="_blank" rel="noopener">An Introduction to Statistical Learning</a> by James, Witten, Tibshirani, Friedman.</p>
+<pre><code class="language-python"># Remove warnings
+import warnings
+warnings.filterwarnings('ignore')
+</code></pre>
+<pre><code class="language-python"># Import everything
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import statsmodels.api as sm
+
+from sklearn.linear_model import LinearRegression
+from numpy.linalg import inv
+from numpy.random import normal as rnorm
+from statsmodels.stats.outliers_influence import OLSInfluence
+</code></pre>
+<pre><code class="language-python"># Setup matplotlib for graphs
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
+
+# Set global parameters
+%matplotlib inline
+plt.style.use('seaborn-white')
+plt.rcParams['lines.linewidth'] = 3
+plt.rcParams['figure.figsize'] = (10,6)
+plt.rcParams['figure.titlesize'] = 20
+plt.rcParams['axes.titlesize'] = 18
+plt.rcParams['axes.labelsize'] = 14
+plt.rcParams['legend.fontsize'] = 14
+</code></pre>
+<p>You can inspect all the available global parameter options <a href="https://matplotlib.org/3.3.2/tutorials/introductory/customizing.html" target="_blank" rel="noopener">here</a>.</p>
+<h2 id="11-simple-linear-regression">1.1 Simple Linear Regression</h2>
+<p>First, let&rsquo;s load the Advertising dataset. It contains information on displays sales (in thousands of units) for a particular product and a list of advertising budgets (in thousands of dollars) for TV, radio, and newspaper media.</p>
+<p>We open the dataset using the <code>pandas</code> library which is <strong>the</strong> library for handling datasets and data analysis in Python.</p>
+<pre><code class="language-python"># Advertisement spending data
+advertising = pd.read_csv('data/Advertising.csv', usecols=[1,2,3,4])
+</code></pre>
+<p>Let&rsquo;s have a look at the content. We can have a glance at the first rows by using the function <code>head</code>.</p>
+<pre><code class="language-python"># Preview of the data
+advertising.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>TV</th>
+      <th>Radio</th>
+      <th>Newspaper</th>
+      <th>Sales</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>230.1</td>
+      <td>37.8</td>
+      <td>69.2</td>
+      <td>22.1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>44.5</td>
+      <td>39.3</td>
+      <td>45.1</td>
+      <td>10.4</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>17.2</td>
+      <td>45.9</td>
+      <td>69.3</td>
+      <td>9.3</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>151.5</td>
+      <td>41.3</td>
+      <td>58.5</td>
+      <td>18.5</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>180.8</td>
+      <td>10.8</td>
+      <td>58.4</td>
+      <td>12.9</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can have a general overview of the dataset using the function <code>info</code>.</p>
+<pre><code class="language-python"># Overview of all variables
+advertising.info()
+</code></pre>
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 200 entries, 0 to 199
+Data columns (total 4 columns):
+ #   Column     Non-Null Count  Dtype  
+---  ------     --------------  -----  
+ 0   TV         200 non-null    float64
+ 1   Radio      200 non-null    float64
+ 2   Newspaper  200 non-null    float64
+ 3   Sales      200 non-null    float64
+dtypes: float64(4)
+memory usage: 6.4 KB
+</code></pre>
+<p>We can have more information on the single variables using the function <code>describe</code>.</p>
+<pre><code class="language-python"># Summary of all variables
+advertising.describe()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>TV</th>
+      <th>Radio</th>
+      <th>Newspaper</th>
+      <th>Sales</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>200.000000</td>
+      <td>200.000000</td>
+      <td>200.000000</td>
+      <td>200.000000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>147.042500</td>
+      <td>23.264000</td>
+      <td>30.554000</td>
+      <td>14.022500</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>85.854236</td>
+      <td>14.846809</td>
+      <td>21.778621</td>
+      <td>5.217457</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>0.700000</td>
+      <td>0.000000</td>
+      <td>0.300000</td>
+      <td>1.600000</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>74.375000</td>
+      <td>9.975000</td>
+      <td>12.750000</td>
+      <td>10.375000</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>149.750000</td>
+      <td>22.900000</td>
+      <td>25.750000</td>
+      <td>12.900000</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>218.825000</td>
+      <td>36.525000</td>
+      <td>45.100000</td>
+      <td>17.400000</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>296.400000</td>
+      <td>49.600000</td>
+      <td>114.000000</td>
+      <td>27.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>If you just want to call a variable in <code>pandas</code>, you have 3 options:</p>
+<ol>
+<li>use squared brackets as if the varaible was a component of a dictionary</li>
+<li>use or dot subscripts as if the variable was a function of the data</li>
+<li>use the <code>loc</code> function (best practice)</li>
+</ol>
+<pre><code class="language-python"># 1. Brackets
+advertising['TV']
+</code></pre>
+<pre><code>0      230.1
+1       44.5
+2       17.2
+3      151.5
+4      180.8
+       ...  
+195     38.2
+196     94.2
+197    177.0
+198    283.6
+199    232.1
+Name: TV, Length: 200, dtype: float64
+</code></pre>
+<pre><code class="language-python"># 2. Brackets
+advertising.TV
+</code></pre>
+<pre><code>0      230.1
+1       44.5
+2       17.2
+3      151.5
+4      180.8
+       ...  
+195     38.2
+196     94.2
+197    177.0
+198    283.6
+199    232.1
+Name: TV, Length: 200, dtype: float64
+</code></pre>
+<pre><code class="language-python"># The loc function
+advertising.loc[:,'TV']
+</code></pre>
+<pre><code>0      230.1
+1       44.5
+2       17.2
+3      151.5
+4      180.8
+       ...  
+195     38.2
+196     94.2
+197    177.0
+198    283.6
+199    232.1
+Name: TV, Length: 200, dtype: float64
+</code></pre>
+<p>Note that the <code>loc</code> function is more powerful and is generally used to subset lines and columns.</p>
+<pre><code class="language-python"># Select multiple columns and subset of rows
+advertising.loc[0:5,['Sales','TV']]
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Sales</th>
+      <th>TV</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>22.1</td>
+      <td>230.1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>10.4</td>
+      <td>44.5</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>9.3</td>
+      <td>17.2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>18.5</td>
+      <td>151.5</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>12.9</td>
+      <td>180.8</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>7.2</td>
+      <td>8.7</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Suppose we are interested in the (linear) relationship between sales and tv advertisement.</p>
+<p>$$
+sales ≈ \beta_0 + \beta_1 TV.
+$$</p>
+<p>How are the two two variables related? Visual inspection: scatterplot.</p>
+<pre><code class="language-python"># Figure 3.1
+def make_fig_3_1a():
+    
+    # Init figure
+    fig, ax = plt.subplots(1,1)
+    ax.set_title('Figure 3.1');
+
+    # Plot scatter and best fit line
+    sns.regplot(x=advertising.TV, y=advertising.Sales, ax=ax, order=1, ci=None, scatter_kws={'color':'r', 's':20})
+    ax.set_xlim(-10,310); ax.set_ylim(ymin=0)
+    ax.legend(['Least Squares Fit','Data']);
+</code></pre>
+<pre><code class="language-python">make_fig_3_1a()
+</code></pre>
+<p><img src="../img/01_regression_23_0.png" alt="png"></p>
+<h3 id="estimating-the-coefficients">Estimating the Coefficients</h3>
+<p>How do we estimate the best fit line? Minimize the Residual Sum of Squares (RSS).</p>
+<p>First, suppose we have a dataset $\mathcal D = {x_i, y_i}_{i=1}^N$. We define the prediction of $y$ based on $X$ as</p>
+<p>$$
+\hat y_i = \hat \beta X_i
+$$</p>
+<p>The residuals are the unexplained component of $y$</p>
+<p>$$
+e_i = y_i - \hat y_i
+$$</p>
+<p>Our objective function (to be minimized) is the Resdual Sum of Squares (RSS):</p>
+<p>$$
+RSS := \sum_{n=1}^N e_i^2
+$$</p>
+<p>And the OLS coefficient is defined as its minimizer:</p>
+<p>$$
+\hat \beta_{OLS} := \arg\min_{\beta} \sum_{n=1}^N e_i^2 = \arg\min_{\beta} \sum_{n=1}^N (y_i - X_i \beta)^2
+$$</p>
+<p>Let&rsquo;s use the <code>sklearn</code> library to fit a linear regression model of <em>Sales</em> on <em>TV</em> advertisement.</p>
+<pre><code class="language-python"># Define X and y
+X = advertising.TV.values.reshape(-1,1)
+y = advertising.Sales.values
+
+# Fit linear regressions
+reg = LinearRegression().fit(X,y)
+print(reg.intercept_)
+print(reg.coef_)
+</code></pre>
+<pre><code>7.0325935491276885
+[0.04753664]
+</code></pre>
+<p>We can visualize the residuals as the vertical distances between the data and the prediction line. The objective function RSS is the sum of the squares of the lengths of vertical lines.</p>
+<pre><code class="language-python"># Compute predicted values
+y_hat = reg.predict(X)
+
+# Figure 3.1
+def make_figure_3_1b():
+
+    # Init figure
+    fig, ax = plt.subplots(1,1)
+    ax.set_title('Figure 3.1');
+
+    # Add residuals
+    sns.regplot(x=advertising.TV, y=advertising.Sales, ax=ax, order=1, ci=None, scatter_kws={'color':'r', 's':20})
+    ax.vlines(X, np.minimum(y,y_hat), np.maximum(y,y_hat), linestyle='--', color='k', alpha=0.5, linewidth=1)
+    plt.legend(['Least Squares Fit','Data','Residuals']);
+</code></pre>
+<pre><code class="language-python">make_figure_3_1b()
+</code></pre>
+<p><img src="../img/01_regression_29_0.png" alt="png"></p>
+<p>The closed form solution in matrix algebra is
+$$
+\hat \beta_{OLS} = (X&rsquo;X)^{-1}(X&rsquo;y)
+$$</p>
+<p>Python has a series of shortcuts to make the syntax less verbose. However, we still need to import the <code>inv</code> function from <code>numpy</code>. In Matlab it would be <code>(X'*X)^{-1}*(X'*y)</code>, almost literal.</p>
+<pre><code class="language-python"># Compute OLS coefficient with matrix algebra
+beta = inv(X.T @ X) @ X.T @ y
+
+print(beta)
+</code></pre>
+<pre><code>[0.08324961]
+</code></pre>
+<p>Why is the result different?</p>
+<p>We are missing one coefficient: the intercept. Our regression now looks like this</p>
+<pre><code class="language-python"># New figure 1
+def make_new_figure_1():
+
+    # Init figure
+    fig, ax = plt.subplots(1,1)
+    fig.suptitle('Role of the Intercept')
+
+    # Add new line on the previous plot
+    sns.regplot(x=advertising.TV, y=advertising.Sales, ax=ax, order=1, ci=None, scatter_kws={'color':'r', 's':10})
+    ax.plot(X, beta*X, color='g')
+    plt.xlim(-10,310); plt.ylim(ymin=0);
+    ax.legend(['With Intercept', 'Without intercept']);
+</code></pre>
+<pre><code class="language-python">make_new_figure_1()
+</code></pre>
+<p><img src="../img/01_regression_34_0.png" alt="png"></p>
+<p>How do we insert an intercept using matrix algebra? We add a column of ones.</p>
+<p>$$
+X_1 = [\boldsymbol{1}, X]
+$$</p>
+<pre><code class="language-python"># How to insert intercept? Add constant: column of ones
+one = np.ones(np.shape(X))
+X1 = np.concatenate([one,X],axis=1)
+
+print(np.shape(X1))
+</code></pre>
+<pre><code>(200, 2)
+</code></pre>
+<p>Now we compute again the coefficients as before.</p>
+<p>$$
+\hat \beta_{OLS} = (X_1&rsquo;X_1)^{-1}(X_1&rsquo;y)
+$$</p>
+<pre><code class="language-python"># Compute beta OLS with intercept
+beta_OLS = inv(X1.T @ X1) @ X1.T @ y
+
+print(beta_OLS)
+</code></pre>
+<pre><code>[7.03259355 0.04753664]
+</code></pre>
+<p>Now we have indeed obtained the same exact coefficients.</p>
+<p>What does minimizing the Residual Sum of Squares means in practice? How does the objective function looks like?</p>
+<pre><code class="language-python">from sklearn.preprocessing import scale
+
+# First, scale the data
+X = scale(advertising.TV, with_mean=True, with_std=False).reshape(-1,1)
+y = advertising.Sales
+regr = LinearRegression().fit(X,y)
+
+# Create grid coordinates for plotting
+B0 = np.linspace(regr.intercept_-2, regr.intercept_+2, 50)
+B1 = np.linspace(regr.coef_-0.02, regr.coef_+0.02, 50)
+xx, yy = np.meshgrid(B0, B1, indexing='xy')
+Z = np.zeros((B0.size,B1.size))
+
+# Calculate Z-values (RSS) based on grid of coefficients
+for (i,j),v in np.ndenumerate(Z):
+    Z[i,j] =((y - (xx[i,j]+X.ravel()*yy[i,j]))**2).sum()/1000
+
+# Minimized RSS
+min_RSS = r'$\beta_0$, $\beta_1$ for minimized RSS'
+min_rss = np.sum((regr.intercept_+regr.coef_*X - y.values.reshape(-1,1))**2)/1000
+min_rss
+</code></pre>
+<pre><code>2.1025305831313514
+</code></pre>
+<pre><code class="language-python"># Figure 3.2 - Regression coefficients - RSS
+def make_fig_3_2():
+    fig = plt.figure(figsize=(15,6))
+    fig.suptitle('RSS - Regression coefficients')
+
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122, projection='3d')
+
+    # Left plot
+    CS = ax1.contour(xx, yy, Z, cmap=plt.cm.Set1, levels=[2.15, 2.2, 2.3, 2.5, 3])
+    ax1.scatter(regr.intercept_, regr.coef_[0], c='r', label=min_RSS)
+    ax1.clabel(CS, inline=True, fontsize=10, fmt='%1.1f')
+
+    # Right plot
+    ax2.plot_surface(xx, yy, Z, rstride=3, cstride=3, alpha=0.3)
+    ax2.contour(xx, yy, Z, zdir='z', offset=Z.min(), cmap=plt.cm.Set1,
+                alpha=0.4, levels=[2.15, 2.2, 2.3, 2.5, 3])
+    ax2.scatter3D(regr.intercept_, regr.coef_[0], min_rss, c='r', label=min_RSS)
+    ax2.set_zlabel('RSS')
+    ax2.set_zlim(Z.min(),Z.max())
+    ax2.set_ylim(0.02,0.07)
+
+    # settings common to both plots
+    for ax in fig.axes:
+        ax.set_xlabel(r'$\beta_0$')
+        ax.set_ylabel(r'$\beta_1$')
+        ax.set_yticks([0.03,0.04,0.05,0.06])
+        ax.legend()
+</code></pre>
+<pre><code class="language-python">make_fig_3_2()
+</code></pre>
+<p><img src="../img/01_regression_43_0.png" alt="png"></p>
+<h3 id="assessing-the-accuracy-of-the-coefficient-estimates">Assessing the Accuracy of the Coefficient Estimates</h3>
+<p>How accurate is our regression fit? Suppose we were drawing different (small) samples from the same data generating process, for example</p>
+<p>$$
+y_i = 2 + 3x_i + \varepsilon_i
+$$</p>
+<p>where $x_i \sim N(0,1)$ and $\varepsilon \sim N(0,3)$.</p>
+<pre><code class="language-python"># Init
+N = 30;    # Sample size
+K = 100;   # Number of simulations
+beta_hat = np.zeros((2,K))
+x = np.linspace(-4,4,N)
+
+# Set seed
+np.random.seed(1)
+
+# K simulations
+for i in range(K):
+    # Simulate data
+    x1 = np.random.normal(0,1,N).reshape([-1,1])
+    X = np.concatenate([np.ones(np.shape(x1)), x1], axis=1)
+    epsilon = np.random.normal(0,5,N)
+    beta0 = [2,3]
+    y = X @ beta0 + epsilon
+
+    # Estimate coefficients
+    beta_hat[:,i] = inv(X.T @ X) @ X.T @ y
+</code></pre>
+<pre><code class="language-python"># new figure 2
+def make_new_fig_2():
+
+    # Init figure
+    fig, ax = plt.subplots(1,1)
+    
+    for i in range(K):
+        # Plot line
+        ax.plot(x, beta_hat[0,i] + x*beta_hat[1,i], color='blue', alpha=0.2, linewidth=1)
+        if i==K-1:
+            ax.plot(x, beta_hat[0,i] + x*beta_hat[1,i], color='blue', alpha=0.2, linewidth=1, label='Estimated Lines')
+
+    # Plot true line
+    ax.plot(x, 2 + 3*x, color='red', linewidth=3, label='True Line');
+    ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.legend();
+    ax.set_xlim(-4,4);
+</code></pre>
+<pre><code class="language-python">make_new_fig_2()
+</code></pre>
+<p><img src="../img/01_regression_48_0.png" alt="png"></p>
+<p>The <code>regplot</code> command lets us automatically draw confidence intervals. Let&rsquo;s draw the last simulated dataset with conficence intervals.</p>
+<pre><code class="language-python">fig, ax = plt.subplots(1,1)
+
+# Plot last simulation scatterplot with confidence interval
+sns.regplot(x=x1, y=y, ax=ax, order=1, scatter_kws={'color':'r', 's':20});
+ax.set_xlabel('X'); ax.set_ylabel('Y'); 
+ax.legend(['Best fit','Data', 'Confidence Intervals']);
+</code></pre>
+<p><img src="../img/01_regression_50_0.png" alt="png"></p>
+<p>As we can see, depending on the sample, we get a different estimate of the linear relationship between $x$ and $y$. However, there estimates are on average correct. Indeed, we can visualize their distribution.</p>
+<pre><code class="language-python"># Plot distribution of coefficients
+plot = sns.jointplot(x=beta_hat[0,:], y=beta_hat[1,:], color='red', edgecolor=&quot;white&quot;);
+plot.ax_joint.axvline(x=2);
+plot.ax_joint.axhline(y=3);
+plot.set_axis_labels('beta_0', 'beta_1');
+</code></pre>
+<p><img src="../img/01_regression_52_0.png" alt="png"></p>
+<p>How do we compute confidence intervals by hand?</p>
+<p>$$
+Var(\hat \beta_{OLS}) = \sigma^2 (X&rsquo;X)^{-1}
+$$</p>
+<p>where $\sigma^2 = Var(\varepsilon)$. Since we do not know $Var(\varepsilon)$, we estimate it as $Var(e)$.</p>
+<p>$$
+\hat Var(\hat \beta_{OLS}) = \hat \sigma^2 (X&rsquo;X)^{-1}
+$$</p>
+<p>If we assume the standard errors are normally distributed (or we apply the Central Limit Theorem, assuming $n \to \infty$), a 95% confidence interval for the OLS coefficient takes the form</p>
+<p>$$
+CI(\hat \beta_{OLS}) = \Big[ \hat \beta_{OLS} - 1.96 \times \hat SE(\hat \beta_{OLS}) \ , \ \hat \beta_{OLS} + 1.96 \times \hat SE(\hat \beta_{OLS}) \Big]
+$$</p>
+<p>where $\hat SE(\hat \beta_{OLS}) = \sqrt{\hat Var(\hat \beta_{OLS})}$.</p>
+<pre><code class="language-python"># Import again X and y from example above
+X = advertising.TV.values.reshape(-1,1)
+X1 = np.concatenate([np.ones(np.shape(X)), X], axis=1)
+y = advertising.Sales.values
+
+# Compute residual variance
+X_hat = X1 @ beta_OLS
+e = y - X_hat
+sigma_hat = np.var(e)
+var_beta_OLS = sigma_hat * inv(X1.T @ X1)
+
+# Take elements on the diagonal and square them
+std_beta_OLS = [var_beta_OLS[0,0]**.5, var_beta_OLS[1,1]**.5]
+
+print(std_beta_OLS)
+</code></pre>
+<pre><code>[0.4555479737400674, 0.0026771203500466564]
+</code></pre>
+<p>The <code>statsmodels</code> library allows us to produce nice tables with parameter estimates and standard errors.</p>
+<pre><code class="language-python"># Table 3.1 &amp; 3.2
+est = sm.OLS.from_formula('Sales ~ TV', advertising).fit()
+est.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    7.0326</td> <td>    0.458</td> <td>   15.360</td> <td> 0.000</td> <td>    6.130</td> <td>    7.935</td>
+</tr>
+<tr>
+  <th>TV</th>        <td>    0.0475</td> <td>    0.003</td> <td>   17.668</td> <td> 0.000</td> <td>    0.042</td> <td>    0.053</td>
+</tr>
+</table>
+<h3 id="assessing-the-accuracy-of-the-model">Assessing the Accuracy of the Model</h3>
+<p>What metrics can we use to assess whether the model is a good model, in terms of capturing the relationship between the variables?</p>
+<p>First, we can compute our objective function: the Residual Sum of Squares (<em>RSS</em>). Lower values of our objective function imply that we got a better fit.</p>
+<pre><code class="language-python"># RSS with regression coefficients
+RSS = sum(e**2)
+
+print(RSS)
+</code></pre>
+<pre><code>2102.530583131351
+</code></pre>
+<p>The problem with <em>RSS</em> as a metric is that it&rsquo;s hard to compare different regressions since its scale depends on the magnitude of the variables.</p>
+<p>One measure of fit that does not depend on the magnitude of the variables is $R^2$: the percentage of our explanatory variable explained by the model</p>
+<p>$$
+R^2 = 1 - \frac{\text{RSS}}{\text{TSS}}
+$$</p>
+<p>where</p>
+<p>$$
+TSS = \sum_{i=1}^N (y_i - \bar y)^2
+$$</p>
+<pre><code class="language-python"># TSS
+TSS = sum( (y-np.mean(y))**2 )
+
+# R2
+R2 = 1 - RSS/TSS
+
+print(R2)
+</code></pre>
+<pre><code>0.6118750508500709
+</code></pre>
+<p>Can the $R^2$ metric be negative? When?</p>
+<h2 id="22-multiple-linear-regression">2.2 Multiple Linear Regression</h2>
+<p>What if we have more than one explanatory variable? Spoiler: we already did, but one was a constant.</p>
+<p>Let&rsquo;s have a look at the regression of <em>Sales</em> on <em>Radio</em> and <em>TV</em> advertisement expenditure separately.</p>
+<pre><code class="language-python"># Table 3.3 (1)
+est = sm.OLS.from_formula('Sales ~ Radio', advertising).fit()
+est.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    9.3116</td> <td>    0.563</td> <td>   16.542</td> <td> 0.000</td> <td>    8.202</td> <td>   10.422</td>
+</tr>
+<tr>
+  <th>Radio</th>     <td>    0.2025</td> <td>    0.020</td> <td>    9.921</td> <td> 0.000</td> <td>    0.162</td> <td>    0.243</td>
+</tr>
+</table>
+<pre><code class="language-python"># Table 3.3 (2)
+est = sm.OLS.from_formula('Sales ~ Newspaper', advertising).fit()
+est.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>   12.3514</td> <td>    0.621</td> <td>   19.876</td> <td> 0.000</td> <td>   11.126</td> <td>   13.577</td>
+</tr>
+<tr>
+  <th>Newspaper</th> <td>    0.0547</td> <td>    0.017</td> <td>    3.300</td> <td> 0.001</td> <td>    0.022</td> <td>    0.087</td>
+</tr>
+</table>
+<p>It seems that both Radio and Newspapers are positively correlated with <em>Sales</em>. Why don&rsquo;t we estimate a unique regression with both dependent variables?</p>
+<h3 id="estimating-the-regression-coefficients">Estimating the Regression Coefficients</h3>
+<p>Suppose now we enrich our previous model adding all different forms of advertisement:</p>
+<p>$$
+\text{Sales} = \beta_0 + \beta_1 \text{TV} + \beta_2 \text{Radio} + \beta_3 \text{Newspaper} + \varepsilon
+$$</p>
+<p>We estimate it using the <code>statsmodels</code> <code>ols</code> library.</p>
+<pre><code class="language-python"># Table 3.4
+est = sm.OLS.from_formula('Sales ~ TV + Radio + Newspaper', advertising).fit()
+est.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    2.9389</td> <td>    0.312</td> <td>    9.422</td> <td> 0.000</td> <td>    2.324</td> <td>    3.554</td>
+</tr>
+<tr>
+  <th>TV</th>        <td>    0.0458</td> <td>    0.001</td> <td>   32.809</td> <td> 0.000</td> <td>    0.043</td> <td>    0.049</td>
+</tr>
+<tr>
+  <th>Radio</th>     <td>    0.1885</td> <td>    0.009</td> <td>   21.893</td> <td> 0.000</td> <td>    0.172</td> <td>    0.206</td>
+</tr>
+<tr>
+  <th>Newspaper</th> <td>   -0.0010</td> <td>    0.006</td> <td>   -0.177</td> <td> 0.860</td> <td>   -0.013</td> <td>    0.011</td>
+</tr>
+</table>
+<p>Why now it seems that there is no relationship between Sales and Newspaper while the univariate regression told us the opposite?</p>
+<p>Let&rsquo;s explore the correlation between those variables.</p>
+<pre><code class="language-python"># Table 3.5 - Correlation Matrix
+advertising.corr()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>TV</th>
+      <th>Radio</th>
+      <th>Newspaper</th>
+      <th>Sales</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>TV</th>
+      <td>1.000000</td>
+      <td>0.054809</td>
+      <td>0.056648</td>
+      <td>0.782224</td>
+    </tr>
+    <tr>
+      <th>Radio</th>
+      <td>0.054809</td>
+      <td>1.000000</td>
+      <td>0.354104</td>
+      <td>0.576223</td>
+    </tr>
+    <tr>
+      <th>Newspaper</th>
+      <td>0.056648</td>
+      <td>0.354104</td>
+      <td>1.000000</td>
+      <td>0.228299</td>
+    </tr>
+    <tr>
+      <th>Sales</th>
+      <td>0.782224</td>
+      <td>0.576223</td>
+      <td>0.228299</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Let&rsquo;s try to inspect the relationship visually. Note that now the linear best fit is going to be 3-dimensional. In order to make it visually accessible, we consider only on <em>TV</em> and <em>Radio</em> advertisement expediture as dependent variables. The best fit will be a plane instead of a line.</p>
+<pre><code class="language-python"># Fit regression
+est = sm.OLS.from_formula('Sales ~ Radio + TV', advertising).fit()
+print(est.params)
+</code></pre>
+<pre><code>Intercept    2.921100
+Radio        0.187994
+TV           0.045755
+dtype: float64
+</code></pre>
+<pre><code class="language-python"># Create a coordinate grid
+Radio = np.arange(0,50)
+TV = np.arange(0,300)
+B1, B2 = np.meshgrid(Radio, TV, indexing='xy')
+
+# Compute predicted plane
+Z = np.zeros((TV.size, Radio.size))
+for (i,j),v in np.ndenumerate(Z):
+        Z[i,j] =(est.params[0] + B1[i,j]*est.params[1] + B2[i,j]*est.params[2])
+        
+# Compute residuals
+e = est.predict() - advertising.Sales
+</code></pre>
+<pre><code class="language-python"># Figure 3.5 - Multiple Linear Regression
+def make_fig_3_5():
+
+    # Init figure
+    fig = plt.figure()
+    ax = axes3d.Axes3D(fig, auto_add_to_figure=False)
+    fig.add_axes(ax)
+    fig.suptitle('Figure 3.5');
+
+
+    # Plot best fit plane
+    ax.plot_surface(B1, B2, Z, color='k', alpha=0.3)
+    points = ax.scatter3D(advertising.Radio, advertising.TV, advertising.Sales, c=e, cmap=&quot;seismic&quot;, vmin=-5, vmax=5)
+    plt.colorbar(points, cax=fig.add_axes([0.9, 0.1, 0.03, 0.8]))
+    ax.set_xlabel('Radio'); ax.set_xlim(0,50)
+    ax.set_ylabel('TV'); ax.set_ylim(bottom=0)
+    ax.set_zlabel('Sales');
+    ax.view_init(20, 20)
+</code></pre>
+<pre><code class="language-python">make_fig_3_5()
+</code></pre>
+<p><img src="../img/01_regression_79_0.png" alt="png"></p>
+<h3 id="some-important-questions">Some Important Questions</h3>
+<p>How do you check whether the model fit well the data with multiple regressors? <code>statmodels</code> and most regression packages automatically outputs more information about the least squares model.</p>
+<pre><code class="language-python"># Measires of fit
+est.summary().tables[0]
+</code></pre>
+<table class="simpletable">
+<caption>OLS Regression Results</caption>
+<tr>
+  <th>Dep. Variable:</th>          <td>Sales</td>      <th>  R-squared:         </th> <td>   0.897</td>
+</tr>
+<tr>
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.896</td>
+</tr>
+<tr>
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   859.6</td>
+</tr>
+<tr>
+  <th>Date:</th>             <td>Mon, 03 Jan 2022</td> <th>  Prob (F-statistic):</th> <td>4.83e-98</td>
+</tr>
+<tr>
+  <th>Time:</th>                 <td>18:28:21</td>     <th>  Log-Likelihood:    </th> <td> -386.20</td>
+</tr>
+<tr>
+  <th>No. Observations:</th>      <td>   200</td>      <th>  AIC:               </th> <td>   778.4</td>
+</tr>
+<tr>
+  <th>Df Residuals:</th>          <td>   197</td>      <th>  BIC:               </th> <td>   788.3</td>
+</tr>
+<tr>
+  <th>Df Model:</th>              <td>     2</td>      <th>                     </th>     <td> </td>   
+</tr>
+<tr>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>   
+</tr>
+</table>
+<p>First measure: the <strong>F-test</strong>. The F-test tries to answe the question &ldquo;<em>Is There a Relationship Between the Response and Predictors?</em>&rdquo;</p>
+<p>In particular, it tests the following hypothesis</p>
+<p>$$
+H_1: \text{is at least one coefficient different from zero?}
+$$</p>
+<p>against the null hypothesis</p>
+<p>$$
+H_0: \beta_0 = \beta_1 = &hellip; = 0
+$$</p>
+<p>This hypothesis test is performed by computing the F-statistic,</p>
+<p>$$
+F=\frac{(\mathrm{TSS}-\mathrm{RSS}) / p}{\operatorname{RSS} /(n-p-1)}
+$$</p>
+<p>Let&rsquo;s try to compute it by hand.</p>
+<pre><code class="language-python"># Init
+X = advertising[['Radio', 'TV']]
+y = advertising.Sales
+e = y - est.predict(X)
+RSS = np.sum(e**2)
+TSS = np.sum((y - np.mean(y))**2)
+(n,p) = np.shape(X)
+
+# Compute F
+F = ((TSS - RSS)/p) / (RSS/(n-p-1))
+print('F = %.4f' % F)
+</code></pre>
+<pre><code>F = 859.6177
+</code></pre>
+<p>A rule of thumb is to reject $H_0$ if $F &gt; 10$.</p>
+<p>We can also test that a particular subset of coefficients are equal to zero. In that case, we just substitute the Total Sum of Squares (TSS) with the Residual Sum of Squares under the null.</p>
+<p>$$
+F=\frac{(\mathrm{RSS_0}-\mathrm{RSS}) / p}{\operatorname{RSS} /(n-p-1)}
+$$</p>
+<p>i.e. we perfome the regression under the null hypothesis and we compute</p>
+<p>$$
+RSS_0 = \sum_{n=1}^N (y_i - X_i \beta)^2 \quad s.t. \quad  H_0
+$$</p>
+<h2 id="23-other-considerations-in-the-regression-model">2.3 Other Considerations in the Regression Model</h2>
+<h3 id="qualitative-predictors">Qualitative Predictors</h3>
+<p>What if some variables are qualitative instead of quantitative? Let&rsquo;s change dataset and use the <code>credit</code> dataset.</p>
+<pre><code class="language-python"># Credit ratings dataset
+credit = pd.read_csv('data/Credit.csv', usecols=list(range(1,12)))
+</code></pre>
+<p>This dataset contains information on credit ratings, i.e. each person is assigned a <code>Rating</code> score based on his/her own individual characteristics.</p>
+<p>Let&rsquo;s have a look at data types.</p>
+<pre><code class="language-python"># Summary
+credit.info()
+</code></pre>
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 400 entries, 0 to 399
+Data columns (total 11 columns):
+ #   Column     Non-Null Count  Dtype  
+---  ------     --------------  -----  
+ 0   Income     400 non-null    float64
+ 1   Limit      400 non-null    int64  
+ 2   Rating     400 non-null    int64  
+ 3   Cards      400 non-null    int64  
+ 4   Age        400 non-null    int64  
+ 5   Education  400 non-null    int64  
+ 6   Gender     400 non-null    object 
+ 7   Student    400 non-null    object 
+ 8   Married    400 non-null    object 
+ 9   Ethnicity  400 non-null    object 
+ 10  Balance    400 non-null    int64  
+dtypes: float64(1), int64(6), object(4)
+memory usage: 34.5+ KB
+</code></pre>
+<p>As we can see, some variables like <code>Gender</code>, <code>Student</code> or <code>Married</code> are not numeric.</p>
+<p>We can have a closer look at what these variables look like.</p>
+<pre><code class="language-python"># Look at data
+credit.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Income</th>
+      <th>Limit</th>
+      <th>Rating</th>
+      <th>Cards</th>
+      <th>Age</th>
+      <th>Education</th>
+      <th>Gender</th>
+      <th>Student</th>
+      <th>Married</th>
+      <th>Ethnicity</th>
+      <th>Balance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>14.891</td>
+      <td>3606</td>
+      <td>283</td>
+      <td>2</td>
+      <td>34</td>
+      <td>11</td>
+      <td>Male</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>Caucasian</td>
+      <td>333</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>106.025</td>
+      <td>6645</td>
+      <td>483</td>
+      <td>3</td>
+      <td>82</td>
+      <td>15</td>
+      <td>Female</td>
+      <td>Yes</td>
+      <td>Yes</td>
+      <td>Asian</td>
+      <td>903</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>104.593</td>
+      <td>7075</td>
+      <td>514</td>
+      <td>4</td>
+      <td>71</td>
+      <td>11</td>
+      <td>Male</td>
+      <td>No</td>
+      <td>No</td>
+      <td>Asian</td>
+      <td>580</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>148.924</td>
+      <td>9504</td>
+      <td>681</td>
+      <td>3</td>
+      <td>36</td>
+      <td>11</td>
+      <td>Female</td>
+      <td>No</td>
+      <td>No</td>
+      <td>Asian</td>
+      <td>964</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>55.882</td>
+      <td>4897</td>
+      <td>357</td>
+      <td>2</td>
+      <td>68</td>
+      <td>16</td>
+      <td>Male</td>
+      <td>No</td>
+      <td>Yes</td>
+      <td>Caucasian</td>
+      <td>331</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Let&rsquo;s consider the variable <code>Student</code>. From a quick inspection it looks like it&rsquo;s a binary <em>Yes/No</em> variable. Let&rsquo;s check by listing all its values.</p>
+<pre><code class="language-python"># What values does the Student variable take?
+credit['Student'].unique()
+</code></pre>
+<pre><code>array(['No', 'Yes'], dtype=object)
+</code></pre>
+<p>What happens if you pass a binary varaible to <code>statsmodel</code>? It automatically generates a dummy out of it.</p>
+<pre><code class="language-python"># Table 3.7
+est = sm.OLS.from_formula('Balance ~ Student', credit).fit()
+est.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+         <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>      <td>  480.3694</td> <td>   23.434</td> <td>   20.499</td> <td> 0.000</td> <td>  434.300</td> <td>  526.439</td>
+</tr>
+<tr>
+  <th>Student[T.Yes]</th> <td>  396.4556</td> <td>   74.104</td> <td>    5.350</td> <td> 0.000</td> <td>  250.771</td> <td>  542.140</td>
+</tr>
+</table>
+<p>If a variable takes more than one value, <code>statsmodel</code> automatically generates a uniqe dummy for each level (-1).</p>
+<pre><code class="language-python"># Table 3.8
+est = sm.OLS.from_formula('Balance ~ Ethnicity', credit).fit()
+est.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+             <td></td>               <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>              <td>  531.0000</td> <td>   46.319</td> <td>   11.464</td> <td> 0.000</td> <td>  439.939</td> <td>  622.061</td>
+</tr>
+<tr>
+  <th>Ethnicity[T.Asian]</th>     <td>  -18.6863</td> <td>   65.021</td> <td>   -0.287</td> <td> 0.774</td> <td> -146.515</td> <td>  109.142</td>
+</tr>
+<tr>
+  <th>Ethnicity[T.Caucasian]</th> <td>  -12.5025</td> <td>   56.681</td> <td>   -0.221</td> <td> 0.826</td> <td> -123.935</td> <td>   98.930</td>
+</tr>
+</table>
+<h3 id="relaxing-the-additive-assumption">Relaxing the Additive Assumption</h3>
+<p>We have seen that both TV and Radio advertisement are positively associated with Sales. What if there is a synergy? For example it might be that if someone sees an ad <em>both</em> on TV and on the radio, s/he is much more likely to buy the product.</p>
+<p>Consider the following model</p>
+<p>$$
+\text{Sales} ≈ \beta_0 + \beta_1 \text{TV} + \beta_2 \text{Radio} + \beta_3 \text{TV} \times \text{Radio}
+$$</p>
+<p>which can be rewritten as</p>
+<p>$$
+\text{Sales} ≈ \beta_0 + (\beta_1 + \beta_3 \text{Radio}) \times \text{TV} + \beta_2 \text{Radio}
+$$</p>
+<p>Let&rsquo;s estimate the linear regression model, with the intercept.</p>
+<pre><code class="language-python"># Table 3.9 - Interaction Variables
+est = sm.OLS.from_formula('Sales ~ TV + Radio + TV*Radio', advertising).fit()
+est.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    6.7502</td> <td>    0.248</td> <td>   27.233</td> <td> 0.000</td> <td>    6.261</td> <td>    7.239</td>
+</tr>
+<tr>
+  <th>TV</th>        <td>    0.0191</td> <td>    0.002</td> <td>   12.699</td> <td> 0.000</td> <td>    0.016</td> <td>    0.022</td>
+</tr>
+<tr>
+  <th>Radio</th>     <td>    0.0289</td> <td>    0.009</td> <td>    3.241</td> <td> 0.001</td> <td>    0.011</td> <td>    0.046</td>
+</tr>
+<tr>
+  <th>TV:Radio</th>  <td>    0.0011</td> <td> 5.24e-05</td> <td>   20.727</td> <td> 0.000</td> <td>    0.001</td> <td>    0.001</td>
+</tr>
+</table>
+<p>A positive and significant interaction term indicates a hint of a sinergy effect.</p>
+<h3 id="heterogeneous-effects">Heterogeneous Effects</h3>
+<p>We can do interactions with qualitative variables as well. Conside the credit rating dataset.</p>
+<p>What if <code>Balance</code> depends by <code>Income</code> differently, depending on whether one is a <code>Student</code> or not?</p>
+<p>Consider the following model:</p>
+<p>$$
+\text{Balance} ≈ \beta_0 + \beta_1 \text{Income} + \beta_2 \text{Student} + \beta_3 \text{Income} \times \text{Student}
+$$</p>
+<p>The last coefficient $\beta_3$ should tell us how much <code>Balance</code> increases in <code>Income</code> for <code>Students</code> with respect to non-Students.</p>
+<p>Indeed, we can decompose the regression in the following equivalent way:</p>
+<p>$$
+\text{Balance} ≈ \beta_0 + \beta_1 \text{Income} + \beta_2 \text{Student} + \beta_3 \text{Income} \times \text{Student}
+$$</p>
+<p>which can be interpreted in the following way since <code>Student</code> is a binary variable</p>
+<ol>
+<li>
+<p>If the person is <em>not</em> a student
+$$
+\text{Balance} ≈ \beta_0 + \beta_1 \text{Income}
+$$</p>
+</li>
+<li>
+<p>If the person is a student
+$$
+\text{Balance} ≈ (\beta_0 + \beta_2) + (\beta_1 + \beta_3 ) \text{Income}
+$$</p>
+</li>
+</ol>
+<p>We are allowing not only for a different intercept for <code>Students</code>, $\beta_0 \to \beta_0 + \beta_2$,  but also for a different impact of <code>Income</code>, $\beta_1 \to \beta_1 + \beta_3$.</p>
+<p>We can visually inspect the distribution of <code>Income</code> across the two groups.</p>
+<pre><code class="language-python"># Divide data into students and non-students
+x_student = credit.loc[credit.Student=='Yes','Income']
+y_student = credit.loc[credit.Student=='Yes','Balance']
+x_nonstudent = credit.loc[credit.Student=='No','Income']
+y_nonstudent = credit.loc[credit.Student=='No','Balance']
+</code></pre>
+<pre><code class="language-python"># Make figure 3.8
+def make_fig_3_8():
+    
+    # Init figure
+    fig, ax = plt.subplots(1,1)
+    fig.suptitle('Figure 3.8')
+
+    # Relationship betweeen income and balance for students and non-students
+    ax.scatter(x=x_nonstudent, y=y_nonstudent, facecolors='None', edgecolors='k', alpha=0.5);
+    ax.scatter(x=x_student, y=y_student, facecolors='r', edgecolors='r', alpha=0.7);
+    ax.legend(['non-student', 'student']);
+    ax.set_xlabel('Income'); ax.set_ylabel('Balance');
+</code></pre>
+<pre><code class="language-python">make_fig_3_8()
+</code></pre>
+<p><img src="../img/01_regression_114_0.png" alt="png"></p>
+<p>It is hard from the scatterplot to see whether there is a different relationship between income and balance for students and non-students.</p>
+<p>Let&rsquo;s fit two separate regressions.</p>
+<pre><code class="language-python"># Interaction between qualitative and quantative variables
+est1 = sm.OLS.from_formula('Balance ~ Income + Student', credit).fit()
+reg1 = est1.params
+est2 = sm.OLS.from_formula('Balance ~ Income + Student + Income*Student', credit).fit()
+reg2 = est2.params
+
+print('Regression 1 - without interaction term')
+print(reg1)
+print('\nRegression 2 - with interaction term')
+print(reg2)
+</code></pre>
+<pre><code>Regression 1 - without interaction term
+Intercept         211.142964
+Student[T.Yes]    382.670539
+Income              5.984336
+dtype: float64
+
+Regression 2 - with interaction term
+Intercept                200.623153
+Student[T.Yes]           476.675843
+Income                     6.218169
+Income:Student[T.Yes]     -1.999151
+dtype: float64
+</code></pre>
+<p>Without the interaction term, the two lines have different levels but the same slope. Introducing an interaction term allows the two groups to have different responses to Income.</p>
+<p>We can visualize the relationship in a graph.</p>
+<pre><code class="language-python"># Income (x-axis)
+income = np.linspace(0,150)
+
+# Balance without interaction term (y-axis)
+student1 = np.linspace(reg1['Intercept']+reg1['Student[T.Yes]'],
+                       reg1['Intercept']+reg1['Student[T.Yes]']+150*reg1['Income'])
+non_student1 =  np.linspace(reg1['Intercept'], reg1['Intercept']+150*reg1['Income'])
+
+# Balance with iteraction term (y-axis)
+student2 = np.linspace(reg2['Intercept']+reg2['Student[T.Yes]'],
+                       reg2['Intercept']+reg2['Student[T.Yes]']+
+                       150*(reg2['Income']+reg2['Income:Student[T.Yes]']))
+non_student2 =  np.linspace(reg2['Intercept'], reg2['Intercept']+150*reg2['Income'])
+</code></pre>
+<pre><code class="language-python"># Figure 3.7
+def make_fig_3_7():
+    
+    fig, (ax1,ax2) = plt.subplots(1,2, figsize=(12,5))
+    fig.suptitle('Figure 3.7')
+
+    # Plot best fit with and without interaction
+    ax1.plot(income, student1, 'r', income, non_student1, 'k')
+    ax2.plot(income, student2, 'r', income, non_student2, 'k')
+    
+    titles = ['Dummy', 'Dummy + Interaction']
+    for ax, t in zip(fig.axes, titles):
+        ax.legend(['student', 'non-student'], loc=2)
+        ax.set_xlabel('Income')
+        ax.set_ylabel('Balance')
+        ax.set_ylim(ymax=1550)
+        ax.set_title(t)
+</code></pre>
+<pre><code class="language-python">make_fig_3_7()
+</code></pre>
+<p><img src="../img/01_regression_120_0.png" alt="png"></p>
+<h3 id="non-linear-relationships">Non-Linear Relationships</h3>
+<p>What if we allow for further non-linearities? Let&rsquo;s change dataset again and use the <code>car</code> dataset.</p>
+<pre><code class="language-python"># Automobile dataset (dropping missing values)
+auto = pd.read_csv('data/Auto.csv', na_values='?').dropna()
+</code></pre>
+<p>This dataset contains information of a wide variety of car models.</p>
+<pre><code class="language-python">auto.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mpg</th>
+      <th>cylinders</th>
+      <th>displacement</th>
+      <th>horsepower</th>
+      <th>weight</th>
+      <th>acceleration</th>
+      <th>year</th>
+      <th>origin</th>
+      <th>name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>18.0</td>
+      <td>8</td>
+      <td>307.0</td>
+      <td>130</td>
+      <td>3504</td>
+      <td>12.0</td>
+      <td>70</td>
+      <td>1</td>
+      <td>chevrolet chevelle malibu</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>15.0</td>
+      <td>8</td>
+      <td>350.0</td>
+      <td>165</td>
+      <td>3693</td>
+      <td>11.5</td>
+      <td>70</td>
+      <td>1</td>
+      <td>buick skylark 320</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>18.0</td>
+      <td>8</td>
+      <td>318.0</td>
+      <td>150</td>
+      <td>3436</td>
+      <td>11.0</td>
+      <td>70</td>
+      <td>1</td>
+      <td>plymouth satellite</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>16.0</td>
+      <td>8</td>
+      <td>304.0</td>
+      <td>150</td>
+      <td>3433</td>
+      <td>12.0</td>
+      <td>70</td>
+      <td>1</td>
+      <td>amc rebel sst</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>17.0</td>
+      <td>8</td>
+      <td>302.0</td>
+      <td>140</td>
+      <td>3449</td>
+      <td>10.5</td>
+      <td>70</td>
+      <td>1</td>
+      <td>ford torino</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Suppose we wanted to understand which car caracteristics are correlated with higher efficiency, i.e. <code>mpg</code> (miles per gallon).</p>
+<p>Consider in particular the relationship between <code>mpg</code> and <code>horsepower</code>. It might be a highly non-linear relationship.</p>
+<p>$$
+\text{mpg} ≈ \beta_0 + \beta_1 \text{horsepower} + \beta_2 \text{horsepower}^2 + &hellip; ???
+$$</p>
+<p>How many terms should we include?</p>
+<p>Let&rsquo;s look at the data to understand if it naturally suggests non-linearities.</p>
+<pre><code class="language-python">fig, ax = plt.subplots(1,1)
+
+# Plot polinomials of different degree
+plt.scatter(x=auto.horsepower, y=auto.mpg, facecolors='None', edgecolors='k', alpha=.3) 
+plt.ylim(5,55); plt.xlim(40,240); 
+plt.xlabel('horsepower'); plt.ylabel('mpg');
+</code></pre>
+<p><img src="../img/01_regression_128_0.png" alt="png"></p>
+<p>The relationship looks non-linear but in which way exactly? Let&rsquo;s try to fit polinomials of different degrees.</p>
+<pre><code class="language-python">def make_fig_38():
+    
+    # Figure 3.8 
+    fig, ax = plt.subplots(1,1)
+    ax.set_title('Figure 3.8')
+
+    # Plot polinomials of different degree
+    plt.scatter(x=auto.horsepower, y=auto.mpg, facecolors='None', edgecolors='k', alpha=.3) 
+    sns.regplot(x=auto.horsepower, y=auto.mpg, ci=None, label='Linear', scatter=False, color='orange')
+    sns.regplot(x=auto.horsepower, y=auto.mpg, ci=None, label='Degree 2', order=2, scatter=False, color='lightblue')
+    sns.regplot(x=auto.horsepower, y=auto.mpg, ci=None, label='Degree 5', order=5, scatter=False, color='g')
+    plt.legend()
+    plt.ylim(5,55)
+    plt.xlim(40,240);
+</code></pre>
+<pre><code class="language-python">make_fig_38()
+</code></pre>
+<p><img src="../img/01_regression_131_0.png" alt="png"></p>
+<p>As we can see, the tails are highly unstable depending on the specification.</p>
+<p>Let&rsquo;s add a quadratic term</p>
+<pre><code class="language-python"># Table 3.10
+auto['horsepower2'] = auto.horsepower**2
+auto.head(3)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mpg</th>
+      <th>cylinders</th>
+      <th>displacement</th>
+      <th>horsepower</th>
+      <th>weight</th>
+      <th>acceleration</th>
+      <th>year</th>
+      <th>origin</th>
+      <th>name</th>
+      <th>horsepower2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>18.0</td>
+      <td>8</td>
+      <td>307.0</td>
+      <td>130</td>
+      <td>3504</td>
+      <td>12.0</td>
+      <td>70</td>
+      <td>1</td>
+      <td>chevrolet chevelle malibu</td>
+      <td>16900</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>15.0</td>
+      <td>8</td>
+      <td>350.0</td>
+      <td>165</td>
+      <td>3693</td>
+      <td>11.5</td>
+      <td>70</td>
+      <td>1</td>
+      <td>buick skylark 320</td>
+      <td>27225</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>18.0</td>
+      <td>8</td>
+      <td>318.0</td>
+      <td>150</td>
+      <td>3436</td>
+      <td>11.0</td>
+      <td>70</td>
+      <td>1</td>
+      <td>plymouth satellite</td>
+      <td>22500</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>How does the regression change?</p>
+<pre><code class="language-python">est = sm.OLS.from_formula('mpg ~ horsepower + horsepower2', auto).fit()
+est.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>   <td>   56.9001</td> <td>    1.800</td> <td>   31.604</td> <td> 0.000</td> <td>   53.360</td> <td>   60.440</td>
+</tr>
+<tr>
+  <th>horsepower</th>  <td>   -0.4662</td> <td>    0.031</td> <td>  -14.978</td> <td> 0.000</td> <td>   -0.527</td> <td>   -0.405</td>
+</tr>
+<tr>
+  <th>horsepower2</th> <td>    0.0012</td> <td>    0.000</td> <td>   10.080</td> <td> 0.000</td> <td>    0.001</td> <td>    0.001</td>
+</tr>
+</table>
+<h3 id="non-linearities">Non-Linearities</h3>
+<p>How can we assess if there are non-linearities and of which kind? We can look at the residuals.</p>
+<p>If the residuals show some kind of pattern, probably we could have fit the line better. Moreover, we can use the pattern itself to understand how.</p>
+<pre><code class="language-python"># Linear fit
+X = auto.horsepower.values.reshape(-1,1)
+y = auto.mpg
+regr = LinearRegression().fit(X, y)
+
+auto['pred1'] = regr.predict(X)
+auto['resid1'] = auto.mpg - auto.pred1
+
+# Quadratic fit
+X2 = auto[['horsepower', 'horsepower2']]
+regr.fit(X2, y)
+
+auto['pred2'] = regr.predict(X2)
+auto['resid2'] = auto.mpg - auto.pred2
+</code></pre>
+<pre><code class="language-python"># Figure 3.9
+def make_fig_39():
+    
+    fig, (ax1,ax2) = plt.subplots(1,2, figsize=(12,5))
+    fig.suptitle('Figure 3.9')
+
+    # Left plot
+    sns.regplot(x=auto.pred1, y=auto.resid1, lowess=True, 
+                ax=ax1, line_kws={'color':'r', 'lw':1},
+                scatter_kws={'facecolors':'None', 'edgecolors':'k', 'alpha':0.5})
+    ax1.hlines(0,xmin=ax1.xaxis.get_data_interval()[0],
+               xmax=ax1.xaxis.get_data_interval()[1], linestyles='dotted')
+    ax1.set_title('Residual Plot for Linear Fit')
+
+    # Right plot
+    sns.regplot(x=auto.pred2, y=auto.resid2, lowess=True,
+                line_kws={'color':'r', 'lw':1}, ax=ax2,
+                scatter_kws={'facecolors':'None', 'edgecolors':'k', 'alpha':0.5})
+    ax2.hlines(0,xmin=ax2.xaxis.get_data_interval()[0],
+               xmax=ax2.xaxis.get_data_interval()[1], linestyles='dotted')
+    ax2.set_title('Residual Plot for Quadratic Fit')
+
+    for ax in fig.axes:
+        ax.set_xlabel('Fitted values')
+        ax.set_ylabel('Residuals')
+</code></pre>
+<pre><code class="language-python"> make_fig_39()
+</code></pre>
+<p><img src="../img/01_regression_141_0.png" alt="png"></p>
+<p>It looks like the residuals from the linear fit (on the left) exibit a pattern:</p>
+<ul>
+<li>positive values at the tails</li>
+<li>negative values in the center</li>
+</ul>
+<p>This suggests a quadratic fit. Indeed, the residuals when we include <code>horsepower^2</code> (on the right) seem more uniformly centered around zero.</p>
+<h3 id="outliers">Outliers</h3>
+<p>Observations with high residuals have a good chance of being highly influentials. However, they do not have to be.</p>
+<p>Let&rsquo;s use the following data generating process:</p>
+<ul>
+<li>$X \sim N(0,1)$</li>
+<li>$\varepsilon \sim N(0,0.5)$</li>
+<li>$\beta_0 = 3$</li>
+<li>$y = \beta_0 X + \varepsilon$</li>
+</ul>
+<pre><code class="language-python">np.random.seed(1)
+
+# Generate random y
+n = 50
+X = rnorm(1,1,(n,1))
+e = rnorm(0,0.5,(n,1))
+b0 = 3
+y = X*b0 + e
+</code></pre>
+<p>Now let&rsquo;s change observation <code>20</code> so that it becomes an outlier, i.e. it has a high residual.</p>
+<pre><code class="language-python"># Generate outlier
+X[20] = 1
+y[20] = 7
+
+# Short regression without observation number 41
+X_small = np.delete(X, 20)
+y_small = np.delete(y, 20)
+</code></pre>
+<p>Let&rsquo;s now plot the data and the residuals</p>
+<pre><code class="language-python"># Figure 3.12
+def make_fig_3_12():
+    
+    # Init figure
+    fig, (ax1,ax2) = plt.subplots(1,2, figsize=(12,5)) 
+    fig.suptitle('Figure 3.12')
+
+    # Plot 1
+    ax1.scatter(x=X, y=y, facecolors='None', edgecolors='k', alpha=.5) 
+    sns.regplot(x=X, y=y, ax=ax1, order=1, ci=None, scatter=False, line_kws={'color':'r', 'lw':1})
+    sns.regplot(x=X_small, y=y_small, ax=ax1, order=1, ci=None, scatter=False, line_kws={'color':'b', 'lw':1})
+    ax1.set_xlabel('X'); ax1.set_ylabel('Y'); 
+    ax1.legend(['With obs. 20', 'Without obs. 20'], fontsize=12);
+
+    # Hihglight outliers
+    ax1.scatter(x=X[20], y=y[20], facecolors='None', edgecolors='r', alpha=1) 
+    ax1.annotate(&quot;20&quot;, (1.1, 7), color='r')
+
+    # Compute fitted values and residuals
+    r = regr.fit(X, y)
+    y_hat = r.predict(X)
+    e = np.abs(y - y_hat)
+
+    # Plot 2
+    ax2.scatter(x=y_hat, y=e, facecolors='None', edgecolors='k', alpha=.5)
+    ax2.set_xlabel('Fitted Values'); ax2.set_ylabel('Residuals');
+    ax2.hlines(0,xmin=ax2.xaxis.get_data_interval()[0],
+               xmax=ax2.xaxis.get_data_interval()[1], linestyles='dotted',color='k')
+
+    # Highlight outlier
+    ax2.scatter(x=y_hat[20], y=e[20], facecolors='None', edgecolors='r', alpha=1) 
+    ax2.annotate(&quot;20&quot;, (2.2, 3.6), color='r');
+</code></pre>
+<pre><code class="language-python">make_fig_3_12()
+</code></pre>
+<p><img src="../img/01_regression_150_0.png" alt="png"></p>
+<h3 id="high-leverage-points">High Leverage Points</h3>
+<p>A better concept of &ldquo;influential observation&rdquo; is the Leverage, which represents how much an observation is distant from the others in terms of observables.</p>
+<p>The leverage formula of observation $i$ is</p>
+<p>$$
+h_i = x_i (X' X)^{-1} x_i'
+$$</p>
+<p>However, leverage alone is not necessarily enough for an observation to being highly influential.</p>
+<p>Let&rsquo;s modify observation <code>41</code> so that it has a high leverage.</p>
+<pre><code class="language-python"># Generate observation with high leverage
+X[41] = 4
+y[41] = 12
+
+# Short regression without observation number 41
+X_small = np.delete(X_small, 41)
+y_small = np.delete(y_small, 41)
+
+# Compute leverage
+H = X @ inv(X.T @ X) @ X.T
+h = np.diagonal(H)
+
+# Compute fitted values and residuals
+y_hat = X @ inv(X.T @ X) @ X.T @ y
+e = np.abs(y - y_hat) 
+</code></pre>
+<p>What happens now that we have added an observation with high leverage? How does the levarage look like?</p>
+<pre><code class="language-python"># Figure 3.13
+def make_fig_3_13():
+
+    # Init figure
+    fig, (ax1,ax2) = plt.subplots(1,2, figsize=(12,5)) 
+    fig.suptitle('Figure 3.12')
+
+    # Plot 1
+    ax1.scatter(x=X, y=y, facecolors='None', edgecolors='k', alpha=.5) 
+    ax1.scatter(x=X[[20,41]], y=y[[20,41]], facecolors='None', edgecolors='r', alpha=1) 
+    sns.regplot(x=X, y=y, ax=ax1, order=1, ci=None, scatter=False, line_kws={'color':'r', 'lw':1})
+    sns.regplot(x=X_small, y=y_small, ax=ax1, order=1, ci=None, scatter=False, line_kws={'color':'b', 'lw':1})
+    ax1.set_xlabel('X'); ax1.set_ylabel('Y'); ax1.axis(xmax=4.5);
+    ax1.legend(['With obs. 20,41', 'Without obs. 20,41']);
+
+    # Highlight points
+    ax1.annotate(&quot;20&quot;, (1.1, 7), color='r')
+    ax1.annotate(&quot;41&quot;, (3.6, 12), color='r');
+
+
+
+    # Plot 2
+    ax2.scatter(x=h, y=e, facecolors='None', edgecolors='k', alpha=.5)
+    ax2.set_xlabel('Leverage'); ax2.set_ylabel('Residuals'); 
+    ax2.hlines(0,xmin=ax2.xaxis.get_data_interval()[0],
+               xmax=ax2.xaxis.get_data_interval()[1], linestyles='dotted',color='k')
+    # Highlight outlier
+    ax2.scatter(x=h[[20,41]], y=e[[20,41]], facecolors='None', edgecolors='r', alpha=1);
+
+    # Highlight points
+    ax2.annotate(&quot;20&quot;, (0, 3.7), color='r')
+    ax2.annotate(&quot;41&quot;, (0.14, 0.4), color='r');
+</code></pre>
+<pre><code class="language-python">make_fig_3_13()
+</code></pre>
+<p><img src="../img/01_regression_156_0.png" alt="png"></p>
+<h3 id="influential-observations">Influential Observations</h3>
+<p>As we have seen, being an outliers or having high leverage alone might be not enough to conclude that an observation is influential.</p>
+<p>What really matters is a combination of both: observations with high leverage and high residuals, i.e. observations that are not only different in terms of observables (high leverage) but are also different in terms of their relationship between observables and dependent variable (high residual).</p>
+<p>Let&rsquo;s now modify observation <code>7</code> so that it is an outlier and has high leverage.</p>
+<pre><code class="language-python"># Generate outlier with high leverage
+X[7] = 4
+y[7] = 7
+</code></pre>
+<pre><code class="language-python"># Short regression without observation number 41
+X_small = np.delete(X, 7)
+y_small = np.delete(y, 7)
+
+# Compute leverage
+H = X @ inv(X.T @ X) @ X.T
+h = np.diagonal(H)
+
+# Compute fitted values and residuals
+r = regr.fit(X, y)
+y_hat = r.predict(X)
+e = np.abs(y - y_hat)
+</code></pre>
+<p>Now the best linear fit line has noticeably moved.</p>
+<pre><code class="language-python">def make_fig_extra_3():
+
+    fig, (ax1,ax2) = plt.subplots(1,2, figsize=(12,5)) 
+
+    # Plot 1
+    ax1.scatter(x=X, y=y, facecolors='None', edgecolors='k', alpha=.5) 
+    ax1.scatter(x=X[[7,20,41]], y=y[[7,20,41]], facecolors='None', edgecolors='r', alpha=1) 
+    sns.regplot(x=X, y=y, ax=ax1, order=1, ci=None, scatter=False, line_kws={'color':'r', 'lw':1})
+    sns.regplot(x=X_small, y=y_small, ax=ax1, order=1, ci=None, scatter=False, line_kws={'color':'b', 'lw':1})
+    ax1.set_xlabel('X'); ax1.set_ylabel('Y'); ax1.axis(xmax=4.5);
+    ax1.legend(['With obs. 7,20,41', 'Without obs. 7,20,41']);
+
+    # Highlight points
+    ax1.annotate(&quot;7&quot;, (3.7, 7), color='r')
+    ax1.annotate(&quot;20&quot;, (1.15, 7.05), color='r')
+    ax1.annotate(&quot;41&quot;, (3.6, 12), color='r');
+
+
+
+    # Plot 2
+    ax2.scatter(x=h, y=e, facecolors='None', edgecolors='k', alpha=.5)
+    ax2.set_xlabel('Leverage'); ax2.set_ylabel('Residuals'); 
+    ax2.hlines(0,xmin=ax2.xaxis.get_data_interval()[0],
+               xmax=ax2.xaxis.get_data_interval()[1], linestyles='dotted',color='k')
+    # Highlight outlier
+    ax2.scatter(x=h[[7,20,41]], y=e[[7,20,41]], facecolors='None', edgecolors='r', alpha=1);
+
+    # Highlight points
+    ax2.annotate(&quot;7&quot;, (0.12, 4.0), color='r');
+    ax2.annotate(&quot;20&quot;, (0, 3.8), color='r')
+    ax2.annotate(&quot;41&quot;, (0.12, 0.9), color='r');
+</code></pre>
+<pre><code class="language-python">make_fig_extra_3()
+</code></pre>
+<p><img src="../img/01_regression_164_0.png" alt="png"></p>
+<h3 id="collinearity">Collinearity</h3>
+<p>Collinearity is the situation in which two dependent varaibles are higly correlated with each other. Algebraically, this is a problem because the $X&rsquo;X$ matrix becomes almost-non-invertible.</p>
+<p>Let&rsquo;s have a look at the <code>ratings</code> dataset.</p>
+<pre><code class="language-python"># Inspect dataset
+sns.pairplot(credit[['Age', 'Balance', 'Limit', 'Rating']], height=1.8);
+</code></pre>
+<p><img src="../img/01_regression_167_0.png" alt="png"></p>
+<p>If we zoom into the variable <code>Limit</code>, we see that for example it is not very correlated with <code>Age</code> but is very correlated with <code>Rating</code>.</p>
+<pre><code class="language-python"># Figure 3.14
+def make_fig_3_14():
+    
+    # Init figure
+    fig, (ax1,ax2) = plt.subplots(1,2, figsize=(12,5)) 
+    fig.suptitle('Figure 3.14')
+
+    # Left plot
+    ax1.scatter(credit.Limit, credit.Age, facecolor='None', edgecolor='brown')
+    ax1.set_ylabel('Age')
+
+    # Right plot
+    ax2.scatter(credit.Limit, credit.Rating, facecolor='None', edgecolor='brown')
+    ax2.set_ylabel('Rating')
+
+    for ax in fig.axes:
+        ax.set_xlabel('Limit')
+        ax.set_xticks([2000,4000,6000,8000,12000])
+</code></pre>
+<pre><code class="language-python">make_fig_3_14()
+</code></pre>
+<p><img src="../img/01_regression_170_0.png" alt="png"></p>
+<p>If we regress <code>Balance</code> on <code>Limit</code> and <code>Age</code>, the coefficient of <code>Limit</code> is positive and highly significant.</p>
+<pre><code class="language-python"># Regress balance on limit and age
+reg1 = sm.OLS.from_formula('Balance ~ Limit + Age', credit).fit()
+reg1.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td> -173.4109</td> <td>   43.828</td> <td>   -3.957</td> <td> 0.000</td> <td> -259.576</td> <td>  -87.246</td>
+</tr>
+<tr>
+  <th>Limit</th>     <td>    0.1734</td> <td>    0.005</td> <td>   34.496</td> <td> 0.000</td> <td>    0.163</td> <td>    0.183</td>
+</tr>
+<tr>
+  <th>Age</th>       <td>   -2.2915</td> <td>    0.672</td> <td>   -3.407</td> <td> 0.001</td> <td>   -3.614</td> <td>   -0.969</td>
+</tr>
+</table>
+<p>However, if we regress <code>Balance</code> on <code>Limit</code> and <code>Rating</code>, the coefficient of <code>Limit</code> is now not significant anymore.</p>
+<pre><code class="language-python"># Regress balance on limit and rating
+reg2 = sm.OLS.from_formula('Balance ~ Limit + Rating', credit).fit()
+reg2.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td> -377.5368</td> <td>   45.254</td> <td>   -8.343</td> <td> 0.000</td> <td> -466.505</td> <td> -288.569</td>
+</tr>
+<tr>
+  <th>Limit</th>     <td>    0.0245</td> <td>    0.064</td> <td>    0.384</td> <td> 0.701</td> <td>   -0.101</td> <td>    0.150</td>
+</tr>
+<tr>
+  <th>Rating</th>    <td>    2.2017</td> <td>    0.952</td> <td>    2.312</td> <td> 0.021</td> <td>    0.330</td> <td>    4.074</td>
+</tr>
+</table>
+<p>Looking at the objective function, the Residual Sum of Squares, helps understanding what is the problem.</p>
+<pre><code class="language-python"># First scale variables
+y = credit.Balance
+regr1 = LinearRegression().fit(scale(credit[['Age', 'Limit']].astype('float'), with_std=False), y)
+regr2 = LinearRegression().fit(scale(credit[['Rating', 'Limit']], with_std=False), y)
+
+# Create grid coordinates for plotting
+B_Age = np.linspace(regr1.coef_[0]-3, regr1.coef_[0]+3, 100)
+B_Limit = np.linspace(regr1.coef_[1]-0.02, regr1.coef_[1]+0.02, 100)
+
+B_Rating = np.linspace(regr2.coef_[0]-3, regr2.coef_[0]+3, 100)
+B_Limit2 = np.linspace(regr2.coef_[1]-0.2, regr2.coef_[1]+0.2, 100)
+
+X1, Y1 = np.meshgrid(B_Limit, B_Age, indexing='xy')
+X2, Y2 = np.meshgrid(B_Limit2, B_Rating, indexing='xy')
+Z1 = np.zeros((B_Age.size,B_Limit.size))
+Z2 = np.zeros((B_Rating.size,B_Limit2.size))
+
+Limit_scaled = scale(credit.Limit.astype('float'), with_std=False)
+Age_scaled = scale(credit.Age.astype('float'), with_std=False)
+Rating_scaled = scale(credit.Rating.astype('float'), with_std=False)
+
+# Calculate Z-values (RSS) based on grid of coefficients
+for (i,j),v in np.ndenumerate(Z1):
+    Z1[i,j] =((y - (regr1.intercept_ + X1[i,j]*Limit_scaled +
+                    Y1[i,j]*Age_scaled))**2).sum()/1000000
+    
+for (i,j),v in np.ndenumerate(Z2):
+    Z2[i,j] =((y - (regr2.intercept_ + X2[i,j]*Limit_scaled +
+                    Y2[i,j]*Rating_scaled))**2).sum()/1000000
+</code></pre>
+<pre><code class="language-python"># Figure 3.15
+def make_fig_3_15():
+
+    # Init figure
+    fig, (ax1,ax2) = plt.subplots(1,2, figsize=(12,5)) 
+    fig.suptitle('Figure 3.15')
+
+    # Minimum
+    min_RSS = r'$\beta_0$, $\beta_1$ for minimized RSS'
+
+    # Left plot
+    CS = ax1.contour(X1, Y1, Z1, cmap=plt.cm.Set1, levels=[21.25, 21.5, 21.8])
+    ax1.scatter(reg1.params[1], reg1.params[2], c='r', label=min_RSS)
+    ax1.clabel(CS, inline=True, fontsize=10, fmt='%1.1f')
+    ax1.set_ylabel(r'$\beta_{Age}$')
+
+    # Right plot
+    CS = ax2.contour(X2, Y2, Z2, cmap=plt.cm.Set1, levels=[21.5, 21.8])
+    ax2.scatter(reg2.params[1], reg2.params[2], c='r', label=min_RSS)
+    ax2.clabel(CS, inline=True, fontsize=10, fmt='%1.1f')
+    ax2.set_ylabel(r'$\beta_{Rating}$')
+    #ax2.set_xticks([-0.1, 0, 0.1, 0.2])
+
+    for ax in fig.axes:
+        ax.set_xlabel(r'$\beta_{Limit}$')
+        ax.legend()
+</code></pre>
+<pre><code class="language-python">make_fig_3_15()
+</code></pre>
+<p><img src="../img/01_regression_178_0.png" alt="png"></p>
+<p>As we can see, in the left plot the minimum is much better defined than in the right plot.</p>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/ml-econ/02_iv/" rel="prev">Instrumental Variables</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>
