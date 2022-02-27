@@ -13,7 +13,1476 @@
     </image>
     
     <item>
-      <title>Linear Regression</title>
+      <title>Data Exploration</title>
+      <link>https://matteocourthoud.github.io/course/data-science/01_data_exploration/</link>
+      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/course/data-science/01_data_exploration/</guid>
+      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
+import pandas as pd
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
+&lt;p&gt;For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at &lt;strong&gt;Inside AirBnb&lt;/strong&gt;: &lt;a href=&#34;http://insideairbnb.com/get-the-data.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;http://insideairbnb.com/get-the-data.html&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;A description of all variables in all datasets is avaliable &lt;a href=&#34;https://docs.google.com/spreadsheets/d/1iWCNJcSutYqpULSQHlNyGInUvHg2BoUGoNRIGa6Szc4/edit#gid=982310896&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;We are going to use 2 datasets:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;listing dataset: contains listing-level information&lt;/li&gt;
+&lt;li&gt;pricing dataset: contains pricing data, over time&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;importing-data&#34;&gt;Importing Data&lt;/h2&gt;
+&lt;p&gt;Pandas has a variety of function to import data&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;pd.read_csv()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;pd.read_html()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;pd.read_parquet()&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Importatly for our purpose, &lt;code&gt;pd.read_csv()&lt;/code&gt; can directly import data from the web.&lt;/p&gt;
+&lt;p&gt;The first dataset that we are going to import is the dataset of Airbnb listings in Bologna. It contains listing-level information.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;url_listings = &amp;quot;http://data.insideairbnb.com/italy/emilia-romagna/bologna/2021-12-17/visualisations/listings.csv&amp;quot;
+df_listings = pd.read_csv(url_listings)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The second dataset that we are going to use is the dataset of calendar prices. This time the dataset is compressed but we can use the &lt;code&gt;compression&lt;/code&gt; option to import it directly.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;url_prices = &amp;quot;http://data.insideairbnb.com/italy/emilia-romagna/bologna/2021-12-17/data/calendar.csv.gz&amp;quot;
+df_prices = pd.read_csv(url_prices, compression=&amp;quot;gzip&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;inspecting-data&#34;&gt;Inspecting Data&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Methods&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;info()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;head()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;describe()&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The first way yo have a quick look at the data is the &lt;code&gt;info()&lt;/code&gt; method. If called with the option &lt;code&gt;verbose=False&lt;/code&gt;, it gives a quick overview of the dimensions of the data.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.info(verbose=False)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;class &#39;pandas.core.frame.DataFrame&#39;&amp;gt;
+RangeIndex: 3453 entries, 0 to 3452
+Columns: 18 entries, id to license
+dtypes: float64(4), int64(8), object(6)
+memory usage: 485.7+ KB
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If we want to know how the data looks like, we can use the &lt;code&gt;head()&lt;/code&gt; method. It prints the first 5 lines of the data by default.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;id&lt;/th&gt;
+      &lt;th&gt;name&lt;/th&gt;
+      &lt;th&gt;host_id&lt;/th&gt;
+      &lt;th&gt;host_name&lt;/th&gt;
+      &lt;th&gt;neighbourhood_group&lt;/th&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;latitude&lt;/th&gt;
+      &lt;th&gt;longitude&lt;/th&gt;
+      &lt;th&gt;room_type&lt;/th&gt;
+      &lt;th&gt;price&lt;/th&gt;
+      &lt;th&gt;minimum_nights&lt;/th&gt;
+      &lt;th&gt;number_of_reviews&lt;/th&gt;
+      &lt;th&gt;last_review&lt;/th&gt;
+      &lt;th&gt;reviews_per_month&lt;/th&gt;
+      &lt;th&gt;calculated_host_listings_count&lt;/th&gt;
+      &lt;th&gt;availability_365&lt;/th&gt;
+      &lt;th&gt;number_of_reviews_ltm&lt;/th&gt;
+      &lt;th&gt;license&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;42196&lt;/td&gt;
+      &lt;td&gt;50 sm Studio in the historic centre&lt;/td&gt;
+      &lt;td&gt;184487&lt;/td&gt;
+      &lt;td&gt;Carlo&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48507&lt;/td&gt;
+      &lt;td&gt;11.34786&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;68&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;180&lt;/td&gt;
+      &lt;td&gt;2021-11-12&lt;/td&gt;
+      &lt;td&gt;1.32&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;161&lt;/td&gt;
+      &lt;td&gt;6&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;46352&lt;/td&gt;
+      &lt;td&gt;A room in Pasolini&#39;s house&lt;/td&gt;
+      &lt;td&gt;467810&lt;/td&gt;
+      &lt;td&gt;Eleonora&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49168&lt;/td&gt;
+      &lt;td&gt;11.33514&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+      &lt;td&gt;29&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;300&lt;/td&gt;
+      &lt;td&gt;2021-11-30&lt;/td&gt;
+      &lt;td&gt;2.20&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;248&lt;/td&gt;
+      &lt;td&gt;37&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;59697&lt;/td&gt;
+      &lt;td&gt;COZY LARGE BEDROOM in the city center&lt;/td&gt;
+      &lt;td&gt;286688&lt;/td&gt;
+      &lt;td&gt;Paolo&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48817&lt;/td&gt;
+      &lt;td&gt;11.34124&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+      &lt;td&gt;50&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;240&lt;/td&gt;
+      &lt;td&gt;2020-10-04&lt;/td&gt;
+      &lt;td&gt;2.18&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;327&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;85368&lt;/td&gt;
+      &lt;td&gt;Garden House Bologna&lt;/td&gt;
+      &lt;td&gt;467675&lt;/td&gt;
+      &lt;td&gt;Anna Maria&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.47834&lt;/td&gt;
+      &lt;td&gt;11.35672&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;126&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;40&lt;/td&gt;
+      &lt;td&gt;2019-11-03&lt;/td&gt;
+      &lt;td&gt;0.34&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;332&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;145779&lt;/td&gt;
+      &lt;td&gt;SINGLE ROOM&lt;/td&gt;
+      &lt;td&gt;705535&lt;/td&gt;
+      &lt;td&gt;Valerio&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49306&lt;/td&gt;
+      &lt;td&gt;11.33786&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+      &lt;td&gt;50&lt;/td&gt;
+      &lt;td&gt;10&lt;/td&gt;
+      &lt;td&gt;69&lt;/td&gt;
+      &lt;td&gt;2021-12-05&lt;/td&gt;
+      &lt;td&gt;0.55&lt;/td&gt;
+      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;365&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We can print a description of the data using &lt;code&gt;describe()&lt;/code&gt;. If we have many variables, it&amp;rsquo;s best to print it transposed using the &lt;code&gt;.T&lt;/code&gt; attribute.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.describe().T[:5]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;count&lt;/th&gt;
+      &lt;th&gt;mean&lt;/th&gt;
+      &lt;th&gt;std&lt;/th&gt;
+      &lt;th&gt;min&lt;/th&gt;
+      &lt;th&gt;25%&lt;/th&gt;
+      &lt;th&gt;50%&lt;/th&gt;
+      &lt;th&gt;75%&lt;/th&gt;
+      &lt;th&gt;max&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;id&lt;/th&gt;
+      &lt;td&gt;3453.0&lt;/td&gt;
+      &lt;td&gt;2.950218e+07&lt;/td&gt;
+      &lt;td&gt;1.523988e+07&lt;/td&gt;
+      &lt;td&gt;42196.0000&lt;/td&gt;
+      &lt;td&gt;1.748597e+07&lt;/td&gt;
+      &lt;td&gt;3.078707e+07&lt;/td&gt;
+      &lt;td&gt;4.220094e+07&lt;/td&gt;
+      &lt;td&gt;5.385496e+07&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;host_id&lt;/th&gt;
+      &lt;td&gt;3453.0&lt;/td&gt;
+      &lt;td&gt;1.236424e+08&lt;/td&gt;
+      &lt;td&gt;1.160756e+08&lt;/td&gt;
+      &lt;td&gt;38468.0000&lt;/td&gt;
+      &lt;td&gt;2.550007e+07&lt;/td&gt;
+      &lt;td&gt;8.845438e+07&lt;/td&gt;
+      &lt;td&gt;2.005926e+08&lt;/td&gt;
+      &lt;td&gt;4.354316e+08&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;neighbourhood_group&lt;/th&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;latitude&lt;/th&gt;
+      &lt;td&gt;3453.0&lt;/td&gt;
+      &lt;td&gt;4.449756e+01&lt;/td&gt;
+      &lt;td&gt;1.173569e-02&lt;/td&gt;
+      &lt;td&gt;44.4236&lt;/td&gt;
+      &lt;td&gt;4.449186e+01&lt;/td&gt;
+      &lt;td&gt;4.449699e+01&lt;/td&gt;
+      &lt;td&gt;4.450271e+01&lt;/td&gt;
+      &lt;td&gt;4.455093e+01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;longitude&lt;/th&gt;
+      &lt;td&gt;3453.0&lt;/td&gt;
+      &lt;td&gt;1.134509e+01&lt;/td&gt;
+      &lt;td&gt;1.986071e-02&lt;/td&gt;
+      &lt;td&gt;11.2320&lt;/td&gt;
+      &lt;td&gt;1.133732e+01&lt;/td&gt;
+      &lt;td&gt;1.134519e+01&lt;/td&gt;
+      &lt;td&gt;1.135406e+01&lt;/td&gt;
+      &lt;td&gt;1.142027e+01&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We can get the list of columns using the &lt;code&gt;.columns&lt;/code&gt; attribute.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.columns
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Index([&#39;id&#39;, &#39;name&#39;, &#39;host_id&#39;, &#39;host_name&#39;, &#39;neighbourhood_group&#39;,
+       &#39;neighbourhood&#39;, &#39;latitude&#39;, &#39;longitude&#39;, &#39;room_type&#39;, &#39;price&#39;,
+       &#39;minimum_nights&#39;, &#39;number_of_reviews&#39;, &#39;last_review&#39;,
+       &#39;reviews_per_month&#39;, &#39;calculated_host_listings_count&#39;,
+       &#39;availability_365&#39;, &#39;number_of_reviews_ltm&#39;, &#39;license&#39;],
+      dtype=&#39;object&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can get the index using the &lt;code&gt;.index&lt;/code&gt; attribute,&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.index
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;RangeIndex(start=0, stop=3453, step=1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;data-selection&#34;&gt;Data Selection&lt;/h2&gt;
+&lt;p&gt;We can access single columns as if the DataFrame was a dictionary.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings[&#39;price&#39;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0        68
+1        29
+2        50
+3       126
+4        50
+       ... 
+3448     32
+3449     45
+3450     50
+3451    134
+3452    115
+Name: price, Length: 3453, dtype: int64
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can select rows and columns by index, using the &lt;code&gt;.iloc&lt;/code&gt; attribute.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.iloc[:7, 5:9]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;latitude&lt;/th&gt;
+      &lt;th&gt;longitude&lt;/th&gt;
+      &lt;th&gt;room_type&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48507&lt;/td&gt;
+      &lt;td&gt;11.34786&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49168&lt;/td&gt;
+      &lt;td&gt;11.33514&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48817&lt;/td&gt;
+      &lt;td&gt;11.34124&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.47834&lt;/td&gt;
+      &lt;td&gt;11.35672&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49306&lt;/td&gt;
+      &lt;td&gt;11.33786&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;Navile&lt;/td&gt;
+      &lt;td&gt;44.51628&lt;/td&gt;
+      &lt;td&gt;11.33074&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48787&lt;/td&gt;
+      &lt;td&gt;11.35392&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;If we want to condition only on rows or columns, we have use &lt;code&gt;:&lt;/code&gt; for the unrestricted dimesion, otherwise we get an error.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.iloc[:, 5:9].head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;latitude&lt;/th&gt;
+      &lt;th&gt;longitude&lt;/th&gt;
+      &lt;th&gt;room_type&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48507&lt;/td&gt;
+      &lt;td&gt;11.34786&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49168&lt;/td&gt;
+      &lt;td&gt;11.33514&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48817&lt;/td&gt;
+      &lt;td&gt;11.34124&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.47834&lt;/td&gt;
+      &lt;td&gt;11.35672&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49306&lt;/td&gt;
+      &lt;td&gt;11.33786&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;Instead, the &lt;code&gt;.loc&lt;/code&gt; attribute allows us to use row and column names.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.loc[:, [&#39;neighbourhood&#39;, &#39;latitude&#39;, &#39;longitude&#39;]].head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;latitude&lt;/th&gt;
+      &lt;th&gt;longitude&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48507&lt;/td&gt;
+      &lt;td&gt;11.34786&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49168&lt;/td&gt;
+      &lt;td&gt;11.33514&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48817&lt;/td&gt;
+      &lt;td&gt;11.34124&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.47834&lt;/td&gt;
+      &lt;td&gt;11.35672&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49306&lt;/td&gt;
+      &lt;td&gt;11.33786&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We can also select ranges.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.loc[:, &#39;neighbourhood&#39;:&#39;room_type&#39;].head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;latitude&lt;/th&gt;
+      &lt;th&gt;longitude&lt;/th&gt;
+      &lt;th&gt;room_type&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48507&lt;/td&gt;
+      &lt;td&gt;11.34786&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49168&lt;/td&gt;
+      &lt;td&gt;11.33514&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.48817&lt;/td&gt;
+      &lt;td&gt;11.34124&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.47834&lt;/td&gt;
+      &lt;td&gt;11.35672&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49306&lt;/td&gt;
+      &lt;td&gt;11.33786&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;There is an easy way to &lt;strong&gt;select numerical columns&lt;/strong&gt;, the &lt;code&gt;.select_dtypes()&lt;/code&gt; function.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.select_dtypes(include=[&#39;number&#39;]).head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;id&lt;/th&gt;
+      &lt;th&gt;host_id&lt;/th&gt;
+      &lt;th&gt;neighbourhood_group&lt;/th&gt;
+      &lt;th&gt;latitude&lt;/th&gt;
+      &lt;th&gt;longitude&lt;/th&gt;
+      &lt;th&gt;price&lt;/th&gt;
+      &lt;th&gt;minimum_nights&lt;/th&gt;
+      &lt;th&gt;number_of_reviews&lt;/th&gt;
+      &lt;th&gt;reviews_per_month&lt;/th&gt;
+      &lt;th&gt;calculated_host_listings_count&lt;/th&gt;
+      &lt;th&gt;availability_365&lt;/th&gt;
+      &lt;th&gt;number_of_reviews_ltm&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;42196&lt;/td&gt;
+      &lt;td&gt;184487&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;44.48507&lt;/td&gt;
+      &lt;td&gt;11.34786&lt;/td&gt;
+      &lt;td&gt;68&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;180&lt;/td&gt;
+      &lt;td&gt;1.32&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;161&lt;/td&gt;
+      &lt;td&gt;6&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;46352&lt;/td&gt;
+      &lt;td&gt;467810&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;44.49168&lt;/td&gt;
+      &lt;td&gt;11.33514&lt;/td&gt;
+      &lt;td&gt;29&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;300&lt;/td&gt;
+      &lt;td&gt;2.20&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;248&lt;/td&gt;
+      &lt;td&gt;37&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;59697&lt;/td&gt;
+      &lt;td&gt;286688&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;44.48817&lt;/td&gt;
+      &lt;td&gt;11.34124&lt;/td&gt;
+      &lt;td&gt;50&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;240&lt;/td&gt;
+      &lt;td&gt;2.18&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;327&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;85368&lt;/td&gt;
+      &lt;td&gt;467675&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;44.47834&lt;/td&gt;
+      &lt;td&gt;11.35672&lt;/td&gt;
+      &lt;td&gt;126&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;40&lt;/td&gt;
+      &lt;td&gt;0.34&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;332&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;145779&lt;/td&gt;
+      &lt;td&gt;705535&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;44.49306&lt;/td&gt;
+      &lt;td&gt;11.33786&lt;/td&gt;
+      &lt;td&gt;50&lt;/td&gt;
+      &lt;td&gt;10&lt;/td&gt;
+      &lt;td&gt;69&lt;/td&gt;
+      &lt;td&gt;0.55&lt;/td&gt;
+      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;365&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;Other types include&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;object&lt;/code&gt; for strings&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;bool&lt;/code&gt; for booleans&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;int&lt;/code&gt; for integers&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;float&lt;/code&gt; for floats (numbers that are not integers)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We can also use logical operators to selet rows.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.loc[df_listings[&#39;number_of_reviews&#39;]&amp;gt;500, :].head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;id&lt;/th&gt;
+      &lt;th&gt;name&lt;/th&gt;
+      &lt;th&gt;host_id&lt;/th&gt;
+      &lt;th&gt;host_name&lt;/th&gt;
+      &lt;th&gt;neighbourhood_group&lt;/th&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;latitude&lt;/th&gt;
+      &lt;th&gt;longitude&lt;/th&gt;
+      &lt;th&gt;room_type&lt;/th&gt;
+      &lt;th&gt;price&lt;/th&gt;
+      &lt;th&gt;minimum_nights&lt;/th&gt;
+      &lt;th&gt;number_of_reviews&lt;/th&gt;
+      &lt;th&gt;last_review&lt;/th&gt;
+      &lt;th&gt;reviews_per_month&lt;/th&gt;
+      &lt;th&gt;calculated_host_listings_count&lt;/th&gt;
+      &lt;th&gt;availability_365&lt;/th&gt;
+      &lt;th&gt;number_of_reviews_ltm&lt;/th&gt;
+      &lt;th&gt;license&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;52&lt;/th&gt;
+      &lt;td&gt;884148&lt;/td&gt;
+      &lt;td&gt;APOSA FLAT / CITY CENTER - BO&lt;/td&gt;
+      &lt;td&gt;4664996&lt;/td&gt;
+      &lt;td&gt;Vie D&#39;Acqua Di Sandra Maria&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.49945&lt;/td&gt;
+      &lt;td&gt;11.34566&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;46&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;668&lt;/td&gt;
+      &lt;td&gt;2021-12-11&lt;/td&gt;
+      &lt;td&gt;6.24&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;252&lt;/td&gt;
+      &lt;td&gt;20&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;92&lt;/th&gt;
+      &lt;td&gt;1435627&lt;/td&gt;
+      &lt;td&gt;heart of Bologna Piazza Maggiore&lt;/td&gt;
+      &lt;td&gt;7714013&lt;/td&gt;
+      &lt;td&gt;Carlotta&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;44.49321&lt;/td&gt;
+      &lt;td&gt;11.33569&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;56&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;508&lt;/td&gt;
+      &lt;td&gt;2021-12-12&lt;/td&gt;
+      &lt;td&gt;5.08&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;131&lt;/td&gt;
+      &lt;td&gt;69&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;98&lt;/th&gt;
+      &lt;td&gt;1566003&lt;/td&gt;
+      &lt;td&gt;&#34;i portici di via Piella &#34;&lt;/td&gt;
+      &lt;td&gt;8325248&lt;/td&gt;
+      &lt;td&gt;Massimo&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.49855&lt;/td&gt;
+      &lt;td&gt;11.34411&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;51&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;764&lt;/td&gt;
+      &lt;td&gt;2021-12-14&lt;/td&gt;
+      &lt;td&gt;7.62&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;119&lt;/td&gt;
+      &lt;td&gt;120&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;131&lt;/th&gt;
+      &lt;td&gt;2282623&lt;/td&gt;
+      &lt;td&gt;S.Orsola zone,parking for free and self check-in&lt;/td&gt;
+      &lt;td&gt;11658074&lt;/td&gt;
+      &lt;td&gt;Cecilia&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
+      &lt;td&gt;44.49328&lt;/td&gt;
+      &lt;td&gt;11.36650&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;38&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;689&lt;/td&gt;
+      &lt;td&gt;2021-10-24&lt;/td&gt;
+      &lt;td&gt;7.20&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;72&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;175&lt;/th&gt;
+      &lt;td&gt;3216486&lt;/td&gt;
+      &lt;td&gt;Stanza Privata&lt;/td&gt;
+      &lt;td&gt;16289536&lt;/td&gt;
+      &lt;td&gt;Fabio&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Navile&lt;/td&gt;
+      &lt;td&gt;44.50903&lt;/td&gt;
+      &lt;td&gt;11.34200&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+      &lt;td&gt;82&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;569&lt;/td&gt;
+      &lt;td&gt;2021-12-05&lt;/td&gt;
+      &lt;td&gt;6.93&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;7&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We can use logical operations as well. But remember to use paranthesis.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: the &lt;code&gt;and&lt;/code&gt; and &lt;code&gt;or&lt;/code&gt; expressions do not work in this setting. We have to use &lt;code&gt;&amp;amp;&lt;/code&gt; and &lt;code&gt;|&lt;/code&gt; instead.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.loc[(df_listings[&#39;number_of_reviews&#39;]&amp;gt;300) &amp;amp;
+                (df_listings[&#39;reviews_per_month&#39;]&amp;gt;7), 
+                :].head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;id&lt;/th&gt;
+      &lt;th&gt;name&lt;/th&gt;
+      &lt;th&gt;host_id&lt;/th&gt;
+      &lt;th&gt;host_name&lt;/th&gt;
+      &lt;th&gt;neighbourhood_group&lt;/th&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;latitude&lt;/th&gt;
+      &lt;th&gt;longitude&lt;/th&gt;
+      &lt;th&gt;room_type&lt;/th&gt;
+      &lt;th&gt;price&lt;/th&gt;
+      &lt;th&gt;minimum_nights&lt;/th&gt;
+      &lt;th&gt;number_of_reviews&lt;/th&gt;
+      &lt;th&gt;last_review&lt;/th&gt;
+      &lt;th&gt;reviews_per_month&lt;/th&gt;
+      &lt;th&gt;calculated_host_listings_count&lt;/th&gt;
+      &lt;th&gt;availability_365&lt;/th&gt;
+      &lt;th&gt;number_of_reviews_ltm&lt;/th&gt;
+      &lt;th&gt;license&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;98&lt;/th&gt;
+      &lt;td&gt;1566003&lt;/td&gt;
+      &lt;td&gt;&#34;i portici di via Piella &#34;&lt;/td&gt;
+      &lt;td&gt;8325248&lt;/td&gt;
+      &lt;td&gt;Massimo&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.498550&lt;/td&gt;
+      &lt;td&gt;11.344110&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;51&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;764&lt;/td&gt;
+      &lt;td&gt;2021-12-14&lt;/td&gt;
+      &lt;td&gt;7.62&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;119&lt;/td&gt;
+      &lt;td&gt;120&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;131&lt;/th&gt;
+      &lt;td&gt;2282623&lt;/td&gt;
+      &lt;td&gt;S.Orsola zone,parking for free and self check-in&lt;/td&gt;
+      &lt;td&gt;11658074&lt;/td&gt;
+      &lt;td&gt;Cecilia&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
+      &lt;td&gt;44.493280&lt;/td&gt;
+      &lt;td&gt;11.366500&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;38&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;689&lt;/td&gt;
+      &lt;td&gt;2021-10-24&lt;/td&gt;
+      &lt;td&gt;7.20&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;72&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;204&lt;/th&gt;
+      &lt;td&gt;4166793&lt;/td&gt;
+      &lt;td&gt;Centralissimo a Bologna&lt;/td&gt;
+      &lt;td&gt;8325248&lt;/td&gt;
+      &lt;td&gt;Massimo&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.500920&lt;/td&gt;
+      &lt;td&gt;11.344560&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;71&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;750&lt;/td&gt;
+      &lt;td&gt;2021-12-10&lt;/td&gt;
+      &lt;td&gt;9.21&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;233&lt;/td&gt;
+      &lt;td&gt;84&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;751&lt;/th&gt;
+      &lt;td&gt;15508481&lt;/td&gt;
+      &lt;td&gt;Monolocale in zona fiera /centro&lt;/td&gt;
+      &lt;td&gt;99632788&lt;/td&gt;
+      &lt;td&gt;Walid&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Navile&lt;/td&gt;
+      &lt;td&gt;44.514462&lt;/td&gt;
+      &lt;td&gt;11.353731&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;64&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;475&lt;/td&gt;
+      &lt;td&gt;2021-12-01&lt;/td&gt;
+      &lt;td&gt;7.56&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;48&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;773&lt;/th&gt;
+      &lt;td&gt;15886516&lt;/td&gt;
+      &lt;td&gt;Monolocale nel cuore del ghetto ebraico di Bol...&lt;/td&gt;
+      &lt;td&gt;103024123&lt;/td&gt;
+      &lt;td&gt;Catia&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;44.495080&lt;/td&gt;
+      &lt;td&gt;11.347220&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+      &lt;td&gt;58&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;428&lt;/td&gt;
+      &lt;td&gt;2021-12-15&lt;/td&gt;
+      &lt;td&gt;7.88&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;285&lt;/td&gt;
+      &lt;td&gt;17&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;For a single column (i.e. a Series), we can get the unique values using the &lt;code&gt;unique()&lt;/code&gt; function.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings[&#39;neighbourhood&#39;].unique()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;array([&#39;Santo Stefano&#39;, &#39;Porto - Saragozza&#39;, &#39;Navile&#39;,
+       &#39;San Donato - San Vitale&#39;, &#39;Savena&#39;, &#39;Borgo Panigale - Reno&#39;],
+      dtype=object)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For multiple columns, we can use the &lt;code&gt;drop_duplicates&lt;/code&gt; function.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings[[&#39;neighbourhood&#39;, &#39;room_type&#39;]].drop_duplicates()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;room_type&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;Navile&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;Navile&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;19&lt;/th&gt;
+      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;24&lt;/th&gt;
+      &lt;td&gt;Savena&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;36&lt;/th&gt;
+      &lt;td&gt;Borgo Panigale - Reno&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;41&lt;/th&gt;
+      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;70&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;Hotel room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;75&lt;/th&gt;
+      &lt;td&gt;Borgo Panigale - Reno&lt;/td&gt;
+      &lt;td&gt;Private room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;110&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;Hotel room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;111&lt;/th&gt;
+      &lt;td&gt;Savena&lt;/td&gt;
+      &lt;td&gt;Entire home/apt&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;388&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;Shared room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;678&lt;/th&gt;
+      &lt;td&gt;Navile&lt;/td&gt;
+      &lt;td&gt;Shared room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1393&lt;/th&gt;
+      &lt;td&gt;Savena&lt;/td&gt;
+      &lt;td&gt;Shared room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1416&lt;/th&gt;
+      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
+      &lt;td&gt;Shared room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1572&lt;/th&gt;
+      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
+      &lt;td&gt;Hotel room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1637&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;Shared room&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1751&lt;/th&gt;
+      &lt;td&gt;Navile&lt;/td&gt;
+      &lt;td&gt;Hotel room&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;h2 id=&#34;aggregation-and-pivot-tables&#34;&gt;Aggregation and Pivot Tables&lt;/h2&gt;
+&lt;p&gt;We can compute statistics by group using &lt;code&gt;.groupby()&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.groupby(&#39;neighbourhood&#39;)[[&#39;price&#39;, &#39;reviews_per_month&#39;]].mean()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;price&lt;/th&gt;
+      &lt;th&gt;reviews_per_month&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Borgo Panigale - Reno&lt;/th&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+      &lt;td&gt;0.983488&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Navile&lt;/th&gt;
+      &lt;td&gt;142.200993&lt;/td&gt;
+      &lt;td&gt;1.156745&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Porto - Saragozza&lt;/th&gt;
+      &lt;td&gt;129.908312&lt;/td&gt;
+      &lt;td&gt;1.340325&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;San Donato - San Vitale&lt;/th&gt;
+      &lt;td&gt;91.618138&lt;/td&gt;
+      &lt;td&gt;0.933011&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Santo Stefano&lt;/th&gt;
+      &lt;td&gt;119.441841&lt;/td&gt;
+      &lt;td&gt;1.344810&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Savena&lt;/th&gt;
+      &lt;td&gt;69.626016&lt;/td&gt;
+      &lt;td&gt;0.805888&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;If you want to perform more than one function, maybe on different columns, you can use &lt;code&gt;.aggregate()&lt;/code&gt; which can be shortened to &lt;code&gt;.agg()&lt;/code&gt;. It takes as argument a dictionary with variables as keys and lists of functions as values.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.groupby(&#39;neighbourhood&#39;).agg({&amp;quot;reviews_per_month&amp;quot;: [&amp;quot;mean&amp;quot;],
+                                          &amp;quot;price&amp;quot;: [&amp;quot;min&amp;quot;, np.max]}).reset_index()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead tr th {
+    text-align: left;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;reviews_per_month&lt;/th&gt;
+      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;price&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;mean&lt;/th&gt;
+      &lt;th&gt;min&lt;/th&gt;
+      &lt;th&gt;amax&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;Borgo Panigale - Reno&lt;/td&gt;
+      &lt;td&gt;0.983488&lt;/td&gt;
+      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;1429&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Navile&lt;/td&gt;
+      &lt;td&gt;1.156745&lt;/td&gt;
+      &lt;td&gt;14&lt;/td&gt;
+      &lt;td&gt;5000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;1.340325&lt;/td&gt;
+      &lt;td&gt;7&lt;/td&gt;
+      &lt;td&gt;9999&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
+      &lt;td&gt;0.933011&lt;/td&gt;
+      &lt;td&gt;10&lt;/td&gt;
+      &lt;td&gt;1600&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;1.344810&lt;/td&gt;
+      &lt;td&gt;11&lt;/td&gt;
+      &lt;td&gt;9999&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;Savena&lt;/td&gt;
+      &lt;td&gt;0.805888&lt;/td&gt;
+      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;680&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;The problem with this syntax is that it generates a hierarchical structure for variable names, which might not be so easy to work with. In the example above, to access the mean price, you have to use &lt;code&gt;df.price[&amp;quot;min&amp;quot;]&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;To perform variable naming and aggregation and the same time, you can ise the following syntax: &lt;code&gt;agg(output_var = (&amp;quot;input_var&amp;quot;, function))&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.groupby(&#39;neighbourhood&#39;).agg(mean_reviews=(&amp;quot;reviews_per_month&amp;quot;, &amp;quot;mean&amp;quot;),
+                                         min_price=(&amp;quot;price&amp;quot;, &amp;quot;min&amp;quot;),
+                                         max_price=(&amp;quot;price&amp;quot;, np.max)).reset_index()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;mean_reviews&lt;/th&gt;
+      &lt;th&gt;min_price&lt;/th&gt;
+      &lt;th&gt;max_price&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;Borgo Panigale - Reno&lt;/td&gt;
+      &lt;td&gt;0.983488&lt;/td&gt;
+      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;1429&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Navile&lt;/td&gt;
+      &lt;td&gt;1.156745&lt;/td&gt;
+      &lt;td&gt;14&lt;/td&gt;
+      &lt;td&gt;5000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
+      &lt;td&gt;1.340325&lt;/td&gt;
+      &lt;td&gt;7&lt;/td&gt;
+      &lt;td&gt;9999&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
+      &lt;td&gt;0.933011&lt;/td&gt;
+      &lt;td&gt;10&lt;/td&gt;
+      &lt;td&gt;1600&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;Santo Stefano&lt;/td&gt;
+      &lt;td&gt;1.344810&lt;/td&gt;
+      &lt;td&gt;11&lt;/td&gt;
+      &lt;td&gt;9999&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;Savena&lt;/td&gt;
+      &lt;td&gt;0.805888&lt;/td&gt;
+      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;680&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We can make pivot tables with the &lt;code&gt;.pivot_table()&lt;/code&gt; function. It takes the folling arguments:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;index&lt;/code&gt;: rows&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;columns&lt;/code&gt;: columns&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;values&lt;/code&gt;: values&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;aggfunc&lt;/code&gt;: aggregation function&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.pivot_table(index=&#39;neighbourhood&#39;, columns=&#39;room_type&#39;, values=&#39;price&#39;, aggfunc=&#39;mean&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;room_type&lt;/th&gt;
+      &lt;th&gt;Entire home/apt&lt;/th&gt;
+      &lt;th&gt;Hotel room&lt;/th&gt;
+      &lt;th&gt;Private room&lt;/th&gt;
+      &lt;th&gt;Shared room&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;neighbourhood&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Borgo Panigale - Reno&lt;/th&gt;
+      &lt;td&gt;96.700935&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;45.487179&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Navile&lt;/th&gt;
+      &lt;td&gt;172.140000&lt;/td&gt;
+      &lt;td&gt;1350.000000&lt;/td&gt;
+      &lt;td&gt;68.416107&lt;/td&gt;
+      &lt;td&gt;28.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Porto - Saragozza&lt;/th&gt;
+      &lt;td&gt;148.410926&lt;/td&gt;
+      &lt;td&gt;102.375000&lt;/td&gt;
+      &lt;td&gt;83.070234&lt;/td&gt;
+      &lt;td&gt;16.5&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;San Donato - San Vitale&lt;/th&gt;
+      &lt;td&gt;106.775000&lt;/td&gt;
+      &lt;td&gt;55.000000&lt;/td&gt;
+      &lt;td&gt;61.194030&lt;/td&gt;
+      &lt;td&gt;59.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Santo Stefano&lt;/th&gt;
+      &lt;td&gt;129.990260&lt;/td&gt;
+      &lt;td&gt;103.827586&lt;/td&gt;
+      &lt;td&gt;80.734177&lt;/td&gt;
+      &lt;td&gt;95.4&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Savena&lt;/th&gt;
+      &lt;td&gt;86.301370&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;46.229167&lt;/td&gt;
+      &lt;td&gt;22.5&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Session 1</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/01_regression/</link>
       <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/01_regression/</guid>
@@ -1829,1475 +3298,6 @@ def make_fig_3_15():
     </item>
     
     <item>
-      <title>Data Exploration</title>
-      <link>https://matteocourthoud.github.io/course/data-science/01_data_exploration/</link>
-      <pubDate>Thu, 10 Feb 2022 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/course/data-science/01_data_exploration/</guid>
-      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
-import pandas as pd
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
-&lt;p&gt;For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at &lt;strong&gt;Inside AirBnb&lt;/strong&gt;: &lt;a href=&#34;http://insideairbnb.com/get-the-data.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;http://insideairbnb.com/get-the-data.html&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;A description of all variables in all datasets is avaliable &lt;a href=&#34;https://docs.google.com/spreadsheets/d/1iWCNJcSutYqpULSQHlNyGInUvHg2BoUGoNRIGa6Szc4/edit#gid=982310896&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;We are going to use 2 datasets:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;listing dataset: contains listing-level information&lt;/li&gt;
-&lt;li&gt;pricing dataset: contains pricing data, over time&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;importing-data&#34;&gt;Importing Data&lt;/h2&gt;
-&lt;p&gt;Pandas has a variety of function to import data&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;pd.read_csv()&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;pd.read_html()&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;pd.read_parquet()&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Importatly for our purpose, &lt;code&gt;pd.read_csv()&lt;/code&gt; can directly import data from the web.&lt;/p&gt;
-&lt;p&gt;The first dataset that we are going to import is the dataset of Airbnb listings in Bologna. It contains listing-level information.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;url_listings = &amp;quot;http://data.insideairbnb.com/italy/emilia-romagna/bologna/2021-12-17/visualisations/listings.csv&amp;quot;
-df_listings = pd.read_csv(url_listings)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The second dataset that we are going to use is the dataset of calendar prices. This time the dataset is compressed but we can use the &lt;code&gt;compression&lt;/code&gt; option to import it directly.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;url_prices = &amp;quot;http://data.insideairbnb.com/italy/emilia-romagna/bologna/2021-12-17/data/calendar.csv.gz&amp;quot;
-df_prices = pd.read_csv(url_prices, compression=&amp;quot;gzip&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;inspecting-data&#34;&gt;Inspecting Data&lt;/h2&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Methods&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;info()&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;head()&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;describe()&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;The first way yo have a quick look at the data is the &lt;code&gt;info()&lt;/code&gt; method. If called with the option &lt;code&gt;verbose=False&lt;/code&gt;, it gives a quick overview of the dimensions of the data.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.info(verbose=False)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;&amp;lt;class &#39;pandas.core.frame.DataFrame&#39;&amp;gt;
-RangeIndex: 3453 entries, 0 to 3452
-Columns: 18 entries, id to license
-dtypes: float64(4), int64(8), object(6)
-memory usage: 485.7+ KB
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If we want to know how the data looks like, we can use the &lt;code&gt;head()&lt;/code&gt; method. It prints the first 5 lines of the data by default.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;id&lt;/th&gt;
-      &lt;th&gt;name&lt;/th&gt;
-      &lt;th&gt;host_id&lt;/th&gt;
-      &lt;th&gt;host_name&lt;/th&gt;
-      &lt;th&gt;neighbourhood_group&lt;/th&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;latitude&lt;/th&gt;
-      &lt;th&gt;longitude&lt;/th&gt;
-      &lt;th&gt;room_type&lt;/th&gt;
-      &lt;th&gt;price&lt;/th&gt;
-      &lt;th&gt;minimum_nights&lt;/th&gt;
-      &lt;th&gt;number_of_reviews&lt;/th&gt;
-      &lt;th&gt;last_review&lt;/th&gt;
-      &lt;th&gt;reviews_per_month&lt;/th&gt;
-      &lt;th&gt;calculated_host_listings_count&lt;/th&gt;
-      &lt;th&gt;availability_365&lt;/th&gt;
-      &lt;th&gt;number_of_reviews_ltm&lt;/th&gt;
-      &lt;th&gt;license&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;42196&lt;/td&gt;
-      &lt;td&gt;50 sm Studio in the historic centre&lt;/td&gt;
-      &lt;td&gt;184487&lt;/td&gt;
-      &lt;td&gt;Carlo&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48507&lt;/td&gt;
-      &lt;td&gt;11.34786&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;68&lt;/td&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;180&lt;/td&gt;
-      &lt;td&gt;2021-11-12&lt;/td&gt;
-      &lt;td&gt;1.32&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;161&lt;/td&gt;
-      &lt;td&gt;6&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;46352&lt;/td&gt;
-      &lt;td&gt;A room in Pasolini&#39;s house&lt;/td&gt;
-      &lt;td&gt;467810&lt;/td&gt;
-      &lt;td&gt;Eleonora&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49168&lt;/td&gt;
-      &lt;td&gt;11.33514&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-      &lt;td&gt;29&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;300&lt;/td&gt;
-      &lt;td&gt;2021-11-30&lt;/td&gt;
-      &lt;td&gt;2.20&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;248&lt;/td&gt;
-      &lt;td&gt;37&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;59697&lt;/td&gt;
-      &lt;td&gt;COZY LARGE BEDROOM in the city center&lt;/td&gt;
-      &lt;td&gt;286688&lt;/td&gt;
-      &lt;td&gt;Paolo&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48817&lt;/td&gt;
-      &lt;td&gt;11.34124&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-      &lt;td&gt;50&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;240&lt;/td&gt;
-      &lt;td&gt;2020-10-04&lt;/td&gt;
-      &lt;td&gt;2.18&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;327&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;85368&lt;/td&gt;
-      &lt;td&gt;Garden House Bologna&lt;/td&gt;
-      &lt;td&gt;467675&lt;/td&gt;
-      &lt;td&gt;Anna Maria&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.47834&lt;/td&gt;
-      &lt;td&gt;11.35672&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;126&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;40&lt;/td&gt;
-      &lt;td&gt;2019-11-03&lt;/td&gt;
-      &lt;td&gt;0.34&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;332&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;145779&lt;/td&gt;
-      &lt;td&gt;SINGLE ROOM&lt;/td&gt;
-      &lt;td&gt;705535&lt;/td&gt;
-      &lt;td&gt;Valerio&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49306&lt;/td&gt;
-      &lt;td&gt;11.33786&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-      &lt;td&gt;50&lt;/td&gt;
-      &lt;td&gt;10&lt;/td&gt;
-      &lt;td&gt;69&lt;/td&gt;
-      &lt;td&gt;2021-12-05&lt;/td&gt;
-      &lt;td&gt;0.55&lt;/td&gt;
-      &lt;td&gt;9&lt;/td&gt;
-      &lt;td&gt;365&lt;/td&gt;
-      &lt;td&gt;5&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;We can print a description of the data using &lt;code&gt;describe()&lt;/code&gt;. If we have many variables, it&amp;rsquo;s best to print it transposed using the &lt;code&gt;.T&lt;/code&gt; attribute.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.describe().T[:5]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;count&lt;/th&gt;
-      &lt;th&gt;mean&lt;/th&gt;
-      &lt;th&gt;std&lt;/th&gt;
-      &lt;th&gt;min&lt;/th&gt;
-      &lt;th&gt;25%&lt;/th&gt;
-      &lt;th&gt;50%&lt;/th&gt;
-      &lt;th&gt;75%&lt;/th&gt;
-      &lt;th&gt;max&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;id&lt;/th&gt;
-      &lt;td&gt;3453.0&lt;/td&gt;
-      &lt;td&gt;2.950218e+07&lt;/td&gt;
-      &lt;td&gt;1.523988e+07&lt;/td&gt;
-      &lt;td&gt;42196.0000&lt;/td&gt;
-      &lt;td&gt;1.748597e+07&lt;/td&gt;
-      &lt;td&gt;3.078707e+07&lt;/td&gt;
-      &lt;td&gt;4.220094e+07&lt;/td&gt;
-      &lt;td&gt;5.385496e+07&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;host_id&lt;/th&gt;
-      &lt;td&gt;3453.0&lt;/td&gt;
-      &lt;td&gt;1.236424e+08&lt;/td&gt;
-      &lt;td&gt;1.160756e+08&lt;/td&gt;
-      &lt;td&gt;38468.0000&lt;/td&gt;
-      &lt;td&gt;2.550007e+07&lt;/td&gt;
-      &lt;td&gt;8.845438e+07&lt;/td&gt;
-      &lt;td&gt;2.005926e+08&lt;/td&gt;
-      &lt;td&gt;4.354316e+08&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;neighbourhood_group&lt;/th&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;latitude&lt;/th&gt;
-      &lt;td&gt;3453.0&lt;/td&gt;
-      &lt;td&gt;4.449756e+01&lt;/td&gt;
-      &lt;td&gt;1.173569e-02&lt;/td&gt;
-      &lt;td&gt;44.4236&lt;/td&gt;
-      &lt;td&gt;4.449186e+01&lt;/td&gt;
-      &lt;td&gt;4.449699e+01&lt;/td&gt;
-      &lt;td&gt;4.450271e+01&lt;/td&gt;
-      &lt;td&gt;4.455093e+01&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;longitude&lt;/th&gt;
-      &lt;td&gt;3453.0&lt;/td&gt;
-      &lt;td&gt;1.134509e+01&lt;/td&gt;
-      &lt;td&gt;1.986071e-02&lt;/td&gt;
-      &lt;td&gt;11.2320&lt;/td&gt;
-      &lt;td&gt;1.133732e+01&lt;/td&gt;
-      &lt;td&gt;1.134519e+01&lt;/td&gt;
-      &lt;td&gt;1.135406e+01&lt;/td&gt;
-      &lt;td&gt;1.142027e+01&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;We can get the list of columns using the &lt;code&gt;.columns&lt;/code&gt; attribute.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.columns
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Index([&#39;id&#39;, &#39;name&#39;, &#39;host_id&#39;, &#39;host_name&#39;, &#39;neighbourhood_group&#39;,
-       &#39;neighbourhood&#39;, &#39;latitude&#39;, &#39;longitude&#39;, &#39;room_type&#39;, &#39;price&#39;,
-       &#39;minimum_nights&#39;, &#39;number_of_reviews&#39;, &#39;last_review&#39;,
-       &#39;reviews_per_month&#39;, &#39;calculated_host_listings_count&#39;,
-       &#39;availability_365&#39;, &#39;number_of_reviews_ltm&#39;, &#39;license&#39;],
-      dtype=&#39;object&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can get the index using the &lt;code&gt;.index&lt;/code&gt; attribute,&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.index
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;RangeIndex(start=0, stop=3453, step=1)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;data-selection&#34;&gt;Data Selection&lt;/h2&gt;
-&lt;p&gt;We can access single columns as if the DataFrame was a dictionary.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings[&#39;price&#39;]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0        68
-1        29
-2        50
-3       126
-4        50
-       ... 
-3448     32
-3449     45
-3450     50
-3451    134
-3452    115
-Name: price, Length: 3453, dtype: int64
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can select rows and columns by index, using the &lt;code&gt;.iloc&lt;/code&gt; attribute.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.iloc[:7, 5:9]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;latitude&lt;/th&gt;
-      &lt;th&gt;longitude&lt;/th&gt;
-      &lt;th&gt;room_type&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48507&lt;/td&gt;
-      &lt;td&gt;11.34786&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49168&lt;/td&gt;
-      &lt;td&gt;11.33514&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48817&lt;/td&gt;
-      &lt;td&gt;11.34124&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.47834&lt;/td&gt;
-      &lt;td&gt;11.35672&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49306&lt;/td&gt;
-      &lt;td&gt;11.33786&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;5&lt;/th&gt;
-      &lt;td&gt;Navile&lt;/td&gt;
-      &lt;td&gt;44.51628&lt;/td&gt;
-      &lt;td&gt;11.33074&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;6&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48787&lt;/td&gt;
-      &lt;td&gt;11.35392&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;If we want to condition only on rows or columns, we have use &lt;code&gt;:&lt;/code&gt; for the unrestricted dimesion, otherwise we get an error.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.iloc[:, 5:9].head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;latitude&lt;/th&gt;
-      &lt;th&gt;longitude&lt;/th&gt;
-      &lt;th&gt;room_type&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48507&lt;/td&gt;
-      &lt;td&gt;11.34786&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49168&lt;/td&gt;
-      &lt;td&gt;11.33514&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48817&lt;/td&gt;
-      &lt;td&gt;11.34124&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.47834&lt;/td&gt;
-      &lt;td&gt;11.35672&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49306&lt;/td&gt;
-      &lt;td&gt;11.33786&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;Instead, the &lt;code&gt;.loc&lt;/code&gt; attribute allows us to use row and column names.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.loc[:, [&#39;neighbourhood&#39;, &#39;latitude&#39;, &#39;longitude&#39;]].head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;latitude&lt;/th&gt;
-      &lt;th&gt;longitude&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48507&lt;/td&gt;
-      &lt;td&gt;11.34786&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49168&lt;/td&gt;
-      &lt;td&gt;11.33514&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48817&lt;/td&gt;
-      &lt;td&gt;11.34124&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.47834&lt;/td&gt;
-      &lt;td&gt;11.35672&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49306&lt;/td&gt;
-      &lt;td&gt;11.33786&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;We can also select ranges.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.loc[:, &#39;neighbourhood&#39;:&#39;room_type&#39;].head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;latitude&lt;/th&gt;
-      &lt;th&gt;longitude&lt;/th&gt;
-      &lt;th&gt;room_type&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48507&lt;/td&gt;
-      &lt;td&gt;11.34786&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49168&lt;/td&gt;
-      &lt;td&gt;11.33514&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.48817&lt;/td&gt;
-      &lt;td&gt;11.34124&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.47834&lt;/td&gt;
-      &lt;td&gt;11.35672&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49306&lt;/td&gt;
-      &lt;td&gt;11.33786&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;There is an easy way to &lt;strong&gt;select numerical columns&lt;/strong&gt;, the &lt;code&gt;.select_dtypes()&lt;/code&gt; function.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.select_dtypes(include=[&#39;number&#39;]).head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;id&lt;/th&gt;
-      &lt;th&gt;host_id&lt;/th&gt;
-      &lt;th&gt;neighbourhood_group&lt;/th&gt;
-      &lt;th&gt;latitude&lt;/th&gt;
-      &lt;th&gt;longitude&lt;/th&gt;
-      &lt;th&gt;price&lt;/th&gt;
-      &lt;th&gt;minimum_nights&lt;/th&gt;
-      &lt;th&gt;number_of_reviews&lt;/th&gt;
-      &lt;th&gt;reviews_per_month&lt;/th&gt;
-      &lt;th&gt;calculated_host_listings_count&lt;/th&gt;
-      &lt;th&gt;availability_365&lt;/th&gt;
-      &lt;th&gt;number_of_reviews_ltm&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;42196&lt;/td&gt;
-      &lt;td&gt;184487&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;44.48507&lt;/td&gt;
-      &lt;td&gt;11.34786&lt;/td&gt;
-      &lt;td&gt;68&lt;/td&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;180&lt;/td&gt;
-      &lt;td&gt;1.32&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;161&lt;/td&gt;
-      &lt;td&gt;6&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;46352&lt;/td&gt;
-      &lt;td&gt;467810&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;44.49168&lt;/td&gt;
-      &lt;td&gt;11.33514&lt;/td&gt;
-      &lt;td&gt;29&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;300&lt;/td&gt;
-      &lt;td&gt;2.20&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;248&lt;/td&gt;
-      &lt;td&gt;37&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;59697&lt;/td&gt;
-      &lt;td&gt;286688&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;44.48817&lt;/td&gt;
-      &lt;td&gt;11.34124&lt;/td&gt;
-      &lt;td&gt;50&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;240&lt;/td&gt;
-      &lt;td&gt;2.18&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;327&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;85368&lt;/td&gt;
-      &lt;td&gt;467675&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;44.47834&lt;/td&gt;
-      &lt;td&gt;11.35672&lt;/td&gt;
-      &lt;td&gt;126&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;40&lt;/td&gt;
-      &lt;td&gt;0.34&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;332&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;145779&lt;/td&gt;
-      &lt;td&gt;705535&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;44.49306&lt;/td&gt;
-      &lt;td&gt;11.33786&lt;/td&gt;
-      &lt;td&gt;50&lt;/td&gt;
-      &lt;td&gt;10&lt;/td&gt;
-      &lt;td&gt;69&lt;/td&gt;
-      &lt;td&gt;0.55&lt;/td&gt;
-      &lt;td&gt;9&lt;/td&gt;
-      &lt;td&gt;365&lt;/td&gt;
-      &lt;td&gt;5&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;Other types include&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;object&lt;/code&gt; for strings&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;bool&lt;/code&gt; for booleans&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;int&lt;/code&gt; for integers&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;float&lt;/code&gt; for floats (numbers that are not integers)&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;We can also use logical operators to selet rows.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.loc[df_listings[&#39;number_of_reviews&#39;]&amp;gt;500, :].head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;id&lt;/th&gt;
-      &lt;th&gt;name&lt;/th&gt;
-      &lt;th&gt;host_id&lt;/th&gt;
-      &lt;th&gt;host_name&lt;/th&gt;
-      &lt;th&gt;neighbourhood_group&lt;/th&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;latitude&lt;/th&gt;
-      &lt;th&gt;longitude&lt;/th&gt;
-      &lt;th&gt;room_type&lt;/th&gt;
-      &lt;th&gt;price&lt;/th&gt;
-      &lt;th&gt;minimum_nights&lt;/th&gt;
-      &lt;th&gt;number_of_reviews&lt;/th&gt;
-      &lt;th&gt;last_review&lt;/th&gt;
-      &lt;th&gt;reviews_per_month&lt;/th&gt;
-      &lt;th&gt;calculated_host_listings_count&lt;/th&gt;
-      &lt;th&gt;availability_365&lt;/th&gt;
-      &lt;th&gt;number_of_reviews_ltm&lt;/th&gt;
-      &lt;th&gt;license&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;52&lt;/th&gt;
-      &lt;td&gt;884148&lt;/td&gt;
-      &lt;td&gt;APOSA FLAT / CITY CENTER - BO&lt;/td&gt;
-      &lt;td&gt;4664996&lt;/td&gt;
-      &lt;td&gt;Vie D&#39;Acqua Di Sandra Maria&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.49945&lt;/td&gt;
-      &lt;td&gt;11.34566&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;46&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;668&lt;/td&gt;
-      &lt;td&gt;2021-12-11&lt;/td&gt;
-      &lt;td&gt;6.24&lt;/td&gt;
-      &lt;td&gt;5&lt;/td&gt;
-      &lt;td&gt;252&lt;/td&gt;
-      &lt;td&gt;20&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;92&lt;/th&gt;
-      &lt;td&gt;1435627&lt;/td&gt;
-      &lt;td&gt;heart of Bologna Piazza Maggiore&lt;/td&gt;
-      &lt;td&gt;7714013&lt;/td&gt;
-      &lt;td&gt;Carlotta&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;44.49321&lt;/td&gt;
-      &lt;td&gt;11.33569&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;56&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;508&lt;/td&gt;
-      &lt;td&gt;2021-12-12&lt;/td&gt;
-      &lt;td&gt;5.08&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;131&lt;/td&gt;
-      &lt;td&gt;69&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;98&lt;/th&gt;
-      &lt;td&gt;1566003&lt;/td&gt;
-      &lt;td&gt;&#34;i portici di via Piella &#34;&lt;/td&gt;
-      &lt;td&gt;8325248&lt;/td&gt;
-      &lt;td&gt;Massimo&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.49855&lt;/td&gt;
-      &lt;td&gt;11.34411&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;51&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;764&lt;/td&gt;
-      &lt;td&gt;2021-12-14&lt;/td&gt;
-      &lt;td&gt;7.62&lt;/td&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;119&lt;/td&gt;
-      &lt;td&gt;120&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;131&lt;/th&gt;
-      &lt;td&gt;2282623&lt;/td&gt;
-      &lt;td&gt;S.Orsola zone,parking for free and self check-in&lt;/td&gt;
-      &lt;td&gt;11658074&lt;/td&gt;
-      &lt;td&gt;Cecilia&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
-      &lt;td&gt;44.49328&lt;/td&gt;
-      &lt;td&gt;11.36650&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;38&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;689&lt;/td&gt;
-      &lt;td&gt;2021-10-24&lt;/td&gt;
-      &lt;td&gt;7.20&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;5&lt;/td&gt;
-      &lt;td&gt;72&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;175&lt;/th&gt;
-      &lt;td&gt;3216486&lt;/td&gt;
-      &lt;td&gt;Stanza Privata&lt;/td&gt;
-      &lt;td&gt;16289536&lt;/td&gt;
-      &lt;td&gt;Fabio&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Navile&lt;/td&gt;
-      &lt;td&gt;44.50903&lt;/td&gt;
-      &lt;td&gt;11.34200&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-      &lt;td&gt;82&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;569&lt;/td&gt;
-      &lt;td&gt;2021-12-05&lt;/td&gt;
-      &lt;td&gt;6.93&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;7&lt;/td&gt;
-      &lt;td&gt;5&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;We can use logical operations as well. But remember to use paranthesis.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: the &lt;code&gt;and&lt;/code&gt; and &lt;code&gt;or&lt;/code&gt; expressions do not work in this setting. We have to use &lt;code&gt;&amp;amp;&lt;/code&gt; and &lt;code&gt;|&lt;/code&gt; instead.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.loc[(df_listings[&#39;number_of_reviews&#39;]&amp;gt;300) &amp;amp;
-                (df_listings[&#39;reviews_per_month&#39;]&amp;gt;7), 
-                :].head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;id&lt;/th&gt;
-      &lt;th&gt;name&lt;/th&gt;
-      &lt;th&gt;host_id&lt;/th&gt;
-      &lt;th&gt;host_name&lt;/th&gt;
-      &lt;th&gt;neighbourhood_group&lt;/th&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;latitude&lt;/th&gt;
-      &lt;th&gt;longitude&lt;/th&gt;
-      &lt;th&gt;room_type&lt;/th&gt;
-      &lt;th&gt;price&lt;/th&gt;
-      &lt;th&gt;minimum_nights&lt;/th&gt;
-      &lt;th&gt;number_of_reviews&lt;/th&gt;
-      &lt;th&gt;last_review&lt;/th&gt;
-      &lt;th&gt;reviews_per_month&lt;/th&gt;
-      &lt;th&gt;calculated_host_listings_count&lt;/th&gt;
-      &lt;th&gt;availability_365&lt;/th&gt;
-      &lt;th&gt;number_of_reviews_ltm&lt;/th&gt;
-      &lt;th&gt;license&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;98&lt;/th&gt;
-      &lt;td&gt;1566003&lt;/td&gt;
-      &lt;td&gt;&#34;i portici di via Piella &#34;&lt;/td&gt;
-      &lt;td&gt;8325248&lt;/td&gt;
-      &lt;td&gt;Massimo&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.498550&lt;/td&gt;
-      &lt;td&gt;11.344110&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;51&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;764&lt;/td&gt;
-      &lt;td&gt;2021-12-14&lt;/td&gt;
-      &lt;td&gt;7.62&lt;/td&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;119&lt;/td&gt;
-      &lt;td&gt;120&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;131&lt;/th&gt;
-      &lt;td&gt;2282623&lt;/td&gt;
-      &lt;td&gt;S.Orsola zone,parking for free and self check-in&lt;/td&gt;
-      &lt;td&gt;11658074&lt;/td&gt;
-      &lt;td&gt;Cecilia&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
-      &lt;td&gt;44.493280&lt;/td&gt;
-      &lt;td&gt;11.366500&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;38&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;689&lt;/td&gt;
-      &lt;td&gt;2021-10-24&lt;/td&gt;
-      &lt;td&gt;7.20&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;5&lt;/td&gt;
-      &lt;td&gt;72&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;204&lt;/th&gt;
-      &lt;td&gt;4166793&lt;/td&gt;
-      &lt;td&gt;Centralissimo a Bologna&lt;/td&gt;
-      &lt;td&gt;8325248&lt;/td&gt;
-      &lt;td&gt;Massimo&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.500920&lt;/td&gt;
-      &lt;td&gt;11.344560&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;71&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;750&lt;/td&gt;
-      &lt;td&gt;2021-12-10&lt;/td&gt;
-      &lt;td&gt;9.21&lt;/td&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;233&lt;/td&gt;
-      &lt;td&gt;84&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;751&lt;/th&gt;
-      &lt;td&gt;15508481&lt;/td&gt;
-      &lt;td&gt;Monolocale in zona fiera /centro&lt;/td&gt;
-      &lt;td&gt;99632788&lt;/td&gt;
-      &lt;td&gt;Walid&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Navile&lt;/td&gt;
-      &lt;td&gt;44.514462&lt;/td&gt;
-      &lt;td&gt;11.353731&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;64&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;475&lt;/td&gt;
-      &lt;td&gt;2021-12-01&lt;/td&gt;
-      &lt;td&gt;7.56&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;4&lt;/td&gt;
-      &lt;td&gt;48&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;773&lt;/th&gt;
-      &lt;td&gt;15886516&lt;/td&gt;
-      &lt;td&gt;Monolocale nel cuore del ghetto ebraico di Bol...&lt;/td&gt;
-      &lt;td&gt;103024123&lt;/td&gt;
-      &lt;td&gt;Catia&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;44.495080&lt;/td&gt;
-      &lt;td&gt;11.347220&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-      &lt;td&gt;58&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;428&lt;/td&gt;
-      &lt;td&gt;2021-12-15&lt;/td&gt;
-      &lt;td&gt;7.88&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;285&lt;/td&gt;
-      &lt;td&gt;17&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;For a single column (i.e. a Series), we can get the unique values using the &lt;code&gt;unique()&lt;/code&gt; function.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings[&#39;neighbourhood&#39;].unique()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;array([&#39;Santo Stefano&#39;, &#39;Porto - Saragozza&#39;, &#39;Navile&#39;,
-       &#39;San Donato - San Vitale&#39;, &#39;Savena&#39;, &#39;Borgo Panigale - Reno&#39;],
-      dtype=object)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;For multiple columns, we can use the &lt;code&gt;drop_duplicates&lt;/code&gt; function.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings[[&#39;neighbourhood&#39;, &#39;room_type&#39;]].drop_duplicates()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;room_type&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;5&lt;/th&gt;
-      &lt;td&gt;Navile&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;7&lt;/th&gt;
-      &lt;td&gt;Navile&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;8&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;19&lt;/th&gt;
-      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;24&lt;/th&gt;
-      &lt;td&gt;Savena&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;36&lt;/th&gt;
-      &lt;td&gt;Borgo Panigale - Reno&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;41&lt;/th&gt;
-      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;70&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;Hotel room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;75&lt;/th&gt;
-      &lt;td&gt;Borgo Panigale - Reno&lt;/td&gt;
-      &lt;td&gt;Private room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;110&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;Hotel room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;111&lt;/th&gt;
-      &lt;td&gt;Savena&lt;/td&gt;
-      &lt;td&gt;Entire home/apt&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;388&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;Shared room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;678&lt;/th&gt;
-      &lt;td&gt;Navile&lt;/td&gt;
-      &lt;td&gt;Shared room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1393&lt;/th&gt;
-      &lt;td&gt;Savena&lt;/td&gt;
-      &lt;td&gt;Shared room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1416&lt;/th&gt;
-      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
-      &lt;td&gt;Shared room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1572&lt;/th&gt;
-      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
-      &lt;td&gt;Hotel room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1637&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;Shared room&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1751&lt;/th&gt;
-      &lt;td&gt;Navile&lt;/td&gt;
-      &lt;td&gt;Hotel room&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;h2 id=&#34;aggregation-and-pivot-tables&#34;&gt;Aggregation and Pivot Tables&lt;/h2&gt;
-&lt;p&gt;We can compute statistics by group using &lt;code&gt;.groupby()&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.groupby(&#39;neighbourhood&#39;)[[&#39;price&#39;, &#39;reviews_per_month&#39;]].mean()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;price&lt;/th&gt;
-      &lt;th&gt;reviews_per_month&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Borgo Panigale - Reno&lt;/th&gt;
-      &lt;td&gt;83.020548&lt;/td&gt;
-      &lt;td&gt;0.983488&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Navile&lt;/th&gt;
-      &lt;td&gt;142.200993&lt;/td&gt;
-      &lt;td&gt;1.156745&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Porto - Saragozza&lt;/th&gt;
-      &lt;td&gt;129.908312&lt;/td&gt;
-      &lt;td&gt;1.340325&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;San Donato - San Vitale&lt;/th&gt;
-      &lt;td&gt;91.618138&lt;/td&gt;
-      &lt;td&gt;0.933011&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Santo Stefano&lt;/th&gt;
-      &lt;td&gt;119.441841&lt;/td&gt;
-      &lt;td&gt;1.344810&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Savena&lt;/th&gt;
-      &lt;td&gt;69.626016&lt;/td&gt;
-      &lt;td&gt;0.805888&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;If you want to perform more than one function, maybe on different columns, you can use &lt;code&gt;.aggregate()&lt;/code&gt; which can be shortened to &lt;code&gt;.agg()&lt;/code&gt;. It takes as argument a dictionary with variables as keys and lists of functions as values.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.groupby(&#39;neighbourhood&#39;).agg({&amp;quot;reviews_per_month&amp;quot;: [&amp;quot;mean&amp;quot;],
-                                          &amp;quot;price&amp;quot;: [&amp;quot;min&amp;quot;, np.max]}).reset_index()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead tr th {
-    text-align: left;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;reviews_per_month&lt;/th&gt;
-      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;price&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;mean&lt;/th&gt;
-      &lt;th&gt;min&lt;/th&gt;
-      &lt;th&gt;amax&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;Borgo Panigale - Reno&lt;/td&gt;
-      &lt;td&gt;0.983488&lt;/td&gt;
-      &lt;td&gt;9&lt;/td&gt;
-      &lt;td&gt;1429&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;Navile&lt;/td&gt;
-      &lt;td&gt;1.156745&lt;/td&gt;
-      &lt;td&gt;14&lt;/td&gt;
-      &lt;td&gt;5000&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;1.340325&lt;/td&gt;
-      &lt;td&gt;7&lt;/td&gt;
-      &lt;td&gt;9999&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
-      &lt;td&gt;0.933011&lt;/td&gt;
-      &lt;td&gt;10&lt;/td&gt;
-      &lt;td&gt;1600&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;1.344810&lt;/td&gt;
-      &lt;td&gt;11&lt;/td&gt;
-      &lt;td&gt;9999&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;5&lt;/th&gt;
-      &lt;td&gt;Savena&lt;/td&gt;
-      &lt;td&gt;0.805888&lt;/td&gt;
-      &lt;td&gt;9&lt;/td&gt;
-      &lt;td&gt;680&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;The problem with this syntax is that it generates a hierarchical structure for variable names, which might not be so easy to work with. In the example above, to access the mean price, you have to use &lt;code&gt;df.price[&amp;quot;min&amp;quot;]&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;To perform variable naming and aggregation and the same time, you can ise the following syntax: &lt;code&gt;agg(output_var = (&amp;quot;input_var&amp;quot;, function))&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.groupby(&#39;neighbourhood&#39;).agg(mean_reviews=(&amp;quot;reviews_per_month&amp;quot;, &amp;quot;mean&amp;quot;),
-                                         min_price=(&amp;quot;price&amp;quot;, &amp;quot;min&amp;quot;),
-                                         max_price=(&amp;quot;price&amp;quot;, np.max)).reset_index()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;mean_reviews&lt;/th&gt;
-      &lt;th&gt;min_price&lt;/th&gt;
-      &lt;th&gt;max_price&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;Borgo Panigale - Reno&lt;/td&gt;
-      &lt;td&gt;0.983488&lt;/td&gt;
-      &lt;td&gt;9&lt;/td&gt;
-      &lt;td&gt;1429&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;Navile&lt;/td&gt;
-      &lt;td&gt;1.156745&lt;/td&gt;
-      &lt;td&gt;14&lt;/td&gt;
-      &lt;td&gt;5000&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;Porto - Saragozza&lt;/td&gt;
-      &lt;td&gt;1.340325&lt;/td&gt;
-      &lt;td&gt;7&lt;/td&gt;
-      &lt;td&gt;9999&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;San Donato - San Vitale&lt;/td&gt;
-      &lt;td&gt;0.933011&lt;/td&gt;
-      &lt;td&gt;10&lt;/td&gt;
-      &lt;td&gt;1600&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;Santo Stefano&lt;/td&gt;
-      &lt;td&gt;1.344810&lt;/td&gt;
-      &lt;td&gt;11&lt;/td&gt;
-      &lt;td&gt;9999&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;5&lt;/th&gt;
-      &lt;td&gt;Savena&lt;/td&gt;
-      &lt;td&gt;0.805888&lt;/td&gt;
-      &lt;td&gt;9&lt;/td&gt;
-      &lt;td&gt;680&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;We can make pivot tables with the &lt;code&gt;.pivot_table()&lt;/code&gt; function. It takes the folling arguments:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;index&lt;/code&gt;: rows&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;columns&lt;/code&gt;: columns&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;values&lt;/code&gt;: values&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;aggfunc&lt;/code&gt;: aggregation function&lt;/li&gt;
-&lt;/ul&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.pivot_table(index=&#39;neighbourhood&#39;, columns=&#39;room_type&#39;, values=&#39;price&#39;, aggfunc=&#39;mean&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;room_type&lt;/th&gt;
-      &lt;th&gt;Entire home/apt&lt;/th&gt;
-      &lt;th&gt;Hotel room&lt;/th&gt;
-      &lt;th&gt;Private room&lt;/th&gt;
-      &lt;th&gt;Shared room&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;neighbourhood&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Borgo Panigale - Reno&lt;/th&gt;
-      &lt;td&gt;96.700935&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;45.487179&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Navile&lt;/th&gt;
-      &lt;td&gt;172.140000&lt;/td&gt;
-      &lt;td&gt;1350.000000&lt;/td&gt;
-      &lt;td&gt;68.416107&lt;/td&gt;
-      &lt;td&gt;28.0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Porto - Saragozza&lt;/th&gt;
-      &lt;td&gt;148.410926&lt;/td&gt;
-      &lt;td&gt;102.375000&lt;/td&gt;
-      &lt;td&gt;83.070234&lt;/td&gt;
-      &lt;td&gt;16.5&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;San Donato - San Vitale&lt;/th&gt;
-      &lt;td&gt;106.775000&lt;/td&gt;
-      &lt;td&gt;55.000000&lt;/td&gt;
-      &lt;td&gt;61.194030&lt;/td&gt;
-      &lt;td&gt;59.0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Santo Stefano&lt;/th&gt;
-      &lt;td&gt;129.990260&lt;/td&gt;
-      &lt;td&gt;103.827586&lt;/td&gt;
-      &lt;td&gt;80.734177&lt;/td&gt;
-      &lt;td&gt;95.4&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Savena&lt;/th&gt;
-      &lt;td&gt;86.301370&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;46.229167&lt;/td&gt;
-      &lt;td&gt;22.5&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-</description>
-    </item>
-    
-    <item>
       <title>Matrix Algebra</title>
       <link>https://matteocourthoud.github.io/course/metrics/01_matrices/</link>
       <pubDate>Fri, 29 Oct 2021 00:00:00 +0000</pubDate>
@@ -3533,7 +3533,7 @@ $B$&lt;/li&gt;
     </item>
     
     <item>
-      <title>Instrumental Variables</title>
+      <title>Session 2</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/02_iv/</link>
       <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/02_iv/</guid>
@@ -6009,7 +6009,7 @@ $t_{n\geq 30} \sim N(0,1)$&lt;/p&gt;
     </item>
     
     <item>
-      <title>Non-Parametric Regression</title>
+      <title>Session 3</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/03_nonparametric/</link>
       <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/03_nonparametric/</guid>
@@ -8595,7 +8595,7 @@ $$&lt;/p&gt;
     </item>
     
     <item>
-      <title>Resampling Methods</title>
+      <title>Session 4</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/04_crossvalidation/</link>
       <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/04_crossvalidation/</guid>
@@ -9521,7 +9521,7 @@ we get the equation exactly.&lt;/p&gt;
     </item>
     
     <item>
-      <title>Model Selection and Regularization</title>
+      <title>Session 5</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/05_regularization/</link>
       <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/05_regularization/</guid>
@@ -11934,7 +11934,7 @@ std_β = sqrt.(diag(var_β))
     </item>
     
     <item>
-      <title>Convexity and Optimization</title>
+      <title>Session 6</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/06_convexity/</link>
       <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/06_convexity/</guid>
@@ -15365,7 +15365,7 @@ conf_int = [β_hat - 1.96*std_hc1, β_hat + 1.96*std_hc1];
     </item>
     
     <item>
-      <title>Tree-based Methods</title>
+      <title>Session 7</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/07_trees/</link>
       <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/07_trees/</guid>
@@ -19532,7 +19532,7 @@ Approaches to Estimation of Structural Models.” &lt;em&gt;Econometrica&lt;/em&
     </item>
     
     <item>
-      <title>Neural Networks</title>
+      <title>Session 8</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/08_neuralnets/</link>
       <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/08_neuralnets/</guid>
@@ -22531,7 +22531,7 @@ are harder to implement in kernel regression.&lt;/p&gt;
     </item>
     
     <item>
-      <title>Post-Double Selection</title>
+      <title>Session 9</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/09_postdoubleselection/</link>
       <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/09_postdoubleselection/</guid>
@@ -23959,6 +23959,837 @@ against the pre-testing one.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Remark&lt;/strong&gt;: under homoskedasticity, the above estimator achieves the
 semiparametric efficiency bound.&lt;/p&gt;
 &lt;/blockquote&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Unsupervised Learning</title>
+      <link>https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/</link>
+      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/</guid>
+      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from utils.lecture10 import *
+%matplotlib inline
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;supervised-vs-unsupervised-learning&#34;&gt;Supervised vs Unsupervised Learning&lt;/h3&gt;
+&lt;p&gt;The difference between &lt;em&gt;supervised learning&lt;/em&gt; and &lt;em&gt;unsupervised learning&lt;/em&gt; is that in the first case we have a variable $y$ which we want to predict, given a set of variables ${ X_1, . . . , X_p }$.&lt;/p&gt;
+&lt;p&gt;In &lt;em&gt;unsupervised learning&lt;/em&gt; are not interested in prediction, because we do not have an associated response variable $y$. Rather, the goal is to discover interesting properties about the measurements on ${ X_1, . . . , X_p }$.&lt;/p&gt;
+&lt;p&gt;Questions that we are usually interested in are&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Clustering&lt;/li&gt;
+&lt;li&gt;Dimensionality reduction&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In general, unsupervised learning can be viewed as an extention of exploratory data analysis.&lt;/p&gt;
+&lt;h2 id=&#34;principal-component-analysis&#34;&gt;Principal Component Analysis&lt;/h2&gt;
+&lt;p&gt;Suppose that we wish to visualize $n$ observations with measurements on a set of $p$ features, ${X_1, . . . , X_p}$, as part of an exploratory data analysis.&lt;/p&gt;
+&lt;p&gt;We could do this by examining two-dimensional scatterplots of the data, each of which contains the n observations’ measurements on two of the features. However, there are $p(p−1)/2$ such scatterplots; for example,
+with $p = 10$ there are $45$ plots!&lt;/p&gt;
+&lt;p&gt;PCA provides a tool to do just this. It finds a low-dimensional represen- tation of a data set that contains as much as possible of the variation.&lt;/p&gt;
+&lt;h3 id=&#34;first-principal-component&#34;&gt;First Principal Component&lt;/h3&gt;
+&lt;p&gt;The &lt;strong&gt;first principal component&lt;/strong&gt; of a set of features ${X_1, . . . , X_p}$ is the normalized linear combination of the features $Z_1$&lt;/p&gt;
+&lt;p&gt;$$
+Z_1 = \phi_{11} X_1 + \phi_{21} X_2 + &amp;hellip; + \phi_{p1} X_p
+$$&lt;/p&gt;
+&lt;p&gt;that has the largest variance.&lt;/p&gt;
+&lt;p&gt;By normalized, we mean that $\sum_{i=1}^p \phi^2_{i1} = 1$.&lt;/p&gt;
+&lt;h3 id=&#34;pca-computation&#34;&gt;PCA Computation&lt;/h3&gt;
+&lt;p&gt;In other words, the first principal component loading vector solves the optimization problem&lt;/p&gt;
+&lt;p&gt;$$
+\underset{\phi_{11}, \ldots, \phi_{p 1}}{\max} \ \Bigg \lbrace \frac{1}{n} \sum _ {i=1}^{n}\left(\sum _ {j=1}^{p} \phi _ {j1} x _ {ij} \right)^{2} \Bigg \rbrace \quad \text { subject to } \quad \sum _ {j=1}^{p} \phi _ {j1}^{2}=1
+$$&lt;/p&gt;
+&lt;p&gt;The objective that we are maximizing is just the sample variance of the $n$ values of $z_{i1}$.&lt;/p&gt;
+&lt;p&gt;After the first principal component $Z_1$ of the features has been determined, we can find the second principal component $Z_2$. The &lt;strong&gt;second principal component&lt;/strong&gt; is the linear combination of ${X_1, . . . , X_p}$ that has maximal variance out of all linear combinations that are &lt;em&gt;uncorrelated&lt;/em&gt; with $Z_1$.&lt;/p&gt;
+&lt;h3 id=&#34;example&#34;&gt;Example&lt;/h3&gt;
+&lt;p&gt;We illustrate the use of PCA on the &lt;code&gt;USArrests&lt;/code&gt; data set.&lt;/p&gt;
+&lt;p&gt;For each of the 50 states in the United States, the data set contains the number of arrests per $100,000$ residents for each of three crimes: &lt;code&gt;Assault&lt;/code&gt;, &lt;code&gt;Murder&lt;/code&gt;, and &lt;code&gt;Rape.&lt;/code&gt; We also record the percent of the population in each state living in urban areas, &lt;code&gt;UrbanPop&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Load crime data
+df = pd.read_csv(&#39;data/USArrests.csv&#39;, index_col=0)
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Murder&lt;/th&gt;
+      &lt;th&gt;Assault&lt;/th&gt;
+      &lt;th&gt;UrbanPop&lt;/th&gt;
+      &lt;th&gt;Rape&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;State&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Alabama&lt;/th&gt;
+      &lt;td&gt;13.2&lt;/td&gt;
+      &lt;td&gt;236&lt;/td&gt;
+      &lt;td&gt;58&lt;/td&gt;
+      &lt;td&gt;21.2&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Alaska&lt;/th&gt;
+      &lt;td&gt;10.0&lt;/td&gt;
+      &lt;td&gt;263&lt;/td&gt;
+      &lt;td&gt;48&lt;/td&gt;
+      &lt;td&gt;44.5&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Arizona&lt;/th&gt;
+      &lt;td&gt;8.1&lt;/td&gt;
+      &lt;td&gt;294&lt;/td&gt;
+      &lt;td&gt;80&lt;/td&gt;
+      &lt;td&gt;31.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Arkansas&lt;/th&gt;
+      &lt;td&gt;8.8&lt;/td&gt;
+      &lt;td&gt;190&lt;/td&gt;
+      &lt;td&gt;50&lt;/td&gt;
+      &lt;td&gt;19.5&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;California&lt;/th&gt;
+      &lt;td&gt;9.0&lt;/td&gt;
+      &lt;td&gt;276&lt;/td&gt;
+      &lt;td&gt;91&lt;/td&gt;
+      &lt;td&gt;40.6&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;h3 id=&#34;data-scaling&#34;&gt;Data Scaling&lt;/h3&gt;
+&lt;p&gt;To make all the features comparable, we first need to scale them. In this case, we use the &lt;code&gt;sklearn.preprocessing.scale()&lt;/code&gt; function to normalize each variable to have zero mean and unit variance.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Scale data
+X_scaled = pd.DataFrame(scale(df), index=df.index, columns=df.columns).values
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We will see later what are the practical implications of (not) scaling.&lt;/p&gt;
+&lt;h3 id=&#34;fitting&#34;&gt;Fitting&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s fit PCA with 2 components.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Fit PCA with 2 components
+pca2 = PCA(n_components=2).fit(X_scaled)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Get weights
+weights = pca2.components_.T
+df_weights = pd.DataFrame(weights, index=df.columns, columns=[&#39;PC1&#39;, &#39;PC2&#39;])
+df_weights
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;PC1&lt;/th&gt;
+      &lt;th&gt;PC2&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Murder&lt;/th&gt;
+      &lt;td&gt;0.535899&lt;/td&gt;
+      &lt;td&gt;0.418181&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Assault&lt;/th&gt;
+      &lt;td&gt;0.583184&lt;/td&gt;
+      &lt;td&gt;0.187986&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;UrbanPop&lt;/th&gt;
+      &lt;td&gt;0.278191&lt;/td&gt;
+      &lt;td&gt;-0.872806&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Rape&lt;/th&gt;
+      &lt;td&gt;0.543432&lt;/td&gt;
+      &lt;td&gt;-0.167319&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;h3 id=&#34;projecting-the-data&#34;&gt;Projecting the data&lt;/h3&gt;
+&lt;p&gt;What does the trasformed data looks like?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Transform X to get the principal components
+X_dim2 = pca2.transform(X_scaled)
+df_dim2 = pd.DataFrame(X_dim2, columns=[&#39;PC1&#39;, &#39;PC2&#39;], index=df.index)
+df_dim2.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;PC1&lt;/th&gt;
+      &lt;th&gt;PC2&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;State&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Alabama&lt;/th&gt;
+      &lt;td&gt;0.985566&lt;/td&gt;
+      &lt;td&gt;1.133392&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Alaska&lt;/th&gt;
+      &lt;td&gt;1.950138&lt;/td&gt;
+      &lt;td&gt;1.073213&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Arizona&lt;/th&gt;
+      &lt;td&gt;1.763164&lt;/td&gt;
+      &lt;td&gt;-0.745957&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Arkansas&lt;/th&gt;
+      &lt;td&gt;-0.141420&lt;/td&gt;
+      &lt;td&gt;1.119797&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;California&lt;/th&gt;
+      &lt;td&gt;2.523980&lt;/td&gt;
+      &lt;td&gt;-1.542934&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;h3 id=&#34;visualization&#34;&gt;Visualization&lt;/h3&gt;
+&lt;p&gt;The advantage og PCA is that it allows us to see the variation in lower dimesions.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_10_1a(df_dim2, df_weights)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_26_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;pca-and-spectral-analysis&#34;&gt;PCA and Spectral Analysis&lt;/h3&gt;
+&lt;p&gt;In case you haven&amp;rsquo;t noticed, calculating principal components, is equivalent to calculating the eigenvectors of the design matrix $X&amp;rsquo;X$, i.e. the variance-covariance matrix of $X$. Indeed what we performed above is a decomposition of the variance of $X$ into orthogonal components.&lt;/p&gt;
+&lt;p&gt;The constrained maximization problem above can be re-written in matrix notation as&lt;/p&gt;
+&lt;p&gt;$$
+\max \ \phi&#39; X&amp;rsquo;X \phi \quad \text{ s. t. } \quad \phi&#39;\phi = 1
+$$&lt;/p&gt;
+&lt;p&gt;Which has the following dual representation&lt;/p&gt;
+&lt;p&gt;$$
+\mathcal L (\phi, \lambda) = \phi&#39; X&amp;rsquo;X \phi - \lambda (\phi&#39;\phi - 1)
+$$&lt;/p&gt;
+&lt;p&gt;If we take the first order conditions&lt;/p&gt;
+&lt;p&gt;$$
+\begin{align}
+&amp;amp; \frac{\partial \mathcal L}{\partial \lambda} = \phi&#39;\phi - 1 \
+&amp;amp; \frac{\partial \mathcal L}{\partial \phi} = 2 X&amp;rsquo;X \phi - 2 \lambda \phi
+\end{align}
+$$&lt;/p&gt;
+&lt;p&gt;Setting the derivatives to zero at the optimum, we get&lt;/p&gt;
+&lt;p&gt;$$
+\begin{align}
+&amp;amp; \phi&#39;\phi = 1 \
+&amp;amp; X&amp;rsquo;X \phi = \lambda \phi
+\end{align}
+$$&lt;/p&gt;
+&lt;p&gt;Thus, $\phi$ is an &lt;strong&gt;eigenvector&lt;/strong&gt; of the covariance matrix $X&amp;rsquo;X$, and the maximizing vector will be the one associated with the largest &lt;strong&gt;eigenvalue&lt;/strong&gt; $\lambda$.&lt;/p&gt;
+&lt;h3 id=&#34;equivalence-with-numpy&#34;&gt;Equivalence with numpy&lt;/h3&gt;
+&lt;p&gt;We can now double-check it using &lt;code&gt;numpy&lt;/code&gt; linear algebra package.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;eigenval, eigenvec = np.linalg.eig(X_scaled.T @ X_scaled)
+data = np.concatenate((eigenvec,eigenval.reshape(1,-1)))
+idx = list(df.columns) + [&#39;Eigenvalue&#39;]
+df_eigen = pd.DataFrame(data, index=idx, columns=[&#39;PC1&#39;, &#39;PC2&#39;,&#39;PC3&#39;,&#39;PC4&#39;])
+
+df_eigen
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;PC1&lt;/th&gt;
+      &lt;th&gt;PC2&lt;/th&gt;
+      &lt;th&gt;PC3&lt;/th&gt;
+      &lt;th&gt;PC4&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Murder&lt;/th&gt;
+      &lt;td&gt;0.535899&lt;/td&gt;
+      &lt;td&gt;0.418181&lt;/td&gt;
+      &lt;td&gt;0.649228&lt;/td&gt;
+      &lt;td&gt;-0.341233&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Assault&lt;/th&gt;
+      &lt;td&gt;0.583184&lt;/td&gt;
+      &lt;td&gt;0.187986&lt;/td&gt;
+      &lt;td&gt;-0.743407&lt;/td&gt;
+      &lt;td&gt;-0.268148&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;UrbanPop&lt;/th&gt;
+      &lt;td&gt;0.278191&lt;/td&gt;
+      &lt;td&gt;-0.872806&lt;/td&gt;
+      &lt;td&gt;0.133878&lt;/td&gt;
+      &lt;td&gt;-0.378016&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Rape&lt;/th&gt;
+      &lt;td&gt;0.543432&lt;/td&gt;
+      &lt;td&gt;-0.167319&lt;/td&gt;
+      &lt;td&gt;0.089024&lt;/td&gt;
+      &lt;td&gt;0.817778&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Eigenvalue&lt;/th&gt;
+      &lt;td&gt;124.012079&lt;/td&gt;
+      &lt;td&gt;49.488258&lt;/td&gt;
+      &lt;td&gt;8.671504&lt;/td&gt;
+      &lt;td&gt;17.828159&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;The spectral decomposition of the variance of $X$ generates a set of orthogonal vectors (eigenvectors) with different magnitudes (eigenvalues). The eigenvalues tell us the amount of variance of the data in that direction.&lt;/p&gt;
+&lt;p&gt;If we combine the eigenvectors together, we form a projection matrix $P$ that we can use to transform the original variables: $\tilde X = P X$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X_transformed = X_scaled @ eigenvec
+df_transformed = pd.DataFrame(X_transformed, index=df.index, columns=[&#39;PC1&#39;, &#39;PC2&#39;,&#39;PC3&#39;,&#39;PC4&#39;])
+
+df_transformed.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;PC1&lt;/th&gt;
+      &lt;th&gt;PC2&lt;/th&gt;
+      &lt;th&gt;PC3&lt;/th&gt;
+      &lt;th&gt;PC4&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;State&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Alabama&lt;/th&gt;
+      &lt;td&gt;0.985566&lt;/td&gt;
+      &lt;td&gt;1.133392&lt;/td&gt;
+      &lt;td&gt;0.156267&lt;/td&gt;
+      &lt;td&gt;-0.444269&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Alaska&lt;/th&gt;
+      &lt;td&gt;1.950138&lt;/td&gt;
+      &lt;td&gt;1.073213&lt;/td&gt;
+      &lt;td&gt;-0.438583&lt;/td&gt;
+      &lt;td&gt;2.040003&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Arizona&lt;/th&gt;
+      &lt;td&gt;1.763164&lt;/td&gt;
+      &lt;td&gt;-0.745957&lt;/td&gt;
+      &lt;td&gt;-0.834653&lt;/td&gt;
+      &lt;td&gt;0.054781&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Arkansas&lt;/th&gt;
+      &lt;td&gt;-0.141420&lt;/td&gt;
+      &lt;td&gt;1.119797&lt;/td&gt;
+      &lt;td&gt;-0.182811&lt;/td&gt;
+      &lt;td&gt;0.114574&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;California&lt;/th&gt;
+      &lt;td&gt;2.523980&lt;/td&gt;
+      &lt;td&gt;-1.542934&lt;/td&gt;
+      &lt;td&gt;-0.341996&lt;/td&gt;
+      &lt;td&gt;0.598557&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;This is exactly the dataset that we obtained before.&lt;/p&gt;
+&lt;h3 id=&#34;scaling-the-variables&#34;&gt;Scaling the Variables&lt;/h3&gt;
+&lt;p&gt;The results obtained when we perform PCA will also depend on whether the variables have been individually scaled. In fact, the variance of a variable depends on its magnitude.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Variables variance
+df.var(axis=0)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Murder        18.970465
+Assault     6945.165714
+UrbanPop     209.518776
+Rape          87.729159
+dtype: float64
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Consequently, if we perform PCA on the unscaled variables, then the first principal component loading vector will have a very large loading for &lt;code&gt;Assault&lt;/code&gt;, since that variable has by far the highest variance.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Fit PCA with unscaled varaibles
+X = df.values
+pca2_u = PCA(n_components=2).fit(X)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Get weights
+weights_u = pca2_u.components_.T
+df_weights_u = pd.DataFrame(weights_u, index=df.columns, columns=[&#39;PC1&#39;, &#39;PC2&#39;])
+df_weights_u
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;PC1&lt;/th&gt;
+      &lt;th&gt;PC2&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Murder&lt;/th&gt;
+      &lt;td&gt;0.041704&lt;/td&gt;
+      &lt;td&gt;0.044822&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Assault&lt;/th&gt;
+      &lt;td&gt;0.995221&lt;/td&gt;
+      &lt;td&gt;0.058760&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;UrbanPop&lt;/th&gt;
+      &lt;td&gt;0.046336&lt;/td&gt;
+      &lt;td&gt;-0.976857&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Rape&lt;/th&gt;
+      &lt;td&gt;0.075156&lt;/td&gt;
+      &lt;td&gt;-0.200718&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We can have a look at the transformed dataset.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Transform X to get the principal components
+X_dim2_u = pca2_u.transform(X)
+df_dim2_u = pd.DataFrame(X_dim2_u, columns=[&#39;PC1&#39;, &#39;PC2&#39;], index=df.index)
+df_dim2_u.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;PC1&lt;/th&gt;
+      &lt;th&gt;PC2&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;State&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Alabama&lt;/th&gt;
+      &lt;td&gt;64.802164&lt;/td&gt;
+      &lt;td&gt;11.448007&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Alaska&lt;/th&gt;
+      &lt;td&gt;92.827450&lt;/td&gt;
+      &lt;td&gt;17.982943&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Arizona&lt;/th&gt;
+      &lt;td&gt;124.068216&lt;/td&gt;
+      &lt;td&gt;-8.830403&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Arkansas&lt;/th&gt;
+      &lt;td&gt;18.340035&lt;/td&gt;
+      &lt;td&gt;16.703911&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;California&lt;/th&gt;
+      &lt;td&gt;107.422953&lt;/td&gt;
+      &lt;td&gt;-22.520070&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;h3 id=&#34;plotting&#34;&gt;Plotting&lt;/h3&gt;
+&lt;p&gt;We can plot the lower dimensional representation of the data.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_10_1b(df_dim2, df_dim2_u, df_weights, df_weights_u)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As predicted, the first principal component loading vector places almost all of its weight on &lt;code&gt;Assault&lt;/code&gt;, while the second principal component loading vector places almost all of its weight on &lt;code&gt;UrpanPop&lt;/code&gt;. Comparing this to the left-hand plot, we see that scaling does indeed have a substantial effect on the results obtained. However, this result is simply a consequence of the scales on which the variables were measured.&lt;/p&gt;
+&lt;h3 id=&#34;the-proportion-of-variance-explained&#34;&gt;The Proportion of Variance Explained&lt;/h3&gt;
+&lt;p&gt;We can now ask a natural question: how much of the information in a given data set is lost by projecting the observations onto the first few principal components? That is, how much of the variance in the data is not contained in the first few principal components? More generally, we are interested in knowing the &lt;strong&gt;proportion of variance explained (PVE)&lt;/strong&gt; by each principal component.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Four components
+pca4 = PCA(n_components=4).fit(X_scaled)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Variance of the four principal components
+pca4.explained_variance_
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;array([2.53085875, 1.00996444, 0.36383998, 0.17696948])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can compute it in percentage of the total variance.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# As a percentage of the total variance
+pca4.explained_variance_ratio_
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;array([0.62006039, 0.24744129, 0.0891408 , 0.04335752])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the &lt;code&gt;Arrest&lt;/code&gt; dataset, the first principal component explains $62.0%$ of the variance in the data, and the next principal component explains $24.7%$ of the variance. Together, the first two principal components explain almost $87%$ of the variance in the data, and the last two principal components explain only $13%$ of the variance.&lt;/p&gt;
+&lt;p&gt;We can plot in a graph the percentage of the variance explained, relative to the number of components.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_10_2(pca4)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_56_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;how-many-principal-components&#34;&gt;How Many Principal Components?&lt;/h3&gt;
+&lt;p&gt;In general, a $n \times p$ data matrix $X$ has $\min{n − 1, p}$ distinct principal components. However, we usually are not interested in all of them; rather, we would like to use just the first few principal components in order to visualize or interpret the data.&lt;/p&gt;
+&lt;p&gt;We typically decide on the number of principal components required to visualize the data by examining a &lt;em&gt;scree plot&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;However, there is no well-accepted objective way to decide how many principal com- ponents are enough.&lt;/p&gt;
+&lt;h2 id=&#34;clustering&#34;&gt;Clustering&lt;/h2&gt;
+&lt;p&gt;Clustering refers to a very broad set of techniques for finding subgroups, or clusters, in a data set. When we cluster the observations of a data set, we seek to partition them into distinct groups so that the observations within each group are quite similar to each other, while observations in different groups are quite different from each other.&lt;/p&gt;
+&lt;p&gt;In this section we focus on perhaps the two best-known clustering approaches:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;K-means clustering&lt;/strong&gt;: we seek to partition the observations into a pre-specified clustering number of clusters&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Hierarchical clustering&lt;/strong&gt;: we do not know in advance how many clusters we want; in fact, we end up with a tree-like visual representation of the observations, called a dendrogram, that allows us to view at once the clusterings obtained for each possible number of clusters, from 1 to n.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;k-means-clustering&#34;&gt;K-Means Clustering&lt;/h3&gt;
+&lt;p&gt;The idea behind K-means clustering is that a good clustering is one for which the within-cluster variation is as small as possible. Hence we want to solve the problem&lt;/p&gt;
+&lt;p&gt;$$
+\underset{C_{1}, \ldots, C_{K}}{\operatorname{minimize}}\left{\sum_{k=1}^{K} W\left(C_{k}\right)\right}
+$$&lt;/p&gt;
+&lt;p&gt;where $C_k$ is a cluster and $ W(C_k)$ is a measure of the amount by which the observations within a cluster differ from each other.&lt;/p&gt;
+&lt;p&gt;There are many possible ways to define this concept, but by far the most common choice involves &lt;strong&gt;squared Euclidean distance&lt;/strong&gt;. That is, we define&lt;/p&gt;
+&lt;p&gt;$$
+W\left(C_{k}\right)=\frac{1}{\left|C_{k}\right|} \sum_{i, i^{\prime} \in C_{k}} \sum_{j=1}^{p}\left(x_{i j}-x_{i^{\prime} j}\right)^2
+$$&lt;/p&gt;
+&lt;p&gt;where $|C_k|$ denotes the number of observations in the $k^{th}$ cluster.&lt;/p&gt;
+&lt;h3 id=&#34;algorithm&#34;&gt;Algorithm&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Randomly assign a number, from $1$ to $K$, to each of the observations. These serve as initial cluster assignments for the observations.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Iterate until the cluster assignments stop changing:&lt;/p&gt;
+&lt;p&gt;a) For each of the $K$ clusters, compute the cluster centroid. The kth cluster centroid is the vector of the $p$ feature means for the observations in the $k^{th}$ cluster.&lt;/p&gt;
+&lt;p&gt;b) Assign each observation to the cluster whose centroid is closest (where closest is defined using Euclidean distance).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(123)
+
+# Simulate data
+X = np.random.randn(50,2)
+X[0:25, 0] = X[0:25, 0] + 3
+X[0:25, 1] = X[0:25, 1] - 4
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is what the baseline data looks like.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure new 1
+def make_new_figure_1():
+    
+    # Init
+    fig, ax = plt.subplots(figsize=(6, 5))
+    fig.suptitle(&amp;quot;Baseline&amp;quot;)
+
+    # Plot
+    ax.scatter(X[:,0], X[:,1], s=50, alpha=0.5, c=&#39;k&#39;) 
+    ax.set_xlabel(&#39;X0&#39;); ax.set_ylabel(&#39;X1&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_1()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_68_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now let&amp;rsquo;s randomly assign the data to two clusters, at random.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(1)
+
+# Init clusters
+K = 2
+clusters0 = np.random.randint(K,size=(np.size(X,0)))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure new 2
+def make_new_figure_2():
+    
+    # Init
+    fig, ax = plt.subplots(figsize=(6, 5))
+    fig.suptitle(&amp;quot;Random assignment&amp;quot;)
+
+    # Plot
+    ax.scatter(X[clusters0==0,0], X[clusters0==0,1], s=50, alpha=0.5) 
+    ax.scatter(X[clusters0==1,0], X[clusters0==1,1], s=50, alpha=0.5)
+    ax.set_xlabel(&#39;X0&#39;); ax.set_ylabel(&#39;X1&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_2()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_72_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;What are the new centroids?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Compute new centroids
+def compute_new_centroids(X, clusters):
+    K = len(np.unique(clusters))
+    centroids = np.zeros((K,np.size(X,1)))
+    for k in range(K):
+        if sum(clusters==k)&amp;gt;0:
+            centroids[k,:] = np.mean(X[clusters==k,:], axis=0)
+        else:
+            centroids[k,:] = np.mean(X, axis=0)
+    return centroids
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Print
+centroids0 = compute_new_centroids(X, clusters0)
+print(centroids0)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[[ 1.35725989 -2.15281035]
+ [ 1.84654757 -1.99437838]]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s add the centroids to the graph.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot assignment
+def plot_assignment(X, centroids, clusters, d, i):
+    clear_output(wait=True)
+    fig, ax = plt.subplots(figsize=(6, 5))
+    fig.suptitle(&amp;quot;Iteration %.0f: inertia=%.1f&amp;quot; % (i,d))
+
+    # Plot
+    ax.clear()
+    colors = plt.rcParams[&#39;axes.prop_cycle&#39;].by_key()[&#39;color&#39;];
+    K = np.size(centroids,0)
+    for k in range(K):
+        ax.scatter(X[clusters==k,0], X[clusters==k,1], s=50, c=colors[k], alpha=0.5) 
+        ax.scatter(centroids[k,0], centroids[k,1], marker = &#39;*&#39;, s=300, color=colors[k])
+        ax.set_xlabel(&#39;X0&#39;); ax.set_ylabel(&#39;X1&#39;);
+    
+    # Show
+    plt.show();
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
+plot_assignment(X, centroids0, clusters0, 0, 0)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_78_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now we can assign the data to the centroids.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Assign X to clusters
+def assign_to_cluster(X, centroids):
+    K = np.size(centroids,0)
+    dist = np.zeros((np.size(X,0),K))
+    for k in range(K):
+        dist[:,k] = np.mean((X - centroids[k,:])**2, axis=1)
+    clusters = np.argmin(dist, axis=1)
+    
+    # Compute inertia
+    inertia = 0
+    for k in range(K):
+        if sum(clusters==k)&amp;gt;0:
+            inertia += np.sum((X[clusters==k,:] - centroids[k,:])**2)
+    return clusters, inertia
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Get cluster assignment
+[clusters1,d] = assign_to_cluster(X, centroids0)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
+plot_assignment(X, centroids0, clusters1, d, 1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_82_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We now have all the components to proceed iteratively.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def kmeans_manual(X, K):
+
+    # Init
+    i = 0
+    d0 = 1e4
+    d1 = 1e5
+    clusters = np.random.randint(K,size=(np.size(X,0)))
+
+    # Iterate until convergence
+    while np.abs(d0-d1) &amp;gt; 1e-10:
+        d1 = d0
+        centroids = compute_new_centroids(X, clusters)
+        [clusters, d0] = assign_to_cluster(X, centroids)
+        plot_assignment(X, centroids, clusters, d0, i)
+        i+=1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Test
+kmeans_manual(X, K)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_85_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Here the observations can be easily plotted because they are two-dimensional.
+If there were more than two variables then we could instead perform PCA
+and plot the first two principal components score vectors.&lt;/p&gt;
+&lt;p&gt;In the previous example, we knew that there really were two clusters because
+we generated the data. However, for real data, in general we do not know
+the true number of clusters. We could instead have performed K-means
+clustering on this example with &lt;code&gt;K  =  3&lt;/code&gt;. If we do this, K-means clustering will split up the two &amp;ldquo;real&amp;rdquo; clusters, since it has no information about them:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# K=3
+kmeans_manual(X, 3)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_88_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The automated function in &lt;code&gt;sklearn&lt;/code&gt; to persorm $K$-means clustering is &lt;code&gt;KMeans&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# SKlearn algorithm
+km1 = KMeans(n_clusters=3, n_init=1, random_state=1)
+km1.fit(X)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;KMeans(n_clusters=3, n_init=1, random_state=1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can plot the asssignment generated by the &lt;code&gt;KMeans&lt;/code&gt; function.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
+plot_assignment(X, km1.cluster_centers_, km1.labels_, km1.inertia_, km1.n_iter_)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_92_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the results are different in the two algorithms? Why? $K$-means is susceptible to the initial values. One way to solve this problem is to run the algorithm multiple times and report only the best results&lt;/p&gt;
+&lt;p&gt;To run the &lt;code&gt;Kmeans()&lt;/code&gt; function in python with multiple initial cluster assignments, we use the &lt;code&gt;n_init&lt;/code&gt; argument (default: 10). If a value of &lt;code&gt;n_init&lt;/code&gt; greater than one is used, then K-means clustering will be performed using multiple random assignments, and the &lt;code&gt;Kmeans()&lt;/code&gt; function will report only the best results.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# 30 runs
+km_30run = KMeans(n_clusters=3, n_init=30, random_state=1).fit(X)
+plot_assignment(X, km_30run.cluster_centers_, km_30run.labels_, km_30run.inertia_, km_30run.n_iter_)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_95_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It is generally recommended to always run K-means clustering with a large value of &lt;code&gt;n_init&lt;/code&gt;, such as 20 or 50 to avoid getting stuck in an undesirable local optimum.&lt;/p&gt;
+&lt;p&gt;When performing K-means clustering, in addition to using multiple initial cluster assignments, it is also important to set a random seed using the &lt;code&gt;random_state&lt;/code&gt; parameter. This way, the initial cluster assignments can be replicated, and the K-means output will be fully reproducible.&lt;/p&gt;
+&lt;h3 id=&#34;hierarchical-clustering&#34;&gt;Hierarchical Clustering&lt;/h3&gt;
+&lt;p&gt;One potential disadvantage of K-means clustering is that it requires us to pre-specify the number of clusters $K$. Hierarchical clustering is an alternative approach which does not require that we commit to a particular choice of $K$&lt;/p&gt;
+&lt;h3 id=&#34;the-dendogram&#34;&gt;The Dendogram&lt;/h3&gt;
+&lt;p&gt;Hierarchical clustering has an added advantage over K-means clustering in that it results in an attractive tree-based representation of the observations, called a &lt;strong&gt;dendrogram&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure new 3
+def make_new_figure_3():
+    
+    # Init
+    plt.figure(figsize=(25, 10))
+    plt.title(&#39;Hierarchical Clustering Dendrogram&#39;)
+
+    # calculate full dendrogram
+    plt.xlabel(&#39;sample index&#39;)
+    plt.ylabel(&#39;distance&#39;)
+    dendrogram(
+        linkage(X, &amp;quot;complete&amp;quot;),
+        leaf_rotation=90.,  # rotates the x axis labels
+        leaf_font_size=8.,  # font size for the x axis labels
+    )
+    plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_3()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_102_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Each leaf of the &lt;em&gt;dendrogram&lt;/em&gt; represents one observation.&lt;/p&gt;
+&lt;p&gt;As we move up the tree, some leaves begin to fuse into branches. These correspond to observations that are similar to each other. As we move higher up the tree, branches themselves fuse, either with leaves or other branches. The earlier (lower in the tree) fusions occur, the more similar the groups of observations are to each other.&lt;/p&gt;
+&lt;p&gt;We can use de &lt;em&gt;dendogram&lt;/em&gt; to understand how similar two observations are: we can look for the point in the tree where branches containing those two obse rvations are first fused. The height of this fusion, as measured on the vertical axis, indicates how different the two observations are. Thus, observations that fuse at the very bottom of the tree are quite similar to each other, whereas observations that fuse close to the top of the tree will tend to be quite different.&lt;/p&gt;
+&lt;p&gt;The term &lt;strong&gt;hierarchical&lt;/strong&gt; refers to the fact that clusters obtained by cutting the dendrogram at a given height are necessarily nested within the clusters obtained by cutting the dendrogram at any greater height.&lt;/p&gt;
+&lt;h3 id=&#34;the-hierarchical-clustering-algorithm&#34;&gt;The Hierarchical Clustering Algorithm&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Begin with $n$ observations and a measure (such as Euclidean distance) of all the $n(n − 1)/2$ pairwise dissimilarities. Treat each 2 observation as its own cluster.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;For $i=n,n−1,&amp;hellip;,2$&lt;/p&gt;
+&lt;p&gt;a) Examine all pairwise inter-cluster dissimilarities among the $i$ clusters and identify the &lt;strong&gt;pair of clusters that are least dissimilar&lt;/strong&gt; (that is, most similar). Fuse these two clusters. The dissimilarity between these two clusters indicates the height in the dendrogram at which the fusion should be placed.&lt;/p&gt;
+&lt;p&gt;b) Compute the new pairwise inter-cluster dissimilarities among the $i−1$ remaining clusters.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;the-linkage-function&#34;&gt;The Linkage Function&lt;/h3&gt;
+&lt;p&gt;We have a concept of the dissimilarity between pairs of observations, but how do we define the dissimilarity between two clusters if one or both of the clusters contains multiple observations?&lt;/p&gt;
+&lt;p&gt;The concept of dissimilarity between a pair of observations needs to be extended to a pair of groups of observations. This extension is achieved by developing the notion of &lt;strong&gt;linkage&lt;/strong&gt;, which defines the dissimilarity between two groups of observations.&lt;/p&gt;
+&lt;p&gt;The four most common types of linkage are:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Complete&lt;/strong&gt;: Maximal intercluster dissimilarity. Compute all pairwise dissimilarities between the observations in cluster A and the observations in cluster B, and record the largest of these dissimilarities.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Single&lt;/strong&gt;: Minimal intercluster dissimilarity. Compute all pairwise dissimilarities between the observations in cluster A and the observations in cluster B, and record the smallest of these dissimilarities.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Average&lt;/strong&gt;: Mean intercluster dissimilarity. Compute all pairwise dissimilarities between the observations in cluster A and the observations in cluster B, and record the average of these dissimilarities.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Centroid&lt;/strong&gt;: Dissimilarity between the centroid for cluster A (a mean vector of length p) and the centroid for cluster B. Centroid linkage can result in undesirable inversions.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Average, complete, and single linkage are most popular among statisticians. Average and complete linkage are generally preferred over single linkage, as they tend to yield more balanced dendrograms. Centroid linkage is often used in genomics, but suffers from a major drawback in that an inversion can occur, whereby two clusters are fused at a height below either of the individual clusters in the dendrogram. This can lead to difficulties in visualization as well as in interpretation of the dendrogram.&lt;/p&gt;
+&lt;h3 id=&#34;plotting-1&#34;&gt;Plotting&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s plot the dendogram for each of the different linkages.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Init
+linkages = [hierarchy.complete(X), hierarchy.average(X), hierarchy.single(X)]
+titles = [&#39;Complete Linkage&#39;, &#39;Average Linkage&#39;, &#39;Single Linkage&#39;]
+make_new_figure_4(linkages, titles)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_112_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;For this data, complete and average linkage generally separates the observations into their correct groups.&lt;/p&gt;
 </description>
     </item>
     
@@ -28001,838 +28832,6 @@ Cookie: yummy_cookie=choco; tasty_cookie=strawberry
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/admin/config.yml</guid>
       <description></description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/</guid>
-      <description>&lt;h1 id=&#34;unsupervised-learning&#34;&gt;Unsupervised Learning&lt;/h1&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from utils.lecture10 import *
-%matplotlib inline
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;supervised-vs-unsupervised-learning&#34;&gt;Supervised vs Unsupervised Learning&lt;/h3&gt;
-&lt;p&gt;The difference between &lt;em&gt;supervised learning&lt;/em&gt; and &lt;em&gt;unsupervised learning&lt;/em&gt; is that in the first case we have a variable $y$ which we want to predict, given a set of variables ${ X_1, . . . , X_p }$.&lt;/p&gt;
-&lt;p&gt;In &lt;em&gt;unsupervised learning&lt;/em&gt; are not interested in prediction, because we do not have an associated response variable $y$. Rather, the goal is to discover interesting properties about the measurements on ${ X_1, . . . , X_p }$.&lt;/p&gt;
-&lt;p&gt;Questions that we are usually interested in are&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Clustering&lt;/li&gt;
-&lt;li&gt;Dimensionality reduction&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;In general, unsupervised learning can be viewed as an extention of exploratory data analysis.&lt;/p&gt;
-&lt;h2 id=&#34;principal-component-analysis&#34;&gt;Principal Component Analysis&lt;/h2&gt;
-&lt;p&gt;Suppose that we wish to visualize $n$ observations with measurements on a set of $p$ features, ${X_1, . . . , X_p}$, as part of an exploratory data analysis.&lt;/p&gt;
-&lt;p&gt;We could do this by examining two-dimensional scatterplots of the data, each of which contains the n observations’ measurements on two of the features. However, there are $p(p−1)/2$ such scatterplots; for example,
-with $p = 10$ there are $45$ plots!&lt;/p&gt;
-&lt;p&gt;PCA provides a tool to do just this. It finds a low-dimensional represen- tation of a data set that contains as much as possible of the variation.&lt;/p&gt;
-&lt;h3 id=&#34;first-principal-component&#34;&gt;First Principal Component&lt;/h3&gt;
-&lt;p&gt;The &lt;strong&gt;first principal component&lt;/strong&gt; of a set of features ${X_1, . . . , X_p}$ is the normalized linear combination of the features $Z_1$&lt;/p&gt;
-&lt;p&gt;$$
-Z_1 = \phi_{11} X_1 + \phi_{21} X_2 + &amp;hellip; + \phi_{p1} X_p
-$$&lt;/p&gt;
-&lt;p&gt;that has the largest variance.&lt;/p&gt;
-&lt;p&gt;By normalized, we mean that $\sum_{i=1}^p \phi^2_{i1} = 1$.&lt;/p&gt;
-&lt;h3 id=&#34;pca-computation&#34;&gt;PCA Computation&lt;/h3&gt;
-&lt;p&gt;In other words, the first principal component loading vector solves the optimization problem&lt;/p&gt;
-&lt;p&gt;$$
-\underset{\phi_{11}, \ldots, \phi_{p 1}}{\max} \ \Bigg \lbrace \frac{1}{n} \sum _ {i=1}^{n}\left(\sum _ {j=1}^{p} \phi _ {j1} x _ {ij} \right)^{2} \Bigg \rbrace \quad \text { subject to } \quad \sum _ {j=1}^{p} \phi _ {j1}^{2}=1
-$$&lt;/p&gt;
-&lt;p&gt;The objective that we are maximizing is just the sample variance of the $n$ values of $z_{i1}$.&lt;/p&gt;
-&lt;p&gt;After the first principal component $Z_1$ of the features has been determined, we can find the second principal component $Z_2$. The &lt;strong&gt;second principal component&lt;/strong&gt; is the linear combination of ${X_1, . . . , X_p}$ that has maximal variance out of all linear combinations that are &lt;em&gt;uncorrelated&lt;/em&gt; with $Z_1$.&lt;/p&gt;
-&lt;h3 id=&#34;example&#34;&gt;Example&lt;/h3&gt;
-&lt;p&gt;We illustrate the use of PCA on the &lt;code&gt;USArrests&lt;/code&gt; data set.&lt;/p&gt;
-&lt;p&gt;For each of the 50 states in the United States, the data set contains the number of arrests per $100,000$ residents for each of three crimes: &lt;code&gt;Assault&lt;/code&gt;, &lt;code&gt;Murder&lt;/code&gt;, and &lt;code&gt;Rape.&lt;/code&gt; We also record the percent of the population in each state living in urban areas, &lt;code&gt;UrbanPop&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Load crime data
-df = pd.read_csv(&#39;data/USArrests.csv&#39;, index_col=0)
-df.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;Murder&lt;/th&gt;
-      &lt;th&gt;Assault&lt;/th&gt;
-      &lt;th&gt;UrbanPop&lt;/th&gt;
-      &lt;th&gt;Rape&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;State&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Alabama&lt;/th&gt;
-      &lt;td&gt;13.2&lt;/td&gt;
-      &lt;td&gt;236&lt;/td&gt;
-      &lt;td&gt;58&lt;/td&gt;
-      &lt;td&gt;21.2&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Alaska&lt;/th&gt;
-      &lt;td&gt;10.0&lt;/td&gt;
-      &lt;td&gt;263&lt;/td&gt;
-      &lt;td&gt;48&lt;/td&gt;
-      &lt;td&gt;44.5&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Arizona&lt;/th&gt;
-      &lt;td&gt;8.1&lt;/td&gt;
-      &lt;td&gt;294&lt;/td&gt;
-      &lt;td&gt;80&lt;/td&gt;
-      &lt;td&gt;31.0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Arkansas&lt;/th&gt;
-      &lt;td&gt;8.8&lt;/td&gt;
-      &lt;td&gt;190&lt;/td&gt;
-      &lt;td&gt;50&lt;/td&gt;
-      &lt;td&gt;19.5&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;California&lt;/th&gt;
-      &lt;td&gt;9.0&lt;/td&gt;
-      &lt;td&gt;276&lt;/td&gt;
-      &lt;td&gt;91&lt;/td&gt;
-      &lt;td&gt;40.6&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;h3 id=&#34;data-scaling&#34;&gt;Data Scaling&lt;/h3&gt;
-&lt;p&gt;To make all the features comparable, we first need to scale them. In this case, we use the &lt;code&gt;sklearn.preprocessing.scale()&lt;/code&gt; function to normalize each variable to have zero mean and unit variance.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Scale data
-X_scaled = pd.DataFrame(scale(df), index=df.index, columns=df.columns).values
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We will see later what are the practical implications of (not) scaling.&lt;/p&gt;
-&lt;h3 id=&#34;fitting&#34;&gt;Fitting&lt;/h3&gt;
-&lt;p&gt;Let&amp;rsquo;s fit PCA with 2 components.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Fit PCA with 2 components
-pca2 = PCA(n_components=2).fit(X_scaled)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Get weights
-weights = pca2.components_.T
-df_weights = pd.DataFrame(weights, index=df.columns, columns=[&#39;PC1&#39;, &#39;PC2&#39;])
-df_weights
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;PC1&lt;/th&gt;
-      &lt;th&gt;PC2&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Murder&lt;/th&gt;
-      &lt;td&gt;0.535899&lt;/td&gt;
-      &lt;td&gt;0.418181&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Assault&lt;/th&gt;
-      &lt;td&gt;0.583184&lt;/td&gt;
-      &lt;td&gt;0.187986&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;UrbanPop&lt;/th&gt;
-      &lt;td&gt;0.278191&lt;/td&gt;
-      &lt;td&gt;-0.872806&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Rape&lt;/th&gt;
-      &lt;td&gt;0.543432&lt;/td&gt;
-      &lt;td&gt;-0.167319&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;h3 id=&#34;projecting-the-data&#34;&gt;Projecting the data&lt;/h3&gt;
-&lt;p&gt;What does the trasformed data looks like?&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Transform X to get the principal components
-X_dim2 = pca2.transform(X_scaled)
-df_dim2 = pd.DataFrame(X_dim2, columns=[&#39;PC1&#39;, &#39;PC2&#39;], index=df.index)
-df_dim2.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;PC1&lt;/th&gt;
-      &lt;th&gt;PC2&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;State&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Alabama&lt;/th&gt;
-      &lt;td&gt;0.985566&lt;/td&gt;
-      &lt;td&gt;1.133392&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Alaska&lt;/th&gt;
-      &lt;td&gt;1.950138&lt;/td&gt;
-      &lt;td&gt;1.073213&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Arizona&lt;/th&gt;
-      &lt;td&gt;1.763164&lt;/td&gt;
-      &lt;td&gt;-0.745957&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Arkansas&lt;/th&gt;
-      &lt;td&gt;-0.141420&lt;/td&gt;
-      &lt;td&gt;1.119797&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;California&lt;/th&gt;
-      &lt;td&gt;2.523980&lt;/td&gt;
-      &lt;td&gt;-1.542934&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;h3 id=&#34;visualization&#34;&gt;Visualization&lt;/h3&gt;
-&lt;p&gt;The advantage og PCA is that it allows us to see the variation in lower dimesions.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_10_1a(df_dim2, df_weights)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_26_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;h3 id=&#34;pca-and-spectral-analysis&#34;&gt;PCA and Spectral Analysis&lt;/h3&gt;
-&lt;p&gt;In case you haven&amp;rsquo;t noticed, calculating principal components, is equivalent to calculating the eigenvectors of the design matrix $X&amp;rsquo;X$, i.e. the variance-covariance matrix of $X$. Indeed what we performed above is a decomposition of the variance of $X$ into orthogonal components.&lt;/p&gt;
-&lt;p&gt;The constrained maximization problem above can be re-written in matrix notation as&lt;/p&gt;
-&lt;p&gt;$$
-\max \ \phi&#39; X&amp;rsquo;X \phi \quad \text{ s. t. } \quad \phi&#39;\phi = 1
-$$&lt;/p&gt;
-&lt;p&gt;Which has the following dual representation&lt;/p&gt;
-&lt;p&gt;$$
-\mathcal L (\phi, \lambda) = \phi&#39; X&amp;rsquo;X \phi - \lambda (\phi&#39;\phi - 1)
-$$&lt;/p&gt;
-&lt;p&gt;If we take the first order conditions&lt;/p&gt;
-&lt;p&gt;$$
-\begin{align}
-&amp;amp; \frac{\partial \mathcal L}{\partial \lambda} = \phi&#39;\phi - 1 \
-&amp;amp; \frac{\partial \mathcal L}{\partial \phi} = 2 X&amp;rsquo;X \phi - 2 \lambda \phi
-\end{align}
-$$&lt;/p&gt;
-&lt;p&gt;Setting the derivatives to zero at the optimum, we get&lt;/p&gt;
-&lt;p&gt;$$
-\begin{align}
-&amp;amp; \phi&#39;\phi = 1 \
-&amp;amp; X&amp;rsquo;X \phi = \lambda \phi
-\end{align}
-$$&lt;/p&gt;
-&lt;p&gt;Thus, $\phi$ is an &lt;strong&gt;eigenvector&lt;/strong&gt; of the covariance matrix $X&amp;rsquo;X$, and the maximizing vector will be the one associated with the largest &lt;strong&gt;eigenvalue&lt;/strong&gt; $\lambda$.&lt;/p&gt;
-&lt;h3 id=&#34;equivalence-with-numpy&#34;&gt;Equivalence with numpy&lt;/h3&gt;
-&lt;p&gt;We can now double-check it using &lt;code&gt;numpy&lt;/code&gt; linear algebra package.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;eigenval, eigenvec = np.linalg.eig(X_scaled.T @ X_scaled)
-data = np.concatenate((eigenvec,eigenval.reshape(1,-1)))
-idx = list(df.columns) + [&#39;Eigenvalue&#39;]
-df_eigen = pd.DataFrame(data, index=idx, columns=[&#39;PC1&#39;, &#39;PC2&#39;,&#39;PC3&#39;,&#39;PC4&#39;])
-
-df_eigen
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;PC1&lt;/th&gt;
-      &lt;th&gt;PC2&lt;/th&gt;
-      &lt;th&gt;PC3&lt;/th&gt;
-      &lt;th&gt;PC4&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Murder&lt;/th&gt;
-      &lt;td&gt;0.535899&lt;/td&gt;
-      &lt;td&gt;0.418181&lt;/td&gt;
-      &lt;td&gt;0.649228&lt;/td&gt;
-      &lt;td&gt;-0.341233&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Assault&lt;/th&gt;
-      &lt;td&gt;0.583184&lt;/td&gt;
-      &lt;td&gt;0.187986&lt;/td&gt;
-      &lt;td&gt;-0.743407&lt;/td&gt;
-      &lt;td&gt;-0.268148&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;UrbanPop&lt;/th&gt;
-      &lt;td&gt;0.278191&lt;/td&gt;
-      &lt;td&gt;-0.872806&lt;/td&gt;
-      &lt;td&gt;0.133878&lt;/td&gt;
-      &lt;td&gt;-0.378016&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Rape&lt;/th&gt;
-      &lt;td&gt;0.543432&lt;/td&gt;
-      &lt;td&gt;-0.167319&lt;/td&gt;
-      &lt;td&gt;0.089024&lt;/td&gt;
-      &lt;td&gt;0.817778&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Eigenvalue&lt;/th&gt;
-      &lt;td&gt;124.012079&lt;/td&gt;
-      &lt;td&gt;49.488258&lt;/td&gt;
-      &lt;td&gt;8.671504&lt;/td&gt;
-      &lt;td&gt;17.828159&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;The spectral decomposition of the variance of $X$ generates a set of orthogonal vectors (eigenvectors) with different magnitudes (eigenvalues). The eigenvalues tell us the amount of variance of the data in that direction.&lt;/p&gt;
-&lt;p&gt;If we combine the eigenvectors together, we form a projection matrix $P$ that we can use to transform the original variables: $\tilde X = P X$&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X_transformed = X_scaled @ eigenvec
-df_transformed = pd.DataFrame(X_transformed, index=df.index, columns=[&#39;PC1&#39;, &#39;PC2&#39;,&#39;PC3&#39;,&#39;PC4&#39;])
-
-df_transformed.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;PC1&lt;/th&gt;
-      &lt;th&gt;PC2&lt;/th&gt;
-      &lt;th&gt;PC3&lt;/th&gt;
-      &lt;th&gt;PC4&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;State&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Alabama&lt;/th&gt;
-      &lt;td&gt;0.985566&lt;/td&gt;
-      &lt;td&gt;1.133392&lt;/td&gt;
-      &lt;td&gt;0.156267&lt;/td&gt;
-      &lt;td&gt;-0.444269&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Alaska&lt;/th&gt;
-      &lt;td&gt;1.950138&lt;/td&gt;
-      &lt;td&gt;1.073213&lt;/td&gt;
-      &lt;td&gt;-0.438583&lt;/td&gt;
-      &lt;td&gt;2.040003&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Arizona&lt;/th&gt;
-      &lt;td&gt;1.763164&lt;/td&gt;
-      &lt;td&gt;-0.745957&lt;/td&gt;
-      &lt;td&gt;-0.834653&lt;/td&gt;
-      &lt;td&gt;0.054781&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Arkansas&lt;/th&gt;
-      &lt;td&gt;-0.141420&lt;/td&gt;
-      &lt;td&gt;1.119797&lt;/td&gt;
-      &lt;td&gt;-0.182811&lt;/td&gt;
-      &lt;td&gt;0.114574&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;California&lt;/th&gt;
-      &lt;td&gt;2.523980&lt;/td&gt;
-      &lt;td&gt;-1.542934&lt;/td&gt;
-      &lt;td&gt;-0.341996&lt;/td&gt;
-      &lt;td&gt;0.598557&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;This is exactly the dataset that we obtained before.&lt;/p&gt;
-&lt;h3 id=&#34;scaling-the-variables&#34;&gt;Scaling the Variables&lt;/h3&gt;
-&lt;p&gt;The results obtained when we perform PCA will also depend on whether the variables have been individually scaled. In fact, the variance of a variable depends on its magnitude.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Variables variance
-df.var(axis=0)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Murder        18.970465
-Assault     6945.165714
-UrbanPop     209.518776
-Rape          87.729159
-dtype: float64
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Consequently, if we perform PCA on the unscaled variables, then the first principal component loading vector will have a very large loading for &lt;code&gt;Assault&lt;/code&gt;, since that variable has by far the highest variance.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Fit PCA with unscaled varaibles
-X = df.values
-pca2_u = PCA(n_components=2).fit(X)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Get weights
-weights_u = pca2_u.components_.T
-df_weights_u = pd.DataFrame(weights_u, index=df.columns, columns=[&#39;PC1&#39;, &#39;PC2&#39;])
-df_weights_u
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;PC1&lt;/th&gt;
-      &lt;th&gt;PC2&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Murder&lt;/th&gt;
-      &lt;td&gt;0.041704&lt;/td&gt;
-      &lt;td&gt;0.044822&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Assault&lt;/th&gt;
-      &lt;td&gt;0.995221&lt;/td&gt;
-      &lt;td&gt;0.058760&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;UrbanPop&lt;/th&gt;
-      &lt;td&gt;0.046336&lt;/td&gt;
-      &lt;td&gt;-0.976857&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Rape&lt;/th&gt;
-      &lt;td&gt;0.075156&lt;/td&gt;
-      &lt;td&gt;-0.200718&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;We can have a look at the transformed dataset.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Transform X to get the principal components
-X_dim2_u = pca2_u.transform(X)
-df_dim2_u = pd.DataFrame(X_dim2_u, columns=[&#39;PC1&#39;, &#39;PC2&#39;], index=df.index)
-df_dim2_u.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;PC1&lt;/th&gt;
-      &lt;th&gt;PC2&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;State&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Alabama&lt;/th&gt;
-      &lt;td&gt;64.802164&lt;/td&gt;
-      &lt;td&gt;11.448007&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Alaska&lt;/th&gt;
-      &lt;td&gt;92.827450&lt;/td&gt;
-      &lt;td&gt;17.982943&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Arizona&lt;/th&gt;
-      &lt;td&gt;124.068216&lt;/td&gt;
-      &lt;td&gt;-8.830403&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Arkansas&lt;/th&gt;
-      &lt;td&gt;18.340035&lt;/td&gt;
-      &lt;td&gt;16.703911&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;California&lt;/th&gt;
-      &lt;td&gt;107.422953&lt;/td&gt;
-      &lt;td&gt;-22.520070&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;h3 id=&#34;plotting&#34;&gt;Plotting&lt;/h3&gt;
-&lt;p&gt;We can plot the lower dimensional representation of the data.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_10_1b(df_dim2, df_dim2_u, df_weights, df_weights_u)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;As predicted, the first principal component loading vector places almost all of its weight on &lt;code&gt;Assault&lt;/code&gt;, while the second principal component loading vector places almost all of its weight on &lt;code&gt;UrpanPop&lt;/code&gt;. Comparing this to the left-hand plot, we see that scaling does indeed have a substantial effect on the results obtained. However, this result is simply a consequence of the scales on which the variables were measured.&lt;/p&gt;
-&lt;h3 id=&#34;the-proportion-of-variance-explained&#34;&gt;The Proportion of Variance Explained&lt;/h3&gt;
-&lt;p&gt;We can now ask a natural question: how much of the information in a given data set is lost by projecting the observations onto the first few principal components? That is, how much of the variance in the data is not contained in the first few principal components? More generally, we are interested in knowing the &lt;strong&gt;proportion of variance explained (PVE)&lt;/strong&gt; by each principal component.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Four components
-pca4 = PCA(n_components=4).fit(X_scaled)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Variance of the four principal components
-pca4.explained_variance_
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;array([2.53085875, 1.00996444, 0.36383998, 0.17696948])
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can compute it in percentage of the total variance.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# As a percentage of the total variance
-pca4.explained_variance_ratio_
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;array([0.62006039, 0.24744129, 0.0891408 , 0.04335752])
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In the &lt;code&gt;Arrest&lt;/code&gt; dataset, the first principal component explains $62.0%$ of the variance in the data, and the next principal component explains $24.7%$ of the variance. Together, the first two principal components explain almost $87%$ of the variance in the data, and the last two principal components explain only $13%$ of the variance.&lt;/p&gt;
-&lt;p&gt;We can plot in a graph the percentage of the variance explained, relative to the number of components.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_10_2(pca4)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_56_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;h3 id=&#34;how-many-principal-components&#34;&gt;How Many Principal Components?&lt;/h3&gt;
-&lt;p&gt;In general, a $n \times p$ data matrix $X$ has $\min{n − 1, p}$ distinct principal components. However, we usually are not interested in all of them; rather, we would like to use just the first few principal components in order to visualize or interpret the data.&lt;/p&gt;
-&lt;p&gt;We typically decide on the number of principal components required to visualize the data by examining a &lt;em&gt;scree plot&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;However, there is no well-accepted objective way to decide how many principal com- ponents are enough.&lt;/p&gt;
-&lt;h2 id=&#34;clustering&#34;&gt;Clustering&lt;/h2&gt;
-&lt;p&gt;Clustering refers to a very broad set of techniques for finding subgroups, or clusters, in a data set. When we cluster the observations of a data set, we seek to partition them into distinct groups so that the observations within each group are quite similar to each other, while observations in different groups are quite different from each other.&lt;/p&gt;
-&lt;p&gt;In this section we focus on perhaps the two best-known clustering approaches:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;K-means clustering&lt;/strong&gt;: we seek to partition the observations into a pre-specified clustering number of clusters&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Hierarchical clustering&lt;/strong&gt;: we do not know in advance how many clusters we want; in fact, we end up with a tree-like visual representation of the observations, called a dendrogram, that allows us to view at once the clusterings obtained for each possible number of clusters, from 1 to n.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;k-means-clustering&#34;&gt;K-Means Clustering&lt;/h3&gt;
-&lt;p&gt;The idea behind K-means clustering is that a good clustering is one for which the within-cluster variation is as small as possible. Hence we want to solve the problem&lt;/p&gt;
-&lt;p&gt;$$
-\underset{C_{1}, \ldots, C_{K}}{\operatorname{minimize}}\left{\sum_{k=1}^{K} W\left(C_{k}\right)\right}
-$$&lt;/p&gt;
-&lt;p&gt;where $C_k$ is a cluster and $ W(C_k)$ is a measure of the amount by which the observations within a cluster differ from each other.&lt;/p&gt;
-&lt;p&gt;There are many possible ways to define this concept, but by far the most common choice involves &lt;strong&gt;squared Euclidean distance&lt;/strong&gt;. That is, we define&lt;/p&gt;
-&lt;p&gt;$$
-W\left(C_{k}\right)=\frac{1}{\left|C_{k}\right|} \sum_{i, i^{\prime} \in C_{k}} \sum_{j=1}^{p}\left(x_{i j}-x_{i^{\prime} j}\right)^2
-$$&lt;/p&gt;
-&lt;p&gt;where $|C_k|$ denotes the number of observations in the $k^{th}$ cluster.&lt;/p&gt;
-&lt;h3 id=&#34;algorithm&#34;&gt;Algorithm&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;Randomly assign a number, from $1$ to $K$, to each of the observations. These serve as initial cluster assignments for the observations.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Iterate until the cluster assignments stop changing:&lt;/p&gt;
-&lt;p&gt;a) For each of the $K$ clusters, compute the cluster centroid. The kth cluster centroid is the vector of the $p$ feature means for the observations in the $k^{th}$ cluster.&lt;/p&gt;
-&lt;p&gt;b) Assign each observation to the cluster whose centroid is closest (where closest is defined using Euclidean distance).&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(123)
-
-# Simulate data
-X = np.random.randn(50,2)
-X[0:25, 0] = X[0:25, 0] + 3
-X[0:25, 1] = X[0:25, 1] - 4
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This is what the baseline data looks like.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure new 1
-def make_new_figure_1():
-    
-    # Init
-    fig, ax = plt.subplots(figsize=(6, 5))
-    fig.suptitle(&amp;quot;Baseline&amp;quot;)
-
-    # Plot
-    ax.scatter(X[:,0], X[:,1], s=50, alpha=0.5, c=&#39;k&#39;) 
-    ax.set_xlabel(&#39;X0&#39;); ax.set_ylabel(&#39;X1&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_1()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_68_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Now let&amp;rsquo;s randomly assign the data to two clusters, at random.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(1)
-
-# Init clusters
-K = 2
-clusters0 = np.random.randint(K,size=(np.size(X,0)))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure new 2
-def make_new_figure_2():
-    
-    # Init
-    fig, ax = plt.subplots(figsize=(6, 5))
-    fig.suptitle(&amp;quot;Random assignment&amp;quot;)
-
-    # Plot
-    ax.scatter(X[clusters0==0,0], X[clusters0==0,1], s=50, alpha=0.5) 
-    ax.scatter(X[clusters0==1,0], X[clusters0==1,1], s=50, alpha=0.5)
-    ax.set_xlabel(&#39;X0&#39;); ax.set_ylabel(&#39;X1&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_2()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_72_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;What are the new centroids?&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Compute new centroids
-def compute_new_centroids(X, clusters):
-    K = len(np.unique(clusters))
-    centroids = np.zeros((K,np.size(X,1)))
-    for k in range(K):
-        if sum(clusters==k)&amp;gt;0:
-            centroids[k,:] = np.mean(X[clusters==k,:], axis=0)
-        else:
-            centroids[k,:] = np.mean(X, axis=0)
-    return centroids
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Print
-centroids0 = compute_new_centroids(X, clusters0)
-print(centroids0)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[[ 1.35725989 -2.15281035]
- [ 1.84654757 -1.99437838]]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Let&amp;rsquo;s add the centroids to the graph.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot assignment
-def plot_assignment(X, centroids, clusters, d, i):
-    clear_output(wait=True)
-    fig, ax = plt.subplots(figsize=(6, 5))
-    fig.suptitle(&amp;quot;Iteration %.0f: inertia=%.1f&amp;quot; % (i,d))
-
-    # Plot
-    ax.clear()
-    colors = plt.rcParams[&#39;axes.prop_cycle&#39;].by_key()[&#39;color&#39;];
-    K = np.size(centroids,0)
-    for k in range(K):
-        ax.scatter(X[clusters==k,0], X[clusters==k,1], s=50, c=colors[k], alpha=0.5) 
-        ax.scatter(centroids[k,0], centroids[k,1], marker = &#39;*&#39;, s=300, color=colors[k])
-        ax.set_xlabel(&#39;X0&#39;); ax.set_ylabel(&#39;X1&#39;);
-    
-    # Show
-    plt.show();
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
-plot_assignment(X, centroids0, clusters0, 0, 0)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_78_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Now we can assign the data to the centroids.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Assign X to clusters
-def assign_to_cluster(X, centroids):
-    K = np.size(centroids,0)
-    dist = np.zeros((np.size(X,0),K))
-    for k in range(K):
-        dist[:,k] = np.mean((X - centroids[k,:])**2, axis=1)
-    clusters = np.argmin(dist, axis=1)
-    
-    # Compute inertia
-    inertia = 0
-    for k in range(K):
-        if sum(clusters==k)&amp;gt;0:
-            inertia += np.sum((X[clusters==k,:] - centroids[k,:])**2)
-    return clusters, inertia
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Get cluster assignment
-[clusters1,d] = assign_to_cluster(X, centroids0)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
-plot_assignment(X, centroids0, clusters1, d, 1)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_82_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;We now have all the components to proceed iteratively.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def kmeans_manual(X, K):
-
-    # Init
-    i = 0
-    d0 = 1e4
-    d1 = 1e5
-    clusters = np.random.randint(K,size=(np.size(X,0)))
-
-    # Iterate until convergence
-    while np.abs(d0-d1) &amp;gt; 1e-10:
-        d1 = d0
-        centroids = compute_new_centroids(X, clusters)
-        [clusters, d0] = assign_to_cluster(X, centroids)
-        plot_assignment(X, centroids, clusters, d0, i)
-        i+=1
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Test
-kmeans_manual(X, K)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_85_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Here the observations can be easily plotted because they are two-dimensional.
-If there were more than two variables then we could instead perform PCA
-and plot the first two principal components score vectors.&lt;/p&gt;
-&lt;p&gt;In the previous example, we knew that there really were two clusters because
-we generated the data. However, for real data, in general we do not know
-the true number of clusters. We could instead have performed K-means
-clustering on this example with &lt;code&gt;K  =  3&lt;/code&gt;. If we do this, K-means clustering will split up the two &amp;ldquo;real&amp;rdquo; clusters, since it has no information about them:&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# K=3
-kmeans_manual(X, 3)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_88_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;The automated function in &lt;code&gt;sklearn&lt;/code&gt; to persorm $K$-means clustering is &lt;code&gt;KMeans&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# SKlearn algorithm
-km1 = KMeans(n_clusters=3, n_init=1, random_state=1)
-km1.fit(X)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;KMeans(n_clusters=3, n_init=1, random_state=1)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can plot the asssignment generated by the &lt;code&gt;KMeans&lt;/code&gt; function.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
-plot_assignment(X, km1.cluster_centers_, km1.labels_, km1.inertia_, km1.n_iter_)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_92_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;As we can see, the results are different in the two algorithms? Why? $K$-means is susceptible to the initial values. One way to solve this problem is to run the algorithm multiple times and report only the best results&lt;/p&gt;
-&lt;p&gt;To run the &lt;code&gt;Kmeans()&lt;/code&gt; function in python with multiple initial cluster assignments, we use the &lt;code&gt;n_init&lt;/code&gt; argument (default: 10). If a value of &lt;code&gt;n_init&lt;/code&gt; greater than one is used, then K-means clustering will be performed using multiple random assignments, and the &lt;code&gt;Kmeans()&lt;/code&gt; function will report only the best results.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# 30 runs
-km_30run = KMeans(n_clusters=3, n_init=30, random_state=1).fit(X)
-plot_assignment(X, km_30run.cluster_centers_, km_30run.labels_, km_30run.inertia_, km_30run.n_iter_)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_95_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;It is generally recommended to always run K-means clustering with a large value of &lt;code&gt;n_init&lt;/code&gt;, such as 20 or 50 to avoid getting stuck in an undesirable local optimum.&lt;/p&gt;
-&lt;p&gt;When performing K-means clustering, in addition to using multiple initial cluster assignments, it is also important to set a random seed using the &lt;code&gt;random_state&lt;/code&gt; parameter. This way, the initial cluster assignments can be replicated, and the K-means output will be fully reproducible.&lt;/p&gt;
-&lt;h3 id=&#34;hierarchical-clustering&#34;&gt;Hierarchical Clustering&lt;/h3&gt;
-&lt;p&gt;One potential disadvantage of K-means clustering is that it requires us to pre-specify the number of clusters $K$. Hierarchical clustering is an alternative approach which does not require that we commit to a particular choice of $K$&lt;/p&gt;
-&lt;h3 id=&#34;the-dendogram&#34;&gt;The Dendogram&lt;/h3&gt;
-&lt;p&gt;Hierarchical clustering has an added advantage over K-means clustering in that it results in an attractive tree-based representation of the observations, called a &lt;strong&gt;dendrogram&lt;/strong&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure new 3
-def make_new_figure_3():
-    
-    # Init
-    plt.figure(figsize=(25, 10))
-    plt.title(&#39;Hierarchical Clustering Dendrogram&#39;)
-
-    # calculate full dendrogram
-    plt.xlabel(&#39;sample index&#39;)
-    plt.ylabel(&#39;distance&#39;)
-    dendrogram(
-        linkage(X, &amp;quot;complete&amp;quot;),
-        leaf_rotation=90.,  # rotates the x axis labels
-        leaf_font_size=8.,  # font size for the x axis labels
-    )
-    plt.show()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_3()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_102_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Each leaf of the &lt;em&gt;dendrogram&lt;/em&gt; represents one observation.&lt;/p&gt;
-&lt;p&gt;As we move up the tree, some leaves begin to fuse into branches. These correspond to observations that are similar to each other. As we move higher up the tree, branches themselves fuse, either with leaves or other branches. The earlier (lower in the tree) fusions occur, the more similar the groups of observations are to each other.&lt;/p&gt;
-&lt;p&gt;We can use de &lt;em&gt;dendogram&lt;/em&gt; to understand how similar two observations are: we can look for the point in the tree where branches containing those two obse rvations are first fused. The height of this fusion, as measured on the vertical axis, indicates how different the two observations are. Thus, observations that fuse at the very bottom of the tree are quite similar to each other, whereas observations that fuse close to the top of the tree will tend to be quite different.&lt;/p&gt;
-&lt;p&gt;The term &lt;strong&gt;hierarchical&lt;/strong&gt; refers to the fact that clusters obtained by cutting the dendrogram at a given height are necessarily nested within the clusters obtained by cutting the dendrogram at any greater height.&lt;/p&gt;
-&lt;h3 id=&#34;the-hierarchical-clustering-algorithm&#34;&gt;The Hierarchical Clustering Algorithm&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;Begin with $n$ observations and a measure (such as Euclidean distance) of all the $n(n − 1)/2$ pairwise dissimilarities. Treat each 2 observation as its own cluster.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;For $i=n,n−1,&amp;hellip;,2$&lt;/p&gt;
-&lt;p&gt;a) Examine all pairwise inter-cluster dissimilarities among the $i$ clusters and identify the &lt;strong&gt;pair of clusters that are least dissimilar&lt;/strong&gt; (that is, most similar). Fuse these two clusters. The dissimilarity between these two clusters indicates the height in the dendrogram at which the fusion should be placed.&lt;/p&gt;
-&lt;p&gt;b) Compute the new pairwise inter-cluster dissimilarities among the $i−1$ remaining clusters.&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;the-linkage-function&#34;&gt;The Linkage Function&lt;/h3&gt;
-&lt;p&gt;We have a concept of the dissimilarity between pairs of observations, but how do we define the dissimilarity between two clusters if one or both of the clusters contains multiple observations?&lt;/p&gt;
-&lt;p&gt;The concept of dissimilarity between a pair of observations needs to be extended to a pair of groups of observations. This extension is achieved by developing the notion of &lt;strong&gt;linkage&lt;/strong&gt;, which defines the dissimilarity between two groups of observations.&lt;/p&gt;
-&lt;p&gt;The four most common types of linkage are:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;Complete&lt;/strong&gt;: Maximal intercluster dissimilarity. Compute all pairwise dissimilarities between the observations in cluster A and the observations in cluster B, and record the largest of these dissimilarities.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Single&lt;/strong&gt;: Minimal intercluster dissimilarity. Compute all pairwise dissimilarities between the observations in cluster A and the observations in cluster B, and record the smallest of these dissimilarities.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Average&lt;/strong&gt;: Mean intercluster dissimilarity. Compute all pairwise dissimilarities between the observations in cluster A and the observations in cluster B, and record the average of these dissimilarities.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Centroid&lt;/strong&gt;: Dissimilarity between the centroid for cluster A (a mean vector of length p) and the centroid for cluster B. Centroid linkage can result in undesirable inversions.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Average, complete, and single linkage are most popular among statisticians. Average and complete linkage are generally preferred over single linkage, as they tend to yield more balanced dendrograms. Centroid linkage is often used in genomics, but suffers from a major drawback in that an inversion can occur, whereby two clusters are fused at a height below either of the individual clusters in the dendrogram. This can lead to difficulties in visualization as well as in interpretation of the dendrogram.&lt;/p&gt;
-&lt;h3 id=&#34;plotting-1&#34;&gt;Plotting&lt;/h3&gt;
-&lt;p&gt;Let&amp;rsquo;s plot the dendogram for each of the different linkages.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Init
-linkages = [hierarchy.complete(X), hierarchy.average(X), hierarchy.single(X)]
-titles = [&#39;Complete Linkage&#39;, &#39;Average Linkage&#39;, &#39;Single Linkage&#39;]
-make_new_figure_4(linkages, titles)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_112_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;For this data, complete and average linkage generally separates the observations into their correct groups.&lt;/p&gt;
-</description>
     </item>
     
   </channel>
