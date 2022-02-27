@@ -9309,7 +9309,8 @@ Boosting : 1.0327
       <link>https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/</link>
       <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/</guid>
-      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from utils.lecture10 import *
+      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Setup
+from utils.lecture10 import *
 %matplotlib inline
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&#34;supervised-vs-unsupervised-learning&#34;&gt;Supervised vs Unsupervised Learning&lt;/h3&gt;
@@ -9321,6 +9322,17 @@ Boosting : 1.0327
 &lt;li&gt;Dimensionality reduction&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;In general, unsupervised learning can be viewed as an extention of exploratory data analysis.&lt;/p&gt;
+&lt;h3 id=&#34;dimensionality-reduction&#34;&gt;Dimensionality Reduction&lt;/h3&gt;
+&lt;p&gt;Working in high-dimensional spaces can be undesirable for many reasons; raw data are often sparse as a consequence of the curse of dimensionality, and analyzing the data is usually computationally intractable (hard to control or deal with).&lt;/p&gt;
+&lt;p&gt;Dimensionality reduction can also be useful to plot high-dimensional data.&lt;/p&gt;
+&lt;h3 id=&#34;clustering&#34;&gt;Clustering&lt;/h3&gt;
+&lt;p&gt;Clustering refers to a very broad set of techniques for finding subgroups, or clusters, in a data set. When we cluster the observations of a data set, we seek to partition them into distinct groups so that the observations within each group are quite similar to each other, while observations in different groups are quite different from each other.&lt;/p&gt;
+&lt;p&gt;In this section we focus on the following algorithms:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;K-means clustering&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Hierarchical clustering&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Gaussian Mixture Models&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
 &lt;h2 id=&#34;principal-component-analysis&#34;&gt;Principal Component Analysis&lt;/h2&gt;
 &lt;p&gt;Suppose that we wish to visualize $n$ observations with measurements on a set of $p$ features, ${X_1, . . . , X_p}$, as part of an exploratory data analysis.&lt;/p&gt;
 &lt;p&gt;We could do this by examining two-dimensional scatterplots of the data, each of which contains the n observations’ measurements on two of the features. However, there are $p(p−1)/2$ such scatterplots; for example,
@@ -9546,7 +9558,7 @@ df_dim2.head()
 &lt;p&gt;The advantage og PCA is that it allows us to see the variation in lower dimesions.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_10_1a(df_dim2, df_weights)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_26_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_30_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;pca-and-spectral-analysis&#34;&gt;PCA and Spectral Analysis&lt;/h3&gt;
 &lt;p&gt;In case you haven&amp;rsquo;t noticed, calculating principal components, is equivalent to calculating the eigenvectors of the design matrix $X&amp;rsquo;X$, i.e. the variance-covariance matrix of $X$. Indeed what we performed above is a decomposition of the variance of $X$ into orthogonal components.&lt;/p&gt;
 &lt;p&gt;The constrained maximization problem above can be re-written in matrix notation as&lt;/p&gt;
@@ -9572,7 +9584,7 @@ $$&lt;/p&gt;
 \end{align}
 $$&lt;/p&gt;
 &lt;p&gt;Thus, $\phi$ is an &lt;strong&gt;eigenvector&lt;/strong&gt; of the covariance matrix $X&amp;rsquo;X$, and the maximizing vector will be the one associated with the largest &lt;strong&gt;eigenvalue&lt;/strong&gt; $\lambda$.&lt;/p&gt;
-&lt;h3 id=&#34;equivalence-with-numpy&#34;&gt;Equivalence with numpy&lt;/h3&gt;
+&lt;h3 id=&#34;eigenvalues-and-eigenvectors&#34;&gt;Eigenvalues and eigenvectors&lt;/h3&gt;
 &lt;p&gt;We can now double-check it using &lt;code&gt;numpy&lt;/code&gt; linear algebra package.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;eigenval, eigenvec = np.linalg.eig(X_scaled.T @ X_scaled)
 data = np.concatenate((eigenvec,eigenval.reshape(1,-1)))
@@ -9789,73 +9801,15 @@ df_weights_u
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;We can have a look at the transformed dataset.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Transform X to get the principal components
 X_dim2_u = pca2_u.transform(X)
 df_dim2_u = pd.DataFrame(X_dim2_u, columns=[&#39;PC1&#39;, &#39;PC2&#39;], index=df.index)
-df_dim2_u.head()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;PC1&lt;/th&gt;
-      &lt;th&gt;PC2&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;State&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Alabama&lt;/th&gt;
-      &lt;td&gt;64.802164&lt;/td&gt;
-      &lt;td&gt;11.448007&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Alaska&lt;/th&gt;
-      &lt;td&gt;92.827450&lt;/td&gt;
-      &lt;td&gt;17.982943&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Arizona&lt;/th&gt;
-      &lt;td&gt;124.068216&lt;/td&gt;
-      &lt;td&gt;-8.830403&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Arkansas&lt;/th&gt;
-      &lt;td&gt;18.340035&lt;/td&gt;
-      &lt;td&gt;16.703911&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;California&lt;/th&gt;
-      &lt;td&gt;107.422953&lt;/td&gt;
-      &lt;td&gt;-22.520070&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
 &lt;h3 id=&#34;plotting&#34;&gt;Plotting&lt;/h3&gt;
-&lt;p&gt;We can plot the lower dimensional representation of the data.&lt;/p&gt;
+&lt;p&gt;We can compare the lower dimensional representations with and without scaling.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_10_1b(df_dim2, df_dim2_u, df_weights, df_weights_u)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_49_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As predicted, the first principal component loading vector places almost all of its weight on &lt;code&gt;Assault&lt;/code&gt;, while the second principal component loading vector places almost all of its weight on &lt;code&gt;UrpanPop&lt;/code&gt;. Comparing this to the left-hand plot, we see that scaling does indeed have a substantial effect on the results obtained. However, this result is simply a consequence of the scales on which the variables were measured.&lt;/p&gt;
 &lt;h3 id=&#34;the-proportion-of-variance-explained&#34;&gt;The Proportion of Variance Explained&lt;/h3&gt;
 &lt;p&gt;We can now ask a natural question: how much of the information in a given data set is lost by projecting the observations onto the first few principal components? That is, how much of the variance in the data is not contained in the first few principal components? More generally, we are interested in knowing the &lt;strong&gt;proportion of variance explained (PVE)&lt;/strong&gt; by each principal component.&lt;/p&gt;
@@ -9867,6 +9821,7 @@ pca4.explained_variance_
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;array([2.53085875, 1.00996444, 0.36383998, 0.17696948])
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;interpretation&#34;&gt;Interpretation&lt;/h3&gt;
 &lt;p&gt;We can compute it in percentage of the total variance.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# As a percentage of the total variance
 pca4.explained_variance_ratio_
@@ -9874,25 +9829,19 @@ pca4.explained_variance_ratio_
 &lt;pre&gt;&lt;code&gt;array([0.62006039, 0.24744129, 0.0891408 , 0.04335752])
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;In the &lt;code&gt;Arrest&lt;/code&gt; dataset, the first principal component explains $62.0%$ of the variance in the data, and the next principal component explains $24.7%$ of the variance. Together, the first two principal components explain almost $87%$ of the variance in the data, and the last two principal components explain only $13%$ of the variance.&lt;/p&gt;
+&lt;h3 id=&#34;plotting-1&#34;&gt;Plotting&lt;/h3&gt;
 &lt;p&gt;We can plot in a graph the percentage of the variance explained, relative to the number of components.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_10_2(pca4)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_56_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;how-many-principal-components&#34;&gt;How Many Principal Components?&lt;/h3&gt;
 &lt;p&gt;In general, a $n \times p$ data matrix $X$ has $\min{n − 1, p}$ distinct principal components. However, we usually are not interested in all of them; rather, we would like to use just the first few principal components in order to visualize or interpret the data.&lt;/p&gt;
 &lt;p&gt;We typically decide on the number of principal components required to visualize the data by examining a &lt;em&gt;scree plot&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;However, there is no well-accepted objective way to decide how many principal com- ponents are enough.&lt;/p&gt;
-&lt;h2 id=&#34;clustering&#34;&gt;Clustering&lt;/h2&gt;
-&lt;p&gt;Clustering refers to a very broad set of techniques for finding subgroups, or clusters, in a data set. When we cluster the observations of a data set, we seek to partition them into distinct groups so that the observations within each group are quite similar to each other, while observations in different groups are quite different from each other.&lt;/p&gt;
-&lt;p&gt;In this section we focus on perhaps the two best-known clustering approaches:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;strong&gt;K-means clustering&lt;/strong&gt;: we seek to partition the observations into a pre-specified clustering number of clusters&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Hierarchical clustering&lt;/strong&gt;: we do not know in advance how many clusters we want; in fact, we end up with a tree-like visual representation of the observations, called a dendrogram, that allows us to view at once the clusterings obtained for each possible number of clusters, from 1 to n.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;k-means-clustering&#34;&gt;K-Means Clustering&lt;/h3&gt;
+&lt;h2 id=&#34;k-means-clustering&#34;&gt;K-Means Clustering&lt;/h2&gt;
 &lt;p&gt;The idea behind K-means clustering is that a good clustering is one for which the within-cluster variation is as small as possible. Hence we want to solve the problem&lt;/p&gt;
 &lt;p&gt;$$
-\underset{C_{1}, \ldots, C_{K}}{\operatorname{minimize}}\left{\sum_{k=1}^{K} W\left(C_{k}\right)\right}
+\underset{C_{1}, \ldots, C_{K}}{\operatorname{minimize}} \Bigg\lbrace \sum_{k=1}^{K} W\left(C_{k}\right) \Bigg\rbrace
 $$&lt;/p&gt;
 &lt;p&gt;where $C_k$ is a cluster and $ W(C_k)$ is a measure of the amount by which the observations within a cluster differ from each other.&lt;/p&gt;
 &lt;p&gt;There are many possible ways to define this concept, but by far the most common choice involves &lt;strong&gt;squared Euclidean distance&lt;/strong&gt;. That is, we define&lt;/p&gt;
@@ -9911,50 +9860,26 @@ $$&lt;/p&gt;
 &lt;p&gt;b) Assign each observation to the cluster whose centroid is closest (where closest is defined using Euclidean distance).&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(123)
-
-# Simulate data
+&lt;h3 id=&#34;generate-the-data&#34;&gt;Generate the data&lt;/h3&gt;
+&lt;p&gt;We first generate a 2-dimensional dataset.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Simulate data
 X = np.random.randn(50,2)
 X[0:25, 0] = X[0:25, 0] + 3
 X[0:25, 1] = X[0:25, 1] - 4
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;This is what the baseline data looks like.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure new 1
-def make_new_figure_1():
-    
-    # Init
-    fig, ax = plt.subplots(figsize=(6, 5))
-    fig.suptitle(&amp;quot;Baseline&amp;quot;)
-
-    # Plot
-    ax.scatter(X[:,0], X[:,1], s=50, alpha=0.5, c=&#39;k&#39;) 
-    ax.set_xlabel(&#39;X0&#39;); ax.set_ylabel(&#39;X1&#39;);
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_1(X)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_1()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_68_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_71_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;step-1-random-assignement&#34;&gt;Step 1: random assignement&lt;/h3&gt;
 &lt;p&gt;Now let&amp;rsquo;s randomly assign the data to two clusters, at random.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(1)
-
-# Init clusters
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Init clusters
 K = 2
 clusters0 = np.random.randint(K,size=(np.size(X,0)))
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure new 2
-def make_new_figure_2():
-    
-    # Init
-    fig, ax = plt.subplots(figsize=(6, 5))
-    fig.suptitle(&amp;quot;Random assignment&amp;quot;)
-
-    # Plot
-    ax.scatter(X[clusters0==0,0], X[clusters0==0,1], s=50, alpha=0.5) 
-    ax.scatter(X[clusters0==1,0], X[clusters0==1,1], s=50, alpha=0.5)
-    ax.set_xlabel(&#39;X0&#39;); ax.set_ylabel(&#39;X1&#39;);
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_2(X, clusters0)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_2()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_72_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_75_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;step-2-estimate-distributions&#34;&gt;Step 2: estimate distributions&lt;/h3&gt;
 &lt;p&gt;What are the new centroids?&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Compute new centroids
 def compute_new_centroids(X, clusters):
@@ -9971,33 +9896,17 @@ def compute_new_centroids(X, clusters):
 centroids0 = compute_new_centroids(X, clusters0)
 print(centroids0)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;[[ 1.35725989 -2.15281035]
- [ 1.84654757 -1.99437838]]
+&lt;pre&gt;&lt;code&gt;[[ 1.53189398 -2.40243087]
+ [ 0.89180937 -1.78246823]]
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;plotting-the-centroids&#34;&gt;Plotting the centroids&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s add the centroids to the graph.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot assignment
-def plot_assignment(X, centroids, clusters, d, i):
-    clear_output(wait=True)
-    fig, ax = plt.subplots(figsize=(6, 5))
-    fig.suptitle(&amp;quot;Iteration %.0f: inertia=%.1f&amp;quot; % (i,d))
-
-    # Plot
-    ax.clear()
-    colors = plt.rcParams[&#39;axes.prop_cycle&#39;].by_key()[&#39;color&#39;];
-    K = np.size(centroids,0)
-    for k in range(K):
-        ax.scatter(X[clusters==k,0], X[clusters==k,1], s=50, c=colors[k], alpha=0.5) 
-        ax.scatter(centroids[k,0], centroids[k,1], marker = &#39;*&#39;, s=300, color=colors[k])
-        ax.set_xlabel(&#39;X0&#39;); ax.set_ylabel(&#39;X1&#39;);
-    
-    # Show
-    plt.show();
-&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
 plot_assignment(X, centroids0, clusters0, 0, 0)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_78_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Now we can assign the data to the centroids.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_82_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;step-3-assign-data-to-clusters&#34;&gt;Step 3: assign data to clusters&lt;/h3&gt;
+&lt;p&gt;Now we can assign the data to the clusters, according to the closest centroid.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Assign X to clusters
 def assign_to_cluster(X, centroids):
     K = np.size(centroids,0)
@@ -10013,13 +9922,15 @@ def assign_to_cluster(X, centroids):
             inertia += np.sum((X[clusters==k,:] - centroids[k,:])**2)
     return clusters, inertia
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;plotting-assigned-data&#34;&gt;Plotting assigned data&lt;/h3&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Get cluster assignment
 [clusters1,d] = assign_to_cluster(X, centroids0)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
 plot_assignment(X, centroids0, clusters1, d, 1)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_82_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_88_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;full-algorithm&#34;&gt;Full Algorithm&lt;/h3&gt;
 &lt;p&gt;We now have all the components to proceed iteratively.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def kmeans_manual(X, K):
 
@@ -10037,13 +9948,15 @@ plot_assignment(X, centroids0, clusters1, d, 1)
         plot_assignment(X, centroids, clusters, d0, i)
         i+=1
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;plotting-k-means-clustering&#34;&gt;Plotting k-means clustering&lt;/h3&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Test
 kmeans_manual(X, K)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_85_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_93_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Here the observations can be easily plotted because they are two-dimensional.
 If there were more than two variables then we could instead perform PCA
 and plot the first two principal components score vectors.&lt;/p&gt;
+&lt;h3 id=&#34;more-clusters&#34;&gt;More clusters&lt;/h3&gt;
 &lt;p&gt;In the previous example, we knew that there really were two clusters because
 we generated the data. However, for real data, in general we do not know
 the true number of clusters. We could instead have performed K-means
@@ -10051,7 +9964,8 @@ clustering on this example with &lt;code&gt;K  =  3&lt;/code&gt;. If we do this,
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# K=3
 kmeans_manual(X, 3)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_88_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_97_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;sklearn-package&#34;&gt;Sklearn package&lt;/h3&gt;
 &lt;p&gt;The automated function in &lt;code&gt;sklearn&lt;/code&gt; to persorm $K$-means clustering is &lt;code&gt;KMeans&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# SKlearn algorithm
 km1 = KMeans(n_clusters=3, n_init=1, random_state=1)
@@ -10059,44 +9973,36 @@ km1.fit(X)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;KMeans(n_clusters=3, n_init=1, random_state=1)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;plotting-2&#34;&gt;Plotting&lt;/h3&gt;
 &lt;p&gt;We can plot the asssignment generated by the &lt;code&gt;KMeans&lt;/code&gt; function.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
 plot_assignment(X, km1.cluster_centers_, km1.labels_, km1.inertia_, km1.n_iter_)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_92_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_103_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, the results are different in the two algorithms? Why? $K$-means is susceptible to the initial values. One way to solve this problem is to run the algorithm multiple times and report only the best results&lt;/p&gt;
+&lt;h3 id=&#34;initial-assignment&#34;&gt;Initial Assignment&lt;/h3&gt;
 &lt;p&gt;To run the &lt;code&gt;Kmeans()&lt;/code&gt; function in python with multiple initial cluster assignments, we use the &lt;code&gt;n_init&lt;/code&gt; argument (default: 10). If a value of &lt;code&gt;n_init&lt;/code&gt; greater than one is used, then K-means clustering will be performed using multiple random assignments, and the &lt;code&gt;Kmeans()&lt;/code&gt; function will report only the best results.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# 30 runs
 km_30run = KMeans(n_clusters=3, n_init=30, random_state=1).fit(X)
 plot_assignment(X, km_30run.cluster_centers_, km_30run.labels_, km_30run.inertia_, km_30run.n_iter_)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_95_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_107_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h3&gt;
 &lt;p&gt;It is generally recommended to always run K-means clustering with a large value of &lt;code&gt;n_init&lt;/code&gt;, such as 20 or 50 to avoid getting stuck in an undesirable local optimum.&lt;/p&gt;
 &lt;p&gt;When performing K-means clustering, in addition to using multiple initial cluster assignments, it is also important to set a random seed using the &lt;code&gt;random_state&lt;/code&gt; parameter. This way, the initial cluster assignments can be replicated, and the K-means output will be fully reproducible.&lt;/p&gt;
-&lt;h3 id=&#34;hierarchical-clustering&#34;&gt;Hierarchical Clustering&lt;/h3&gt;
-&lt;p&gt;One potential disadvantage of K-means clustering is that it requires us to pre-specify the number of clusters $K$. Hierarchical clustering is an alternative approach which does not require that we commit to a particular choice of $K$&lt;/p&gt;
+&lt;h2 id=&#34;hierarchical-clustering&#34;&gt;Hierarchical Clustering&lt;/h2&gt;
+&lt;p&gt;One potential disadvantage of K-means clustering is that it requires us to pre-specify the number of clusters $K$.&lt;/p&gt;
+&lt;p&gt;Hierarchical clustering is an alternative approach which does not require that we commit to a particular choice of $K$.&lt;/p&gt;
 &lt;h3 id=&#34;the-dendogram&#34;&gt;The Dendogram&lt;/h3&gt;
 &lt;p&gt;Hierarchical clustering has an added advantage over K-means clustering in that it results in an attractive tree-based representation of the observations, called a &lt;strong&gt;dendrogram&lt;/strong&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure new 3
-def make_new_figure_3():
-    
-    # Init
-    plt.figure(figsize=(25, 10))
-    plt.title(&#39;Hierarchical Clustering Dendrogram&#39;)
-
-    # calculate full dendrogram
-    plt.xlabel(&#39;sample index&#39;)
-    plt.ylabel(&#39;distance&#39;)
-    dendrogram(
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;d = dendrogram(
         linkage(X, &amp;quot;complete&amp;quot;),
         leaf_rotation=90.,  # rotates the x axis labels
         leaf_font_size=8.,  # font size for the x axis labels
     )
-    plt.show()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_3()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_102_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_114_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;interpretation-1&#34;&gt;Interpretation&lt;/h3&gt;
 &lt;p&gt;Each leaf of the &lt;em&gt;dendrogram&lt;/em&gt; represents one observation.&lt;/p&gt;
 &lt;p&gt;As we move up the tree, some leaves begin to fuse into branches. These correspond to observations that are similar to each other. As we move higher up the tree, branches themselves fuse, either with leaves or other branches. The earlier (lower in the tree) fusions occur, the more similar the groups of observations are to each other.&lt;/p&gt;
 &lt;p&gt;We can use de &lt;em&gt;dendogram&lt;/em&gt; to understand how similar two observations are: we can look for the point in the tree where branches containing those two obse rvations are first fused. The height of this fusion, as measured on the vertical axis, indicates how different the two observations are. Thus, observations that fuse at the very bottom of the tree are quite similar to each other, whereas observations that fuse close to the top of the tree will tend to be quite different.&lt;/p&gt;
@@ -10115,6 +10021,7 @@ def make_new_figure_3():
 &lt;h3 id=&#34;the-linkage-function&#34;&gt;The Linkage Function&lt;/h3&gt;
 &lt;p&gt;We have a concept of the dissimilarity between pairs of observations, but how do we define the dissimilarity between two clusters if one or both of the clusters contains multiple observations?&lt;/p&gt;
 &lt;p&gt;The concept of dissimilarity between a pair of observations needs to be extended to a pair of groups of observations. This extension is achieved by developing the notion of &lt;strong&gt;linkage&lt;/strong&gt;, which defines the dissimilarity between two groups of observations.&lt;/p&gt;
+&lt;h3 id=&#34;linkages&#34;&gt;Linkages&lt;/h3&gt;
 &lt;p&gt;The four most common types of linkage are:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;strong&gt;Complete&lt;/strong&gt;: Maximal intercluster dissimilarity. Compute all pairwise dissimilarities between the observations in cluster A and the observations in cluster B, and record the largest of these dissimilarities.&lt;/li&gt;
@@ -10123,15 +10030,165 @@ def make_new_figure_3():
 &lt;li&gt;&lt;strong&gt;Centroid&lt;/strong&gt;: Dissimilarity between the centroid for cluster A (a mean vector of length p) and the centroid for cluster B. Centroid linkage can result in undesirable inversions.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Average, complete, and single linkage are most popular among statisticians. Average and complete linkage are generally preferred over single linkage, as they tend to yield more balanced dendrograms. Centroid linkage is often used in genomics, but suffers from a major drawback in that an inversion can occur, whereby two clusters are fused at a height below either of the individual clusters in the dendrogram. This can lead to difficulties in visualization as well as in interpretation of the dendrogram.&lt;/p&gt;
-&lt;h3 id=&#34;plotting-1&#34;&gt;Plotting&lt;/h3&gt;
-&lt;p&gt;Let&amp;rsquo;s plot the dendogram for each of the different linkages.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Init
 linkages = [hierarchy.complete(X), hierarchy.average(X), hierarchy.single(X)]
 titles = [&#39;Complete Linkage&#39;, &#39;Average Linkage&#39;, &#39;Single Linkage&#39;]
-make_new_figure_4(linkages, titles)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_112_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;For this data, complete and average linkage generally separates the observations into their correct groups.&lt;/p&gt;
+&lt;h3 id=&#34;plotting-3&#34;&gt;Plotting&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_4(linkages, titles)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_126_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;For this data, both &lt;em&gt;complete&lt;/em&gt; and &lt;em&gt;average&lt;/em&gt; linkage generally separates the observations into their correct groups.&lt;/p&gt;
+&lt;h2 id=&#34;gaussian-mixture-models&#34;&gt;Gaussian Mixture Models&lt;/h2&gt;
+&lt;p&gt;Clustering methods such as hierarchical clustering and K-means are based on heuristics and rely primarily on finding clusters whose members are close to one another, as measured directly with the data (no probability model involved).&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Gaussian Mixture Models&lt;/em&gt; assume that the data was generated by multiple multivariate gaussian distributions. The objective of the algorithm is to recover these latent distributions.&lt;/p&gt;
+&lt;p&gt;The advantages with respect to K-means are&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a structural interpretaion of the parameters&lt;/li&gt;
+&lt;li&gt;automatically generates class probabilities&lt;/li&gt;
+&lt;li&gt;can generate clusters of observations that are not necessarily close to each other&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;algorithm-1&#34;&gt;Algorithm&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Randomly assign a number, from $1$ to $K$, to each of the observations. These serve as initial cluster assignments for the observations.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Iterate until the cluster assignments stop changing:&lt;/p&gt;
+&lt;p&gt;a) For each of the $K$ clusters, compute its mean and variance. The main difference with K-means is that we also compute the variance matrix.&lt;/p&gt;
+&lt;p&gt;b) Assign each observation to its most likely cluster.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;dataset&#34;&gt;Dataset&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s use the same data we have used for k-means, for a direct comparison.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_1(X)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_134_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;step-1-random-assignement-1&#34;&gt;Step 1: random assignement&lt;/h3&gt;
+&lt;p&gt;We initiate the algorithm by randomly assigning the data to two clusters.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Init clusters
+K = 2
+clusters0 = np.random.randint(K,size=(np.size(X,0)))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_2(X, clusters0)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_138_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;step-2-compute-distirbutions&#34;&gt;Step 2: compute distirbutions&lt;/h3&gt;
+&lt;p&gt;What are the new distributions?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Compute new centroids
+def compute_distributions(X, clusters):
+    K = len(np.unique(clusters))
+    distr = []
+    for k in range(K):
+        if sum(clusters==k)&amp;gt;0:
+            distr += [multivariate_normal(np.mean(X[clusters==k,:], axis=0), np.cov(X[clusters==k,:].T))]
+        else:
+            distr += [multivariate_normal(np.mean(X, axis=0), np.cov(X.T))]
+    return distr
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Print
+distr0 = compute_distributions(X, clusters0)
+print(&amp;quot;Mean of the first distribution: \n&amp;quot;, distr0[0].mean)
+print(&amp;quot;\nVariance of the first distribution: \n&amp;quot;, distr0[0].cov)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Mean of the first distribution: 
+ [ 1.34819797 -2.21823403]
+
+Variance of the first distribution: 
+ [[ 3.99671495 -3.02479763]
+ [-3.02479763  4.1555405 ]]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;plotting-the-distributions&#34;&gt;Plotting the distributions&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s add the distributions to the graph.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
+plot_assignment_gmm(X, clusters0, distr0, i=0, logL=0.0)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_145_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;likelihood&#34;&gt;Likelihood&lt;/h3&gt;
+&lt;p&gt;The main difference with respect with K-means is that we can now compute the probability that each observation belongs to each cluster. This is the probability that each observation was generated by one of the two bi-variate normal distributions. These probabilities are called &lt;strong&gt;likelihoods&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Print first 5 likelihoods
+pdfs0 = np.stack([d.pdf(X) for d in distr0], axis=1)
+pdfs0[:5]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;array([[0.04007134, 0.0313954 ],
+       [0.00214714, 0.00297708],
+       [0.01383601, 0.00408124],
+       [0.02781878, 0.03290696],
+       [0.0275724 , 0.02647237]])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;step-3-assign-data-to-clusters-1&#34;&gt;Step 3: assign data to clusters&lt;/h3&gt;
+&lt;p&gt;Now we can assign the data to the clusters, via maximum likelihood.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Assign X to clusters
+def assign_to_cluster_gmm(X, distr):
+    pdfs = np.stack([d.pdf(X) for d in distr], axis=1)
+    clusters = np.argmax(pdfs, axis=1)
+    log_likelihood = 0
+    for k, pdf in enumerate(pdfs):
+        log_likelihood += np.log(pdf[clusters[k]])
+    return clusters, log_likelihood
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Get cluster assignment
+clusters1, logL1 = assign_to_cluster_gmm(X, distr0)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;plotting-assigned-data-1&#34;&gt;Plotting assigned data&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Compute new distributions
+distr1 = compute_distributions(X, clusters1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
+plot_assignment_gmm(X, clusters1, distr1, 1, logL1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_155_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;expectation---maximization&#34;&gt;Expectation - Maximization&lt;/h3&gt;
+&lt;p&gt;The two steps we have just seen, are part of a broader family of algorithms to maximize likelihoods called &lt;strong&gt;expectation&lt;/strong&gt;-&lt;strong&gt;maximization&lt;/strong&gt; algorithms.&lt;/p&gt;
+&lt;p&gt;In the expectation step, we computed the expectation of the parameters, given the current cluster assignment.&lt;/p&gt;
+&lt;p&gt;In the maximization step, we assigned observations to the cluster that maximized the likelihood of the single observation.&lt;/p&gt;
+&lt;p&gt;The alternative, and more computationally intensive procedure, would have been to specify a global likelihood function and find the mean and variance paramenters of the two normal distributions that maximized those likelihoods.&lt;/p&gt;
+&lt;h3 id=&#34;full-algorithm-1&#34;&gt;Full Algorithm&lt;/h3&gt;
+&lt;p&gt;We can now deploy the full algorithm.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def gmm_manual(X, K):
+
+    # Init
+    i = 0
+    logL0 = 1e4
+    logL1 = 1e5
+    clusters = np.random.randint(K,size=(np.size(X,0)))
+
+    # Iterate until convergence
+    while np.abs(logL0-logL1) &amp;gt; 1e-10:
+        logL1 = logL0
+        distr = compute_distributions(X, clusters)
+        clusters, logL0 = assign_to_cluster_gmm(X, distr)
+        plot_assignment_gmm(X, clusters, distr, i, logL0)
+        i+=1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;plotting-k-means-clustering-1&#34;&gt;Plotting k-means clustering&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Test
+gmm_manual(X, K)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_162_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, in this case, GMM does a very similar job to K-means.&lt;/p&gt;
+&lt;h3 id=&#34;overlapping-clusters&#34;&gt;Overlapping Clusters&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s now try with a different dataset, where the data is drawn from two overlapping bi-variate gaussian distributions, forming a cross.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Simulate data
+X = np.random.randn(50,2)
+X[0:25, :] = np.random.multivariate_normal([0,0], [[50,0],[0,1]], size=25)
+X[25:, :] = np.random.multivariate_normal([0,0], [[1,0],[0,50]], size=25)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_1(X)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_167_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;gmm-with-overlapping-distributions&#34;&gt;GMM with overlapping distributions&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# GMM
+gmm_manual(X, K)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_169_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, GMM is able to correctly recover the original clusters.&lt;/p&gt;
+&lt;h3 id=&#34;k-means-with-overlapping-distributions&#34;&gt;K-means with overlapping distributions&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# K-means
+kmeans_manual(X, K)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_172_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;K-means generates completely different clusters.&lt;/p&gt;
 </description>
     </item>
     
