@@ -30,7 +30,7 @@
   
     
   
-  <meta name="description" content="# Remove warnings import warnings warnings.filterwarnings(&#39;ignore&#39;)  # Import import pandas as pd import numpy as np import seaborn as sns import pydot from IPython.display import Image from six import StringIO from sklearn." />
+  <meta name="description" content="%matplotlib inline from utils.lecture07 import *  Decision Trees Decision trees involve segmenting the predictor space into a number of simple regions. In order to make a prediction for a given observation, we typically use the mean or the mode of the training observations in the region to which it belongs." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/ml-econ/07_trees/" />
@@ -334,16 +334,16 @@
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/course/ml-econ/07_trees/" />
   <meta property="og:title" content="Tree-based Methods | Matteo Courthoud" />
-  <meta property="og:description" content="# Remove warnings import warnings warnings.filterwarnings(&#39;ignore&#39;)  # Import import pandas as pd import numpy as np import seaborn as sns import pydot from IPython.display import Image from six import StringIO from sklearn." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+  <meta property="og:description" content="%matplotlib inline from utils.lecture07 import *  Decision Trees Decision trees involve segmenting the predictor space into a number of simple regions. In order to make a prediction for a given observation, we typically use the mean or the mode of the training observations in the region to which it belongs." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-02-27T00:00:00&#43;00:00"
+        content="2022-02-28T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-02-27T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-02-28T00:00:00&#43;00:00">
   
 
   
@@ -829,7 +829,7 @@
 
       <nav id="TableOfContents">
   <ul>
-    <li><a href="#71-the-basics-of-decision-trees">7.1 The Basics of Decision Trees</a>
+    <li><a href="#decision-trees">Decision Trees</a>
       <ul>
         <li><a href="#regression-trees">Regression Trees</a></li>
         <li><a href="#building-a-tree">Building a Tree</a></li>
@@ -866,43 +866,13 @@
 
           <h1>Tree-based Methods</h1>
 
-          <p>Last updated on Feb 27, 2022</p>
+          <p>Last updated on Feb 28, 2022</p>
 
           <div class="article-style">
-            <pre><code class="language-python"># Remove warnings
-import warnings
-warnings.filterwarnings('ignore')
+            <pre><code class="language-python">%matplotlib inline
+from utils.lecture07 import *
 </code></pre>
-<pre><code class="language-python"># Import
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import pydot
-from IPython.display import Image
-from six import StringIO  
-
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier, plot_tree
-from sklearn.ensemble import BaggingClassifier, RandomForestClassifier, BaggingRegressor, RandomForestRegressor, GradientBoostingRegressor, GradientBoostingClassifier
-from sklearn.metrics import mean_squared_error,confusion_matrix, classification_report
-from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn.metrics import confusion_matrix, mean_squared_error
-</code></pre>
-<pre><code class="language-python"># Import matplotlib for graphs
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
-
-# Set global parameters
-%matplotlib inline
-plt.style.use('seaborn-white')
-plt.rcParams['lines.linewidth'] = 3
-plt.rcParams['figure.figsize'] = (12,7)
-plt.rcParams['figure.titlesize'] = 20
-plt.rcParams['axes.titlesize'] = 18
-plt.rcParams['axes.labelsize'] = 14
-plt.rcParams['legend.fontsize'] = 14
-</code></pre>
-<h2 id="71-the-basics-of-decision-trees">7.1 The Basics of Decision Trees</h2>
+<h2 id="decision-trees">Decision Trees</h2>
 <p>Decision trees involve <strong>segmenting the predictor space into a number of simple regions</strong>. In order to make a prediction for a given observation, we typically use the mean or the mode of the training observations in the region to which it belongs. Since the set of splitting rules used to segment the predictor space can be summarized in a tree, these types of approaches are known as decision tree methods.</p>
 <h3 id="regression-trees">Regression Trees</h3>
 <p>For this session we will consider the <code>Hitters</code> dataset. It consists in individual level data of baseball players. In our applications, we are interested in predicting the players <code>Salary</code>.</p>
@@ -1091,7 +1061,7 @@ ax1.set_xlabel('Salary')
 ax2.hist(y)
 ax2.set_xlabel('Log(Salary)');
 </code></pre>
-<p><img src="../img/07_trees_12_0.png" alt="png"></p>
+<p><img src="../img/07_trees_10_0.png" alt="png"></p>
 <p>In order to understand what is a tree, let&rsquo;s first have a look at one. We fit a regression three with 3 leaves or, equivalently put, 2 nodes.</p>
 <pre><code class="language-python"># Fit regression tree
 tree = DecisionTreeRegressor(max_leaf_nodes=3)
@@ -1107,7 +1077,7 @@ ax.set_title('Figure 8.1');
 # Plot tree
 plot_tree(tree, filled=True, feature_names=features, fontsize=14, ax=ax);
 </code></pre>
-<p><img src="../img/07_trees_16_0.png" alt="png"></p>
+<p><img src="../img/07_trees_14_0.png" alt="png"></p>
 <p>The tree consists of a series of splitting rules, starting at the top of the tree. The top split assigns observations having <code>Years</code>&lt;4.5 to the left branch.1 The predicted salary for these players is given by the mean response value for the players in the data set with <code>Years</code>&lt;4.5. For such players, the mean log salary is 5.107, and so we make a prediction of 5.107 thousands of dollars, i.e. $165,174, for these players. Players with <code>Years</code>&gt;=4.5 are assigned to the right branch, and then that group is further subdivided by <code>Hits</code>.</p>
 <p>Overall, the tree stratifies or segments the players into three regions of predictor space:</p>
 <ol>
@@ -1142,7 +1112,7 @@ def make_figure_8_2():
 </code></pre>
 <pre><code class="language-python"> make_figure_8_2()
 </code></pre>
-<p><img src="../img/07_trees_21_0.png" alt="png"></p>
+<p><img src="../img/07_trees_19_0.png" alt="png"></p>
 <p>We might <strong>interpret</strong> the above regression tree as follows: Years is the most important factor in determining Salary, and players with less experience earn lower salaries than more experienced players. Given that a player is less experienced, the number of hits that he made in the previous year seems to play little role in his salary. But among players who have been in the major leagues for five or more years, the number of hits made in the previous year does affect salary, and players who made more hits last year tend to have higher salaries.</p>
 <h3 id="building-a-tree">Building a Tree</h3>
 <p>There are two main steps in the construction of a tree:</p>
@@ -1257,7 +1227,7 @@ $$</p>
 <pre><code class="language-python"># Init first node
 tree1 = Node(X, y, np.arange(len(y)), 1)
 
-# Documentation (always comment and document your code!!)
+# Documentation (always comment and document your code!)
 print(tree1.__doc__)
 </code></pre>
 <pre><code>    Class used to represent nodes in a Regression Tree
@@ -1370,7 +1340,7 @@ overfit_tree = DecisionTreeRegressor(max_leaf_nodes=5).fit(X, y)
 fig, ax = plt.subplots(1,1)
 plot_tree(overfit_tree, filled=True, feature_names=features, fontsize=14, ax=ax);
 </code></pre>
-<p><img src="../img/07_trees_47_0.png" alt="png"></p>
+<p><img src="../img/07_trees_45_0.png" alt="png"></p>
 <p>The <strong>split on the far left</strong> is predicting a very high <code>Salary</code> (7.243) for players with few <code>Years</code> of experience and few <code>Hits</code>. Indeed this prediction is based on an extremely tiny subsample (2). They are probably outliers and our tree is most likely overfitting.</p>
 <p>One possible alternative is to insert a minimum number of observation per leaf.</p>
 <pre><code class="language-python"># Compute tree
@@ -1380,7 +1350,7 @@ no_overfit_tree = DecisionTreeRegressor(max_leaf_nodes=5, min_samples_leaf=10).f
 fig, ax = plt.subplots(1,1)
 plot_tree(no_overfit_tree, filled=True, feature_names=features, fontsize=14, ax=ax);
 </code></pre>
-<p><img src="../img/07_trees_50_0.png" alt="png"></p>
+<p><img src="../img/07_trees_48_0.png" alt="png"></p>
 <p>Now the tree makes much more sense: the lower the <code>Years</code> and the <code>Hits</code>, the lower the predicted <code>Salary</code> as we can see from the shades getting darker and darker as we move left to right</p>
 <p>Another possible alternative to the process described above is to build the tree only so long as the decrease in the RSS due to each split exceeds some (high) threshold.</p>
 <p>This strategy will result in smaller trees, but is too short-sighted since a seemingly worthless split early on in the tree might be followed by a very good split—that is, a split that leads to a large reduction in RSS later on.</p>
@@ -1437,7 +1407,7 @@ def make_figure_8_5():
 </code></pre>
 <pre><code class="language-python">make_figure_8_5()
 </code></pre>
-<p><img src="../img/07_trees_57_0.png" alt="png"></p>
+<p><img src="../img/07_trees_55_0.png" alt="png"></p>
 <p>The optimal tree has 4 leaves.</p>
 <h3 id="classification-trees">Classification Trees</h3>
 <p>A classification tree is very similar to a regression tree, except that it is used to predict a qualitative response rather than a quantitative one.</p>
@@ -1629,7 +1599,7 @@ def make_fig_8_6a():
 </code></pre>
 <pre><code class="language-python">make_fig_8_6a()
 </code></pre>
-<p><img src="../img/07_trees_74_0.png" alt="png"></p>
+<p><img src="../img/07_trees_72_0.png" alt="png"></p>
 <p>This figure has a surprising characteristic: some of the splits yield two terminal nodes that have the same predicted value.</p>
 <p>For instance, consider the split <code>Age</code>&lt;=57.5 near the bottom left of the unpruned tree. Regardless of the value of <code>Age</code>, a response value of <em>No</em> is predicted for those observations. Why, then, is the split performed at all?</p>
 <p>The split is performed because it leads to increased node purity. That is, 2/81 of the observations corresponding to the left-hand leaf have a response value of <em>Yes</em>, whereas 9/36 of those corresponding to the right-hand leaf have a response value of <em>Yes</em>. Why is node purity important? Suppose that we have a test observation that belongs to the region given by that left-hand leaf. Then we can be pretty certain that its response value is <em>No</em>. In contrast, if a test observation belongs to the region given by the right-hand leaf, then its response value is probably <em>No</em>, but we are much less certain. Even though the split <code>Age</code>&lt;=57.5 does not reduce the classification error, it improves the Gini index and the entropy, which are more sensitive to node purity.</p>
@@ -1685,7 +1655,7 @@ for i,k in enumerate(params):
 </code></pre>
 <pre><code class="language-python">make_figure_8_6b()
 </code></pre>
-<p><img src="../img/07_trees_80_0.png" alt="png"></p>
+<p><img src="../img/07_trees_78_0.png" alt="png"></p>
 <h3 id="other-issues">Other Issues</h3>
 <h4 id="missing-predictor-values">Missing Predictor Values</h4>
 <p>There are usually 2 main ways to deal with missing values:</p>
@@ -1775,7 +1745,7 @@ def make_new_figure_1():
 </code></pre>
 <pre><code class="language-python">make_new_figure_1()
 </code></pre>
-<p><img src="../img/07_trees_96_0.png" alt="png"></p>
+<p><img src="../img/07_trees_94_0.png" alt="png"></p>
 <p>It can be shown that with B sufficiently large, OOB error is virtually equivalent to leave-one-out cross-validation error. The OOB approach for estimating the test error is particularly convenient when performing bagging on large data sets for which cross-validation would be computationally onerous.</p>
 <h3 id="variable-importance-measures">Variable Importance Measures</h3>
 <p>As we have discussed, the main advantage of bagging is to reduce prediction variance. However, with bagging it can be <strong>difficult to interpret</strong> the resulting model. In fact we cannot draw trees anymore given we have too many of them.</p>
@@ -1801,7 +1771,7 @@ def make_figure_8_9():
 </code></pre>
 <pre><code class="language-python">make_figure_8_9()
 </code></pre>
-<p><img src="../img/07_trees_103_0.png" alt="png"></p>
+<p><img src="../img/07_trees_101_0.png" alt="png"></p>
 <h3 id="random-forests">Random Forests</h3>
 <p>Random forests provide an improvement over bagged trees by way of a <strong>small tweak that decorrelates the trees</strong>. As in bagging, we build a number of decision trees on bootstrapped training samples. But when building these decision trees, each time a split in a tree is considered, a random sample of $m$ predictors is chosen as split candidates from the full set of $p$ predictors. The split is allowed to use only one of those m predictors. A fresh sample of $m$ predictors is taken at each split, and typically we choose $m \sim \sqrt{p}$ — that is, the number of predictors considered at each split is approximately equal to the square root of the total number of predictors</p>
 <p>In other words, in building a random forest, at each split in the tree, the algorithm is not even allowed to consider a majority of the available predictors. This may sound crazy, but it has a clever rationale. Suppose that there is one very strong predictor in the data set, along with a number of other moderately strong predictors. Then in the collection of bagged trees, most or all of the trees will use this strong predictor in the top split. Consequently, all of the bagged trees will look quite similar to each other. Hence the predictions from the bagged trees will be highly correlated. Unfortunately, averaging many highly correlated quantities does not lead to as large of a reduction in variance as averaging many uncorrelated quantities. In particular, this means that bagging will not lead to a substantial reduction in variance over a single tree in this setting.</p>
@@ -1849,7 +1819,7 @@ def make_figure_8_8():
 </code></pre>
 <pre><code class="language-python">make_figure_8_8()
 </code></pre>
-<p><img src="../img/07_trees_110_0.png" alt="png"></p>
+<p><img src="../img/07_trees_108_0.png" alt="png"></p>
 <p>As for bagging, we can plot feature importance.</p>
 <pre><code class="language-python"># Make new figure 2
 def make_new_figure_2():
@@ -1877,7 +1847,7 @@ def make_new_figure_2():
 </code></pre>
 <pre><code class="language-python">make_new_figure_2()
 </code></pre>
-<p><img src="../img/07_trees_113_0.png" alt="png"></p>
+<p><img src="../img/07_trees_111_0.png" alt="png"></p>
 <p>From the figure we observe that varaible importance ranking is similar with bagging and random forests, but there are significant differences.</p>
 <p>We are now going to look at the importance of random forests using the <code>Khan</code> gene dataset. This dataset has the peculiarity of having a large number of features and very few observations.</p>
 <pre><code class="language-python"># Load data
@@ -2105,7 +2075,7 @@ def make_figure_8_10():
 </code></pre>
 <pre><code class="language-python"> make_figure_8_10()
 </code></pre>
-<p><img src="../img/07_trees_122_0.png" alt="png"></p>
+<p><img src="../img/07_trees_120_0.png" alt="png"></p>
 <p>It seems that the best scores are achieved with few features and many trees.</p>
 <h3 id="boosting">Boosting</h3>
 <p>Like bagging, boosting is a general approach that can be applied to many statistical learning methods for regression or classification. Here we restrict our discussion of boosting to the context of decision trees.</p>
@@ -2193,7 +2163,7 @@ def make_figure_8_11():
 </code></pre>
 <pre><code class="language-python">make_figure_8_11()
 </code></pre>
-<p><img src="../img/07_trees_133_0.png" alt="png"></p>
+<p><img src="../img/07_trees_131_0.png" alt="png"></p>
 
           </div>
 

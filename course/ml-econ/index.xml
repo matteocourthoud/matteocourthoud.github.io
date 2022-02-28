@@ -15,7 +15,7 @@
     <item>
       <title>Linear Regression</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/01_regression/</link>
-      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/01_regression/</guid>
       <description>&lt;p&gt;This chapter follows closely Chapter 3 of &lt;a href=&#34;https://hastie.su.domains/ISLR2/ISLRv2_website.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;An Introduction to Statistical Learning&lt;/a&gt; by James, Witten, Tibshirani, Friedman.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Remove warnings
@@ -1831,7 +1831,7 @@ def make_fig_3_15():
     <item>
       <title>Instrumental Variables</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/02_iv/</link>
-      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/02_iv/</guid>
       <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Remove warnings
 import warnings
@@ -2665,38 +2665,13 @@ print(beta_2SLS)
     <item>
       <title>Non-Parametric Regression</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/03_nonparametric/</link>
-      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/03_nonparametric/</guid>
-      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Remove warnings
-import warnings
-warnings.filterwarnings(&#39;ignore&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Import
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import statsmodels.api as sm
-
-from scipy.stats import norm
-from statsmodels.nonparametric.kernel_regression import KernelReg
-from pygam import LinearGAM, s, f, LogisticGAM
-from sklearn.preprocessing import PolynomialFeatures, LabelEncoder
-from patsy import dmatrix
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Import matplotlib for graphs
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
-
-# Set global parameters
+      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Setup
 %matplotlib inline
-plt.style.use(&#39;seaborn-white&#39;)
-plt.rcParams[&#39;lines.linewidth&#39;] = 3
-plt.rcParams[&#39;figure.figsize&#39;] = (10,6)
-plt.rcParams[&#39;figure.titlesize&#39;] = 20
-plt.rcParams[&#39;axes.titlesize&#39;] = 18
-plt.rcParams[&#39;axes.labelsize&#39;] = 14
-plt.rcParams[&#39;legend.fontsize&#39;] = 14
+from utils.lecture03 import *
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;dataset&#34;&gt;Dataset&lt;/h3&gt;
 &lt;p&gt;For this session, we are mostly going to work with the wage dataset.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = pd.read_csv(&#39;data/Wage.csv&#39;, index_col=0)
 df.head(3)
@@ -2779,29 +2754,8 @@ df.head(3)
 &lt;/table&gt;
 &lt;/div&gt;
 &lt;p&gt;This dataset contains information on wages and individual characteristics.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.info()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;&amp;lt;class &#39;pandas.core.frame.DataFrame&#39;&amp;gt;
-Int64Index: 3000 entries, 231655 to 453557
-Data columns (total 11 columns):
- #   Column      Non-Null Count  Dtype  
----  ------      --------------  -----  
- 0   year        3000 non-null   int64  
- 1   age         3000 non-null   int64  
- 2   maritl      3000 non-null   object 
- 3   race        3000 non-null   object 
- 4   education   3000 non-null   object 
- 5   region      3000 non-null   object 
- 6   jobclass    3000 non-null   object 
- 7   health      3000 non-null   object 
- 8   health_ins  3000 non-null   object 
- 9   logwage     3000 non-null   float64
- 10  wage        3000 non-null   float64
-dtypes: float64(2), int64(2), object(7)
-memory usage: 281.2+ KB
-&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Our main objective is going to be to explain wages using the observables contained in the dataset.&lt;/p&gt;
-&lt;h2 id=&#34;31-polynomial-regression-and-step-functions&#34;&gt;3.1 Polynomial Regression and Step Functions&lt;/h2&gt;
+&lt;h2 id=&#34;polynomial-regression-and-step-functions&#34;&gt;Polynomial Regression and Step Functions&lt;/h2&gt;
 &lt;p&gt;As we have seen in the first lecture, the most common way to introduce linearities is to replace the standard linear model&lt;/p&gt;
 &lt;p&gt;$$
 y_i = \beta_0 + \beta_1 x_i + \varepsilon_i
@@ -2810,11 +2764,13 @@ $$&lt;/p&gt;
 &lt;p&gt;$$
 y_i = \beta_0 + \beta_1 x_i + \beta_2 x_i^2 + \beta_2 x_i^3 + &amp;hellip; + \varepsilon_i
 $$&lt;/p&gt;
+&lt;h3 id=&#34;explore-the-data&#34;&gt;Explore the Data&lt;/h3&gt;
 &lt;p&gt;Suppose we want to investigate the relationship between &lt;code&gt;wage&lt;/code&gt; and &lt;code&gt;age&lt;/code&gt;. Let&amp;rsquo;s first plot the two variables.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Scatterplot of the data
 df.plot.scatter(&#39;age&#39;,&#39;wage&#39;,color=&#39;w&#39;, edgecolors=&#39;k&#39;, alpha=0.3);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_12_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_10_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;polynomials-of-different-degrees&#34;&gt;Polynomials of different degrees&lt;/h3&gt;
 &lt;p&gt;The relationship is highly complex and non-linear. Let&amp;rsquo;s expand our linear regression polynomials of different degrees: 1 to 5.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X_poly1 = PolynomialFeatures(1).fit_transform(df.age.values.reshape(-1,1))
 X_poly2 = PolynomialFeatures(2).fit_transform(df.age.values.reshape(-1,1))
@@ -2822,25 +2778,14 @@ X_poly3 = PolynomialFeatures(3).fit_transform(df.age.values.reshape(-1,1))
 X_poly4 = PolynomialFeatures(4).fit_transform(df.age.values.reshape(-1,1))
 X_poly5 = PolynomialFeatures(5).fit_transform(df.age.values.reshape(-1,1))
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;variables&#34;&gt;Variables&lt;/h3&gt;
 &lt;p&gt;Our dependent varaible is going to be a dummy for income above 250.000 USD.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Get X and y
 X = df.age
 y = df.wage
-y_binary = (df.wage &amp;gt; 250).map({False:0, True:1}).values
+y01 = (df.wage &amp;gt; 250).map({False:0, True:1}).values
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;What do our variables look like?&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print(&#39;X_poly4:\n&#39;, X_poly4[:5])
-print(&#39;y:\n&#39;, y_binary[:5])
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;X_poly4:
- [[1.000000e+00 1.800000e+01 3.240000e+02 5.832000e+03 1.049760e+05]
- [1.000000e+00 2.400000e+01 5.760000e+02 1.382400e+04 3.317760e+05]
- [1.000000e+00 4.500000e+01 2.025000e+03 9.112500e+04 4.100625e+06]
- [1.000000e+00 4.300000e+01 1.849000e+03 7.950700e+04 3.418801e+06]
- [1.000000e+00 5.000000e+01 2.500000e+03 1.250000e+05 6.250000e+06]]
-y:
- [0 0 0 0 0]
-&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;polynomia-regression&#34;&gt;Polynomia Regression&lt;/h3&gt;
 &lt;p&gt;If we run a linear regression on a 4-degree polinomial expansion of &lt;code&gt;age&lt;/code&gt;, this is what it looks like`:&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Fit ols on 4th degree polynomial
 fit = sm.OLS(y, X_poly4).fit()
@@ -2866,6 +2811,7 @@ fit.summary().tables[1]
   &lt;th&gt;x4&lt;/th&gt;    &lt;td&gt;-3.204e-05&lt;/td&gt; &lt;td&gt; 1.64e-05&lt;/td&gt; &lt;td&gt;   -1.952&lt;/td&gt; &lt;td&gt; 0.051&lt;/td&gt; &lt;td&gt;-6.42e-05&lt;/td&gt; &lt;td&gt; 1.45e-07&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
+&lt;h3 id=&#34;measures-of-fit&#34;&gt;Measures of Fit&lt;/h3&gt;
 &lt;p&gt;In this case, the single coefficients are not of particular interest. We are mostly interested in the best capturing the relationship between &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt;. How can we pick among thedifferent polynomials?&lt;/p&gt;
 &lt;p&gt;We compare different polynomial degrees. For each regression, we are going to look at a series of metrics:&lt;/p&gt;
 &lt;ul&gt;
@@ -2963,12 +2909,14 @@ sm.stats.anova_lm(fit_1, fit_2, fit_3, fit_4, fit_5, typ=1)
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Set polynomial X to 4th degree
 X_poly = X_poly4
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;binary-dependent-variable&#34;&gt;Binary Dependent Variable&lt;/h3&gt;
 &lt;p&gt;Since we have a binary dependent variable, it would be best to account for it in our regression framework. One way to do so, is to run a logistic regression.&lt;/p&gt;
 &lt;p&gt;How to interpret a Logistic Regression?&lt;/p&gt;
 &lt;p&gt;$$
 y = \mathbb I \ \Big( \beta_0 + \beta_1 x_i + \beta_2 x_i^2 + \beta_2 x_i^3 + &amp;hellip; + \varepsilon_i \Big)
 $$&lt;/p&gt;
 &lt;p&gt;where $\mathbb I(\cdot)$ is an indicator function and now $\varepsilon_i$ is the error term.&lt;/p&gt;
+&lt;h3 id=&#34;binomial-link-functions&#34;&gt;Binomial Link Functions&lt;/h3&gt;
 &lt;p&gt;Depending on the assumed distribution of the error term, we get different results. I list below the error types supported by the &lt;code&gt;Binomial&lt;/code&gt; family.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# List link functions for the Binomial family
 sm.families.family.Binomial.links
@@ -2980,6 +2928,7 @@ sm.families.family.Binomial.links
  statsmodels.genmod.families.links.cloglog,
  statsmodels.genmod.families.links.identity]
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;logit-link-function&#34;&gt;Logit Link Function&lt;/h3&gt;
 &lt;p&gt;We are going to pick the &lt;code&gt;logit&lt;/code&gt; link, i.e. we are going to assume that the error term is Type 1 Extreme Value (or Gumbel) distributed. It instead we take the usual standard normal distribution assumption for $\varepsilon_i$, we get &lt;code&gt;probit&lt;/code&gt; regression.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Pick the logit link for the Binomial family
 logit_link = sm.families.Binomial(sm.genmod.families.links.logit())
@@ -2988,9 +2937,10 @@ logit_link = sm.families.Binomial(sm.genmod.families.links.logit())
 &lt;p&gt;$$
 \Pr(y=1) = \frac{e^{ \beta_0 + \beta_1 x_i + \beta_2 x_i^2 + \beta_2 x_i^3 + &amp;hellip; + \varepsilon_i }}{1 + e^{ \beta_0 + \beta_1 x_i + \beta_2 x_i^2 + \beta_2 x_i^3 + &amp;hellip; + \varepsilon_i } }
 $$&lt;/p&gt;
+&lt;h3 id=&#34;logistic-regression&#34;&gt;Logistic Regression&lt;/h3&gt;
 &lt;p&gt;We now estimate the regression and plot the estimated relationship between &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Run logistic regression
-logit_poly = sm.GLM(y_binary, X_poly, family=logit_link).fit()
+logit_poly = sm.GLM(y01, X_poly, family=logit_link).fit()
 logit_poly.summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -3013,9 +2963,10 @@ logit_poly.summary().tables[1]
   &lt;th&gt;x4&lt;/th&gt;    &lt;td&gt;-1.949e-05&lt;/td&gt; &lt;td&gt; 9.91e-06&lt;/td&gt; &lt;td&gt;   -1.966&lt;/td&gt; &lt;td&gt; 0.049&lt;/td&gt; &lt;td&gt;-3.89e-05&lt;/td&gt; &lt;td&gt;-6.41e-08&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
+&lt;h3 id=&#34;linear-model-comparison&#34;&gt;Linear Model Comparison&lt;/h3&gt;
 &lt;p&gt;What is the difference with the linear model?&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Run OLS regression with binary outcome
-ols_poly = sm.OLS(y_binary, X_poly).fit()
+ols_poly = sm.OLS(y01, X_poly).fit()
 ols_poly.summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -3039,47 +2990,22 @@ ols_poly.summary().tables[1]
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;The magnitude of the coefficients is different, but the signs are the same.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Generate grid for prediction
-age_grid = np.arange(df.age.min(), df.age.max()).reshape(-1,1)
-print(&amp;quot;Age range:&amp;quot;, df.age.min(), &amp;quot;to&amp;quot;, df.age.max())
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Age range: 18 to 80
-&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;plot-data-and-predictions&#34;&gt;Plot data and predictions&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s plot the estimated curves against the data distribution.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Generate predictions
-X_poly_test = PolynomialFeatures(4).fit_transform(age_grid)
-pred1 = logit_poly.predict(X_poly_test)
+x_grid = np.arange(df.age.min(), df.age.max()).reshape(-1,1)
+X_poly_test = PolynomialFeatures(4).fit_transform(x_grid)
+y_hat1 = sm.OLS(y, X_poly).fit().predict(X_poly_test)
+y01_hat1 = logit_poly.predict(X_poly_test)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.1
-def make_figure_7_1():
-    
-    # Init figure
-    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(12,5))
-    fig.suptitle(&#39;Figure 7.1: Degree-4 Polynomial&#39;)
-
-    # Scatter plot with polynomial regression line
-    ax1.scatter(X, y, facecolor=&#39;None&#39;, edgecolor=&#39;k&#39;, alpha=0.2)
-    sns.regplot(x=X, y=y, color=&#39;b&#39;, order=4, truncate=True, scatter=False, ax=ax1)
-    ax1.set_ylim(ymin=0)
-
-    # Logistic regression showing Pr(wage&amp;gt;250) for the age range.
-    ax2.plot(age_grid, pred1, color=&#39;b&#39;)
-
-    # Run plot showing the distribution of wage&amp;gt;250 in the training data.
-    ax2.scatter(X, y_binary/5, s=30, c=&#39;grey&#39;, marker=&#39;|&#39;, alpha=0.7)
-
-    ax2.set_ylim(-0.01,0.21)
-    ax2.set_xlabel(&#39;age&#39;)
-    ax2.set_ylabel(&#39;Pr(wage&amp;gt;250|age)&#39;);
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_predictions(X, y, x_grid, y01, y_hat1, y01_hat1, &#39;Figure 7.1: Degree-4 Polynomial&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_1()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_39_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_44_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Which is remindful of
 &lt;img src=&#34;figures/nonlinearities.jpg&#34; alt=&#34;Le Petit Prince - Elephant figure&#34; title=&#34;Nonlinearities&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Using polynomial functions of the features as predictors in a linear model imposes a global structure on the non-linear function of &lt;code&gt;age&lt;/code&gt;. We can instead use step functions in order to avoid imposing such a global structure.&lt;/p&gt;
 &lt;p&gt;For example, we could break the range of &lt;code&gt;age&lt;/code&gt; into bins, and fit a different constant in each bin.&lt;/p&gt;
-&lt;h2 id=&#34;32-step-functions&#34;&gt;3.2 Step Functions&lt;/h2&gt;
+&lt;h2 id=&#34;step-functions&#34;&gt;Step Functions&lt;/h2&gt;
 &lt;p&gt;Building a step function means first picking $K$ cutpoints $c_1 , c_2 , . . . , c_K$ in the range of &lt;code&gt;age&lt;/code&gt;,
 and then construct $K + 1$ new variables&lt;/p&gt;
 &lt;p&gt;$$
@@ -3091,6 +3017,7 @@ C_{K-1}(&lt;code&gt;age&lt;/code&gt;) = \mathbb I ( c_{K-1} &amp;lt; &lt;code&gt
 C_K(&lt;code&gt;age&lt;/code&gt;) = \mathbb I ( c_K &amp;lt; &lt;code&gt;age&lt;/code&gt;) \
 $$&lt;/p&gt;
 &lt;p&gt;where $\mathbb I(\cdot)$ is the indicator function.&lt;/p&gt;
+&lt;h3 id=&#34;binning&#34;&gt;Binning&lt;/h3&gt;
 &lt;p&gt;First, we generate the cuts.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Generate cuts for the variable age
 df_cut, bins = pd.cut(df.age, 4, retbins=True, right=True)
@@ -3161,6 +3088,7 @@ df_steps.head(5)
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
+&lt;h3 id=&#34;dummy-variables&#34;&gt;Dummy Variables&lt;/h3&gt;
 &lt;p&gt;Now we can generate different dummy variables out of each bin.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Create dummy variables for the age groups
 df_steps_dummies = pd.get_dummies(df_steps[&#39;age_cuts&#39;])
@@ -3238,6 +3166,7 @@ df_steps_dummies.head(5)
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
+&lt;h3 id=&#34;stepwise-regression&#34;&gt;Stepwise Regression&lt;/h3&gt;
 &lt;p&gt;We are now ready to run our regression&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Generate our new X variable
 X_step = df_steps_dummies.drop(df_steps_dummies.columns[1], axis=1)
@@ -3265,7 +3194,7 @@ ols_step.summary().tables[1]
 &lt;/table&gt;
 &lt;p&gt;From the regression outcome we can see that most bin coefficients are significant, except for the last one.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Put the test data in the same bins as the training data.
-bin_mapping = np.digitize(age_grid.ravel(), bins)
+bin_mapping = np.digitize(x_grid.ravel(), bins)
 bin_mapping
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
@@ -3340,12 +3269,13 @@ X_step_test.head()
 &lt;/table&gt;
 &lt;/div&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Step prediction
-pred2 = ols_step.predict(X_step_test)
+y_hat2 = ols_step.predict(X_step_test)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;logistic-step-regression&#34;&gt;Logistic Step Regression&lt;/h3&gt;
 &lt;p&gt;We are going again to run a logistic regression, given that our outcome is binary.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Logistic regression on step functions
-logit_step = sm.GLM(y_binary, X_step, family=logit_link).fit()
-pred3 = logit_step.predict(X_step_test)
+logit_step = sm.GLM(y01, X_step, family=logit_link).fit()
+y01_hat2 = logit_step.predict(X_step_test)
 logit_step.summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -3365,37 +3295,12 @@ logit_step.summary().tables[1]
   &lt;th&gt;(64.5, 80.0]&lt;/th&gt; &lt;td&gt;    0.7413&lt;/td&gt; &lt;td&gt;    1.102&lt;/td&gt; &lt;td&gt;    0.672&lt;/td&gt; &lt;td&gt; 0.501&lt;/td&gt; &lt;td&gt;   -1.420&lt;/td&gt; &lt;td&gt;    2.902&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
+&lt;h3 id=&#34;plotting&#34;&gt;Plotting&lt;/h3&gt;
 &lt;p&gt;How does the predicted function looks like?&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.2
-def make_figure_7_2():
-
-    # Init figure
-    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(12,5))
-    fig.suptitle(&#39;Figure 7.2: Piecewise Constant&#39;)
-
-    # Scatter plot with polynomial regression line
-    ax1.scatter(X, y, facecolor=&#39;None&#39;, edgecolor=&#39;grey&#39;, alpha=0.3)
-    ax1.plot(age_grid, pred2, c=&#39;g&#39;)
-
-    ax1.set_xlabel(&#39;age&#39;)
-    ax1.set_ylabel(&#39;wage&#39;)
-    ax1.set_ylim(ymin=0)
-
-    # Logistic regression showing Pr(wage&amp;gt;250) for the age range.
-    ax2.plot(np.arange(X.min(), X.max()).reshape(-1,1), pred3, color=&#39;g&#39;)
-
-    # Rug plot showing the distribution of wage&amp;gt;250 in the training data.
-    # &#39;True&#39; on the top, &#39;False&#39; on the bottom.
-    ax2.scatter(X, y_binary/5, s=30, c=&#39;grey&#39;, marker=&#39;|&#39;, alpha=0.7)
-
-    ax2.set_ylim(-0.01,0.21)
-    ax2.set_xlabel(&#39;age&#39;)
-    ax2.set_ylabel(&#39;Pr(wage&amp;gt;250|age)&#39;);
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_predictions(X, y, x_grid, y01, y_hat2, y01_hat2, &#39;Figure 7.2: Piecewise Constant&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_2()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_60_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;33-regression-splines&#34;&gt;3.3 Regression Splines&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_69_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;regression-splines&#34;&gt;Regression Splines&lt;/h2&gt;
 &lt;p&gt;Spline regression, or piece-wise polynomial regression, involves fitting separate low-degree polynomials
 over different regions of $X$. The idea is to have one regression specification but with different coefficients in different parts of the $X$ range. The points where the coefficients change are called knots.&lt;/p&gt;
 &lt;p&gt;For example, we could have a third degree polynomial &lt;em&gt;and&lt;/em&gt; splitting the sample in two.&lt;/p&gt;
@@ -3407,6 +3312,7 @@ y_{i}=\left{\begin{array}{ll}
 $$&lt;/p&gt;
 &lt;p&gt;We have now two sets of coefficients, one for each subsample.&lt;/p&gt;
 &lt;p&gt;Generally, using more knots leads to a more flexible piecewise polynomial. Also increasing the degree of the polynomial increases the degree of flexibility.&lt;/p&gt;
+&lt;h3 id=&#34;example&#34;&gt;Example&lt;/h3&gt;
 &lt;p&gt;We are now going to plot 4 different examples for the &lt;code&gt;age&lt;/code&gt; &lt;code&gt;wage&lt;/code&gt; relationship:&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;Discontinuous piecewise cubic&lt;/li&gt;
@@ -3416,68 +3322,37 @@ $$&lt;/p&gt;
 &lt;/ol&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Cut dataset
 df_short = df.iloc[:80,:]
-age_grid_short = np.arange(df_short.age.min(), df_short.age.max()+1).reshape(-1,1)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# 1. Discontinuous piecewise cubic
-df_short_1 = df_short[df_short[&#39;age&#39;]&amp;lt;50]
-x3_1 = PolynomialFeatures(3).fit_transform(df_short_1.age.values.reshape(-1,1))
-fit1_1 = sm.GLS(df_short_1.wage, x3_1).fit()
-age_grid_short_1 = np.arange(df_short_1.age.min(), df_short_1.age.max()+2).reshape(-1,1)
-pred1_1 = fit1_1.predict(PolynomialFeatures(3).fit_transform(age_grid_short_1))
+X_short = df_short.age
+y_short = df_short.wage
+x_grid_short = np.arange(df_short.age.min(), df_short.age.max()+1).reshape(-1,1)
 
-df_short_2 = df_short[df_short[&#39;age&#39;]&amp;gt;=50]
-x3_2 = PolynomialFeatures(3).fit_transform(df_short_2.age.values.reshape(-1,1))
-fit1_2 = sm.GLS(df_short_2.wage, x3_2).fit()
-age_grid_short_2 = np.arange(df_short_2.age.min(), df_short_2.age.max()+1).reshape(-1,1)
-pred1_2 = fit1_2.predict(PolynomialFeatures(3).fit_transform(age_grid_short_2))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# 2. Continuous piecewise cubic
+# 1. Discontinuous piecewise cubic
+spline1 = &amp;quot;bs(x, knots=(50,50,50,50), degree=3, include_intercept=False)&amp;quot;
+
+# 2. Continuous piecewise cubic
 spline2 = &amp;quot;bs(x, knots=(50,50,50), degree=3, include_intercept=False)&amp;quot;
-transformed_x2 = dmatrix(spline2, {&amp;quot;x&amp;quot;: df_short.age}, return_type=&#39;dataframe&#39;)
-fit2 = sm.GLM(df_short.wage, transformed_x2).fit()
-pred2 = fit2.predict(dmatrix(spline2, {&amp;quot;x&amp;quot;: age_grid_short}, return_type=&#39;dataframe&#39;))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# 3. Quadratic (continuous)
-spline3 = &amp;quot;bs(x, knots=(%s,%s), degree=2, include_intercept=False)&amp;quot; % (min(df_short.age), min(df_short.age))
-transformed_x3 = dmatrix(spline3, {&amp;quot;x&amp;quot;: df_short.age}, return_type=&#39;dataframe&#39;)
-fit3 = sm.GLM(df_short.wage, transformed_x3).fit()
-pred3 = fit3.predict(dmatrix(spline3, {&amp;quot;x&amp;quot;: age_grid_short}, return_type=&#39;dataframe&#39;))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# 4. Continuous piecewise linear
-spline4 = &amp;quot;bs(x, knots=(%s,50), degree=1, include_intercept=False)&amp;quot; % min(df_short.age)
-transformed_x4 = dmatrix(spline4, {&amp;quot;x&amp;quot;: df_short.age}, return_type=&#39;dataframe&#39;)
-fit4 = sm.GLM(df_short.wage, transformed_x4).fit()
-pred4 = fit4.predict(dmatrix(spline4, {&amp;quot;x&amp;quot;: age_grid_short}, return_type=&#39;dataframe&#39;))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Let&amp;rsquo;s see what they look like.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.3
-def make_fig_7_3():
 
-    # Init figure
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2, figsize=(12,10))
-    fig.suptitle(&#39;Figure 7.3&#39;)
+# 3. Quadratic (continuous)
+spline3 = &amp;quot;bs(x, knots=(%s,%s), degree=2, include_intercept=False)&amp;quot; % (min(df.age), min(df.age))
 
-    # Discontinuous piecewise cubic
-    ax1.plot(age_grid_short_1, pred1_1, color=&#39;b&#39;)
-    ax1.plot(age_grid_short_2, pred1_2, color=&#39;b&#39;)
-    ax1.set_title(&#39;Discontinuous piecewise cubic&#39;)
-    # Continuous piecewise cubi
-    ax2.plot(age_grid_short, pred2, color=&#39;g&#39;)
-    ax2.set_title(&#39;Continuous piecewise cubic&#39;)
-    # Cubic (continuous)
-    ax3.plot(age_grid_short, pred3, color=&#39;r&#39;)
-    ax3.set_title(&#39;Cubic&#39;)
-    # Continuous piecewise linear
-    ax4.plot(age_grid_short, pred4, color=&#39;y&#39;)
-    ax4.set_title(&#39;Continuous piecewise linear&#39;)
+# 4. Continuous piecewise linear
+spline4 = &amp;quot;bs(x, knots=(%s,50), degree=1, include_intercept=False)&amp;quot; % min(df.age)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;generate-predictions&#34;&gt;Generate Predictions&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Generate spline predictions
+def fit_predict_spline(spline, X, y, x_grid):
+    transformed_x = dmatrix(spline, {&amp;quot;x&amp;quot;: X}, return_type=&#39;dataframe&#39;)
+    fit = sm.GLM(y, transformed_x).fit()
+    y_hat = fit.predict(dmatrix(spline, {&amp;quot;x&amp;quot;: x_grid}, return_type=&#39;dataframe&#39;))
+    return y_hat
 
-    for ax in (ax1,ax2,ax3,ax4):
-        ax.scatter(df_short.age, df_short.wage, facecolor=&#39;None&#39;, edgecolor=&#39;k&#39;, alpha=0.3)
-        ax.axvline(x=50, color=&#39;k&#39;, linestyle=&#39;--&#39;, alpha=0.5)
+y_hats = [fit_predict_spline(s, X_short, y_short, x_grid_short) for s in [spline1, spline2, spline3, spline4]]
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_fig_7_3()
+&lt;h3 id=&#34;plotting-1&#34;&gt;Plotting&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_splines(df_short, x_grid_short, y_hats)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_71_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_78_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;comment&#34;&gt;Comment&lt;/h3&gt;
 &lt;p&gt;The first example makes us think on why would we want out function to be discontinuous. Unless we expect a sudden wage jump at a certain age, we would like the function to be continuous. However, if for example we split &lt;code&gt;age&lt;/code&gt; around the retirement age, we might expect a discontinuity.&lt;/p&gt;
 &lt;p&gt;The second example (top right) makes us think on why would we want out function not to be differentiable. Unless we have some specific mechanism in mind, ususally there is a trade-off between making the function non-differentiable or increasing the degree of the polynomial, as the last two examples show us. We get a similar fit with a quadratic fit or a discontinuous linear fit. The main difference is that in the second case we are picking the discontinuity point by hand instead of letting the data choose how to change the slope of the curve.&lt;/p&gt;
 &lt;h3 id=&#34;the-spline-basis-representation&#34;&gt;The Spline Basis Representation&lt;/h3&gt;
@@ -3494,220 +3369,49 @@ $$&lt;/p&gt;
 &lt;p&gt;One way to specify the spline is using nodes and degrees of freedom.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Specifying 3 knots and 3 degrees of freedom
 spline5 = &amp;quot;bs(x, knots=(25,40,60), degree=3, include_intercept=False)&amp;quot;
-transformed_x5 = dmatrix(spline5, {&amp;quot;x&amp;quot;: df.age}, return_type=&#39;dataframe&#39;)
-ols_spline1 = sm.OLS(y, transformed_x5).fit()
-pred5 = ols_spline1.predict(dmatrix(spline5, {&amp;quot;x&amp;quot;: age_grid}, return_type=&#39;dataframe&#39;))
-
-# Check parameters
-ols_spline1.summary().tables[1]
+pred5 = fit_predict_spline(spline5, X, y, x_grid)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-                                 &lt;td&gt;&lt;/td&gt;                                    &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;                                                       &lt;td&gt;   60.4937&lt;/td&gt; &lt;td&gt;    9.460&lt;/td&gt; &lt;td&gt;    6.394&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   41.944&lt;/td&gt; &lt;td&gt;   79.043&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, knots=(25, 40, 60), degree=3, include_intercept=False)[0]&lt;/th&gt; &lt;td&gt;    3.9805&lt;/td&gt; &lt;td&gt;   12.538&lt;/td&gt; &lt;td&gt;    0.317&lt;/td&gt; &lt;td&gt; 0.751&lt;/td&gt; &lt;td&gt;  -20.603&lt;/td&gt; &lt;td&gt;   28.564&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, knots=(25, 40, 60), degree=3, include_intercept=False)[1]&lt;/th&gt; &lt;td&gt;   44.6310&lt;/td&gt; &lt;td&gt;    9.626&lt;/td&gt; &lt;td&gt;    4.636&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   25.756&lt;/td&gt; &lt;td&gt;   63.506&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, knots=(25, 40, 60), degree=3, include_intercept=False)[2]&lt;/th&gt; &lt;td&gt;   62.8388&lt;/td&gt; &lt;td&gt;   10.755&lt;/td&gt; &lt;td&gt;    5.843&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   41.750&lt;/td&gt; &lt;td&gt;   83.927&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, knots=(25, 40, 60), degree=3, include_intercept=False)[3]&lt;/th&gt; &lt;td&gt;   55.9908&lt;/td&gt; &lt;td&gt;   10.706&lt;/td&gt; &lt;td&gt;    5.230&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   34.998&lt;/td&gt; &lt;td&gt;   76.983&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, knots=(25, 40, 60), degree=3, include_intercept=False)[4]&lt;/th&gt; &lt;td&gt;   50.6881&lt;/td&gt; &lt;td&gt;   14.402&lt;/td&gt; &lt;td&gt;    3.520&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   22.450&lt;/td&gt; &lt;td&gt;   78.927&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, knots=(25, 40, 60), degree=3, include_intercept=False)[5]&lt;/th&gt; &lt;td&gt;   16.6061&lt;/td&gt; &lt;td&gt;   19.126&lt;/td&gt; &lt;td&gt;    0.868&lt;/td&gt; &lt;td&gt; 0.385&lt;/td&gt; &lt;td&gt;  -20.896&lt;/td&gt; &lt;td&gt;   54.108&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
 &lt;h3 id=&#34;no-knots&#34;&gt;No Knots&lt;/h3&gt;
 &lt;p&gt;When we fit a spline, where should we place the knots?&lt;/p&gt;
 &lt;p&gt;The regression spline is most flexible in regions that contain a lot of knots, because in those regions the polynomial coefficients can change rapidly. Hence, one option is to place more knots in places where we feel the function might vary most rapidly, and to place fewer knots where it seems more stable. While this option can work well, in practice it is common to place knots in a uniform fashion. One way to do this is to specify the desired degrees of freedom, and then have the software automatically place the corresponding number of knots at uniform quantiles of the data.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Specifying degree 3 and 6 degrees of freedom 
 spline6 = &amp;quot;bs(x, df=6, degree=3, include_intercept=False)&amp;quot;
-transformed_x6 = dmatrix(spline6, {&amp;quot;x&amp;quot;: df.age}, return_type=&#39;dataframe&#39;)
-ols_spline2 = sm.OLS(y, transformed_x6).fit()
-pred6 = ols_spline2.predict(dmatrix(spline6, {&amp;quot;x&amp;quot;: age_grid}, return_type=&#39;dataframe&#39;))
-
-# Check parameters
-ols_spline2.summary().tables[1]
+pred6 = fit_predict_spline(spline6, X, y, x_grid)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-                          &lt;td&gt;&lt;/td&gt;                             &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;                                         &lt;td&gt;   56.3138&lt;/td&gt; &lt;td&gt;    7.258&lt;/td&gt; &lt;td&gt;    7.759&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   42.083&lt;/td&gt; &lt;td&gt;   70.545&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, df=6, degree=3, include_intercept=False)[0]&lt;/th&gt; &lt;td&gt;   27.8240&lt;/td&gt; &lt;td&gt;   12.435&lt;/td&gt; &lt;td&gt;    2.238&lt;/td&gt; &lt;td&gt; 0.025&lt;/td&gt; &lt;td&gt;    3.443&lt;/td&gt; &lt;td&gt;   52.205&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, df=6, degree=3, include_intercept=False)[1]&lt;/th&gt; &lt;td&gt;   54.0625&lt;/td&gt; &lt;td&gt;    7.127&lt;/td&gt; &lt;td&gt;    7.585&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   40.087&lt;/td&gt; &lt;td&gt;   68.038&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, df=6, degree=3, include_intercept=False)[2]&lt;/th&gt; &lt;td&gt;   65.8284&lt;/td&gt; &lt;td&gt;    8.323&lt;/td&gt; &lt;td&gt;    7.909&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   49.508&lt;/td&gt; &lt;td&gt;   82.149&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, df=6, degree=3, include_intercept=False)[3]&lt;/th&gt; &lt;td&gt;   55.8127&lt;/td&gt; &lt;td&gt;    8.724&lt;/td&gt; &lt;td&gt;    6.398&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   38.707&lt;/td&gt; &lt;td&gt;   72.918&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, df=6, degree=3, include_intercept=False)[4]&lt;/th&gt; &lt;td&gt;   72.1315&lt;/td&gt; &lt;td&gt;   13.745&lt;/td&gt; &lt;td&gt;    5.248&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   45.181&lt;/td&gt; &lt;td&gt;   99.082&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;bs(x, df=6, degree=3, include_intercept=False)[5]&lt;/th&gt; &lt;td&gt;   14.7509&lt;/td&gt; &lt;td&gt;   16.209&lt;/td&gt; &lt;td&gt;    0.910&lt;/td&gt; &lt;td&gt; 0.363&lt;/td&gt; &lt;td&gt;  -17.030&lt;/td&gt; &lt;td&gt;   46.532&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
 &lt;h3 id=&#34;natural-splines&#34;&gt;Natural Splines&lt;/h3&gt;
 &lt;p&gt;A natural spline is a regression spline with additional boundary constraints: the function is required to be linear at the boundary (in the region where X is smaller than the smallest knot, or larger than the largest knot). This addi- tional constraint means that natural splines generally produce more stable estimates at the boundaries.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Natural spline with 4 degrees of freedom
 spline7 = &amp;quot;cr(x, df=4)&amp;quot;
-transformed_x7 = dmatrix(spline7, {&amp;quot;x&amp;quot;: df.age}, return_type=&#39;dataframe&#39;)
-ols_spline3 = sm.OLS(df.wage, transformed_x7).fit()
-pred7 = ols_spline3.predict(dmatrix(spline7, {&amp;quot;x&amp;quot;: age_grid}, return_type=&#39;dataframe&#39;))
-
-# Check parameters
-ols_spline3.summary().tables[1]
+pred7 = fit_predict_spline(spline7, X, y, x_grid)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-         &lt;td&gt;&lt;/td&gt;           &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;      &lt;td&gt;-1.867e+13&lt;/td&gt; &lt;td&gt; 2.16e+14&lt;/td&gt; &lt;td&gt;   -0.087&lt;/td&gt; &lt;td&gt; 0.931&lt;/td&gt; &lt;td&gt;-4.41e+14&lt;/td&gt; &lt;td&gt; 4.04e+14&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;cr(x, df=4)[0]&lt;/th&gt; &lt;td&gt; 1.867e+13&lt;/td&gt; &lt;td&gt; 2.16e+14&lt;/td&gt; &lt;td&gt;    0.087&lt;/td&gt; &lt;td&gt; 0.931&lt;/td&gt; &lt;td&gt;-4.04e+14&lt;/td&gt; &lt;td&gt; 4.41e+14&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;cr(x, df=4)[1]&lt;/th&gt; &lt;td&gt; 1.867e+13&lt;/td&gt; &lt;td&gt; 2.16e+14&lt;/td&gt; &lt;td&gt;    0.087&lt;/td&gt; &lt;td&gt; 0.931&lt;/td&gt; &lt;td&gt;-4.04e+14&lt;/td&gt; &lt;td&gt; 4.41e+14&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;cr(x, df=4)[2]&lt;/th&gt; &lt;td&gt; 1.867e+13&lt;/td&gt; &lt;td&gt; 2.16e+14&lt;/td&gt; &lt;td&gt;    0.087&lt;/td&gt; &lt;td&gt; 0.931&lt;/td&gt; &lt;td&gt;-4.04e+14&lt;/td&gt; &lt;td&gt; 4.41e+14&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;cr(x, df=4)[3]&lt;/th&gt; &lt;td&gt; 1.867e+13&lt;/td&gt; &lt;td&gt; 2.16e+14&lt;/td&gt; &lt;td&gt;    0.087&lt;/td&gt; &lt;td&gt; 0.931&lt;/td&gt; &lt;td&gt;-4.04e+14&lt;/td&gt; &lt;td&gt; 4.41e+14&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.4
-def make_figure_7_4():
-
-    # Init figure
-    fig, ax = plt.subplots(1,1)
-    fig.suptitle(&#39;Figure 7.4&#39;)
-
-    # Scatter
-    ax.scatter(X, y, facecolor=&#39;None&#39;, edgecolor=&#39;k&#39;, alpha=0.1)
-    ax.plot(age_grid, pred5, color=&#39;b&#39;, label=&#39;degree 3, knots 3&#39;)
-    ax.plot(age_grid, pred6, color=&#39;r&#39;, label=&#39;degree 3, degrees of freedom 3&#39;)
-    ax.plot(age_grid, pred7, color=&#39;g&#39;, label=&#39;natural, degrees of freedom 4&#39;)
-    [ax.vlines(i , 0, 350, linestyles=&#39;dashed&#39;, lw=2, colors=&#39;k&#39;) for i in [25,40,60]]
-    ax.legend(bbox_to_anchor=(1.5, 1.0))
-    ax.set_xlabel(&#39;age&#39;), ax.set_ylabel(&#39;wage&#39;);
+&lt;h3 id=&#34;comparison&#34;&gt;Comparison&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Compare predictons
+preds = [pred5, pred6, pred7]
+labels = [&#39;degree 3, knots 3&#39;, &#39;degree 3, degrees of freedom 3&#39;, &#39;natural, degrees of freedom 4&#39;]
+compare_predictions(X, y, x_grid, preds, labels)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_4()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_85_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_93_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;comparison-to-polynomial-regression&#34;&gt;Comparison to Polynomial Regression&lt;/h3&gt;
 &lt;p&gt;Regression splines often give superior results to polynomial regression. This is because unlike polynomials, which must use a high degree to produce flexible fits, splines introduce flexibility by increasing the number of knots but keeping the degree fixed.&lt;/p&gt;
 &lt;p&gt;We are now fitting a polynomial of degree 15 and a spline with 15 degrees of freedom.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Polynomial of degree 15
 X_poly15 = PolynomialFeatures(15).fit_transform(df.age.values.reshape(-1,1))
 ols_poly_15 = sm.OLS(y, X_poly15).fit()
-pred8 = ols_poly_15.predict(PolynomialFeatures(15).fit_transform(age_grid))
+pred8 = ols_poly_15.predict(PolynomialFeatures(15).fit_transform(x_grid))
 
 # Spline with 15 degrees of freedon
-spline15 = &amp;quot;bs(x, df=15, degree=3, include_intercept=False)&amp;quot;
-X_spline15 = dmatrix(spline15, {&amp;quot;x&amp;quot;: df.age}, return_type=&#39;dataframe&#39;)
-ols_spline_15 = sm.OLS(y, X_spline15).fit()
-pred9 = ols_spline_15.predict(dmatrix(spline15, {&amp;quot;x&amp;quot;: age_grid}, return_type=&#39;dataframe&#39;))
+spline9 = &amp;quot;bs(x, df=15, degree=3, include_intercept=False)&amp;quot;
+pred9 = fit_predict_spline(spline9, X, y, x_grid)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.7
-def make_figure_7_7():
-    
-    fig, ax = plt.subplots(1,1)
-    fig.suptitle(&#39;Figure 7.7&#39;)
-
-    # Plot
-    ax.scatter(X, y, facecolor=&#39;None&#39;, edgecolor=&#39;k&#39;, alpha=0.2)
-    ax.plot(age_grid, pred8, color=&#39;b&#39;, label=&#39;Polynomial&#39;)
-    ax.plot(age_grid, pred9, color=&#39;r&#39;, label=&#39;Spline&#39;)
-    ax.set_xlabel(&#39;age&#39;); ax.set_ylabel(&#39;wage&#39;); ax.legend();
+&lt;h3 id=&#34;plotting-2&#34;&gt;Plotting&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Compare predictons
+preds = [pred8, pred9]
+labels = [&#39;Polynomial&#39;, &#39;Spline&#39;]
+compare_predictions(X, y, x_grid, preds, labels)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_7()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_90_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_98_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, despite the two regressions having the same degrees of freedom, the polynomial fit is much more volatile. We can compare them along some dimensions.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Compare fits, with ols as baseline
-ols = sm.OLS(df.wage, df.age).fit()
-sm.stats.anova_lm(ols, ols_poly_15, ols_spline_15, typ=1)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;df_resid&lt;/th&gt;
-      &lt;th&gt;ssr&lt;/th&gt;
-      &lt;th&gt;df_diff&lt;/th&gt;
-      &lt;th&gt;ss_diff&lt;/th&gt;
-      &lt;th&gt;F&lt;/th&gt;
-      &lt;th&gt;Pr(&amp;gt;F)&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;2999.0&lt;/td&gt;
-      &lt;td&gt;6.402646e+06&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;2994.0&lt;/td&gt;
-      &lt;td&gt;9.023503e+06&lt;/td&gt;
-      &lt;td&gt;5.0&lt;/td&gt;
-      &lt;td&gt;-2.620856e+06&lt;/td&gt;
-      &lt;td&gt;-329.264805&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;2984.0&lt;/td&gt;
-      &lt;td&gt;4.750362e+06&lt;/td&gt;
-      &lt;td&gt;10.0&lt;/td&gt;
-      &lt;td&gt;4.273141e+06&lt;/td&gt;
-      &lt;td&gt;268.422721&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;The polynomial is so wiggly that it actually performs worse than linear regression.&lt;/p&gt;
-&lt;h2 id=&#34;34-local-regression&#34;&gt;3.4 Local Regression&lt;/h2&gt;
+&lt;h2 id=&#34;local-regression&#34;&gt;Local Regression&lt;/h2&gt;
 &lt;p&gt;So far we have looked at so-called &amp;ldquo;&lt;em&gt;global methods&lt;/em&gt;&amp;quot;: methods that try to fit a unique function specification over the whole data. The function specification can be complex, as in the case of splines, but can be expressed globally.&lt;/p&gt;
 &lt;p&gt;Local regression is a different approach for fitting flexible non-linear functions, which involves computing the fit at a target point $x_0$ using only the nearby training observations.&lt;/p&gt;
 &lt;h3 id=&#34;details&#34;&gt;Details&lt;/h3&gt;
@@ -3720,6 +3424,7 @@ sm.stats.anova_lm(ols, ols_poly_15, ols_spline_15, typ=1)
 &lt;li&gt;Fit a weigthed least squares regression of $X_{\text{close-to-i}}$ on $y_{\text{close-to-i}}$&lt;/li&gt;
 &lt;li&gt;Use the estimated coefficients $\hat \beta$ to predict $\hat y_i = \hat \beta_0 + \hat \beta_1 x_i$&lt;/li&gt;
 &lt;/ol&gt;
+&lt;h3 id=&#34;generate-data&#34;&gt;Generate Data&lt;/h3&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Set seed
 np.random.seed(1)
 
@@ -3732,23 +3437,12 @@ y_sim = -4*X_sim**2 + 3*X_sim + e
 X_grid = np.linspace(0,1,100)
 y_grid = -4*X_grid**2 + 3*X_grid
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;plotting-3&#34;&gt;Plotting&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s visualize the simulated data and the curve without noise.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Make new figure 1
-def make_new_figure_1():
-
-    # Init
-    fig, ax = plt.subplots(1,1)
-    fig.suptitle(&#39;Simulated data&#39;);
-
-    # Plot
-    ax.scatter(X_sim, y_sim, facecolor=&#39;None&#39;, edgecolor=&#39;k&#39;, alpha=0.5, label=&#39;data&#39;);
-    ax.plot(X_grid, y_grid, label=&#39;True relationship&#39;);
-    ax.set_xlabel(&#39;X&#39;); ax.set_ylabel(&#39;y&#39;); 
-    ax.legend();
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_simulated_data(X_sim, y_sim, X_grid, y_grid);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_1()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_100_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_108_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;fit-ll-regression&#34;&gt;Fit LL Regression&lt;/h3&gt;
 &lt;p&gt;Now we fit a local linear regression.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Settings
 spec = &#39;ll&#39;
@@ -3769,24 +3463,13 @@ y_hat = KernelReg.fit(local_reg)
 &lt;li&gt;&lt;code&gt;bw&lt;/code&gt;      : bandwidth length (&lt;em&gt;0.1&lt;/em&gt;)&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;ckertype&lt;/code&gt;: kernel type (&lt;em&gt;gaussian&lt;/em&gt;)&lt;/li&gt;
 &lt;/ul&gt;
+&lt;h3 id=&#34;prediction&#34;&gt;Prediction&lt;/h3&gt;
 &lt;p&gt;What does the prediction looks like?&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.9
-def make_figure_7_9a():
-
-    # Init
-    fig, ax = plt.subplots()
-    fig.suptitle(&#39;Local Linear Regression&#39;);
-
-    # Plot scatter and lines
-    ax.scatter(X_sim, y_sim, facecolor=&#39;None&#39;, edgecolor=&#39;k&#39;, alpha=0.3);
-    ax.plot(X_grid, y_grid, label=&#39;True relationship&#39;);
-    ax.plot(X_sim, y_hat[0], label=&#39;LLN Estimate&#39;);
-    ax.set_xlabel(&#39;X&#39;); ax.set_ylabel(&#39;y&#39;);
-    ax.legend();
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plot_simulated_data(X_sim, y_sim, X_grid, y_grid);
+make_figure_7_9a(fig, ax, X_sim, y_hat);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_9a()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_106_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_115_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;details-1&#34;&gt;Details&lt;/h3&gt;
 &lt;p&gt;How exactly was the prediction generated? It was generated pointwise. We are now going to look at the prediction at one particular point: $x_i=0.5$.&lt;/p&gt;
 &lt;p&gt;We proceed as follows:&lt;/p&gt;
 &lt;ol&gt;
@@ -3810,56 +3493,23 @@ print(&#39;Estimates: alpha=%1.4f, beta=%1.4f&#39; % (alpha_i_hat, beta_i_hat))
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;Estimates: alpha=0.7006, beta=-0.6141
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;visualization&#34;&gt;Visualization&lt;/h3&gt;
 &lt;p&gt;Now we can use the locally estimated coefficients to predict the value of $\hat y_i(x_i)$ for $x_i = 0.5$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Build local predictions
 close_to_i_grid = (x_i-bandwidth &amp;lt; X_grid) &amp;amp; (X_grid &amp;lt; x_i+bandwidth)
 X_grid_tilde = X_grid[close_to_i_grid].reshape(-1,1)
 y_grid_tilde = alpha_i_hat + X_grid_tilde*beta_i_hat
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.9
-def make_figure_7_9b():
-    
-    # Init
-    fig, ax = plt.subplots()
-    fig.suptitle(&#39;Figure 7.9&#39;);
-
-    # Plot scatter and lines
-    ax.scatter(X_sim, y_sim, facecolor=&#39;None&#39;, edgecolor=&#39;k&#39;, alpha=0.3);
-    ax.plot(X_grid, y_grid, label=&#39;True relationship&#39;);
-    ax.plot(X_sim, y_hat[0], label=&#39;LLN Estimate&#39;);
-
-    # Add local details
-    ax.scatter(X_tilde, y_tilde, facecolor=&#39;orange&#39;, edgecolor=&#39;None&#39;, alpha=0.5);
-    ax.scatter(x_i, y_i_hat, facecolor=&#39;r&#39;, alpha=1);
-    ax.plot(X_grid_tilde, y_grid_tilde, color=&#39;r&#39;, label=&#39;Local OLS&#39;);
-
-    # Legend
-    ax.legend();
-    ax.annotate(&amp;quot;$x_i$&amp;quot;, (x_i, y_i_hat-0.2), color=&#39;r&#39;, fontsize=20);
-    ax.set_xlabel(&#39;X&#39;); ax.set_ylabel(&#39;y&#39;); 
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plot_simulated_data(X_sim, y_sim, X_grid, y_grid);
+make_figure_7_9a(fig, ax, X_sim, y_hat);
+make_figure_7_9b(fig, ax, X_tilde, y_tilde, X_grid_tilde, y_grid_tilde, x_i, y_i_hat)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_9b()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_112_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_122_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;zooming-in&#34;&gt;Zooming in&lt;/h3&gt;
 &lt;p&gt;We can zoom in and look only at the &amp;ldquo;&lt;em&gt;close to i&lt;/em&gt;&amp;rdquo; sample.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.9
-def make_figure_7_9c():
-    
-    # Init
-    fig, ax = plt.subplots()
-    ax.set_title(&#39;Local OLS&#39;);
-
-    # Zoom in
-    sns.regplot(x=X_tilde, y=y_tilde, ax=ax, order=1, 
-                ci=None, scatter=False, line_kws={&#39;color&#39;:&#39;red&#39;})
-    ax.scatter(X_tilde,y_tilde, facecolor=&#39;orange&#39;, edgecolor=&#39;k&#39;, alpha=0.5, s=80);
-    ax.scatter(x_i, y_i_hat, facecolor=&#39;r&#39;, alpha=1);
-    ax.annotate(&amp;quot;$x_i$&amp;quot;, (x_i, y_i_hat-0.1), color=&#39;r&#39;, fontsize=20);
-    ax.set_xlabel(&#39;local X&#39;); ax.set_ylabel(&#39;local y&#39;); 
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.regplot(X_tilde, y_tilde);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_9c()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_115_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_125_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Why is the line upward sloped? We forgot the gaussian weights.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Weights
 w = norm.pdf((X_sim-x_i)/bandwidth)
@@ -3877,26 +3527,12 @@ print(&#39;Estimates: alpha=%1.4f, beta=%1.4f&#39; % tuple(results.params))
 &lt;li&gt;the badwidth defines the scale parameter of the gaussian weights&lt;/li&gt;
 &lt;li&gt;our locally linear regression is acqually global&lt;/li&gt;
 &lt;/ol&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.9 - d
-def make_figure_7_9d():
-
-    # Init
-    fig, ax = plt.subplots()
-    fig.suptitle(&#39;Local Weighted Least Squares&#39;);
-
-    # Zoom in
-    points = ax.scatter(X_sim, y_sim, c=w, cmap=&amp;quot;YlOrRd&amp;quot;, edgecolors=&#39;lightgrey&#39;, alpha=.7, s=80);
-    plt.colorbar(points, label=&#39;gaussian weights&#39;)
-    ax.plot(X_grid, results.params[0] + results.params[1]*X_grid, color=&#39;r&#39;)
-    ax.scatter(x_i, y_i_hat, facecolor=&#39;r&#39;, alpha=1);
-    ax.annotate(&amp;quot;$x_i$&amp;quot;, (x_i, y_i_hat-0.1), color=&#39;r&#39;, fontsize=20);
-    ax.set_xlabel(&#39;local X&#39;); ax.set_ylabel(&#39;local y&#39;); 
+&lt;h3 id=&#34;plotting-4&#34;&gt;Plotting&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_9d(X_sim, y_sim, w, results, X_grid, x_i, y_i_hat)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_9d()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_120_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_130_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Now the slope is indeed negative, as in the locally linear regression.&lt;/p&gt;
-&lt;h2 id=&#34;35-generalized-additive-models&#34;&gt;3.5 Generalized Additive Models&lt;/h2&gt;
+&lt;h2 id=&#34;generalized-additive-models&#34;&gt;Generalized Additive Models&lt;/h2&gt;
 &lt;p&gt;Generalized additive models (GAMs) provide a general framework for extending a standard linear model by allowing non-linear functions of each of the variables, while maintaining additivity.&lt;/p&gt;
 &lt;h3 id=&#34;gam-for-regression-problems&#34;&gt;GAM for Regression Problems&lt;/h3&gt;
 &lt;p&gt;Imagine to extend the general regression framework to some separabily additive model of the form&lt;/p&gt;
@@ -3908,6 +3544,7 @@ $$&lt;/p&gt;
 &lt;p&gt;$$
 \text{wage} = \beta_0 + f_1(\text{year}) + f_2(\text{age}) + f_3(\text{education}) + \varepsilon
 $$&lt;/p&gt;
+&lt;h3 id=&#34;example-1&#34;&gt;Example&lt;/h3&gt;
 &lt;p&gt;We are going to use the following functions:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;$f_1$: natural spline with 8 degrees of freedom&lt;/li&gt;
@@ -3920,32 +3557,16 @@ X = df[[&#39;year&#39;,&#39;age&#39;,&#39;education_&#39;]].to_numpy()
 y = df[[&#39;wage&#39;]].to_numpy()
 
 ## model
-gam = LinearGAM(s(0, n_splines=8) + s(1, n_splines=10) + f(2))
-gam.gridsearch(X, y);
+linear_gam = LinearGAM(s(0, n_splines=8) + s(1, n_splines=10) + f(2))
+linear_gam.gridsearch(X, y);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;100% (11 of 11) |########################| Elapsed Time: 0:00:00 Time:  0:00:00
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.13
-def make_figure_7_13():
-    
-    # Init
-    fig, axs = plt.subplots(1,3,figsize=(15,5));
-    fig.suptitle(&#39;Figure 7.13&#39;)
-
-    # Plot
-    titles = [&#39;year&#39;, &#39;age&#39;, &#39;education&#39;]
-    for i, ax in enumerate(axs):
-        XX = gam.generate_X_grid(term=i)
-        pdep, confi = gam.partial_dependence(term=i, width=.95)
-        ax.plot(XX[:, i], pdep)
-        ax.plot(XX[:, i], confi, c=&#39;k&#39;, ls=&#39;:&#39;, alpha=0.5)
-        if i == 0:
-            ax.set_ylim(-40,40)
-        ax.set_xlabel(titles[i]);
+&lt;h3 id=&#34;plotting-5&#34;&gt;Plotting&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_gam(linear_gam)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_13()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_129_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_140_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;pros-and-cons&#34;&gt;Pros and Cons&lt;/h3&gt;
 &lt;p&gt;Before we move on, let us summarize the &lt;strong&gt;advantages&lt;/strong&gt; of a GAM.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;GAMs allow us to fit a non-linear $f_k$ to each $X_k$, so that we can automatically model non-linear relationships that standard linear regression will miss&lt;/li&gt;
@@ -3965,27 +3586,10 @@ logit_gam.gridsearch(X, y_binary);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;100% (11 of 11) |########################| Elapsed Time: 0:00:00 Time:  0:00:00
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Figure 7.13
-def make_figure_7_13b():
-    
-    # Init
-    fig, axs = plt.subplots(1,3,figsize=(15,5));
-    fig.suptitle(&#39;Figure 7.13&#39;)
-
-    # Plot
-    titles = [&#39;year&#39;, &#39;age&#39;, &#39;education&#39;]
-    for i, ax in enumerate(axs):
-        XX = logit_gam.generate_X_grid(term=i)
-        pdep, confi = logit_gam.partial_dependence(term=i, width=.95)
-        ax.plot(XX[:, i], pdep, c=&#39;g&#39;)
-        ax.plot(XX[:, i], confi, c=&#39;k&#39;, ls=&#39;:&#39;, alpha=0.5)
-        if i == 0:
-            ax.set_ylim(-4,4)
-        ax.set_xlabel(titles[i]);
+&lt;h3 id=&#34;plotting-6&#34;&gt;Plotting&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_gam(logit_gam)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_7_13b()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_135_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/03_nonparametric_147_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The results are qualitatively similar to the non-binary case.&lt;/p&gt;
 </description>
     </item>
@@ -3993,7 +3597,7 @@ def make_figure_7_13b():
     <item>
       <title>Resampling Methods</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/04_crossvalidation/</link>
-      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/04_crossvalidation/</guid>
       <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Remove warnings
 import warnings
@@ -4454,7 +4058,7 @@ def make_figure_5_10():
     <item>
       <title>Model Selection and Regularization</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/05_regularization/</link>
-      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/05_regularization/</guid>
       <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Remove warnings
 import warnings
@@ -5550,7 +5154,7 @@ def make_figure_6_12():
     <item>
       <title>Convexity and Optimization</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/06_convexity/</link>
-      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/06_convexity/</guid>
       <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Remove warnings
 import warnings
@@ -5973,42 +5577,12 @@ plt.plot(range(len(better_steps[-1])), better_steps[-1]);
     <item>
       <title>Tree-based Methods</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/07_trees/</link>
-      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/07_trees/</guid>
-      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Remove warnings
-import warnings
-warnings.filterwarnings(&#39;ignore&#39;)
+      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+from utils.lecture07 import *
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Import
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import pydot
-from IPython.display import Image
-from six import StringIO  
-
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier, plot_tree
-from sklearn.ensemble import BaggingClassifier, RandomForestClassifier, BaggingRegressor, RandomForestRegressor, GradientBoostingRegressor, GradientBoostingClassifier
-from sklearn.metrics import mean_squared_error,confusion_matrix, classification_report
-from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn.metrics import confusion_matrix, mean_squared_error
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Import matplotlib for graphs
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
-
-# Set global parameters
-%matplotlib inline
-plt.style.use(&#39;seaborn-white&#39;)
-plt.rcParams[&#39;lines.linewidth&#39;] = 3
-plt.rcParams[&#39;figure.figsize&#39;] = (12,7)
-plt.rcParams[&#39;figure.titlesize&#39;] = 20
-plt.rcParams[&#39;axes.titlesize&#39;] = 18
-plt.rcParams[&#39;axes.labelsize&#39;] = 14
-plt.rcParams[&#39;legend.fontsize&#39;] = 14
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;71-the-basics-of-decision-trees&#34;&gt;7.1 The Basics of Decision Trees&lt;/h2&gt;
+&lt;h2 id=&#34;decision-trees&#34;&gt;Decision Trees&lt;/h2&gt;
 &lt;p&gt;Decision trees involve &lt;strong&gt;segmenting the predictor space into a number of simple regions&lt;/strong&gt;. In order to make a prediction for a given observation, we typically use the mean or the mode of the training observations in the region to which it belongs. Since the set of splitting rules used to segment the predictor space can be summarized in a tree, these types of approaches are known as decision tree methods.&lt;/p&gt;
 &lt;h3 id=&#34;regression-trees&#34;&gt;Regression Trees&lt;/h3&gt;
 &lt;p&gt;For this session we will consider the &lt;code&gt;Hitters&lt;/code&gt; dataset. It consists in individual level data of baseball players. In our applications, we are interested in predicting the players &lt;code&gt;Salary&lt;/code&gt;.&lt;/p&gt;
@@ -6197,7 +5771,7 @@ ax1.set_xlabel(&#39;Salary&#39;)
 ax2.hist(y)
 ax2.set_xlabel(&#39;Log(Salary)&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_12_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_10_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;In order to understand what is a tree, let&amp;rsquo;s first have a look at one. We fit a regression three with 3 leaves or, equivalently put, 2 nodes.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Fit regression tree
 tree = DecisionTreeRegressor(max_leaf_nodes=3)
@@ -6213,7 +5787,7 @@ ax.set_title(&#39;Figure 8.1&#39;);
 # Plot tree
 plot_tree(tree, filled=True, feature_names=features, fontsize=14, ax=ax);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_16_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_14_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The tree consists of a series of splitting rules, starting at the top of the tree. The top split assigns observations having &lt;code&gt;Years&lt;/code&gt;&amp;lt;4.5 to the left branch.1 The predicted salary for these players is given by the mean response value for the players in the data set with &lt;code&gt;Years&lt;/code&gt;&amp;lt;4.5. For such players, the mean log salary is 5.107, and so we make a prediction of 5.107 thousands of dollars, i.e. $165,174, for these players. Players with &lt;code&gt;Years&lt;/code&gt;&amp;gt;=4.5 are assigned to the right branch, and then that group is further subdivided by &lt;code&gt;Hits&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Overall, the tree stratifies or segments the players into three regions of predictor space:&lt;/p&gt;
 &lt;ol&gt;
@@ -6248,7 +5822,7 @@ def make_figure_8_2():
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; make_figure_8_2()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We might &lt;strong&gt;interpret&lt;/strong&gt; the above regression tree as follows: Years is the most important factor in determining Salary, and players with less experience earn lower salaries than more experienced players. Given that a player is less experienced, the number of hits that he made in the previous year seems to play little role in his salary. But among players who have been in the major leagues for five or more years, the number of hits made in the previous year does affect salary, and players who made more hits last year tend to have higher salaries.&lt;/p&gt;
 &lt;h3 id=&#34;building-a-tree&#34;&gt;Building a Tree&lt;/h3&gt;
 &lt;p&gt;There are two main steps in the construction of a tree:&lt;/p&gt;
@@ -6363,7 +5937,7 @@ $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Init first node
 tree1 = Node(X, y, np.arange(len(y)), 1)
 
-# Documentation (always comment and document your code!!)
+# Documentation (always comment and document your code!)
 print(tree1.__doc__)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;    Class used to represent nodes in a Regression Tree
@@ -6476,7 +6050,7 @@ overfit_tree = DecisionTreeRegressor(max_leaf_nodes=5).fit(X, y)
 fig, ax = plt.subplots(1,1)
 plot_tree(overfit_tree, filled=True, feature_names=features, fontsize=14, ax=ax);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_47_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_45_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The &lt;strong&gt;split on the far left&lt;/strong&gt; is predicting a very high &lt;code&gt;Salary&lt;/code&gt; (7.243) for players with few &lt;code&gt;Years&lt;/code&gt; of experience and few &lt;code&gt;Hits&lt;/code&gt;. Indeed this prediction is based on an extremely tiny subsample (2). They are probably outliers and our tree is most likely overfitting.&lt;/p&gt;
 &lt;p&gt;One possible alternative is to insert a minimum number of observation per leaf.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Compute tree
@@ -6486,7 +6060,7 @@ no_overfit_tree = DecisionTreeRegressor(max_leaf_nodes=5, min_samples_leaf=10).f
 fig, ax = plt.subplots(1,1)
 plot_tree(no_overfit_tree, filled=True, feature_names=features, fontsize=14, ax=ax);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_50_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_48_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Now the tree makes much more sense: the lower the &lt;code&gt;Years&lt;/code&gt; and the &lt;code&gt;Hits&lt;/code&gt;, the lower the predicted &lt;code&gt;Salary&lt;/code&gt; as we can see from the shades getting darker and darker as we move left to right&lt;/p&gt;
 &lt;p&gt;Another possible alternative to the process described above is to build the tree only so long as the decrease in the RSS due to each split exceeds some (high) threshold.&lt;/p&gt;
 &lt;p&gt;This strategy will result in smaller trees, but is too short-sighted since a seemingly worthless split early on in the tree might be followed by a very good split—that is, a split that leads to a large reduction in RSS later on.&lt;/p&gt;
@@ -6543,7 +6117,7 @@ def make_figure_8_5():
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_8_5()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_57_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The optimal tree has 4 leaves.&lt;/p&gt;
 &lt;h3 id=&#34;classification-trees&#34;&gt;Classification Trees&lt;/h3&gt;
 &lt;p&gt;A classification tree is very similar to a regression tree, except that it is used to predict a qualitative response rather than a quantitative one.&lt;/p&gt;
@@ -6735,7 +6309,7 @@ def make_fig_8_6a():
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_fig_8_6a()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_74_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_72_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;This figure has a surprising characteristic: some of the splits yield two terminal nodes that have the same predicted value.&lt;/p&gt;
 &lt;p&gt;For instance, consider the split &lt;code&gt;Age&lt;/code&gt;&amp;lt;=57.5 near the bottom left of the unpruned tree. Regardless of the value of &lt;code&gt;Age&lt;/code&gt;, a response value of &lt;em&gt;No&lt;/em&gt; is predicted for those observations. Why, then, is the split performed at all?&lt;/p&gt;
 &lt;p&gt;The split is performed because it leads to increased node purity. That is, 2/81 of the observations corresponding to the left-hand leaf have a response value of &lt;em&gt;Yes&lt;/em&gt;, whereas 9/36 of those corresponding to the right-hand leaf have a response value of &lt;em&gt;Yes&lt;/em&gt;. Why is node purity important? Suppose that we have a test observation that belongs to the region given by that left-hand leaf. Then we can be pretty certain that its response value is &lt;em&gt;No&lt;/em&gt;. In contrast, if a test observation belongs to the region given by the right-hand leaf, then its response value is probably &lt;em&gt;No&lt;/em&gt;, but we are much less certain. Even though the split &lt;code&gt;Age&lt;/code&gt;&amp;lt;=57.5 does not reduce the classification error, it improves the Gini index and the entropy, which are more sensitive to node purity.&lt;/p&gt;
@@ -6791,7 +6365,7 @@ for i,k in enumerate(params):
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_8_6b()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_80_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_78_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;other-issues&#34;&gt;Other Issues&lt;/h3&gt;
 &lt;h4 id=&#34;missing-predictor-values&#34;&gt;Missing Predictor Values&lt;/h4&gt;
 &lt;p&gt;There are usually 2 main ways to deal with missing values:&lt;/p&gt;
@@ -6881,7 +6455,7 @@ def make_new_figure_1():
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_1()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_96_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_94_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;It can be shown that with B sufficiently large, OOB error is virtually equivalent to leave-one-out cross-validation error. The OOB approach for estimating the test error is particularly convenient when performing bagging on large data sets for which cross-validation would be computationally onerous.&lt;/p&gt;
 &lt;h3 id=&#34;variable-importance-measures&#34;&gt;Variable Importance Measures&lt;/h3&gt;
 &lt;p&gt;As we have discussed, the main advantage of bagging is to reduce prediction variance. However, with bagging it can be &lt;strong&gt;difficult to interpret&lt;/strong&gt; the resulting model. In fact we cannot draw trees anymore given we have too many of them.&lt;/p&gt;
@@ -6907,7 +6481,7 @@ def make_figure_8_9():
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_8_9()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_103_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_101_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;random-forests&#34;&gt;Random Forests&lt;/h3&gt;
 &lt;p&gt;Random forests provide an improvement over bagged trees by way of a &lt;strong&gt;small tweak that decorrelates the trees&lt;/strong&gt;. As in bagging, we build a number of decision trees on bootstrapped training samples. But when building these decision trees, each time a split in a tree is considered, a random sample of $m$ predictors is chosen as split candidates from the full set of $p$ predictors. The split is allowed to use only one of those m predictors. A fresh sample of $m$ predictors is taken at each split, and typically we choose $m \sim \sqrt{p}$ — that is, the number of predictors considered at each split is approximately equal to the square root of the total number of predictors&lt;/p&gt;
 &lt;p&gt;In other words, in building a random forest, at each split in the tree, the algorithm is not even allowed to consider a majority of the available predictors. This may sound crazy, but it has a clever rationale. Suppose that there is one very strong predictor in the data set, along with a number of other moderately strong predictors. Then in the collection of bagged trees, most or all of the trees will use this strong predictor in the top split. Consequently, all of the bagged trees will look quite similar to each other. Hence the predictions from the bagged trees will be highly correlated. Unfortunately, averaging many highly correlated quantities does not lead to as large of a reduction in variance as averaging many uncorrelated quantities. In particular, this means that bagging will not lead to a substantial reduction in variance over a single tree in this setting.&lt;/p&gt;
@@ -6955,7 +6529,7 @@ def make_figure_8_8():
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_8_8()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_110_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_108_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As for bagging, we can plot feature importance.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Make new figure 2
 def make_new_figure_2():
@@ -6983,7 +6557,7 @@ def make_new_figure_2():
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_2()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_113_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_111_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;From the figure we observe that varaible importance ranking is similar with bagging and random forests, but there are significant differences.&lt;/p&gt;
 &lt;p&gt;We are now going to look at the importance of random forests using the &lt;code&gt;Khan&lt;/code&gt; gene dataset. This dataset has the peculiarity of having a large number of features and very few observations.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Load data
@@ -7211,7 +6785,7 @@ def make_figure_8_10():
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; make_figure_8_10()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_122_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_120_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;It seems that the best scores are achieved with few features and many trees.&lt;/p&gt;
 &lt;h3 id=&#34;boosting&#34;&gt;Boosting&lt;/h3&gt;
 &lt;p&gt;Like bagging, boosting is a general approach that can be applied to many statistical learning methods for regression or classification. Here we restrict our discussion of boosting to the context of decision trees.&lt;/p&gt;
@@ -7299,14 +6873,14 @@ def make_figure_8_11():
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_figure_8_11()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/07_trees_133_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/07_trees_131_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>Neural Networks</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/08_neuralnets/</link>
-      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/08_neuralnets/</guid>
       <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Remove warnings
 import warnings
@@ -8318,7 +7892,7 @@ train_NN_batch(loader, y_true, net, optimizer, loss_func, EPOCHS)
     <item>
       <title>Post-Double Selection</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/09_postdoubleselection/</link>
-      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/09_postdoubleselection/</guid>
       <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Remove warnings
 import warnings
@@ -9307,7 +8881,7 @@ Boosting : 1.0327
     <item>
       <title>Unsupervised Learning</title>
       <link>https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/</link>
-      <pubDate>Sun, 27 Feb 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/course/ml-econ/10_unsupervised/</guid>
       <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Setup
 from utils.lecture10 import *
@@ -10135,8 +9709,6 @@ distr1 = compute_distributions(X, clusters1)
 plot_assignment_gmm(X, clusters1, distr1, 1, logL1)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_154_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
-&lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&#34;expectation---maximization&#34;&gt;Expectation - Maximization&lt;/h3&gt;
 &lt;p&gt;The two steps we have just seen, are part of a broader family of algorithms to maximize likelihoods called &lt;strong&gt;expectation&lt;/strong&gt;-&lt;strong&gt;maximization&lt;/strong&gt; algorithms.&lt;/p&gt;
 &lt;p&gt;In the expectation step, we computed the expectation of the parameters, given the current cluster assignment.&lt;/p&gt;
@@ -10164,8 +9736,8 @@ plot_assignment_gmm(X, clusters1, distr1, 1, logL1)
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Test
 gmm_manual(X, K)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_162_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;In this case&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_161_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;In this case, GMM does a very poor job identifying the original clusters.&lt;/p&gt;
 &lt;h3 id=&#34;overlapping-clusters&#34;&gt;Overlapping Clusters&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s now try with a different dataset, where the data is drawn from two overlapping bi-variate gaussian distributions, forming a cross.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Simulate data
@@ -10175,18 +9747,18 @@ X[25:, :] = np.random.multivariate_normal([0,0], [[1,0],[0,50]], size=25)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;make_new_figure_1(X)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_167_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_166_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;gmm-with-overlapping-distributions&#34;&gt;GMM with overlapping distributions&lt;/h3&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# GMM
 gmm_manual(X, K)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_169_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_168_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, GMM is able to correctly recover the original clusters.&lt;/p&gt;
 &lt;h3 id=&#34;k-means-with-overlapping-distributions&#34;&gt;K-means with overlapping distributions&lt;/h3&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# K-means
 kmeans_manual(X, K)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_172_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/10_unsupervised_171_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;K-means generates completely different clusters.&lt;/p&gt;
 </description>
     </item>
