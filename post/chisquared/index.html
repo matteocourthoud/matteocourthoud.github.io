@@ -773,6 +773,7 @@
     <li><a href="#why-the-chi-squared-distribution">Why the Chi-squared Distribution?</a></li>
     <li><a href="#some-statistics">Some Statistics</a></li>
     <li><a href="#example-2-are-grades-independent-from-gender">Example 2: are grades independent from gender?</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
   </ul>
 </nav>
     </div>
@@ -834,7 +835,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    9 min read
+    10 min read
   </span>
   
 
@@ -881,17 +882,18 @@
 <pre><code class="language-python">import numpy as np
 import pandas as pd
 
-# Generate data
-def generate_dice_data(N=60):
-    numbers = [1,2,3,4,5,6]
-    dice_throws = np.random.choice(numbers, size=N)
-    data = pd.DataFrame({&quot;number&quot;: numbers,
-                         &quot;observed&quot;: [sum(dice_throws==n) for n in numbers],
+# Data generating process
+def generate_data_dice(N=60):
+    dice_numbers = [1,2,3,4,5,6]  # Dice numbers
+    dice_throws = np.random.choice(dice_numbers, size=N)  # Actual dice throws
+    data = pd.DataFrame({&quot;dice number&quot;: dice_numbers,
+                         &quot;observed&quot;: [sum(dice_throws==n) for n in dice_numbers],
                          &quot;expected&quot;: N / 6})
     return data
-
-dice_data = generate_dice_data()
-dice_data
+</code></pre>
+<pre><code class="language-python"># Generate data
+data_dice = generate_data_dice()
+data_dice
 </code></pre>
 <div>
 <style scoped>
@@ -911,7 +913,7 @@ dice_data
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>number</th>
+      <th>dice number</th>
       <th>observed</th>
       <th>expected</th>
     </tr>
@@ -920,37 +922,37 @@ dice_data
     <tr>
       <th>0</th>
       <td>1</td>
-      <td>14</td>
+      <td>8</td>
       <td>10.0</td>
     </tr>
     <tr>
       <th>1</th>
       <td>2</td>
-      <td>12</td>
+      <td>11</td>
       <td>10.0</td>
     </tr>
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>7</td>
+      <td>12</td>
       <td>10.0</td>
     </tr>
     <tr>
       <th>3</th>
       <td>4</td>
-      <td>9</td>
+      <td>12</td>
       <td>10.0</td>
     </tr>
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>12</td>
+      <td>7</td>
       <td>10.0</td>
     </tr>
     <tr>
       <th>5</th>
       <td>6</td>
-      <td>6</td>
+      <td>10</td>
       <td>10.0</td>
     </tr>
   </tbody>
@@ -974,10 +976,10 @@ $$</p>
 def compute_chi2_stat(data):
     return sum( (data.observed - data.expected)**2 / data.expected )
 
-chi2_stat = compute_chi2_stat(dice_data)
+chi2_stat = compute_chi2_stat(data_dice)
 chi2_stat
 </code></pre>
-<pre><code>5.0
+<pre><code>2.2
 </code></pre>
 <p>What do we make of this number? Is it &ldquo;unusual&rdquo;?</p>
 <p>If the dice was fair, the test Pearson&rsquo;s chi-squared test-statistic $T_{\chi^2}$ is distributed as a chi-squared distribution with $k-1$ degrees of freedom, $\chi^2_{k-1}$. For the moment, take this claim at face value, we will verify it later, both empirically and theoretically. We will also discuss the degrees of freedom in detail later on.</p>
@@ -995,14 +997,14 @@ chi2_5_pdf = chi2.pdf(x, df=5)
 # Plot 
 plt.plot(x, chi2_5_pdf);
 </code></pre>
-<p><img src="img/chisquared_9_0.png" alt="png"></p>
+<p><img src="img/chisquared_10_0.png" alt="png"></p>
 <p>How does the value of the statistic we have observed compares with its the distribution under the null hypothesis of a fair dice?</p>
 <pre><code class="language-python"># plot Chi-square distribution with 5 degrees of freedom
 plt.plot(x, chi2.pdf(x, df=5), );
 plt.vlines(chi2_stat, ymin=0, ymax=0.16, color='k', label='chi2 statistic')
 plt.legend();
 </code></pre>
-<p><img src="img/chisquared_11_0.png" alt="png"></p>
+<p><img src="img/chisquared_12_0.png" alt="png"></p>
 <p>The test statistic seems to fall well within the distribution, i.e. it does not seem to be an unusual event. Indeed, the question we want to answer is: &ldquo;<em>under the null hypothesis that the dice is fair, how unlikely is the statistic we have observed?</em>&rdquo;.</p>
 <p>The last component we need in order to built an hypothesis test, is a level of confidence, i.e. a threshold of &ldquo;unlikeliness&rdquo; of an event, below which we declare that the event is too unlikely under the model, for the model to be true. Let&rsquo;s say we decide to set that threshold at 5%.</p>
 <p>If the likelihood of observing an even that (or more) extreme than the one we have actually observed is less than 5%, we reject the nully hypothesis that the dice is fair.</p>
@@ -1022,7 +1024,7 @@ plt.fill_between(x[x&lt;z95], chi2_5_pdf[x&lt;z95], color='g', alpha=0.4, label=
 plt.vlines(chi2_stat, ymin=0, ymax=0.16, color='k', label='chi2 statistic')
 plt.legend();
 </code></pre>
-<p><img src="img/chisquared_15_0.png" alt="png"></p>
+<p><img src="img/chisquared_16_0.png" alt="png"></p>
 <h2 id="why-the-chi-squared-distribution">Why the Chi-squared Distribution?</h2>
 <p>How do we know that that particular statistic has that particular distribution?</p>
 <p>Before digging into the math, we can check this claim via <strong>simulation</strong>. We will repeat the procedure above many times, i.e.</p>
@@ -1031,30 +1033,29 @@ plt.legend();
 <li>compute the chi square statistic</li>
 </ul>
 <p>and then plot the distribution of chi square statistics.</p>
-<pre><code class="language-python"># Simulate data
-def simulate_data(K, N, dgp):
+<pre><code class="language-python"># Function to simulate data and compute chi2 stats
+def simulate_chi2stats(K, N, dgp):
     chi2_stats = []
     for i in range(K):
-        dice_data = dgp()
-        chi2_stats += [compute_chi2_stat(dice_data)]
+        data = dgp()
+        chi2_stats += [compute_chi2_stat(data)]
     return np.array(chi2_stats)
-
-chi2_stats = simulate_data(K=100, N=60, dgp=generate_dice_data)
 </code></pre>
-<pre><code class="language-python"># Plot data
-plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='r');
-plt.plot(x, chi2_5_pdf);
-</code></pre>
-<p><img src="img/chisquared_19_0.png" alt="png"></p>
-<p>Since we only did it 100 times, the distribution looks pretty coarse, but vaguely close. Let&rsquo;s now try 1000 times.</p>
-<pre><code class="language-python">chi2_stats = simulate_data(K=1000, N=60, dgp=generate_dice_data)
-
+<pre><code class="language-python">chi2_stats = simulate_chi2stats(K=100, N=60, dgp=generate_data_dice)
 
 # Plot data
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='r');
 plt.plot(x, chi2_5_pdf);
 </code></pre>
-<p><img src="img/chisquared_21_0.png" alt="png"></p>
+<p><img src="img/chisquared_20_0.png" alt="png"></p>
+<p>Since we only did it 100 times, the distribution looks pretty coarse, but vaguely close. Let&rsquo;s now try 1000 times.</p>
+<pre><code class="language-python">chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_dice)
+
+# Plot data
+plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='r');
+plt.plot(x, chi2_5_pdf);
+</code></pre>
+<p><img src="img/chisquared_22_0.png" alt="png"></p>
 <p>The empirical distribution of the test statistic is indeed very close to its theoretical counterpart.</p>
 <h2 id="some-statistics">Some Statistics</h2>
 <p>Why does the distribution of the test statistic look like that? Let&rsquo;s now dig deeper into the math.</p>
@@ -1112,8 +1113,8 @@ $$</p>
 <h2 id="example-2-are-grades-independent-from-gender">Example 2: are grades independent from gender?</h2>
 <p>Chi-squared tests can also be used to test independence between 2 variables. The idea is fundamentaly the same of the test in the previous section: checking systematic differences between observed and expected values, across different variables.</p>
 <p>Let&rsquo;s first generate some grades.</p>
-<pre><code class="language-python"># Generate data
-def generate_grades_data(N_male=60, N_female=40):
+<pre><code class="language-python"># Data generating process for grades
+def generate_data_grades(N_male=60, N_female=40):
     grade_scale = [1,2,3,4]
     p = [0.1, 0.2, 0.5, 0.2]
     grades1 = np.random.choice(grade_scale, size=N_male, p=p)
@@ -1126,10 +1127,10 @@ def generate_grades_data(N_male=60, N_female=40):
                           &quot;gender&quot;: &quot;female&quot;,
                           &quot;observed&quot;: [sum(grades2==n) for n in grade_scale],
                           &quot;expected&quot;: np.dot(N_female, p)})
-    data = pd.concat([data1, data2])
+    data = pd.concat([data1, data2]).reset_index()
     return data
-
-data_grades = generate_grades_data()
+</code></pre>
+<pre><code class="language-python">data_grades = generate_data_grades()
 data_grades
 </code></pre>
 <div>
@@ -1150,6 +1151,7 @@ data_grades
   <thead>
     <tr style="text-align: right;">
       <th></th>
+      <th>index</th>
       <th>grades</th>
       <th>gender</th>
       <th>observed</th>
@@ -1159,58 +1161,66 @@ data_grades
   <tbody>
     <tr>
       <th>0</th>
+      <td>0</td>
       <td>1</td>
       <td>male</td>
-      <td>5</td>
+      <td>7</td>
       <td>6.0</td>
     </tr>
     <tr>
       <th>1</th>
+      <td>1</td>
       <td>2</td>
       <td>male</td>
-      <td>14</td>
+      <td>13</td>
       <td>12.0</td>
     </tr>
     <tr>
       <th>2</th>
+      <td>2</td>
       <td>3</td>
       <td>male</td>
-      <td>32</td>
+      <td>30</td>
       <td>30.0</td>
     </tr>
     <tr>
       <th>3</th>
+      <td>3</td>
       <td>4</td>
       <td>male</td>
-      <td>9</td>
+      <td>10</td>
       <td>12.0</td>
     </tr>
     <tr>
-      <th>0</th>
+      <th>4</th>
+      <td>0</td>
       <td>1</td>
       <td>female</td>
-      <td>9</td>
+      <td>2</td>
       <td>4.0</td>
     </tr>
     <tr>
-      <th>1</th>
+      <th>5</th>
+      <td>1</td>
       <td>2</td>
       <td>female</td>
-      <td>5</td>
+      <td>3</td>
       <td>8.0</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>6</th>
+      <td>2</td>
       <td>3</td>
       <td>female</td>
-      <td>21</td>
+      <td>22</td>
       <td>20.0</td>
     </tr>
     <tr>
-      <th>3</th>
+      <th>7</th>
+      <td>3</td>
       <td>4</td>
       <td>female</td>
-      <td>5</td>
+      <td>13</td>
       <td>8.0</td>
     </tr>
   </tbody>
@@ -1237,24 +1247,32 @@ $$</p>
 <pre><code class="language-python">chi2_stat = compute_chi2_stat(data_grades)
 chi2_stat
 </code></pre>
-<pre><code>9.933333333333334
+<pre><code>8.033333333333333
 </code></pre>
 <p>As before, we can double-check whether the statistic is indeed distributed as a chi-squared with $k-1$ degrees of freedom by simulating the data generating process.</p>
 <pre><code class="language-python"># Plot data
-chi2_stats = simulate_data(K=1000, N=60, dgp=generate_grades_data)
+chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_grades)
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='r');
 plt.plot(x, chi2_5_pdf);
 </code></pre>
-<p><img src="img/chisquared_32_0.png" alt="png"></p>
+<p><img src="img/chisquared_34_0.png" alt="png"></p>
 <p>What happened? We forgot to change the degrees of freedom! We now have 6 instead of 5 (4 for each gender).</p>
 <pre><code class="language-python">chi2_7_pdf = chi2.pdf(x, df=6)
 
 # Plot data
-chi2_stats = simulate_data(K=1000, N=60, dgp=generate_grades_data)
+chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_grades)
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='r');
 plt.plot(x, chi2_7_pdf);
 </code></pre>
-<p><img src="img/chisquared_34_0.png" alt="png"></p>
+<p><img src="img/chisquared_36_0.png" alt="png"></p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this tutorial, we have seen how to perform two hypotesis tests</p>
+<ol>
+<li>testing if a set of means or sums is coming from the expected distribution</li>
+<li>testing if two distributions are independent or not</li>
+</ol>
+<p>The underlying principle is the same: testing discrepancies between expected and observed count data.</p>
+<p>The key statistic is Pearson&rsquo;s chi-square statistic and the key distribution is the chi-squared distribution. We have seen how to compute the statistic, why it has a chi-squared distribution and how to use this information to perform a statistical hypothesis test.</p>
 
           </div>
           

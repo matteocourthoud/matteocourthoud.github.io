@@ -29,17 +29,18 @@
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
 import pandas as pd
 
-# Generate data
-def generate_dice_data(N=60):
-    numbers = [1,2,3,4,5,6]
-    dice_throws = np.random.choice(numbers, size=N)
-    data = pd.DataFrame({&amp;quot;number&amp;quot;: numbers,
-                         &amp;quot;observed&amp;quot;: [sum(dice_throws==n) for n in numbers],
+# Data generating process
+def generate_data_dice(N=60):
+    dice_numbers = [1,2,3,4,5,6]  # Dice numbers
+    dice_throws = np.random.choice(dice_numbers, size=N)  # Actual dice throws
+    data = pd.DataFrame({&amp;quot;dice number&amp;quot;: dice_numbers,
+                         &amp;quot;observed&amp;quot;: [sum(dice_throws==n) for n in dice_numbers],
                          &amp;quot;expected&amp;quot;: N / 6})
     return data
-
-dice_data = generate_dice_data()
-dice_data
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Generate data
+data_dice = generate_data_dice()
+data_dice
 &lt;/code&gt;&lt;/pre&gt;
 &lt;div&gt;
 &lt;style scoped&gt;
@@ -59,7 +60,7 @@ dice_data
   &lt;thead&gt;
     &lt;tr style=&#34;text-align: right;&#34;&gt;
       &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;number&lt;/th&gt;
+      &lt;th&gt;dice number&lt;/th&gt;
       &lt;th&gt;observed&lt;/th&gt;
       &lt;th&gt;expected&lt;/th&gt;
     &lt;/tr&gt;
@@ -68,37 +69,37 @@ dice_data
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
       &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;14&lt;/td&gt;
+      &lt;td&gt;8&lt;/td&gt;
       &lt;td&gt;10.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;12&lt;/td&gt;
+      &lt;td&gt;11&lt;/td&gt;
       &lt;td&gt;10.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;7&lt;/td&gt;
+      &lt;td&gt;12&lt;/td&gt;
       &lt;td&gt;10.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;4&lt;/td&gt;
-      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;12&lt;/td&gt;
       &lt;td&gt;10.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;5&lt;/td&gt;
-      &lt;td&gt;12&lt;/td&gt;
+      &lt;td&gt;7&lt;/td&gt;
       &lt;td&gt;10.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;5&lt;/th&gt;
       &lt;td&gt;6&lt;/td&gt;
-      &lt;td&gt;6&lt;/td&gt;
+      &lt;td&gt;10&lt;/td&gt;
       &lt;td&gt;10.0&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
@@ -122,10 +123,10 @@ $$&lt;/p&gt;
 def compute_chi2_stat(data):
     return sum( (data.observed - data.expected)**2 / data.expected )
 
-chi2_stat = compute_chi2_stat(dice_data)
+chi2_stat = compute_chi2_stat(data_dice)
 chi2_stat
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;5.0
+&lt;pre&gt;&lt;code&gt;2.2
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;What do we make of this number? Is it &amp;ldquo;unusual&amp;rdquo;?&lt;/p&gt;
 &lt;p&gt;If the dice was fair, the test Pearson&amp;rsquo;s chi-squared test-statistic $T_{\chi^2}$ is distributed as a chi-squared distribution with $k-1$ degrees of freedom, $\chi^2_{k-1}$. For the moment, take this claim at face value, we will verify it later, both empirically and theoretically. We will also discuss the degrees of freedom in detail later on.&lt;/p&gt;
@@ -143,14 +144,14 @@ chi2_5_pdf = chi2.pdf(x, df=5)
 # Plot 
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_9_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_10_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;How does the value of the statistic we have observed compares with its the distribution under the null hypothesis of a fair dice?&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# plot Chi-square distribution with 5 degrees of freedom
 plt.plot(x, chi2.pdf(x, df=5), );
 plt.vlines(chi2_stat, ymin=0, ymax=0.16, color=&#39;k&#39;, label=&#39;chi2 statistic&#39;)
 plt.legend();
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_11_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_12_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The test statistic seems to fall well within the distribution, i.e. it does not seem to be an unusual event. Indeed, the question we want to answer is: &amp;ldquo;&lt;em&gt;under the null hypothesis that the dice is fair, how unlikely is the statistic we have observed?&lt;/em&gt;&amp;rdquo;.&lt;/p&gt;
 &lt;p&gt;The last component we need in order to built an hypothesis test, is a level of confidence, i.e. a threshold of &amp;ldquo;unlikeliness&amp;rdquo; of an event, below which we declare that the event is too unlikely under the model, for the model to be true. Let&amp;rsquo;s say we decide to set that threshold at 5%.&lt;/p&gt;
 &lt;p&gt;If the likelihood of observing an even that (or more) extreme than the one we have actually observed is less than 5%, we reject the nully hypothesis that the dice is fair.&lt;/p&gt;
@@ -170,7 +171,7 @@ plt.fill_between(x[x&amp;lt;z95], chi2_5_pdf[x&amp;lt;z95], color=&#39;g&#39;, a
 plt.vlines(chi2_stat, ymin=0, ymax=0.16, color=&#39;k&#39;, label=&#39;chi2 statistic&#39;)
 plt.legend();
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_15_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_16_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;why-the-chi-squared-distribution&#34;&gt;Why the Chi-squared Distribution?&lt;/h2&gt;
 &lt;p&gt;How do we know that that particular statistic has that particular distribution?&lt;/p&gt;
 &lt;p&gt;Before digging into the math, we can check this claim via &lt;strong&gt;simulation&lt;/strong&gt;. We will repeat the procedure above many times, i.e.&lt;/p&gt;
@@ -179,30 +180,29 @@ plt.legend();
 &lt;li&gt;compute the chi square statistic&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;and then plot the distribution of chi square statistics.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Simulate data
-def simulate_data(K, N, dgp):
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Function to simulate data and compute chi2 stats
+def simulate_chi2stats(K, N, dgp):
     chi2_stats = []
     for i in range(K):
-        dice_data = dgp()
-        chi2_stats += [compute_chi2_stat(dice_data)]
+        data = dgp()
+        chi2_stats += [compute_chi2_stat(data)]
     return np.array(chi2_stats)
-
-chi2_stats = simulate_data(K=100, N=60, dgp=generate_dice_data)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot data
-plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
-plt.plot(x, chi2_5_pdf);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Since we only did it 100 times, the distribution looks pretty coarse, but vaguely close. Let&amp;rsquo;s now try 1000 times.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_stats = simulate_data(K=1000, N=60, dgp=generate_dice_data)
-
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_stats = simulate_chi2stats(K=100, N=60, dgp=generate_data_dice)
 
 # Plot data
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_20_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Since we only did it 100 times, the distribution looks pretty coarse, but vaguely close. Let&amp;rsquo;s now try 1000 times.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_dice)
+
+# Plot data
+plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
+plt.plot(x, chi2_5_pdf);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The empirical distribution of the test statistic is indeed very close to its theoretical counterpart.&lt;/p&gt;
 &lt;h2 id=&#34;some-statistics&#34;&gt;Some Statistics&lt;/h2&gt;
 &lt;p&gt;Why does the distribution of the test statistic look like that? Let&amp;rsquo;s now dig deeper into the math.&lt;/p&gt;
@@ -260,8 +260,8 @@ $$&lt;/p&gt;
 &lt;h2 id=&#34;example-2-are-grades-independent-from-gender&#34;&gt;Example 2: are grades independent from gender?&lt;/h2&gt;
 &lt;p&gt;Chi-squared tests can also be used to test independence between 2 variables. The idea is fundamentaly the same of the test in the previous section: checking systematic differences between observed and expected values, across different variables.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s first generate some grades.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Generate data
-def generate_grades_data(N_male=60, N_female=40):
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Data generating process for grades
+def generate_data_grades(N_male=60, N_female=40):
     grade_scale = [1,2,3,4]
     p = [0.1, 0.2, 0.5, 0.2]
     grades1 = np.random.choice(grade_scale, size=N_male, p=p)
@@ -274,10 +274,10 @@ def generate_grades_data(N_male=60, N_female=40):
                           &amp;quot;gender&amp;quot;: &amp;quot;female&amp;quot;,
                           &amp;quot;observed&amp;quot;: [sum(grades2==n) for n in grade_scale],
                           &amp;quot;expected&amp;quot;: np.dot(N_female, p)})
-    data = pd.concat([data1, data2])
+    data = pd.concat([data1, data2]).reset_index()
     return data
-
-data_grades = generate_grades_data()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;data_grades = generate_data_grades()
 data_grades
 &lt;/code&gt;&lt;/pre&gt;
 &lt;div&gt;
@@ -298,6 +298,7 @@ data_grades
   &lt;thead&gt;
     &lt;tr style=&#34;text-align: right;&#34;&gt;
       &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;index&lt;/th&gt;
       &lt;th&gt;grades&lt;/th&gt;
       &lt;th&gt;gender&lt;/th&gt;
       &lt;th&gt;observed&lt;/th&gt;
@@ -307,58 +308,66 @@ data_grades
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;male&lt;/td&gt;
-      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;7&lt;/td&gt;
       &lt;td&gt;6.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;2&lt;/td&gt;
       &lt;td&gt;male&lt;/td&gt;
-      &lt;td&gt;14&lt;/td&gt;
+      &lt;td&gt;13&lt;/td&gt;
       &lt;td&gt;12.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2&lt;/td&gt;
       &lt;td&gt;3&lt;/td&gt;
       &lt;td&gt;male&lt;/td&gt;
-      &lt;td&gt;32&lt;/td&gt;
+      &lt;td&gt;30&lt;/td&gt;
       &lt;td&gt;30.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;3&lt;/td&gt;
       &lt;td&gt;4&lt;/td&gt;
       &lt;td&gt;male&lt;/td&gt;
-      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;10&lt;/td&gt;
       &lt;td&gt;12.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;female&lt;/td&gt;
-      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
       &lt;td&gt;4.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;2&lt;/td&gt;
       &lt;td&gt;female&lt;/td&gt;
-      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
       &lt;td&gt;8.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;2&lt;/td&gt;
       &lt;td&gt;3&lt;/td&gt;
       &lt;td&gt;female&lt;/td&gt;
-      &lt;td&gt;21&lt;/td&gt;
+      &lt;td&gt;22&lt;/td&gt;
       &lt;td&gt;20.0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;3&lt;/td&gt;
       &lt;td&gt;4&lt;/td&gt;
       &lt;td&gt;female&lt;/td&gt;
-      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;13&lt;/td&gt;
       &lt;td&gt;8.0&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
@@ -385,24 +394,32 @@ $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_stat = compute_chi2_stat(data_grades)
 chi2_stat
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;9.933333333333334
+&lt;pre&gt;&lt;code&gt;8.033333333333333
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;As before, we can double-check whether the statistic is indeed distributed as a chi-squared with $k-1$ degrees of freedom by simulating the data generating process.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot data
-chi2_stats = simulate_data(K=1000, N=60, dgp=generate_grades_data)
+chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_grades)
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_32_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;What happened? We forgot to change the degrees of freedom! We now have 6 instead of 5 (4 for each gender).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_7_pdf = chi2.pdf(x, df=6)
 
 # Plot data
-chi2_stats = simulate_data(K=1000, N=60, dgp=generate_grades_data)
+chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_grades)
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
 plt.plot(x, chi2_7_pdf);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_36_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this tutorial, we have seen how to perform two hypotesis tests&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;testing if a set of means or sums is coming from the expected distribution&lt;/li&gt;
+&lt;li&gt;testing if two distributions are independent or not&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The underlying principle is the same: testing discrepancies between expected and observed count data.&lt;/p&gt;
+&lt;p&gt;The key statistic is Pearson&amp;rsquo;s chi-square statistic and the key distribution is the chi-squared distribution. We have seen how to compute the statistic, why it has a chi-squared distribution and how to use this information to perform a statistical hypothesis test.&lt;/p&gt;
 </description>
     </item>
     
