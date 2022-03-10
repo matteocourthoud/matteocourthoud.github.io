@@ -341,10 +341,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-03-09T00:00:00&#43;00:00"
+        content="2022-03-10T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-03-09T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-03-10T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@
     "https://matteocourthoud.github.io/post/chisquared/featured.jpg"
   ],
   
-  "datePublished": "2022-03-09T00:00:00Z",
-  "dateModified": "2022-03-09T00:00:00Z",
+  "datePublished": "2022-03-10T00:00:00Z",
+  "dateModified": "2022-03-10T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -825,7 +825,7 @@
     
       
     
-    Mar 9, 2022
+    Mar 10, 2022
   </span>
   
 
@@ -877,7 +877,7 @@
 <h2 id="example-1-is-a-dice-fair">Example 1: is a dice fair?</h2>
 <p>Suppose you want to test whether a dice is fair.</p>
 <p>You throw the dice 60 times and you count the number of times you get each outcome.</p>
-<p>Let&rsquo;s simulate some data coming from a fair dice.</p>
+<p>Let&rsquo;s simulate some data (from a fair dice).</p>
 <pre><code class="language-python">import numpy as np
 import pandas as pd
 
@@ -959,13 +959,12 @@ dice_data
 <p>If we were throwing the dice <strong>a lot</strong> of times, we would expect the same number of observations for each dice-number. However, there is inherent noise in the process. How can we tell whether the fact that we didn&rsquo;t get exactly 10 observations for each dice-number is just due to randomness or it&rsquo;s because the dice is unfair?</p>
 <p>The idea is to compute some statistic whose distribution is known under the assumption that the dice is fair, and then check if its value is &ldquo;unusual&rdquo; or not. If the value is particularly &ldquo;unusual&rdquo;, we reject the null hypothesis that the dice is fair.</p>
 <p>In our case, the statistic we choose is the chi-squared $\chi^{2}$ test-statistic.</p>
-<p>The value of the chi-squared $\chi^{2}$ test-statistic is</p>
+<p>The value of the <a href="https://en.wikipedia.org/wiki/Pearson%27s_chi-squared_test" target="_blank" rel="noopener">Pearson&rsquo;s chi-squared test-statistic</a> is</p>
 <p>$$
 T_{\chi^2} = \sum _{i=1}^{n} \frac{(O_i - E_i)^{2}}{E_i} = N \sum _{i=1}^{n} \frac{\left(O_i/N - p_i \right)^2 }{p_i}
 $$</p>
 <p>where</p>
 <ul>
-<li>$T_{\chi^2}$ = Pearson&rsquo;s cumulative test statistic, which asymptotically approaches a $\chi^{2}$ distribution.</li>
 <li>$O_{i}$ = the number of observations of type i.</li>
 <li>$N$ = total number of observations</li>
 <li>$E_{i}=Np_{i}$ = the expected (theoretical) count of type $i$, asserted by the null hypothesis that the fraction of type $i$ in the population is $p_{i}$</li>
@@ -981,9 +980,9 @@ chi2_stat
 <pre><code>5.0
 </code></pre>
 <p>What do we make of this number? Is it &ldquo;unusual&rdquo;?</p>
-<p>We know that if the dice was fair, this statistic would be distributed as a $\chi^{2}$ distribution with $n-1$ degrees of freedom.</p>
+<p>If the dice was fair, the test Pearson&rsquo;s chi-squared test-statistic $T_{\chi^2}$ is distributed as a chi-squared distribution with $k-1$ degrees of freedom, $\chi^2_{k-1}$. For the moment, take this claim at face value, we will verify it later, both empirically and theoretically. We will also discuss the degrees of freedom in detail later on.</p>
 <p><strong>Important!</strong> Do not confuse the chi-squared test statistic (a number) with the chi-squared distribution (a distribution).</p>
-<p>What does a $\chi^{2}$ distribution with $n-1$ degrees of freedom look like?</p>
+<p>What does a chi-squared distribution with $n-1$ degrees of freedom, $\chi^2_{k-1}$, look like?</p>
 <pre><code class="language-python">import matplotlib.pyplot as plt
 from scipy.stats import chi2
 
@@ -1064,11 +1063,11 @@ plt.plot(x, chi2_5_pdf);
 <li>the Central Limit Theorem</li>
 <li>the relationship between a chi-squared and a normal distribution</li>
 </ul>
-<p>The Central Limit Theorem says that</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Central_limit_theorem" target="_blank" rel="noopener">Central Limit Theorem</a> says that</p>
 <blockquote>
 <p>In probability theory, the central limit theorem (CLT) establishes that, in many situations, when independent random variables are summed up, their properly normalized sum tends toward a normal distribution (informally a bell curve) even if the original variables themselves are not normally distributed.</p>
 </blockquote>
-<p>Where does a normal distribution comes up in our case? If we look at a single row in our data, i.e. the occurrences of a specific dice throw, it can be intepreted as the sum of realization from a bernoulli distribution with probability 1/6.</p>
+<p>Where does a normal distribution comes up in our case? If we look at a single row in our data, i.e. the occurrences of a specific dice throw, it can be intepreted as the sum of realization from a <a href="https://en.wikipedia.org/wiki/Bernoulli_distribution" target="_blank" rel="noopener">Bernoulli distribution</a> with probability 1/6.</p>
 <blockquote>
 <p>In probability theory and statistics, the Bernoulli distribution is the discrete probability distribution of a random variable which takes the value $1$ with probability $p$ and the value $0$ with probability $q=1-p$.</p>
 </blockquote>
@@ -1089,7 +1088,7 @@ $$</p>
 <p>$$
 \lim_{n \to \infty} \ \sqrt{n} \left( \frac {\bar X_n - p}{\sqrt{p * (1-p)}} \right) \sim N(0,1)
 $$</p>
-<p>Our last piece: what is a chi-squared distribution?</p>
+<p>Our last piece: what is a <a href="https://en.wikipedia.org/wiki/Chi-squared_distribution" target="_blank" rel="noopener">chi-squared distribution</a>?</p>
 <blockquote>
 <p>If $Z_1, &hellip;, Z_k$ are independent, standard normal random variables, then the sum of their squares,</p>
 <p>$$
@@ -1097,11 +1096,11 @@ Q = \sum_{i=1}^k Z_i^2
 $$
 is distributed according to the chi-squared distribution with $k$ degrees of freedom.</p>
 </blockquote>
-<p>I.e. the sum of standard normal distributions is a chi-squared distribution. Since the normalized sum of realizations of each dice number should converge to a standard normal distribution, their sum of squares should converge to a chi squared distribution. I.e.</p>
+<p>I.e. the sum of standard normal distributions is a chi-squared distribution, where the <strong>degrees of freedom</strong> indicate the number of normal distributions we are summing over. Since the normalized sum of realizations of each dice number should converge to a standard normal distribution, their sum of squares should converge to a chi squared distribution. I.e.</p>
 <p>$$
 \lim_{n \to \infty} \ \sum_k n \frac{(\bar X_n - p)^2}{p * (1-p)} \sim \chi^2_k
 $$</p>
-<p>There is just one issue: the last distribution is not really independent from the others. In fact, as soon as we know that we have thrown 60 dices and how many 1s, 2s, 3s, 4s and 5s we got, we can compute the number of 6s. Therefore, we should exlude one distribution since only 5 (or in general k-1) are truly independent.</p>
+<p>There is just one issue: the last distribution is not really independent from the others. In fact, as soon as we know that we have thrown 60 dices and how many 1s, 2s, 3s, 4s and 5s we got, we can compute the number of 6s. Therefore, we should exlude one distribution since only 5 (or, in general, $k-1$) are truly independent.</p>
 <p>In practice, however, we sum all distributions, but then we scale them down by multiplying them by $(1-p)$ so that we have</p>
 <p>$$
 \lim_{n \to \infty} \ \sum_k n \frac{(\bar X_n - p)^2}{p} \sim \chi^2_{k-1}
