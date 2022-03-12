@@ -21,7 +21,7 @@
 import pandas as pd
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;For most of this course we are going to work with &lt;code&gt;pandas&lt;/code&gt; DataFrames. However, it&amp;rsquo;s important to start with an introduction to the different types of data structures available in Python, their characteristics, their differences and their comparative advantages.&lt;/p&gt;
-&lt;p&gt;One can categorize data structures in Python as follows:&lt;/p&gt;
+&lt;p&gt;The most important data structures in Python are:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;lists&lt;/li&gt;
 &lt;li&gt;tuples&lt;/li&gt;
@@ -37,7 +37,6 @@ import pandas as pd
 &lt;li&gt;can hold any type of data&lt;/li&gt;
 &lt;li&gt;can hold different types of data at the same time&lt;/li&gt;
 &lt;li&gt;can be modified&lt;/li&gt;
-&lt;li&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;We can &lt;strong&gt;generate&lt;/strong&gt; lists using square brackets.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;l = [12, &amp;quot;world&amp;quot;, [3,4,5]]
@@ -152,7 +151,7 @@ print(t)
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;s = {12, &amp;quot;world&amp;quot;, (3,4,5)}
 print(s)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;{&#39;world&#39;, (3, 4, 5), 12}
+&lt;pre&gt;&lt;code&gt;{(3, 4, 5), 12, &#39;world&#39;}
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Since sets are &lt;em&gt;unordered&lt;/em&gt; and &lt;em&gt;unindexed&lt;/em&gt;, we cannot &lt;strong&gt;access&lt;/strong&gt; speficic elements by their position.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Try to access element by position
@@ -176,19 +175,19 @@ except Exception as e:
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;s.add(&#39;hello&#39;)
 print(s)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;{12, (3, 4, 5), &#39;hello&#39;, &#39;world&#39;}
+&lt;pre&gt;&lt;code&gt;{&#39;hello&#39;, (3, 4, 5), 12, &#39;world&#39;}
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;However, we cannot add &lt;strong&gt;duplicates&lt;/strong&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;s.add(&#39;hello&#39;)
 print(s)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;{12, (3, 4, 5), &#39;hello&#39;, &#39;world&#39;}
+&lt;pre&gt;&lt;code&gt;{&#39;hello&#39;, (3, 4, 5), 12, &#39;world&#39;}
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can &lt;strong&gt;delete&lt;/strong&gt; elements of a set using &lt;code&gt;.remove()&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;s.remove(&#39;hello&#39;)
 print(s)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;{12, (3, 4, 5), &#39;world&#39;}
+&lt;pre&gt;&lt;code&gt;{(3, 4, 5), 12, &#39;world&#39;}
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can also generate sets using &lt;strong&gt;comprehensions&lt;/strong&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;s = {n for n in range(3)}
@@ -223,12 +222,12 @@ except Exception as e:
 &lt;p&gt;We can &lt;strong&gt;access all values&lt;/strong&gt; of the dictionary using &lt;code&gt;.values()&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;d.values()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;dict_values([1, 2, 3])
+&lt;pre&gt;&lt;code&gt;dict_values([12, &#39;world&#39;, [3, 4, 5]])
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can &lt;strong&gt;access all keys&lt;/strong&gt; of the dictionary using &lt;code&gt;.keys()&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;d.keys()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;dict_keys([&#39;k0&#39;, &#39;k1&#39;, &#39;k2&#39;])
+&lt;pre&gt;&lt;code&gt;dict_keys([&#39;first&#39;, 2, (3,)])
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Since dictionaries are mutable, we can &lt;strong&gt;modify&lt;/strong&gt; their elements.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;d[&amp;quot;first&amp;quot;] = &#39;hello&#39;
@@ -240,13 +239,13 @@ print(d)
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;d[0] = &#39;hello&#39;
 print(d)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;{&#39;first&#39;: 12, 2: &#39;world&#39;, (3,): [3, 4, 5], 0: &#39;hello&#39;}
+&lt;pre&gt;&lt;code&gt;{&#39;first&#39;: &#39;hello&#39;, 2: &#39;world&#39;, (3,): [3, 4, 5], 0: &#39;hello&#39;}
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can &lt;strong&gt;remove&lt;/strong&gt; elements using &lt;code&gt;del&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;del d[0]
 print(d)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;{&#39;first&#39;: 12, 2: &#39;world&#39;, (3,): [3, 4, 5]}
+&lt;pre&gt;&lt;code&gt;{&#39;first&#39;: &#39;hello&#39;, 2: &#39;world&#39;, (3,): [3, 4, 5]}
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can cannot &lt;strong&gt;combine&lt;/strong&gt; two dictionaries using &lt;code&gt;+&lt;/code&gt;. We can only add one element at the time.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;try:
@@ -382,10 +381,10 @@ def compare_time(list_objects):
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_time([l, t, s, a])
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Time of &amp;lt;class &#39;list&#39;&amp;gt;: 0.0464017391204834
-Time of &amp;lt;class &#39;tuple&#39;&amp;gt;: 0.03342103958129883
-Time of &amp;lt;class &#39;set&#39;&amp;gt;: 0.022654056549072266
-Time of &amp;lt;class &#39;numpy.ndarray&#39;&amp;gt;: 0.010206937789916992
+&lt;pre&gt;&lt;code&gt;Time of &amp;lt;class &#39;list&#39;&amp;gt;: 0.021067142486572266
+Time of &amp;lt;class &#39;tuple&#39;&amp;gt;: 0.02071404457092285
+Time of &amp;lt;class &#39;set&#39;&amp;gt;: 0.021012067794799805
+Time of &amp;lt;class &#39;numpy.ndarray&#39;&amp;gt;: 0.010493993759155273
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Numpy arrays are faster at math operations.&lt;/p&gt;
 </description>
