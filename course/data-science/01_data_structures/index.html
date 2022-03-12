@@ -817,11 +817,11 @@
 
       <nav id="TableOfContents">
   <ul>
-    <li><a href="#lists-mutable-dynamic-arrays">Lists: mutable dynamic arrays</a></li>
-    <li><a href="#tuples-immutable-dynamic-arrays">Tuples: immutable dynamic arrays</a></li>
-    <li><a href="#sets-unordered-unique-collections">Sets: unordered unique collections</a></li>
-    <li><a href="#dictionaries-named-lists">Dictionaries: named lists</a></li>
-    <li><a href="#numpy-array">Numpy array</a></li>
+    <li><a href="#lists-ordered-mutable-arrays">Lists: ordered mutable arrays</a></li>
+    <li><a href="#tuples-ordered-unmutable-arrays">Tuples: ordered unmutable arrays</a></li>
+    <li><a href="#sets-unordered-unindexed-mutable-arrays">Sets: unordered unindexed mutable arrays</a></li>
+    <li><a href="#dictionaries-indexed-mutable-arrays">Dictionaries: indexed mutable arrays</a></li>
+    <li><a href="#numpy-array-ordered-mutable-arrays-for-math">Numpy Array: ordered mutable arrays for math</a></li>
     <li><a href="#comparison">Comparison</a></li>
   </ul>
 </nav>
@@ -855,7 +855,7 @@ import pandas as pd
 <li>pandas DataFrames</li>
 <li>pyspark DataFrames</li>
 </ul>
-<h2 id="lists-mutable-dynamic-arrays">Lists: mutable dynamic arrays</h2>
+<h2 id="lists-ordered-mutable-arrays">Lists: ordered mutable arrays</h2>
 <p>A <strong>list</strong> is a mutable array data structure in Python with the following characteristics:</p>
 <ul>
 <li>can hold any type of data</li>
@@ -863,36 +863,41 @@ import pandas as pd
 <li>can be modified</li>
 <li></li>
 </ul>
-<p>Lists are generated using square brackets.</p>
+<p>We can <strong>generate</strong> lists using square brackets.</p>
 <pre><code class="language-python">l = [12, &quot;world&quot;, [3,4,5]]
 print(l)
 </code></pre>
 <pre><code>[12, 'world', [3, 4, 5]]
 </code></pre>
-<p>We modify elements by calling the index of the list.</p>
+<p>Since lists are <em>ordered</em>, we can <strong>access</strong> their element by calling the position of the element in the list.</p>
+<pre><code class="language-python">l[0]
+</code></pre>
+<pre><code>12
+</code></pre>
+<p>Since lists are <em>mutable</em>, we can <strong>modify</strong> their elements.</p>
 <pre><code class="language-python">l[0] = 'hello'
 print(l)
 </code></pre>
 <pre><code>['hello', 'world', [3, 4, 5]]
 </code></pre>
-<p>We add elements to a list using <code>.append()</code>.</p>
+<p>We can <strong>add</strong> elements to a list using <code>.append()</code>.</p>
 <pre><code class="language-python">l.append(23)
 l
 </code></pre>
 <pre><code>['hello', 'world', [3, 4, 5], 23]
 </code></pre>
-<p>We can remove elements by calling <code>del</code> on it.</p>
+<p>We can <strong>remove</strong> elements by calling <code>del</code> on it.</p>
 <pre><code class="language-python">del l[0]
 print(l)
 </code></pre>
 <pre><code>['world', [3, 4, 5], 23]
 </code></pre>
-<p>We can combine two lists using <code>+</code>. Note that this operation does not modify the list but generates a new one.</p>
+<p>We can <strong>combine</strong> two lists using <code>+</code>. Note that this operation does not modify the list but generates a new one.</p>
 <pre><code class="language-python">l + [23]
 </code></pre>
 <pre><code>['world', [3, 4, 5], 23, 23]
 </code></pre>
-<p>We can also generate lists using comprehensions.</p>
+<p>We can also generate lists using <strong>comprehensions</strong>.</p>
 <pre><code class="language-python">l = [n for n in range(3)]
 print(l)
 </code></pre>
@@ -904,22 +909,26 @@ print(l)
 </code></pre>
 <pre><code>[16, 18]
 </code></pre>
-<h2 id="tuples-immutable-dynamic-arrays">Tuples: immutable dynamic arrays</h2>
+<h2 id="tuples-ordered-unmutable-arrays">Tuples: ordered unmutable arrays</h2>
 <p>A <strong>tuple</strong> is an immutable array data structure in Python with the following characteristics:</p>
 <ul>
 <li>can hold any type of data</li>
 <li>can hold different types of data at the same time</li>
 <li><strong>can not be modified</strong></li>
-<li></li>
 </ul>
-<p>Tuples are generated using curve brackets.</p>
+<p>We can <strong>generate</strong> tuples using curve brackets.</p>
 <pre><code class="language-python"># A list of different data types
 t = (12, &quot;world&quot;, [3,4,5])
 print(t)
 </code></pre>
 <pre><code>(12, 'world', [3, 4, 5])
 </code></pre>
-<p>We <em>cannot</em> modify tuples!</p>
+<p>Since tuples are <em>ordered</em>, we can <strong>access</strong> their element by calling the position of the element in the list.</p>
+<pre><code class="language-python">t[0]
+</code></pre>
+<pre><code>12
+</code></pre>
+<p>Since tuples are <em>unmutable</em>, we cannot <strong>modify</strong> their elements.</p>
 <pre><code class="language-python"># Try to modify element
 try:
     t[0] = 'hello'
@@ -944,18 +953,18 @@ except Exception as e:
 </code></pre>
 <pre><code>'tuple' object doesn't support item deletion
 </code></pre>
-<p>We can combine two tuples using <code>+</code>. Note that this operation does not modify the tuple but generates a new one. Also note that to generate a 1-element tuple we need to insert a comma.</p>
+<p>We can <strong>combine</strong> two tuples using <code>+</code>. Note that this operation does not modify the tuple but generates a new one. Also note that to generate a 1-element tuple we need to insert a comma.</p>
 <pre><code class="language-python">t + (23,)
 </code></pre>
 <pre><code>(12, 'world', [3, 4, 5], 23)
 </code></pre>
-<p>We can generate tuples using comprehensions, but we need to specify it&rsquo;s a <code>tuple</code>.</p>
+<p>We can generate tuples using <strong>comprehensions</strong>, but we need to specify it&rsquo;s a <code>tuple</code>.</p>
 <pre><code class="language-python">t = tuple(n for n in range(3))
 print(t)
 </code></pre>
 <pre><code>(0, 1, 2)
 </code></pre>
-<h2 id="sets-unordered-unique-collections">Sets: unordered unique collections</h2>
+<h2 id="sets-unordered-unindexed-mutable-arrays">Sets: unordered unindexed mutable arrays</h2>
 <p>A <strong>set</strong> is a mutable array data structure in Python with the following characteristics:</p>
 <ul>
 <li><strong>can only hold hashable types</strong></li>
@@ -963,13 +972,22 @@ print(t)
 <li><strong>cannot be modified</strong></li>
 <li><strong>cannot contain duplicates</strong></li>
 </ul>
-<p>Sets are generated using curly brackets.</p>
+<p>We can <strong>generate</strong> using curly brackets.</p>
 <pre><code class="language-python">s = {12, &quot;world&quot;, (3,4,5)}
 print(s)
 </code></pre>
 <pre><code>{'world', (3, 4, 5), 12}
 </code></pre>
-<p>We <em>cannot</em> modify sets!</p>
+<p>Since sets are <em>unordered</em> and <em>unindexed</em>, we cannot <strong>access</strong> speficic elements by their position.</p>
+<pre><code class="language-python"># Try to access element by position
+try:
+    s[0]
+except Exception as e:
+    print(e)
+</code></pre>
+<pre><code>'set' object is not subscriptable
+</code></pre>
+<p>Since sets are <em>unordered</em>, we cannot <strong>modify</strong> their elements by specifying the position.</p>
 <pre><code class="language-python"># Try to modify element
 try:
     s[0] = 'hello'
@@ -978,42 +996,39 @@ except Exception as e:
 </code></pre>
 <pre><code>'set' object does not support item assignment
 </code></pre>
-<p>But we can add elements using <code>.add()</code>.</p>
+<p>However, since sets are <em>mutable</em>, we can <strong>add</strong> elements using <code>.add()</code>.</p>
 <pre><code class="language-python">s.add('hello')
 print(s)
 </code></pre>
-<pre><code>{'world', (3, 4, 5), 12, 'hello'}
+<pre><code>{12, (3, 4, 5), 'hello', 'world'}
 </code></pre>
-<p>However, we cannot add duplicates.</p>
+<p>However, we cannot add <strong>duplicates</strong>.</p>
 <pre><code class="language-python">s.add('hello')
 print(s)
 </code></pre>
-<pre><code>{'world', (3, 4, 5), 12, 'hello'}
+<pre><code>{12, (3, 4, 5), 'hello', 'world'}
 </code></pre>
-<p>We cannot delete elements of a set.</p>
-<pre><code class="language-python"># Try to remove element
-try:
-    del s[0]
-except Exception as e:
-    print(e)
+<p>We can <strong>delete</strong> elements of a set using <code>.remove()</code>.</p>
+<pre><code class="language-python">s.remove('hello')
+print(s)
 </code></pre>
-<pre><code>'set' object doesn't support item deletion
+<pre><code>{12, (3, 4, 5), 'world'}
 </code></pre>
-<p>We can also generate sets using comprehensions.</p>
+<p>We can also generate sets using <strong>comprehensions</strong>.</p>
 <pre><code class="language-python">s = {n for n in range(3)}
 print(s)
 </code></pre>
 <pre><code>{0, 1, 2}
 </code></pre>
-<h2 id="dictionaries-named-lists">Dictionaries: named lists</h2>
+<h2 id="dictionaries-indexed-mutable-arrays">Dictionaries: indexed mutable arrays</h2>
 <p>A <strong>dictionary</strong> is a mutable array data structure in Python with the following characteristics:</p>
 <ul>
-<li>can hold any type of data</li>
-<li>can hold different types of data at the same time</li>
+<li>can hold any type</li>
+<li>can hold different types at the same time</li>
 <li>can be modified</li>
 <li><strong>items are named</strong></li>
 </ul>
-<p>Dictionaries are generated using curly brackets. Since elements are indexed by keys, we have to provide one for each element.</p>
+<p>We can <strong>generate</strong> dictionaries using curly brackets. Since elements are indexed by keys, we have to provide one for each element.</p>
 <p>Dictionary keys can be of any <strong>hashable type</strong>. A hashable object has a hash value that never changes during its lifetime, and it can be compared to other objects. Hashable objects that compare as equal must have the same hash value.</p>
 <p>Immutable types like strings and numbers are hashable and work well as dictionary keys. You can also use tuple objects as dictionary keys as long as they contain only hashable types themselves.</p>
 <pre><code class="language-python">d = {&quot;first&quot;: 12, 2: &quot;world&quot;, (3,): [3,4,5]}
@@ -1021,25 +1036,43 @@ print(d)
 </code></pre>
 <pre><code>{'first': 12, 2: 'world', (3,): [3, 4, 5]}
 </code></pre>
-<p>We modify elements by calling the corresponding key of the dictionary.</p>
+<p>Since dictionaries are indexed but not ordered, we can only <strong>access</strong> elements by the corresponding key. If the corresponding key does not exist, we do not access any element.</p>
+<pre><code class="language-python">try:
+    d[0]
+except Exception as e:
+    print(e)
+</code></pre>
+<pre><code>0
+</code></pre>
+<p>We can <strong>access all values</strong> of the dictionary using <code>.values()</code>.</p>
+<pre><code class="language-python">d.values()
+</code></pre>
+<pre><code>dict_values([1, 2, 3])
+</code></pre>
+<p>We can <strong>access all keys</strong> of the dictionary using <code>.keys()</code>.</p>
+<pre><code class="language-python">d.keys()
+</code></pre>
+<pre><code>dict_keys(['k0', 'k1', 'k2'])
+</code></pre>
+<p>Since dictionaries are mutable, we can <strong>modify</strong> their elements.</p>
 <pre><code class="language-python">d[&quot;first&quot;] = 'hello'
 print(d)
 </code></pre>
 <pre><code>{'first': 'hello', 2: 'world', (3,): [3, 4, 5]}
 </code></pre>
-<p>We cannot use indexes! The argument inside the square brackets is interpreted as a key. If the key does not currently exist, it is added.</p>
+<p>If we try to modify an element that does not exist, the element is added to the dictionary.</p>
 <pre><code class="language-python">d[0] = 'hello'
 print(d)
 </code></pre>
-<pre><code>{'first': 'hello', 2: 'world', (3,): [3, 4, 5], 0: 'hello'}
+<pre><code>{'first': 12, 2: 'world', (3,): [3, 4, 5], 0: 'hello'}
 </code></pre>
-<p>We can remove elements by calling <code>del</code> on it.</p>
+<p>We can <strong>remove</strong> elements using <code>del</code>.</p>
 <pre><code class="language-python">del d[0]
 print(d)
 </code></pre>
-<pre><code>{'first': 'hello', 2: 'world', (3,): [3, 4, 5]}
+<pre><code>{'first': 12, 2: 'world', (3,): [3, 4, 5]}
 </code></pre>
-<p>We can cannot combine two dictionaries using <code>+</code>.</p>
+<p>We can cannot <strong>combine</strong> two dictionaries using <code>+</code>. We can only add one element at the time.</p>
 <pre><code class="language-python">try:
     d + {&quot;fourth&quot;: (1,2)}
 except Exception as e:
@@ -1047,23 +1080,13 @@ except Exception as e:
 </code></pre>
 <pre><code>unsupported operand type(s) for +: 'dict' and 'dict'
 </code></pre>
-<p>We can also generate dictionaries using comprehensions.</p>
+<p>We can also generate dictionaries using <strong>comprehensions</strong>.</p>
 <pre><code class="language-python">d = {f&quot;k{n}&quot;: n+1 for n in range(3)}
 print(d)
 </code></pre>
 <pre><code>{'k0': 1, 'k1': 2, 'k2': 3}
 </code></pre>
-<p>We can access values of the dictionary using <code>.values()</code>.</p>
-<pre><code class="language-python">d.values()
-</code></pre>
-<pre><code>dict_values([1, 2, 3])
-</code></pre>
-<p>We can access keys of the dictionary using <code>.keys()</code>.</p>
-<pre><code class="language-python">d.keys()
-</code></pre>
-<pre><code>dict_keys(['k0', 'k1', 'k2'])
-</code></pre>
-<h2 id="numpy-array">Numpy array</h2>
+<h2 id="numpy-array-ordered-mutable-arrays-for-math">Numpy Array: ordered mutable arrays for math</h2>
 <p>A <strong>numpy array</strong> is a mutable array data structure in Python with the following characteristics:</p>
 <ul>
 <li>can hold any type of data</li>
@@ -1072,7 +1095,7 @@ print(d)
 <li><strong>can be multi-dimensional</strong></li>
 <li><strong>support matrix operations</strong></li>
 </ul>
-<p>Numpy arrays are generated the <code>np.array()</code> function on a list.</p>
+<p>We can <strong>generate</strong> numpy arrays are generated the <code>np.array()</code> function on a list.</p>
 <pre><code class="language-python">a = np.array([1,2,3])
 print(a)
 </code></pre>
@@ -1085,19 +1108,19 @@ print(m)
 <pre><code>[[1 2 3]
  [4 5 6]]
 </code></pre>
-<p>We modify elements by calling the index of the numpy array.</p>
+<p>Since numpy arrays are mutable, we can <strong>modify</strong> elements by calling the index of the numpy array.</p>
 <pre><code class="language-python">m[0,0] = 89
 print(m)
 </code></pre>
 <pre><code>[[89  2  3]
  [ 4  5  6]]
 </code></pre>
-<p>We can check the shape using <code>.shape</code></p>
+<p>We can check the <strong>shape</strong> of a numpy array using <code>.shape</code></p>
 <pre><code class="language-python">m.shape
 </code></pre>
 <pre><code>(2, 3)
 </code></pre>
-<p>We can expand dimensions using <code>.expand_dims()</code>.</p>
+<p>We can <strong>expand dimensions</strong> of a numpy array using <code>.expand_dims()</code>.</p>
 <pre><code class="language-python">a = np.expand_dims(a,1)
 print(a)
 </code></pre>
@@ -1105,13 +1128,13 @@ print(a)
  [2]
  [3]]
 </code></pre>
-<p>We can transpose matrices using <code>.T</code>.</p>
+<p>We can <strong>transpose</strong> matrices using <code>.T</code>.</p>
 <pre><code class="language-python">a = a.T
 print(a)
 </code></pre>
 <pre><code>[[1 2 3]]
 </code></pre>
-<p>We add elements to a list using <code>np.concatenate()</code>.</p>
+<p>We <strong>add</strong> elements to a numpy array using <code>np.concatenate()</code>. All elements must have the same number of dimensions and must have the same number of elements along the concatenation axis.</p>
 <pre><code class="language-python">m = np.concatenate((m, a), axis=0)
 print(m)
 </code></pre>
@@ -1119,7 +1142,7 @@ print(m)
  [ 4  5  6]
  [ 1  2  3]]
 </code></pre>
-<p>We cannot remove elements of numpy arrays.</p>
+<p>We cannot <strong>remove</strong> elements of numpy arrays.</p>
 <pre><code class="language-python">try:
     del a[0]
 except Exception as e:
@@ -1127,7 +1150,7 @@ except Exception as e:
 </code></pre>
 <pre><code>cannot delete array elements
 </code></pre>
-<p>We can do matrix operations between numpy arrays. For example, we can do multiplication with <code>@</code>.</p>
+<p>We can do <strong>matrix operations</strong> between numpy arrays. For example, we can do multiplication with <code>@</code>.</p>
 <pre><code class="language-python">a @ m
 </code></pre>
 <pre><code>array([[100,  18,  24]])
