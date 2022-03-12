@@ -1,0 +1,2544 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="import numpy as np import pandas as pd  Setup For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at Inside AirBnb: http://insideairbnb." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/data-science/02_data_exploration/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.431c3d640fb033a4e976f2978367bc3e.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/data-science/02_data_exploration/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/data-science/02_data_exploration/" />
+  <meta property="og:title" content="Data Exploration | Matteo Courthoud" />
+  <meta property="og:description" content="import numpy as np import pandas as pd  Setup For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at Inside AirBnb: http://insideairbnb." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2022-03-12T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2022-03-12T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Data Exploration | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="3a99f2f89f6c5ffad6aa8f0bb403e587" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/data-science/">Data Science</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/data-science/01_data_structures/">Data Structures</a></li>
+
+
+
+  <li class="active"><a href="/course/data-science/02_data_exploration/">Data Exploration</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/03_data_types/">Data Types</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/04_data_wrangling/">Data Wrangling</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/05_ml_pipeline/">Machine Learning Pipeline</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/06_plotting/">Plotting</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/07_web_scraping/">Web Scraping</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#setup">Setup</a></li>
+    <li><a href="#importing-data">Importing Data</a></li>
+    <li><a href="#inspecting-data">Inspecting Data</a></li>
+    <li><a href="#data-selection">Data Selection</a></li>
+    <li><a href="#aggregation-and-pivot-tables">Aggregation and Pivot Tables</a></li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Data Exploration</h1>
+
+          <p>Last updated on Mar 12, 2022</p>
+
+          <div class="article-style">
+            <pre><code class="language-python">import numpy as np
+import pandas as pd
+</code></pre>
+<h2 id="setup">Setup</h2>
+<p>For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at <strong>Inside AirBnb</strong>: <a href="http://insideairbnb.com/get-the-data.html" target="_blank" rel="noopener">http://insideairbnb.com/get-the-data.html</a>.</p>
+<p>A description of all variables in all datasets is avaliable <a href="https://docs.google.com/spreadsheets/d/1iWCNJcSutYqpULSQHlNyGInUvHg2BoUGoNRIGa6Szc4/edit#gid=982310896" target="_blank" rel="noopener">here</a>.</p>
+<p>We are going to use 2 datasets:</p>
+<ul>
+<li>listing dataset: contains listing-level information</li>
+<li>pricing dataset: contains pricing data, over time</li>
+</ul>
+<h2 id="importing-data">Importing Data</h2>
+<p>Pandas has a variety of function to import data</p>
+<ul>
+<li><code>pd.read_csv()</code></li>
+<li><code>pd.read_html()</code></li>
+<li><code>pd.read_parquet()</code></li>
+</ul>
+<p>Importatly for our purpose, <code>pd.read_csv()</code> can directly import data from the web.</p>
+<p>The first dataset that we are going to import is the dataset of Airbnb listings in Bologna. It contains listing-level information.</p>
+<pre><code class="language-python">url_listings = &quot;http://data.insideairbnb.com/italy/emilia-romagna/bologna/2021-12-17/visualisations/listings.csv&quot;
+df_listings = pd.read_csv(url_listings)
+</code></pre>
+<p>The second dataset that we are going to use is the dataset of calendar prices. This time the dataset is compressed but we can use the <code>compression</code> option to import it directly.</p>
+<pre><code class="language-python">url_prices = &quot;http://data.insideairbnb.com/italy/emilia-romagna/bologna/2021-12-17/data/calendar.csv.gz&quot;
+df_prices = pd.read_csv(url_prices, compression=&quot;gzip&quot;)
+</code></pre>
+<h2 id="inspecting-data">Inspecting Data</h2>
+<blockquote>
+<p>Methods</p>
+<ul>
+<li><code>info()</code></li>
+<li><code>head()</code></li>
+<li><code>describe()</code></li>
+</ul>
+</blockquote>
+<p>The first way yo have a quick look at the data is the <code>info()</code> method. If called with the option <code>verbose=False</code>, it gives a quick overview of the dimensions of the data.</p>
+<pre><code class="language-python">df_listings.info(verbose=False)
+</code></pre>
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 3453 entries, 0 to 3452
+Columns: 18 entries, id to license
+dtypes: float64(4), int64(8), object(6)
+memory usage: 485.7+ KB
+</code></pre>
+<p>If we want to know how the data looks like, we can use the <code>head()</code> method. It prints the first 5 lines of the data by default.</p>
+<pre><code class="language-python">df_listings.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>name</th>
+      <th>host_id</th>
+      <th>host_name</th>
+      <th>neighbourhood_group</th>
+      <th>neighbourhood</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>room_type</th>
+      <th>price</th>
+      <th>minimum_nights</th>
+      <th>number_of_reviews</th>
+      <th>last_review</th>
+      <th>reviews_per_month</th>
+      <th>calculated_host_listings_count</th>
+      <th>availability_365</th>
+      <th>number_of_reviews_ltm</th>
+      <th>license</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>42196</td>
+      <td>50 sm Studio in the historic centre</td>
+      <td>184487</td>
+      <td>Carlo</td>
+      <td>NaN</td>
+      <td>Santo Stefano</td>
+      <td>44.48507</td>
+      <td>11.34786</td>
+      <td>Entire home/apt</td>
+      <td>68</td>
+      <td>3</td>
+      <td>180</td>
+      <td>2021-11-12</td>
+      <td>1.32</td>
+      <td>1</td>
+      <td>161</td>
+      <td>6</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>46352</td>
+      <td>A room in Pasolini's house</td>
+      <td>467810</td>
+      <td>Eleonora</td>
+      <td>NaN</td>
+      <td>Porto - Saragozza</td>
+      <td>44.49168</td>
+      <td>11.33514</td>
+      <td>Private room</td>
+      <td>29</td>
+      <td>1</td>
+      <td>300</td>
+      <td>2021-11-30</td>
+      <td>2.20</td>
+      <td>2</td>
+      <td>248</td>
+      <td>37</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>59697</td>
+      <td>COZY LARGE BEDROOM in the city center</td>
+      <td>286688</td>
+      <td>Paolo</td>
+      <td>NaN</td>
+      <td>Santo Stefano</td>
+      <td>44.48817</td>
+      <td>11.34124</td>
+      <td>Private room</td>
+      <td>50</td>
+      <td>1</td>
+      <td>240</td>
+      <td>2020-10-04</td>
+      <td>2.18</td>
+      <td>2</td>
+      <td>327</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>85368</td>
+      <td>Garden House Bologna</td>
+      <td>467675</td>
+      <td>Anna Maria</td>
+      <td>NaN</td>
+      <td>Santo Stefano</td>
+      <td>44.47834</td>
+      <td>11.35672</td>
+      <td>Entire home/apt</td>
+      <td>126</td>
+      <td>2</td>
+      <td>40</td>
+      <td>2019-11-03</td>
+      <td>0.34</td>
+      <td>1</td>
+      <td>332</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>145779</td>
+      <td>SINGLE ROOM</td>
+      <td>705535</td>
+      <td>Valerio</td>
+      <td>NaN</td>
+      <td>Porto - Saragozza</td>
+      <td>44.49306</td>
+      <td>11.33786</td>
+      <td>Private room</td>
+      <td>50</td>
+      <td>10</td>
+      <td>69</td>
+      <td>2021-12-05</td>
+      <td>0.55</td>
+      <td>9</td>
+      <td>365</td>
+      <td>5</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can print a description of the data using <code>describe()</code>. If we have many variables, it&rsquo;s best to print it transposed using the <code>.T</code> attribute.</p>
+<pre><code class="language-python">df_listings.describe().T[:5]
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>count</th>
+      <th>mean</th>
+      <th>std</th>
+      <th>min</th>
+      <th>25%</th>
+      <th>50%</th>
+      <th>75%</th>
+      <th>max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>id</th>
+      <td>3453.0</td>
+      <td>2.950218e+07</td>
+      <td>1.523988e+07</td>
+      <td>42196.0000</td>
+      <td>1.748597e+07</td>
+      <td>3.078707e+07</td>
+      <td>4.220094e+07</td>
+      <td>5.385496e+07</td>
+    </tr>
+    <tr>
+      <th>host_id</th>
+      <td>3453.0</td>
+      <td>1.236424e+08</td>
+      <td>1.160756e+08</td>
+      <td>38468.0000</td>
+      <td>2.550007e+07</td>
+      <td>8.845438e+07</td>
+      <td>2.005926e+08</td>
+      <td>4.354316e+08</td>
+    </tr>
+    <tr>
+      <th>neighbourhood_group</th>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>latitude</th>
+      <td>3453.0</td>
+      <td>4.449756e+01</td>
+      <td>1.173569e-02</td>
+      <td>44.4236</td>
+      <td>4.449186e+01</td>
+      <td>4.449699e+01</td>
+      <td>4.450271e+01</td>
+      <td>4.455093e+01</td>
+    </tr>
+    <tr>
+      <th>longitude</th>
+      <td>3453.0</td>
+      <td>1.134509e+01</td>
+      <td>1.986071e-02</td>
+      <td>11.2320</td>
+      <td>1.133732e+01</td>
+      <td>1.134519e+01</td>
+      <td>1.135406e+01</td>
+      <td>1.142027e+01</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can get the list of columns using the <code>.columns</code> attribute.</p>
+<pre><code class="language-python">df_listings.columns
+</code></pre>
+<pre><code>Index(['id', 'name', 'host_id', 'host_name', 'neighbourhood_group',
+       'neighbourhood', 'latitude', 'longitude', 'room_type', 'price',
+       'minimum_nights', 'number_of_reviews', 'last_review',
+       'reviews_per_month', 'calculated_host_listings_count',
+       'availability_365', 'number_of_reviews_ltm', 'license'],
+      dtype='object')
+</code></pre>
+<p>We can get the index using the <code>.index</code> attribute,</p>
+<pre><code class="language-python">df_listings.index
+</code></pre>
+<pre><code>RangeIndex(start=0, stop=3453, step=1)
+</code></pre>
+<h2 id="data-selection">Data Selection</h2>
+<p>We can access single columns as if the DataFrame was a dictionary.</p>
+<pre><code class="language-python">df_listings['price']
+</code></pre>
+<pre><code>0        68
+1        29
+2        50
+3       126
+4        50
+       ... 
+3448     32
+3449     45
+3450     50
+3451    134
+3452    115
+Name: price, Length: 3453, dtype: int64
+</code></pre>
+<p>We can select rows and columns by index, using the <code>.iloc</code> attribute.</p>
+<pre><code class="language-python">df_listings.iloc[:7, 5:9]
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>neighbourhood</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>room_type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Santo Stefano</td>
+      <td>44.48507</td>
+      <td>11.34786</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Porto - Saragozza</td>
+      <td>44.49168</td>
+      <td>11.33514</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Santo Stefano</td>
+      <td>44.48817</td>
+      <td>11.34124</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Santo Stefano</td>
+      <td>44.47834</td>
+      <td>11.35672</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Porto - Saragozza</td>
+      <td>44.49306</td>
+      <td>11.33786</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Navile</td>
+      <td>44.51628</td>
+      <td>11.33074</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Santo Stefano</td>
+      <td>44.48787</td>
+      <td>11.35392</td>
+      <td>Entire home/apt</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>If we want to condition only on rows or columns, we have use <code>:</code> for the unrestricted dimesion, otherwise we get an error.</p>
+<pre><code class="language-python">df_listings.iloc[:, 5:9].head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>neighbourhood</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>room_type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Santo Stefano</td>
+      <td>44.48507</td>
+      <td>11.34786</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Porto - Saragozza</td>
+      <td>44.49168</td>
+      <td>11.33514</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Santo Stefano</td>
+      <td>44.48817</td>
+      <td>11.34124</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Santo Stefano</td>
+      <td>44.47834</td>
+      <td>11.35672</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Porto - Saragozza</td>
+      <td>44.49306</td>
+      <td>11.33786</td>
+      <td>Private room</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Instead, the <code>.loc</code> attribute allows us to use row and column names.</p>
+<pre><code class="language-python">df_listings.loc[:, ['neighbourhood', 'latitude', 'longitude']].head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>neighbourhood</th>
+      <th>latitude</th>
+      <th>longitude</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Santo Stefano</td>
+      <td>44.48507</td>
+      <td>11.34786</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Porto - Saragozza</td>
+      <td>44.49168</td>
+      <td>11.33514</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Santo Stefano</td>
+      <td>44.48817</td>
+      <td>11.34124</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Santo Stefano</td>
+      <td>44.47834</td>
+      <td>11.35672</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Porto - Saragozza</td>
+      <td>44.49306</td>
+      <td>11.33786</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can also select ranges.</p>
+<pre><code class="language-python">df_listings.loc[:, 'neighbourhood':'room_type'].head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>neighbourhood</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>room_type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Santo Stefano</td>
+      <td>44.48507</td>
+      <td>11.34786</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Porto - Saragozza</td>
+      <td>44.49168</td>
+      <td>11.33514</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Santo Stefano</td>
+      <td>44.48817</td>
+      <td>11.34124</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Santo Stefano</td>
+      <td>44.47834</td>
+      <td>11.35672</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Porto - Saragozza</td>
+      <td>44.49306</td>
+      <td>11.33786</td>
+      <td>Private room</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>There is an easy way to <strong>select numerical columns</strong>, the <code>.select_dtypes()</code> function.</p>
+<pre><code class="language-python">df_listings.select_dtypes(include=['number']).head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>host_id</th>
+      <th>neighbourhood_group</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>price</th>
+      <th>minimum_nights</th>
+      <th>number_of_reviews</th>
+      <th>reviews_per_month</th>
+      <th>calculated_host_listings_count</th>
+      <th>availability_365</th>
+      <th>number_of_reviews_ltm</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>42196</td>
+      <td>184487</td>
+      <td>NaN</td>
+      <td>44.48507</td>
+      <td>11.34786</td>
+      <td>68</td>
+      <td>3</td>
+      <td>180</td>
+      <td>1.32</td>
+      <td>1</td>
+      <td>161</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>46352</td>
+      <td>467810</td>
+      <td>NaN</td>
+      <td>44.49168</td>
+      <td>11.33514</td>
+      <td>29</td>
+      <td>1</td>
+      <td>300</td>
+      <td>2.20</td>
+      <td>2</td>
+      <td>248</td>
+      <td>37</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>59697</td>
+      <td>286688</td>
+      <td>NaN</td>
+      <td>44.48817</td>
+      <td>11.34124</td>
+      <td>50</td>
+      <td>1</td>
+      <td>240</td>
+      <td>2.18</td>
+      <td>2</td>
+      <td>327</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>85368</td>
+      <td>467675</td>
+      <td>NaN</td>
+      <td>44.47834</td>
+      <td>11.35672</td>
+      <td>126</td>
+      <td>2</td>
+      <td>40</td>
+      <td>0.34</td>
+      <td>1</td>
+      <td>332</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>145779</td>
+      <td>705535</td>
+      <td>NaN</td>
+      <td>44.49306</td>
+      <td>11.33786</td>
+      <td>50</td>
+      <td>10</td>
+      <td>69</td>
+      <td>0.55</td>
+      <td>9</td>
+      <td>365</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Other types include</p>
+<ul>
+<li><code>object</code> for strings</li>
+<li><code>bool</code> for booleans</li>
+<li><code>int</code> for integers</li>
+<li><code>float</code> for floats (numbers that are not integers)</li>
+</ul>
+<p>We can also use logical operators to selet rows.</p>
+<pre><code class="language-python">df_listings.loc[df_listings['number_of_reviews']&gt;500, :].head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>name</th>
+      <th>host_id</th>
+      <th>host_name</th>
+      <th>neighbourhood_group</th>
+      <th>neighbourhood</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>room_type</th>
+      <th>price</th>
+      <th>minimum_nights</th>
+      <th>number_of_reviews</th>
+      <th>last_review</th>
+      <th>reviews_per_month</th>
+      <th>calculated_host_listings_count</th>
+      <th>availability_365</th>
+      <th>number_of_reviews_ltm</th>
+      <th>license</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>52</th>
+      <td>884148</td>
+      <td>APOSA FLAT / CITY CENTER - BO</td>
+      <td>4664996</td>
+      <td>Vie D'Acqua Di Sandra Maria</td>
+      <td>NaN</td>
+      <td>Santo Stefano</td>
+      <td>44.49945</td>
+      <td>11.34566</td>
+      <td>Entire home/apt</td>
+      <td>46</td>
+      <td>1</td>
+      <td>668</td>
+      <td>2021-12-11</td>
+      <td>6.24</td>
+      <td>5</td>
+      <td>252</td>
+      <td>20</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>92</th>
+      <td>1435627</td>
+      <td>heart of Bologna Piazza Maggiore</td>
+      <td>7714013</td>
+      <td>Carlotta</td>
+      <td>NaN</td>
+      <td>Porto - Saragozza</td>
+      <td>44.49321</td>
+      <td>11.33569</td>
+      <td>Entire home/apt</td>
+      <td>56</td>
+      <td>2</td>
+      <td>508</td>
+      <td>2021-12-12</td>
+      <td>5.08</td>
+      <td>1</td>
+      <td>131</td>
+      <td>69</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>98</th>
+      <td>1566003</td>
+      <td>"i portici di via Piella "</td>
+      <td>8325248</td>
+      <td>Massimo</td>
+      <td>NaN</td>
+      <td>Santo Stefano</td>
+      <td>44.49855</td>
+      <td>11.34411</td>
+      <td>Entire home/apt</td>
+      <td>51</td>
+      <td>2</td>
+      <td>764</td>
+      <td>2021-12-14</td>
+      <td>7.62</td>
+      <td>3</td>
+      <td>119</td>
+      <td>120</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>131</th>
+      <td>2282623</td>
+      <td>S.Orsola zone,parking for free and self check-in</td>
+      <td>11658074</td>
+      <td>Cecilia</td>
+      <td>NaN</td>
+      <td>San Donato - San Vitale</td>
+      <td>44.49328</td>
+      <td>11.36650</td>
+      <td>Entire home/apt</td>
+      <td>38</td>
+      <td>1</td>
+      <td>689</td>
+      <td>2021-10-24</td>
+      <td>7.20</td>
+      <td>1</td>
+      <td>5</td>
+      <td>72</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>175</th>
+      <td>3216486</td>
+      <td>Stanza Privata</td>
+      <td>16289536</td>
+      <td>Fabio</td>
+      <td>NaN</td>
+      <td>Navile</td>
+      <td>44.50903</td>
+      <td>11.34200</td>
+      <td>Private room</td>
+      <td>82</td>
+      <td>1</td>
+      <td>569</td>
+      <td>2021-12-05</td>
+      <td>6.93</td>
+      <td>1</td>
+      <td>7</td>
+      <td>5</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can use logical operations as well. But remember to use paranthesis.</p>
+<p><strong>Note</strong>: the <code>and</code> and <code>or</code> expressions do not work in this setting. We have to use <code>&amp;</code> and <code>|</code> instead.</p>
+<pre><code class="language-python">df_listings.loc[(df_listings['number_of_reviews']&gt;300) &amp;
+                (df_listings['reviews_per_month']&gt;7), 
+                :].head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>name</th>
+      <th>host_id</th>
+      <th>host_name</th>
+      <th>neighbourhood_group</th>
+      <th>neighbourhood</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>room_type</th>
+      <th>price</th>
+      <th>minimum_nights</th>
+      <th>number_of_reviews</th>
+      <th>last_review</th>
+      <th>reviews_per_month</th>
+      <th>calculated_host_listings_count</th>
+      <th>availability_365</th>
+      <th>number_of_reviews_ltm</th>
+      <th>license</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>98</th>
+      <td>1566003</td>
+      <td>"i portici di via Piella "</td>
+      <td>8325248</td>
+      <td>Massimo</td>
+      <td>NaN</td>
+      <td>Santo Stefano</td>
+      <td>44.498550</td>
+      <td>11.344110</td>
+      <td>Entire home/apt</td>
+      <td>51</td>
+      <td>2</td>
+      <td>764</td>
+      <td>2021-12-14</td>
+      <td>7.62</td>
+      <td>3</td>
+      <td>119</td>
+      <td>120</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>131</th>
+      <td>2282623</td>
+      <td>S.Orsola zone,parking for free and self check-in</td>
+      <td>11658074</td>
+      <td>Cecilia</td>
+      <td>NaN</td>
+      <td>San Donato - San Vitale</td>
+      <td>44.493280</td>
+      <td>11.366500</td>
+      <td>Entire home/apt</td>
+      <td>38</td>
+      <td>1</td>
+      <td>689</td>
+      <td>2021-10-24</td>
+      <td>7.20</td>
+      <td>1</td>
+      <td>5</td>
+      <td>72</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>204</th>
+      <td>4166793</td>
+      <td>Centralissimo a Bologna</td>
+      <td>8325248</td>
+      <td>Massimo</td>
+      <td>NaN</td>
+      <td>Santo Stefano</td>
+      <td>44.500920</td>
+      <td>11.344560</td>
+      <td>Entire home/apt</td>
+      <td>71</td>
+      <td>2</td>
+      <td>750</td>
+      <td>2021-12-10</td>
+      <td>9.21</td>
+      <td>3</td>
+      <td>233</td>
+      <td>84</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>751</th>
+      <td>15508481</td>
+      <td>Monolocale in zona fiera /centro</td>
+      <td>99632788</td>
+      <td>Walid</td>
+      <td>NaN</td>
+      <td>Navile</td>
+      <td>44.514462</td>
+      <td>11.353731</td>
+      <td>Entire home/apt</td>
+      <td>64</td>
+      <td>1</td>
+      <td>475</td>
+      <td>2021-12-01</td>
+      <td>7.56</td>
+      <td>1</td>
+      <td>4</td>
+      <td>48</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>773</th>
+      <td>15886516</td>
+      <td>Monolocale nel cuore del ghetto ebraico di Bol...</td>
+      <td>103024123</td>
+      <td>Catia</td>
+      <td>NaN</td>
+      <td>Santo Stefano</td>
+      <td>44.495080</td>
+      <td>11.347220</td>
+      <td>Entire home/apt</td>
+      <td>58</td>
+      <td>1</td>
+      <td>428</td>
+      <td>2021-12-15</td>
+      <td>7.88</td>
+      <td>1</td>
+      <td>285</td>
+      <td>17</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>For a single column (i.e. a Series), we can get the unique values using the <code>unique()</code> function.</p>
+<pre><code class="language-python">df_listings['neighbourhood'].unique()
+</code></pre>
+<pre><code>array(['Santo Stefano', 'Porto - Saragozza', 'Navile',
+       'San Donato - San Vitale', 'Savena', 'Borgo Panigale - Reno'],
+      dtype=object)
+</code></pre>
+<p>For multiple columns, we can use the <code>drop_duplicates</code> function.</p>
+<pre><code class="language-python">df_listings[['neighbourhood', 'room_type']].drop_duplicates()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>neighbourhood</th>
+      <th>room_type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Santo Stefano</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Porto - Saragozza</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Santo Stefano</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Navile</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Navile</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Porto - Saragozza</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>San Donato - San Vitale</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>Savena</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>Borgo Panigale - Reno</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>San Donato - San Vitale</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>70</th>
+      <td>Porto - Saragozza</td>
+      <td>Hotel room</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>Borgo Panigale - Reno</td>
+      <td>Private room</td>
+    </tr>
+    <tr>
+      <th>110</th>
+      <td>Santo Stefano</td>
+      <td>Hotel room</td>
+    </tr>
+    <tr>
+      <th>111</th>
+      <td>Savena</td>
+      <td>Entire home/apt</td>
+    </tr>
+    <tr>
+      <th>388</th>
+      <td>Porto - Saragozza</td>
+      <td>Shared room</td>
+    </tr>
+    <tr>
+      <th>678</th>
+      <td>Navile</td>
+      <td>Shared room</td>
+    </tr>
+    <tr>
+      <th>1393</th>
+      <td>Savena</td>
+      <td>Shared room</td>
+    </tr>
+    <tr>
+      <th>1416</th>
+      <td>San Donato - San Vitale</td>
+      <td>Shared room</td>
+    </tr>
+    <tr>
+      <th>1572</th>
+      <td>San Donato - San Vitale</td>
+      <td>Hotel room</td>
+    </tr>
+    <tr>
+      <th>1637</th>
+      <td>Santo Stefano</td>
+      <td>Shared room</td>
+    </tr>
+    <tr>
+      <th>1751</th>
+      <td>Navile</td>
+      <td>Hotel room</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h2 id="aggregation-and-pivot-tables">Aggregation and Pivot Tables</h2>
+<p>We can compute statistics by group using <code>.groupby()</code>.</p>
+<pre><code class="language-python">df_listings.groupby('neighbourhood')[['price', 'reviews_per_month']].mean()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>price</th>
+      <th>reviews_per_month</th>
+    </tr>
+    <tr>
+      <th>neighbourhood</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Borgo Panigale - Reno</th>
+      <td>83.020548</td>
+      <td>0.983488</td>
+    </tr>
+    <tr>
+      <th>Navile</th>
+      <td>142.200993</td>
+      <td>1.156745</td>
+    </tr>
+    <tr>
+      <th>Porto - Saragozza</th>
+      <td>129.908312</td>
+      <td>1.340325</td>
+    </tr>
+    <tr>
+      <th>San Donato - San Vitale</th>
+      <td>91.618138</td>
+      <td>0.933011</td>
+    </tr>
+    <tr>
+      <th>Santo Stefano</th>
+      <td>119.441841</td>
+      <td>1.344810</td>
+    </tr>
+    <tr>
+      <th>Savena</th>
+      <td>69.626016</td>
+      <td>0.805888</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>If you want to perform more than one function, maybe on different columns, you can use <code>.aggregate()</code> which can be shortened to <code>.agg()</code>. It takes as argument a dictionary with variables as keys and lists of functions as values.</p>
+<pre><code class="language-python">df_listings.groupby('neighbourhood').agg({&quot;reviews_per_month&quot;: [&quot;mean&quot;],
+                                          &quot;price&quot;: [&quot;min&quot;, np.max]}).reset_index()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead tr th {
+    text-align: left;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th></th>
+      <th>neighbourhood</th>
+      <th>reviews_per_month</th>
+      <th colspan="2" halign="left">price</th>
+    </tr>
+    <tr>
+      <th></th>
+      <th></th>
+      <th>mean</th>
+      <th>min</th>
+      <th>amax</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Borgo Panigale - Reno</td>
+      <td>0.983488</td>
+      <td>9</td>
+      <td>1429</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Navile</td>
+      <td>1.156745</td>
+      <td>14</td>
+      <td>5000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Porto - Saragozza</td>
+      <td>1.340325</td>
+      <td>7</td>
+      <td>9999</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>San Donato - San Vitale</td>
+      <td>0.933011</td>
+      <td>10</td>
+      <td>1600</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Santo Stefano</td>
+      <td>1.344810</td>
+      <td>11</td>
+      <td>9999</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Savena</td>
+      <td>0.805888</td>
+      <td>9</td>
+      <td>680</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>The problem with this syntax is that it generates a hierarchical structure for variable names, which might not be so easy to work with. In the example above, to access the mean price, you have to use <code>df.price[&quot;min&quot;]</code>.</p>
+<p>To perform variable naming and aggregation and the same time, you can ise the following syntax: <code>agg(output_var = (&quot;input_var&quot;, function))</code>.</p>
+<pre><code class="language-python">df_listings.groupby('neighbourhood').agg(mean_reviews=(&quot;reviews_per_month&quot;, &quot;mean&quot;),
+                                         min_price=(&quot;price&quot;, &quot;min&quot;),
+                                         max_price=(&quot;price&quot;, np.max)).reset_index()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>neighbourhood</th>
+      <th>mean_reviews</th>
+      <th>min_price</th>
+      <th>max_price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Borgo Panigale - Reno</td>
+      <td>0.983488</td>
+      <td>9</td>
+      <td>1429</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Navile</td>
+      <td>1.156745</td>
+      <td>14</td>
+      <td>5000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Porto - Saragozza</td>
+      <td>1.340325</td>
+      <td>7</td>
+      <td>9999</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>San Donato - San Vitale</td>
+      <td>0.933011</td>
+      <td>10</td>
+      <td>1600</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Santo Stefano</td>
+      <td>1.344810</td>
+      <td>11</td>
+      <td>9999</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Savena</td>
+      <td>0.805888</td>
+      <td>9</td>
+      <td>680</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can make pivot tables with the <code>.pivot_table()</code> function. It takes the folling arguments:</p>
+<ul>
+<li><code>index</code>: rows</li>
+<li><code>columns</code>: columns</li>
+<li><code>values</code>: values</li>
+<li><code>aggfunc</code>: aggregation function</li>
+</ul>
+<pre><code class="language-python">df_listings.pivot_table(index='neighbourhood', columns='room_type', values='price', aggfunc='mean')
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>room_type</th>
+      <th>Entire home/apt</th>
+      <th>Hotel room</th>
+      <th>Private room</th>
+      <th>Shared room</th>
+    </tr>
+    <tr>
+      <th>neighbourhood</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Borgo Panigale - Reno</th>
+      <td>96.700935</td>
+      <td>NaN</td>
+      <td>45.487179</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>Navile</th>
+      <td>172.140000</td>
+      <td>1350.000000</td>
+      <td>68.416107</td>
+      <td>28.0</td>
+    </tr>
+    <tr>
+      <th>Porto - Saragozza</th>
+      <td>148.410926</td>
+      <td>102.375000</td>
+      <td>83.070234</td>
+      <td>16.5</td>
+    </tr>
+    <tr>
+      <th>San Donato - San Vitale</th>
+      <td>106.775000</td>
+      <td>55.000000</td>
+      <td>61.194030</td>
+      <td>59.0</td>
+    </tr>
+    <tr>
+      <th>Santo Stefano</th>
+      <td>129.990260</td>
+      <td>103.827586</td>
+      <td>80.734177</td>
+      <td>95.4</td>
+    </tr>
+    <tr>
+      <th>Savena</th>
+      <td>86.301370</td>
+      <td>NaN</td>
+      <td>46.229167</td>
+      <td>22.5</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/data-science/01_data_structures/" rel="next">Data Structures</a>
+  </div>
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/data-science/03_data_types/" rel="prev">Data Types</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>
