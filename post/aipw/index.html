@@ -837,7 +837,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    6 min read
+    8 min read
   </span>
   
 
@@ -939,9 +939,48 @@ $$</p>
 $$</p>
 <p>where</p>
 <p>$$
-\mu^{(t)}(x) = \mathbb P \left[ Y_i \ \big | \ X_i = x, T_i = t \right] \qquad ; \qquad e(x) = \mathbb P \left[ T_i = 1 \ \big | \ X_i = x \right]
+\mu^{(t)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right] \qquad ; \qquad e(x) = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]
 $$</p>
-<p>We now have two prediction problems, $\hat \mu$ and $\hat e$.</p>
+<p>The formula of the AIPW estimator might seem scary at first, so let&rsquo;s decompose it into 2 components.</p>
+<p>First,</p>
+<p>$$
+D = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right)
+$$</p>
+<p>is basically the direct estimate of the average treatment effect. This is a consistent estimator of the ATE but, since machine learning estimators' rate of convergence is too slow, it does not provide correct confidence intervals.</p>
+<p>Instead,</p>
+<p>$$
+R = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)}  \right)
+$$</p>
+<p>is basically IPW, applied to the residuals $Y_i - \hat \mu^{(t)}(X_i)$ instead of $Y_i$. The idea is that after the estimate $\hat \mu$, there might still be some signal left over which we can use to improve our estimate using IPW.</p>
+<p>Why is the AIPW estimator so <strong>compelling</strong>? It just needs one of the two predictions, $\hat \mu$ and $\hat e$, to be right in order to be unbiased. Let&rsquo;s check it.</p>
+<p>If $\hat \mu$ is correctly specified, i.e. $\mathbb E \left[ \mu^{(t)}(x) \right] = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, then</p>
+<p>$$
+\begin{aligned}
+\hat \tau_{IPW} &amp;\overset{p}{\to} \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right] =
+\newline
+&amp;= \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right] =
+\newline
+&amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] =
+\newline
+&amp;= \tau
+\end{aligned}
+$$</p>
+<p>even if $\hat e$ is misspecified. The reason is that the residuals converge to zero and therefore IPW has no relevance.</p>
+<p>On the other hand, if $\hat e$ is correctly specified, i.e. $\mathbb E \left[\hat e(x) \right] = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]$, then</p>
+<p>$$
+\begin{aligned}
+\hat \tau_{IPW} &amp;\overset{p}{\to} \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right] =
+\newline
+&amp;= \mathbb E \left[ \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i }{1-\hat e(X_i)} + \left(1 - \frac{T_i}{\hat e(X_i)} \right) \hat \mu^{(1)}(X_i) - \left(1 - \frac{1-T_i}{1-\hat e(X_i)} \right) \hat \mu^{(0)}(X_i)  \right] =
+\newline
+&amp;= \mathbb E \left[ \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i }{1-\hat e(X_i)}\right] =
+\newline
+&amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] =
+\newline
+&amp;= \tau
+\end{aligned}
+$$</p>
+<p>even if $\hat \mu$ is misspecified. The reason is that if there is bias left from the estimation of $\mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, IPW fully corrects for it.</p>
 <h2 id="example">Example</h2>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
@@ -958,7 +997,7 @@ from src.dgp import dgp2
 <li>$\mu^{(0)}(x) = (x_1 + x_2)_+$</li>
 <li>$\mu^{(1)}(x) = (x_1 + x_3)_+ \mathbf{- 0.05}$</li>
 </ul>
-<p>So that the average treatment effect is $0.05$.</p>
+<p>So that the average treatment effect is $- 0.05$.</p>
 <pre><code class="language-python">dgp = dgp2()
 df = dgp.generate_data()
 df.head()
@@ -1184,8 +1223,12 @@ print(f&quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&
 </code></pre>
 <p><img src="img/aipw_29_0.png" alt="png"></p>
 <p>To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.</p>
-<pre><code class="language-python">sim_tau_AIPW = pd.DataFrame([np.mean(AIPW(dgp2().generate_data(seed=k), dgp.X), axis=1) for k in range(30)], 
-                            columns=['Direct', 'Correction', 'tau_AIPW'])
+<pre><code class="language-python">from joblib import Parallel, delayed
+
+# Parallelize simulation
+draw_data = lambda k : np.mean(AIPW(dgp2().generate_data(seed=k), dgp.X), axis=1)
+r = Parallel(n_jobs=8)(delayed(draw_data)(i) for i in range(100))
+sim_tau_AIPW = pd.DataFrame(r, columns=['Direct', 'Correction', 'tau_AIPW'])
 </code></pre>
 <p>Below we plot the AIPW estimator and its components.</p>
 <pre><code class="language-python">plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x='variable', y='value');

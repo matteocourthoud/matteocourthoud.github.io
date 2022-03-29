@@ -26123,9 +26123,48 @@ $$&lt;/p&gt;
 $$&lt;/p&gt;
 &lt;p&gt;where&lt;/p&gt;
 &lt;p&gt;$$
-\mu^{(t)}(x) = \mathbb P \left[ Y_i \ \big | \ X_i = x, T_i = t \right] \qquad ; \qquad e(x) = \mathbb P \left[ T_i = 1 \ \big | \ X_i = x \right]
+\mu^{(t)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right] \qquad ; \qquad e(x) = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]
 $$&lt;/p&gt;
-&lt;p&gt;We now have two prediction problems, $\hat \mu$ and $\hat e$.&lt;/p&gt;
+&lt;p&gt;The formula of the AIPW estimator might seem scary at first, so let&amp;rsquo;s decompose it into 2 components.&lt;/p&gt;
+&lt;p&gt;First,&lt;/p&gt;
+&lt;p&gt;$$
+D = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right)
+$$&lt;/p&gt;
+&lt;p&gt;is basically the direct estimate of the average treatment effect. This is a consistent estimator of the ATE but, since machine learning estimators&#39; rate of convergence is too slow, it does not provide correct confidence intervals.&lt;/p&gt;
+&lt;p&gt;Instead,&lt;/p&gt;
+&lt;p&gt;$$
+R = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)}  \right)
+$$&lt;/p&gt;
+&lt;p&gt;is basically IPW, applied to the residuals $Y_i - \hat \mu^{(t)}(X_i)$ instead of $Y_i$. The idea is that after the estimate $\hat \mu$, there might still be some signal left over which we can use to improve our estimate using IPW.&lt;/p&gt;
+&lt;p&gt;Why is the AIPW estimator so &lt;strong&gt;compelling&lt;/strong&gt;? It just needs one of the two predictions, $\hat \mu$ and $\hat e$, to be right in order to be unbiased. Let&amp;rsquo;s check it.&lt;/p&gt;
+&lt;p&gt;If $\hat \mu$ is correctly specified, i.e. $\mathbb E \left[ \mu^{(t)}(x) \right] = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, then&lt;/p&gt;
+&lt;p&gt;$$
+\begin{aligned}
+\hat \tau_{IPW} &amp;amp;\overset{p}{\to} \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right] =
+\newline
+&amp;amp;= \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right] =
+\newline
+&amp;amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] =
+\newline
+&amp;amp;= \tau
+\end{aligned}
+$$&lt;/p&gt;
+&lt;p&gt;even if $\hat e$ is misspecified. The reason is that the residuals converge to zero and therefore IPW has no relevance.&lt;/p&gt;
+&lt;p&gt;On the other hand, if $\hat e$ is correctly specified, i.e. $\mathbb E \left[\hat e(x) \right] = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]$, then&lt;/p&gt;
+&lt;p&gt;$$
+\begin{aligned}
+\hat \tau_{IPW} &amp;amp;\overset{p}{\to} \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right] =
+\newline
+&amp;amp;= \mathbb E \left[ \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i }{1-\hat e(X_i)} + \left(1 - \frac{T_i}{\hat e(X_i)} \right) \hat \mu^{(1)}(X_i) - \left(1 - \frac{1-T_i}{1-\hat e(X_i)} \right) \hat \mu^{(0)}(X_i)  \right] =
+\newline
+&amp;amp;= \mathbb E \left[ \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i }{1-\hat e(X_i)}\right] =
+\newline
+&amp;amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] =
+\newline
+&amp;amp;= \tau
+\end{aligned}
+$$&lt;/p&gt;
+&lt;p&gt;even if $\hat \mu$ is misspecified. The reason is that if there is bias left from the estimation of $\mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, IPW fully corrects for it.&lt;/p&gt;
 &lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
@@ -26142,7 +26181,7 @@ from src.dgp import dgp2
 &lt;li&gt;$\mu^{(0)}(x) = (x_1 + x_2)_+$&lt;/li&gt;
 &lt;li&gt;$\mu^{(1)}(x) = (x_1 + x_3)_+ \mathbf{- 0.05}$&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;So that the average treatment effect is $0.05$.&lt;/p&gt;
+&lt;p&gt;So that the average treatment effect is $- 0.05$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp2()
 df = dgp.generate_data()
 df.head()
@@ -26368,8 +26407,12 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/aipw_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sim_tau_AIPW = pd.DataFrame([np.mean(AIPW(dgp2().generate_data(seed=k), dgp.X), axis=1) for k in range(30)], 
-                            columns=[&#39;Direct&#39;, &#39;Correction&#39;, &#39;tau_AIPW&#39;])
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from joblib import Parallel, delayed
+
+# Parallelize simulation
+draw_data = lambda k : np.mean(AIPW(dgp2().generate_data(seed=k), dgp.X), axis=1)
+r = Parallel(n_jobs=8)(delayed(draw_data)(i) for i in range(100))
+sim_tau_AIPW = pd.DataFrame(r, columns=[&#39;Direct&#39;, &#39;Correction&#39;, &#39;tau_AIPW&#39;])
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Below we plot the AIPW estimator and its components.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x=&#39;variable&#39;, y=&#39;value&#39;);
@@ -26435,21 +26478,21 @@ $$&lt;/p&gt;
 &lt;p&gt;Here is a proof:&lt;/p&gt;
 &lt;p&gt;$$
 \begin{aligned}
-\mathbb E \left[ Y_i^* \mid X_i = x \right] &amp;amp;= \mathbb E \left[ \frac{Y_i}{D_i * p(X_i) - (1-D_i) * (1-p(X_i))} \ \Big | \ X_i = x \right]
-\
-&amp;amp;= \mathbb E \left[ Y_{i} * \frac{D_{i}-p(X_i)}{p(X_i)\left(1-p(X_i)\right)} \ \Big | \ X_i = x \right]
-\
-&amp;amp;= \mathbb E \left[Y_i T_i * \frac{D_i - p(X_i)}{p(X_i)\left(1-p(X_i) \right)}+Y_{i}\left(1-T_{i}\right) * \frac{T_{i}-p(X_i)}{p(X_i)\left(1-p(X_i) \right)} \ \Big | \ X_i = x \right]
-\
-&amp;amp;= \mathbb E \Big[ Y(1)&lt;em&gt;{i} * \frac{D&lt;/em&gt;{i} \left(1-p(X_i)\right)}{p(X_i) \left(1-p(X_i)\right)} \ \Big | \ X_i = x \Big] - \mathbb E \left[Y(0)&lt;em&gt;{i} * \frac{\left(1-T_i\right) p(X_i)}{p(X_i) \left(1-p(X_i)\right)} \ \Big | \ X_i = x \right]
-\
-&amp;amp;= \frac{1}{p(X_i)} \mathbb E \Big[ Y^{(1)}&lt;/em&gt;{i} * T_{i} \ \Big | \ X_i = x \Big] - \frac{1}{1-p(X_i)} \mathbb E \left[Y^{(0)}&lt;em&gt;{i} *\left(1-T&lt;/em&gt;{i}\right) \ \Big | \ X_i = x \right]
-\
-&amp;amp;= \frac{1}{p(X_i)} \mathbb E \left[Y(1)&lt;em&gt;{i} \ \Big | \ X_i = x \right] * \mathbb E \Big[T&lt;/em&gt;{i} \ \Big | \ X_i = x \Big] - \frac{1}{1-p(X_i)} \mathbb E \left[Y(0)&lt;em&gt;{i} \ \Big | \ X_i = x \right] * \mathbb E\left[\left(1-T&lt;/em&gt;{i}\right) \ \Big | \ X_i = x \right]
-\
-&amp;amp;= \mathbb E \Big[ Y^{(1)}&lt;em&gt;{i} \ \Big | \ X_i = x \Big] - \mathbb E \Big[Y^{(0)}&lt;/em&gt;{i} \ \Big | \ X_i = x \Big]
-\
-&amp;amp;= \tau(x)_{i}
+\mathbb E \left[ Y_i^{*} \mid X_i = x \right] &amp;amp;= \mathbb E \left[ \frac{Y_i}{T_i * p(X_i) - (1-T_i) * (1-p(X_i))} \ \Big | \ X_i = x \right]
+\newline
+&amp;amp;= \mathbb E \left[ Y_i * \frac{T_i - p(X_i)}{p(X_i) (1-p(X_i))} \ \Big | \ X_i = x \right]
+\newline
+&amp;amp;= \mathbb E \left[ Y_i T_i * \frac{T_i - p(X_i)}{p(X_i) (1 - p(X_i))} + Y_i (1-T_i) * \frac{T_i - p(X_i)}{p(X_i) (1 - p(X_i))} \ \Big | \ X_i = x \right]
+\newline
+&amp;amp;= \mathbb E \Big[ Y^{(1)}_i * \frac{D_i (1 - p(X_i))}{p(X_i) (1 - p(X_i))} \ \Big | \ X_i = x \Big] - \mathbb E \left[Y^{(0)}_i * \frac{(1 - T_i) p(X_i)}{p(X_i) (1-p(X_i))} \ \Big | \ X_i = x \right]
+\newline
+&amp;amp;= \frac{1}{p(X_i)} \mathbb E \Big[ Y^{(1)}_i * T_i \ \Big | \ X_i = x \Big] - \frac{1}{1-p(X_i)} \mathbb E \left[ Y^{(0)}_i * (1 - T_i) \ \Big | \ X_i = x \right]
+\newline
+&amp;amp;= \frac{1}{p(X_i)} \mathbb E \left[ Y^{(1)}_i \ \Big | \ X_i = x \right] * \mathbb E \Big[ T_i \ \Big | \ X_i = x \Big] - \frac{1}{1 - p(X_i)} \mathbb E \left[ Y^{(0)}_i \ \Big | \ X_i = x \right] * \mathbb E \left[ (1 - T_i) \ \Big | \ X_i = x \right]
+\newline
+&amp;amp;= \mathbb E \Big[ Y^{(1)}_i \ \Big | \ X_i = x \Big] - \mathbb E \Big[Y^{(0)}_i \ \Big | \ X_i = x \Big]
+\newline
+&amp;amp;= \tau_i(x)
 \end{aligned}
 $$&lt;/p&gt;
 &lt;p&gt;How can &lt;strong&gt;regression trees&lt;/strong&gt; help estimate heterogeneous treatment effects?&lt;/p&gt;
