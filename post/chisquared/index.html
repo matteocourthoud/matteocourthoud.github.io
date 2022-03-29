@@ -341,10 +341,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-03-17T00:00:00&#43;00:00"
+        content="2022-03-29T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-03-17T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-03-29T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@
     "https://matteocourthoud.github.io/post/chisquared/featured.jpg"
   ],
   
-  "datePublished": "2022-03-17T00:00:00Z",
-  "dateModified": "2022-03-17T00:00:00Z",
+  "datePublished": "2022-03-29T00:00:00Z",
+  "dateModified": "2022-03-29T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -827,7 +827,7 @@
     
       
     
-    Mar 17, 2022
+    Mar 29, 2022
   </span>
   
 
@@ -989,6 +989,9 @@ chi2_stat
 <p>If the dice was fair, the test Pearson&rsquo;s chi-squared test-statistic $T_{\chi^2}$ is distributed as a chi-squared distribution with $k-1$ degrees of freedom, $\chi^2_{k-1}$. For the moment, take this claim at face value, we will verify it later, both empirically and theoretically. We will also discuss the degrees of freedom in detail later on.</p>
 <p><strong>Important!</strong> Do not confuse the chi-squared test statistic (a number) with the chi-squared distribution (a distribution).</p>
 <p>What does a chi-squared distribution with $n-1$ degrees of freedom, $\chi^2_{k-1}$, look like?</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+</code></pre>
 <pre><code class="language-python">import matplotlib.pyplot as plt
 from scipy.stats import chi2
 
@@ -1001,14 +1004,14 @@ chi2_5_pdf = chi2.pdf(x, df=5)
 # Plot 
 plt.plot(x, chi2_5_pdf);
 </code></pre>
-<p><img src="img/chisquared_10_0.png" alt="png"></p>
+<p><img src="img/chisquared_11_0.png" alt="png"></p>
 <p>How does the value of the statistic we have observed compares with its the distribution under the null hypothesis of a fair dice?</p>
 <pre><code class="language-python"># plot Chi-square distribution with 5 degrees of freedom
 plt.plot(x, chi2.pdf(x, df=5));
 plt.vlines(chi2_stat, ymin=0, ymax=plt.ylim()[1], color='k', label='chi2 statistic')
 plt.legend();
 </code></pre>
-<p><img src="img/chisquared_12_0.png" alt="png"></p>
+<p><img src="img/chisquared_13_0.png" alt="png"></p>
 <p>The test statistic seems to fall well within the distribution, i.e. it does not seem to be an unusual event. Indeed, the question we want to answer is: &ldquo;<em>under the null hypothesis that the dice is fair, how unlikely is the statistic we have observed?</em>&rdquo;.</p>
 <p>The last component we need in order to built an hypothesis test, is a level of confidence, i.e. a threshold of &ldquo;unlikeliness&rdquo; of an event, below which we declare that the event is too unlikely under the model, for the model to be true. Let&rsquo;s say we decide to set that threshold at 5%.</p>
 <p>If the likelihood of observing an even that (or more) extreme than the one we have actually observed is less than 5%, we reject the nully hypothesis that the dice is fair.</p>
@@ -1034,7 +1037,7 @@ def plot_test(x, stat, df):
 <pre><code class="language-python"># Plot
 plot_test(x, chi2_stat, 5)
 </code></pre>
-<p><img src="img/chisquared_17_0.png" alt="png"></p>
+<p><img src="img/chisquared_18_0.png" alt="png"></p>
 <p>From the plot, we can clearly see that we do not reject the null hypothesis that the dice is fair.</p>
 <h2 id="why-the-chi-squared-distribution">Why the Chi-squared Distribution?</h2>
 <p>How do we know that that particular statistic has that particular distribution?</p>
@@ -1058,7 +1061,7 @@ def simulate_chi2stats(K, N, dgp):
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='r');
 plt.plot(x, chi2_5_pdf);
 </code></pre>
-<p><img src="img/chisquared_22_0.png" alt="png"></p>
+<p><img src="img/chisquared_23_0.png" alt="png"></p>
 <p>Since we only did it 100 times, the distribution looks pretty coarse, but vaguely close. Let&rsquo;s now try 1000 times.</p>
 <pre><code class="language-python">chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_dice)
 
@@ -1066,7 +1069,7 @@ plt.plot(x, chi2_5_pdf);
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='r');
 plt.plot(x, chi2_5_pdf);
 </code></pre>
-<p><img src="img/chisquared_24_0.png" alt="png"></p>
+<p><img src="img/chisquared_25_0.png" alt="png"></p>
 <p>The empirical distribution of the test statistic is indeed very close to its theoretical counterpart.</p>
 <h2 id="some-statistics">Some Statistics</h2>
 <p>Why does the distribution of the test statistic look like that? Let&rsquo;s now dig deeper into the math.</p>
@@ -1279,8 +1282,8 @@ chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_grades)
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='r');
 plt.plot(x, chi2_5_pdf);
 </code></pre>
-<p><img src="img/chisquared_36_0.png" alt="png"></p>
-<p>What happened? We forgot to change the degrees of freedom! The general formula for the degrees of freedom when testing independence of variables is $(N_i - 1) \times (N_j - 1)$. So in our case it&rsquo;s $(4-1) \times (2-1) = 3$ instead of $7$</p>
+<p><img src="img/chisquared_37_0.png" alt="png"></p>
+<p>What happened? We forgot to change the degrees of freedom! The general formula for the degrees of freedom when testing independence of variables is $(N_i - 1) \times (N_j - 1)$. So in our case it&rsquo;s $(4-1) \times (2-1) = 3$.</p>
 <pre><code class="language-python">chi2_3_pdf = chi2.pdf(x, df=3)
 
 # Plot data
@@ -1288,12 +1291,12 @@ chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_grades)
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='r');
 plt.plot(x, chi2_3_pdf);
 </code></pre>
-<p><img src="img/chisquared_38_0.png" alt="png"></p>
+<p><img src="img/chisquared_39_0.png" alt="png"></p>
 <p>Do we reject the null hypothesis of independend distributions of gender and grades?</p>
 <pre><code class="language-python"># Plot
 plot_test(x, chi2_stat, df=3)
 </code></pre>
-<p><img src="img/chisquared_40_0.png" alt="png"></p>
+<p><img src="img/chisquared_41_0.png" alt="png"></p>
 <p>No, we <strong>do not reject</strong> the null hypothesis of independend distributions of gender and grades.</p>
 <h2 id="example-3-testing-a-specific-data-generating-process">Example 3: testing a specific data generating process</h2>
 <p>As we have seen, the chi-square test can be used to compare observed means / frequencies against some null hypothesis. How can we use this statistic to <strong>test a distributional assumption</strong>?</p>
@@ -1375,7 +1378,7 @@ plt.hist(poisson_draws, density=True, bins=30, alpha=0.3, color='r');
 exp_pdf = expon.pdf(x)
 plt.plot(x, exp_pdf);
 </code></pre>
-<p><img src="img/chisquared_47_0.png" alt="png"></p>
+<p><img src="img/chisquared_48_0.png" alt="png"></p>
 <p>The two distributions seem close but we need a test statistic in order to assess whether the dgp is indeed an exponential distribution</p>
 <pre><code class="language-python">chi2_stat = compute_chi2_stat(data_poisson)
 chi2_stat
@@ -1386,7 +1389,7 @@ chi2_stat
 <pre><code class="language-python"># Plot
 plot_test(x, chi2_stat, df=3)
 </code></pre>
-<p><img src="img/chisquared_51_0.png" alt="png"></p>
+<p><img src="img/chisquared_52_0.png" alt="png"></p>
 <p>No, we <strong>do not reject</strong> the null hypothesis that the data is drawn from an exponential distribution.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this tutorial, we have seen how to perform two hypotesis tests</p>

@@ -4314,11 +4314,16 @@ from src.import_data import import_data
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
 &lt;p&gt;The default library for plotting in python is &lt;code&gt;matplotlib&lt;/code&gt;. However, a more modern package that builds on top of it, is &lt;code&gt;seaborn&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;We start by setting the theme and by telling the notebook to display the plots inline.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.set()
-%matplotlib inline
+&lt;p&gt;We start by telling the notebook to display the plots inline.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can set some global paramters for all plots. You can find a list of all the options &lt;a href=&#34;https://matplotlib.org/stable/tutorials/introductory/customizing.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;. If you want to customize all plots in a project in the samy way, you can create a &lt;code&gt;filename.mplstyle&lt;/code&gt; file and call it at the beginning of each file as &lt;code&gt;plt.style.use(&#39;filename.mplstyle&#39;)&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Another important configuration is the plot resulution. We set it to &lt;code&gt;retina&lt;/code&gt; to have high resolution plots.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can choose set a general theme using &lt;code&gt;plt.style.use()&lt;/code&gt;. The list of themes is available &lt;a href=&#34;https://matplotlib.org/3.5.1/gallery/style_sheets/style_sheets_reference.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.style.use(&#39;ggplot&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you want to further customize some aspects of a theme, you can set some global paramters for all plots. You can find a list of all the options &lt;a href=&#34;https://matplotlib.org/stable/tutorials/introductory/customizing.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;. If you want to customize all plots in a project in the samy way, you can create a &lt;code&gt;filename.mplstyle&lt;/code&gt; file and call it at the beginning of each file as &lt;code&gt;plt.style.use(&#39;filename.mplstyle&#39;)&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;mpl.rcParams[&#39;figure.figsize&#39;] = (10,6)
 mpl.rcParams[&#39;axes.labelsize&#39;] = 16
 mpl.rcParams[&#39;axes.titlesize&#39;] = 18
@@ -4335,48 +4340,48 @@ mpl.rcParams[&#39;legend.facecolor&#39;] = &#39;w&#39;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(df_listings[&#39;log_price&#39;], bins=50)\
 .set(title=&#39;Distribution of log-prices&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_13_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can add a smooth kernel density approximation with the &lt;code&gt;kde&lt;/code&gt; option.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(df_listings[&#39;log_price&#39;], bins=50, kde=True)\
 .set(title=&#39;Distribution of log-prices with density&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_15_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we have a categorical variable, we might want to plot the distribution of the data across its values. We can use a &lt;strong&gt;barplot&lt;/strong&gt;. Seaborn function is &lt;code&gt;sns.countplot()&lt;/code&gt; for count data.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.countplot(x=&amp;quot;neighborhood&amp;quot;, data=df_listings)\
 .set(title=&#39;Number of observations by neighborhood&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If instead we want to see the distribution of another variable across some group, we can use the &lt;code&gt;sns.barplot()&lt;/code&gt; function.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.barplot(x=&amp;quot;neighborhood&amp;quot;, y=&amp;quot;mean_price&amp;quot;, data=df_listings)\
 .set(title=&#39;Average price by neighborhood&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can also use other metrics besides the mean with the &lt;code&gt;estimator&lt;/code&gt; option.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.barplot(x=&amp;quot;neighborhood&amp;quot;, y=&amp;quot;mean_price&amp;quot;, data=df_listings, estimator=np.median)\
 .set(title=&#39;Median price by neighborhood&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can also plot the full distribution using, for example &lt;strong&gt;boxplots&lt;/strong&gt; with &lt;code&gt;sns.boxplot()&lt;/code&gt;. Boxplots display quartiles and outliers.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.boxplot(x=&amp;quot;neighborhood&amp;quot;, y=&amp;quot;log_price&amp;quot;, data=df_listings)\
 .set(title=&#39;Price distribution across neighborhoods&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_27_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we want to see the full distribution, we can use the &lt;code&gt;sns.violinplot()&lt;/code&gt; function.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.violinplot(x=&amp;quot;neighborhood&amp;quot;, y=&amp;quot;log_price&amp;quot;, data=df_listings)\
 .set(title=&#39;Price distribution across neighborhoods&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;time-series&#34;&gt;Time Series&lt;/h2&gt;
 &lt;p&gt;If the dataset has a time dimension, we might want to explore how a variable evolves over time. Seaborn function is &lt;code&gt;sns.lineplot()&lt;/code&gt;. If the data has multiple observations for each time period, it will also display a 95% confidence interval around the mean.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.lineplot(data=df, x=&#39;date&#39;, y=&#39;price&#39;)\
 .set(title=&amp;quot;Price distribution over time&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_28_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_32_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can do the samy by group, with the &lt;code&gt;hue&lt;/code&gt; option. We can suppress confidence intervals setting &lt;code&gt;ci=None&lt;/code&gt; (making the code much faster).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.lineplot(data=df, x=&#39;date&#39;, y=&#39;price&#39;, hue=&#39;neighborhood&#39;, ci=None)\
 .set(title=&amp;quot;Price distribution over time&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_30_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;correlations&#34;&gt;Correlations&lt;/h2&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings[&amp;quot;log_reviews&amp;quot;] = np.log(1 + df_listings[&amp;quot;number_of_reviews&amp;quot;])
 df_listings[&amp;quot;log_rpm&amp;quot;] = np.log(1 + df_listings[&amp;quot;reviews_per_month&amp;quot;])
@@ -4385,14 +4390,14 @@ df_listings[&amp;quot;log_rpm&amp;quot;] = np.log(1 + df_listings[&amp;quot;revi
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(data=df_listings, x=&amp;quot;log_rpm&amp;quot;, y=&amp;quot;log_price&amp;quot;, alpha=0.3)\
 .set(title=&#39;Prices and Reviews&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can highlight the best linear approximation adding a line of fit using &lt;code&gt;sns.regplot()&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.regplot(x=&amp;quot;log_rpm&amp;quot;, y=&amp;quot;log_price&amp;quot;, data=df_listings,
             scatter_kws={&#39;alpha&#39;:.1},
-            line_kws={&#39;color&#39;:&#39;r&#39;})\
+            line_kws={&#39;color&#39;:&#39;C1&#39;})\
 .set(title=&#39;Price and Reviews&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_36_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we want a more flexible representation of the data, we can use the &lt;code&gt;binscatter&lt;/code&gt; package. &lt;code&gt;binscatter&lt;/code&gt; splits the data into equally sized bins and displays a scatterplot of the averages.&lt;/p&gt;
 &lt;p&gt;The main difference between a binscatterplot and an histogram is that in a histogram bins have the same &lt;em&gt;width&lt;/em&gt; while in a binscatterplot bins have the same &lt;em&gt;number of observations&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;An advantage of &lt;code&gt;binscatter&lt;/code&gt; is that it makes the nature of the data much more transparent, at the cost of hiding some of the background noise.&lt;/p&gt;
@@ -4406,19 +4411,19 @@ fig, ax = plt.subplots()
 ax.binscatter(temp[&amp;quot;log_rpm&amp;quot;], temp[&amp;quot;log_price&amp;quot;]);
 ax.set_title(&#39;Price and Reviews&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_42_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As usual, we can split the data by group with the &lt;code&gt;hue&lt;/code&gt; option.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(data=df_listings, x=&amp;quot;log_rpm&amp;quot;, y=&amp;quot;log_price&amp;quot;, 
                 hue=&amp;quot;room_type&amp;quot;, alpha=0.3)\
 .set(title=&amp;quot;Prices and Ratings, by room type&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_44_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can also add the marginal distributions using the &lt;code&gt;sns.jointplot()&lt;/code&gt; function.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.jointplot(data=df_listings, x=&amp;quot;log_rpm&amp;quot;, y=&amp;quot;log_price&amp;quot;, kind=&amp;quot;hex&amp;quot;)\
 .fig.suptitle(&amp;quot;Prices and Reviews, with marginals&amp;quot;)  
 plt.subplots_adjust(top=0.9);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_42_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we want to plot correlations (and marginals) of multiple variables, we can use the &lt;code&gt;sns.pairplot()&lt;/code&gt; function.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.pairplot(data=df_listings,
              vars=[&amp;quot;log_rpm&amp;quot;, &amp;quot;log_reviews&amp;quot;, &amp;quot;log_price&amp;quot;],
@@ -4426,7 +4431,7 @@ plt.subplots_adjust(top=0.9);
 .fig.suptitle(&amp;quot;Correlations&amp;quot;);
 plt.subplots_adjust(top=0.9)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_44_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_48_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can distinguish across groups with the &lt;code&gt;hue&lt;/code&gt; option.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.pairplot(data=df_listings,
              vars=[&amp;quot;log_rpm&amp;quot;, &amp;quot;log_reviews&amp;quot;, &amp;quot;log_price&amp;quot;],
@@ -4435,19 +4440,19 @@ plt.subplots_adjust(top=0.9)
 .fig.suptitle(&amp;quot;Correlations, by room type&amp;quot;);
 plt.subplots_adjust(top=0.9)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_50_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we want to plot all the correlations in the data, we can use the &lt;code&gt;sns.heatmap()&lt;/code&gt; function on top of a correlation matrix generated by &lt;code&gt;.corr()&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
 sns.heatmap(df.corr(), vmin=-1, vmax=1, linewidths=.5, cmap=&amp;quot;RdBu&amp;quot;)\
  .set(title=&amp;quot;Correlations&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_48_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_52_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;geographical-data&#34;&gt;Geographical data&lt;/h2&gt;
 &lt;p&gt;We can in principle plot geographical data as a simple scatterplot.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(data=df_listings, x=&amp;quot;longitude&amp;quot;, y=&amp;quot;latitude&amp;quot;)\
 .set(title=&#39;Listing coordinates&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_51_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;However, we can do better and do the scatterplot over a map layer.&lt;/p&gt;
 &lt;p&gt;First, we neeed to convert the &lt;code&gt;latitude&lt;/code&gt; and &lt;code&gt;longitude&lt;/code&gt; variables into coordinates. We use the library &lt;code&gt;geopandas&lt;/code&gt;. Note that the original coordinate system is &lt;code&gt;4326&lt;/code&gt; (3D) and we need to &lt;code&gt;3857&lt;/code&gt; (2D).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;geom = geopandas.points_from_xy(df_listings.longitude, df_listings.latitude)
@@ -4464,7 +4469,7 @@ gdf = geopandas.GeoDataFrame(
 ax.set_ylim([5530000, 5555000])
 gdf.plot(ax=ax, c=df_listings[&#39;mean_price&#39;], cmap=&#39;viridis&#39;, alpha=0.8);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_57_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 </description>
     </item>
     

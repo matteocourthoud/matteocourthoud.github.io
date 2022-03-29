@@ -11725,11 +11725,16 @@ from src.import_data import import_data
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&#34;intro&#34;&gt;Intro&lt;/h2&gt;
 &lt;p&gt;The default library for plotting in python is &lt;code&gt;matplotlib&lt;/code&gt;. However, a more modern package that builds on top of it, is &lt;code&gt;seaborn&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;We start by setting the theme and by telling the notebook to display the plots inline.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.set()
-%matplotlib inline
+&lt;p&gt;We start by telling the notebook to display the plots inline.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can set some global paramters for all plots. You can find a list of all the options &lt;a href=&#34;https://matplotlib.org/stable/tutorials/introductory/customizing.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;. If you want to customize all plots in a project in the samy way, you can create a &lt;code&gt;filename.mplstyle&lt;/code&gt; file and call it at the beginning of each file as &lt;code&gt;plt.style.use(&#39;filename.mplstyle&#39;)&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Another important configuration is the plot resulution. We set it to &lt;code&gt;retina&lt;/code&gt; to have high resolution plots.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can choose set a general theme using &lt;code&gt;plt.style.use()&lt;/code&gt;. The list of themes is available &lt;a href=&#34;https://matplotlib.org/3.5.1/gallery/style_sheets/style_sheets_reference.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.style.use(&#39;ggplot&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you want to further customize some aspects of a theme, you can set some global paramters for all plots. You can find a list of all the options &lt;a href=&#34;https://matplotlib.org/stable/tutorials/introductory/customizing.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;. If you want to customize all plots in a project in the samy way, you can create a &lt;code&gt;filename.mplstyle&lt;/code&gt; file and call it at the beginning of each file as &lt;code&gt;plt.style.use(&#39;filename.mplstyle&#39;)&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;mpl.rcParams[&#39;figure.figsize&#39;] = (10,6)
 mpl.rcParams[&#39;axes.labelsize&#39;] = 16
 mpl.rcParams[&#39;axes.titlesize&#39;] = 18
@@ -11746,48 +11751,48 @@ mpl.rcParams[&#39;legend.facecolor&#39;] = &#39;w&#39;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(df_listings[&#39;log_price&#39;], bins=50)\
 .set(title=&#39;Distribution of log-prices&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_13_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can add a smooth kernel density approximation with the &lt;code&gt;kde&lt;/code&gt; option.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(df_listings[&#39;log_price&#39;], bins=50, kde=True)\
 .set(title=&#39;Distribution of log-prices with density&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_15_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we have a categorical variable, we might want to plot the distribution of the data across its values. We can use a &lt;strong&gt;barplot&lt;/strong&gt;. Seaborn function is &lt;code&gt;sns.countplot()&lt;/code&gt; for count data.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.countplot(x=&amp;quot;neighborhood&amp;quot;, data=df_listings)\
 .set(title=&#39;Number of observations by neighborhood&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If instead we want to see the distribution of another variable across some group, we can use the &lt;code&gt;sns.barplot()&lt;/code&gt; function.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.barplot(x=&amp;quot;neighborhood&amp;quot;, y=&amp;quot;mean_price&amp;quot;, data=df_listings)\
 .set(title=&#39;Average price by neighborhood&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can also use other metrics besides the mean with the &lt;code&gt;estimator&lt;/code&gt; option.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.barplot(x=&amp;quot;neighborhood&amp;quot;, y=&amp;quot;mean_price&amp;quot;, data=df_listings, estimator=np.median)\
 .set(title=&#39;Median price by neighborhood&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can also plot the full distribution using, for example &lt;strong&gt;boxplots&lt;/strong&gt; with &lt;code&gt;sns.boxplot()&lt;/code&gt;. Boxplots display quartiles and outliers.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.boxplot(x=&amp;quot;neighborhood&amp;quot;, y=&amp;quot;log_price&amp;quot;, data=df_listings)\
 .set(title=&#39;Price distribution across neighborhoods&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_27_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we want to see the full distribution, we can use the &lt;code&gt;sns.violinplot()&lt;/code&gt; function.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.violinplot(x=&amp;quot;neighborhood&amp;quot;, y=&amp;quot;log_price&amp;quot;, data=df_listings)\
 .set(title=&#39;Price distribution across neighborhoods&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;time-series&#34;&gt;Time Series&lt;/h2&gt;
 &lt;p&gt;If the dataset has a time dimension, we might want to explore how a variable evolves over time. Seaborn function is &lt;code&gt;sns.lineplot()&lt;/code&gt;. If the data has multiple observations for each time period, it will also display a 95% confidence interval around the mean.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.lineplot(data=df, x=&#39;date&#39;, y=&#39;price&#39;)\
 .set(title=&amp;quot;Price distribution over time&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_28_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_32_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can do the samy by group, with the &lt;code&gt;hue&lt;/code&gt; option. We can suppress confidence intervals setting &lt;code&gt;ci=None&lt;/code&gt; (making the code much faster).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.lineplot(data=df, x=&#39;date&#39;, y=&#39;price&#39;, hue=&#39;neighborhood&#39;, ci=None)\
 .set(title=&amp;quot;Price distribution over time&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_30_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;correlations&#34;&gt;Correlations&lt;/h2&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings[&amp;quot;log_reviews&amp;quot;] = np.log(1 + df_listings[&amp;quot;number_of_reviews&amp;quot;])
 df_listings[&amp;quot;log_rpm&amp;quot;] = np.log(1 + df_listings[&amp;quot;reviews_per_month&amp;quot;])
@@ -11796,14 +11801,14 @@ df_listings[&amp;quot;log_rpm&amp;quot;] = np.log(1 + df_listings[&amp;quot;revi
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(data=df_listings, x=&amp;quot;log_rpm&amp;quot;, y=&amp;quot;log_price&amp;quot;, alpha=0.3)\
 .set(title=&#39;Prices and Reviews&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can highlight the best linear approximation adding a line of fit using &lt;code&gt;sns.regplot()&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.regplot(x=&amp;quot;log_rpm&amp;quot;, y=&amp;quot;log_price&amp;quot;, data=df_listings,
             scatter_kws={&#39;alpha&#39;:.1},
-            line_kws={&#39;color&#39;:&#39;r&#39;})\
+            line_kws={&#39;color&#39;:&#39;C1&#39;})\
 .set(title=&#39;Price and Reviews&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_36_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we want a more flexible representation of the data, we can use the &lt;code&gt;binscatter&lt;/code&gt; package. &lt;code&gt;binscatter&lt;/code&gt; splits the data into equally sized bins and displays a scatterplot of the averages.&lt;/p&gt;
 &lt;p&gt;The main difference between a binscatterplot and an histogram is that in a histogram bins have the same &lt;em&gt;width&lt;/em&gt; while in a binscatterplot bins have the same &lt;em&gt;number of observations&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;An advantage of &lt;code&gt;binscatter&lt;/code&gt; is that it makes the nature of the data much more transparent, at the cost of hiding some of the background noise.&lt;/p&gt;
@@ -11817,19 +11822,19 @@ fig, ax = plt.subplots()
 ax.binscatter(temp[&amp;quot;log_rpm&amp;quot;], temp[&amp;quot;log_price&amp;quot;]);
 ax.set_title(&#39;Price and Reviews&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_42_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As usual, we can split the data by group with the &lt;code&gt;hue&lt;/code&gt; option.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(data=df_listings, x=&amp;quot;log_rpm&amp;quot;, y=&amp;quot;log_price&amp;quot;, 
                 hue=&amp;quot;room_type&amp;quot;, alpha=0.3)\
 .set(title=&amp;quot;Prices and Ratings, by room type&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_44_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can also add the marginal distributions using the &lt;code&gt;sns.jointplot()&lt;/code&gt; function.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.jointplot(data=df_listings, x=&amp;quot;log_rpm&amp;quot;, y=&amp;quot;log_price&amp;quot;, kind=&amp;quot;hex&amp;quot;)\
 .fig.suptitle(&amp;quot;Prices and Reviews, with marginals&amp;quot;)  
 plt.subplots_adjust(top=0.9);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_42_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we want to plot correlations (and marginals) of multiple variables, we can use the &lt;code&gt;sns.pairplot()&lt;/code&gt; function.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.pairplot(data=df_listings,
              vars=[&amp;quot;log_rpm&amp;quot;, &amp;quot;log_reviews&amp;quot;, &amp;quot;log_price&amp;quot;],
@@ -11837,7 +11842,7 @@ plt.subplots_adjust(top=0.9);
 .fig.suptitle(&amp;quot;Correlations&amp;quot;);
 plt.subplots_adjust(top=0.9)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_44_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_48_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can distinguish across groups with the &lt;code&gt;hue&lt;/code&gt; option.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.pairplot(data=df_listings,
              vars=[&amp;quot;log_rpm&amp;quot;, &amp;quot;log_reviews&amp;quot;, &amp;quot;log_price&amp;quot;],
@@ -11846,19 +11851,19 @@ plt.subplots_adjust(top=0.9)
 .fig.suptitle(&amp;quot;Correlations, by room type&amp;quot;);
 plt.subplots_adjust(top=0.9)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_50_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we want to plot all the correlations in the data, we can use the &lt;code&gt;sns.heatmap()&lt;/code&gt; function on top of a correlation matrix generated by &lt;code&gt;.corr()&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
 sns.heatmap(df.corr(), vmin=-1, vmax=1, linewidths=.5, cmap=&amp;quot;RdBu&amp;quot;)\
  .set(title=&amp;quot;Correlations&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_48_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_52_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;geographical-data&#34;&gt;Geographical data&lt;/h2&gt;
 &lt;p&gt;We can in principle plot geographical data as a simple scatterplot.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(data=df_listings, x=&amp;quot;longitude&amp;quot;, y=&amp;quot;latitude&amp;quot;)\
 .set(title=&#39;Listing coordinates&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_51_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;However, we can do better and do the scatterplot over a map layer.&lt;/p&gt;
 &lt;p&gt;First, we neeed to convert the &lt;code&gt;latitude&lt;/code&gt; and &lt;code&gt;longitude&lt;/code&gt; variables into coordinates. We use the library &lt;code&gt;geopandas&lt;/code&gt;. Note that the original coordinate system is &lt;code&gt;4326&lt;/code&gt; (3D) and we need to &lt;code&gt;3857&lt;/code&gt; (2D).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;geom = geopandas.points_from_xy(df_listings.longitude, df_listings.latitude)
@@ -11875,7 +11880,7 @@ gdf = geopandas.GeoDataFrame(
 ax.set_ylim([5530000, 5555000])
 gdf.plot(ax=ax, c=df_listings[&#39;mean_price&#39;], cmap=&#39;viridis&#39;, alpha=0.8);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;../img/06_plotting_57_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;../img/06_plotting_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 </description>
     </item>
     
@@ -26047,9 +26052,1099 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     </item>
     
     <item>
+      <title>AIPW for Dummies</title>
+      <link>https://matteocourthoud.github.io/post/aipw/</link>
+      <pubDate>Tue, 29 Mar 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/aipw/</guid>
+      <description>&lt;h2 id=&#34;requisites&#34;&gt;Requisites&lt;/h2&gt;
+&lt;p&gt;For this tutorial, I assume you are familiar with the following concepts&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Rubin Causal Framework&lt;/li&gt;
+&lt;li&gt;Propensity Score Matching&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
+&lt;p&gt;We assume that for a set of i.i.d. subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a feature vector $X_i \in \mathbb R^n$&lt;/li&gt;
+&lt;li&gt;a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
+&lt;li&gt;a response $Y_i \in \mathbb R$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 1&lt;/strong&gt;: &lt;strong&gt;unconfoundedness&lt;/strong&gt; (or ignorability, or selection on observables)&lt;/p&gt;
+&lt;p&gt;$$
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ X_i
+$$&lt;/p&gt;
+&lt;p&gt;i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random.&lt;/p&gt;
+&lt;h2 id=&#34;task&#34;&gt;Task&lt;/h2&gt;
+&lt;p&gt;We want to estimate the &lt;strong&gt;average treatment effect&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$$
+\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right]
+$$&lt;/p&gt;
+&lt;p&gt;We would like to obtain an unbiased estimator that satifies a central limit theorem of the form&lt;/p&gt;
+&lt;p&gt;$$
+\sqrt{n} ( \hat \tau - \tau) \ \overset{d}{\to} \ N(0, V)
+$$&lt;/p&gt;
+&lt;p&gt;thus enabling us to construct &lt;strong&gt;confidence intervals&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Under &lt;strong&gt;unconfoundedness&lt;/strong&gt;, we can rewrite the average treatment effect as&lt;/p&gt;
+&lt;p&gt;$$
+\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{T_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right]
+$$&lt;/p&gt;
+&lt;p&gt;where $e(X_i)$ is the &lt;strong&gt;propensity score&lt;/strong&gt; of observation $i$,&lt;/p&gt;
+&lt;p&gt;$$
+e(x) = \mathbb P \left[ T_i = 1 \ \big | \ X_i = x \right]
+$$&lt;/p&gt;
+&lt;p&gt;i.e. its probability of being treated.&lt;/p&gt;
+&lt;p&gt;Note that this formulation of the average treatment effect does not depend on the potential outcomes $Y_i^{(1)}$ and $Y_i^{(0)}$, but only on the observed outcomes $Y_i$.&lt;/p&gt;
+&lt;p&gt;This implies the &lt;strong&gt;Inverse Propensity Weighted&lt;/strong&gt; estimator which is unbiased estimator for the average treatment effect $\tau$&lt;/p&gt;
+&lt;p&gt;$$
+\hat \tau^*&lt;em&gt;{IPW} = \frac{1}{n} = \sum&lt;/em&gt;{i=1}^{n} \left( \frac{T_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right)
+$$&lt;/p&gt;
+&lt;p&gt;However, this estimator is &lt;strong&gt;unfeasible&lt;/strong&gt; since we do not observe the propensity scores $e(X_i)$.&lt;/p&gt;
+&lt;h2 id=&#34;action&#34;&gt;Action&lt;/h2&gt;
+&lt;p&gt;A feasible estimator is&lt;/p&gt;
+&lt;p&gt;$$
+\hat \tau_{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i}{1-\hat e(X_i)} \right)
+$$&lt;/p&gt;
+&lt;p&gt;where we have replaced the propensity scores $e (X_i)$ with their estimates $\hat e (X_i)$.&lt;/p&gt;
+&lt;p&gt;With a linear model, $Y_i = \alpha T_i + \beta X_i + \varepsilon_i$, we can get a central limit theorem for $\hat \tau$. However, we want to take a non-parametric / &lt;strong&gt;machine learning&lt;/strong&gt; approach with respect to the relationship between $Y$ and $X$.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Advantages&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;flexible functional form for $\mathbb E[Y | X]$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Disadvantages&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;machine learning methods have slow convergence rates&lt;/li&gt;
+&lt;li&gt;it impacts inference, i.e. we cannot easily get a central limit theorem result to build confidence intervals&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Is there a way to get around the slow rate of convergence of machine learning methods?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Yes!&lt;/strong&gt; Idea: combine two prediciton problems instead of one.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;Augmented Inverse Propensity Weighted&lt;/strong&gt; estimator is given by&lt;/p&gt;
+&lt;p&gt;$$
+\hat \tau_{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right)
+$$&lt;/p&gt;
+&lt;p&gt;where&lt;/p&gt;
+&lt;p&gt;$$
+\mu^{(t)}(x) = \mathbb P \left[ Y_i \ \big | \ X_i = x, T_i = t \right] \qquad ; \qquad e(x) = \mathbb P \left[ T_i = 1 \ \big | \ X_i = x \right]
+$$&lt;/p&gt;
+&lt;p&gt;We now have two prediction problems, $\hat \mu$ and $\hat e$.&lt;/p&gt;
+&lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp2
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this example, we are going to use the following data generating process&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$N = 1000$&lt;/li&gt;
+&lt;li&gt;$p = 20$&lt;/li&gt;
+&lt;li&gt;$X_i \sim N(0, I_p)$&lt;/li&gt;
+&lt;li&gt;$e(x) = 1 / (1 + e^{-x_1})$&lt;/li&gt;
+&lt;li&gt;$\mu^{(0)}(x) = (x_1 + x_2)_+$&lt;/li&gt;
+&lt;li&gt;$\mu^{(1)}(x) = (x_1 + x_3)_+ \mathbf{- 0.05}$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So that the average treatment effect is $0.05$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp2()
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;x1&lt;/th&gt;
+      &lt;th&gt;x2&lt;/th&gt;
+      &lt;th&gt;x3&lt;/th&gt;
+      &lt;th&gt;x4&lt;/th&gt;
+      &lt;th&gt;x5&lt;/th&gt;
+      &lt;th&gt;x6&lt;/th&gt;
+      &lt;th&gt;x7&lt;/th&gt;
+      &lt;th&gt;x8&lt;/th&gt;
+      &lt;th&gt;x9&lt;/th&gt;
+      &lt;th&gt;x10&lt;/th&gt;
+      &lt;th&gt;...&lt;/th&gt;
+      &lt;th&gt;x14&lt;/th&gt;
+      &lt;th&gt;x15&lt;/th&gt;
+      &lt;th&gt;x16&lt;/th&gt;
+      &lt;th&gt;x17&lt;/th&gt;
+      &lt;th&gt;x18&lt;/th&gt;
+      &lt;th&gt;x19&lt;/th&gt;
+      &lt;th&gt;x20&lt;/th&gt;
+      &lt;th&gt;e&lt;/th&gt;
+      &lt;th&gt;T&lt;/th&gt;
+      &lt;th&gt;Y&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1.624345&lt;/td&gt;
+      &lt;td&gt;-0.611756&lt;/td&gt;
+      &lt;td&gt;-0.528172&lt;/td&gt;
+      &lt;td&gt;-1.072969&lt;/td&gt;
+      &lt;td&gt;0.865408&lt;/td&gt;
+      &lt;td&gt;-2.301539&lt;/td&gt;
+      &lt;td&gt;1.744812&lt;/td&gt;
+      &lt;td&gt;-0.761207&lt;/td&gt;
+      &lt;td&gt;0.319039&lt;/td&gt;
+      &lt;td&gt;-0.249370&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;-0.384054&lt;/td&gt;
+      &lt;td&gt;1.133769&lt;/td&gt;
+      &lt;td&gt;-1.099891&lt;/td&gt;
+      &lt;td&gt;-0.172428&lt;/td&gt;
+      &lt;td&gt;-0.877858&lt;/td&gt;
+      &lt;td&gt;0.042214&lt;/td&gt;
+      &lt;td&gt;0.582815&lt;/td&gt;
+      &lt;td&gt;0.835394&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1.046174&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;-1.100619&lt;/td&gt;
+      &lt;td&gt;1.144724&lt;/td&gt;
+      &lt;td&gt;0.901591&lt;/td&gt;
+      &lt;td&gt;0.502494&lt;/td&gt;
+      &lt;td&gt;0.900856&lt;/td&gt;
+      &lt;td&gt;-0.683728&lt;/td&gt;
+      &lt;td&gt;-0.122890&lt;/td&gt;
+      &lt;td&gt;-0.935769&lt;/td&gt;
+      &lt;td&gt;-0.267888&lt;/td&gt;
+      &lt;td&gt;0.530355&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;-0.845206&lt;/td&gt;
+      &lt;td&gt;-0.671246&lt;/td&gt;
+      &lt;td&gt;-0.012665&lt;/td&gt;
+      &lt;td&gt;-1.117310&lt;/td&gt;
+      &lt;td&gt;0.234416&lt;/td&gt;
+      &lt;td&gt;1.659802&lt;/td&gt;
+      &lt;td&gt;0.742044&lt;/td&gt;
+      &lt;td&gt;0.249624&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0.044105&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;-0.191836&lt;/td&gt;
+      &lt;td&gt;-0.887629&lt;/td&gt;
+      &lt;td&gt;-0.747158&lt;/td&gt;
+      &lt;td&gt;1.692455&lt;/td&gt;
+      &lt;td&gt;0.050808&lt;/td&gt;
+      &lt;td&gt;-0.636996&lt;/td&gt;
+      &lt;td&gt;0.190915&lt;/td&gt;
+      &lt;td&gt;2.100255&lt;/td&gt;
+      &lt;td&gt;0.120159&lt;/td&gt;
+      &lt;td&gt;0.617203&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;-0.349343&lt;/td&gt;
+      &lt;td&gt;-0.208894&lt;/td&gt;
+      &lt;td&gt;0.586623&lt;/td&gt;
+      &lt;td&gt;0.838983&lt;/td&gt;
+      &lt;td&gt;0.931102&lt;/td&gt;
+      &lt;td&gt;0.285587&lt;/td&gt;
+      &lt;td&gt;0.885141&lt;/td&gt;
+      &lt;td&gt;0.452188&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;-0.050000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;-0.754398&lt;/td&gt;
+      &lt;td&gt;1.252868&lt;/td&gt;
+      &lt;td&gt;0.512930&lt;/td&gt;
+      &lt;td&gt;-0.298093&lt;/td&gt;
+      &lt;td&gt;0.488518&lt;/td&gt;
+      &lt;td&gt;-0.075572&lt;/td&gt;
+      &lt;td&gt;1.131629&lt;/td&gt;
+      &lt;td&gt;1.519817&lt;/td&gt;
+      &lt;td&gt;2.185575&lt;/td&gt;
+      &lt;td&gt;-1.396496&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;0.876169&lt;/td&gt;
+      &lt;td&gt;0.315635&lt;/td&gt;
+      &lt;td&gt;-2.022201&lt;/td&gt;
+      &lt;td&gt;-0.306204&lt;/td&gt;
+      &lt;td&gt;0.827975&lt;/td&gt;
+      &lt;td&gt;0.230095&lt;/td&gt;
+      &lt;td&gt;0.762011&lt;/td&gt;
+      &lt;td&gt;0.319864&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;-0.050000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;-0.222328&lt;/td&gt;
+      &lt;td&gt;-0.200758&lt;/td&gt;
+      &lt;td&gt;0.186561&lt;/td&gt;
+      &lt;td&gt;0.410052&lt;/td&gt;
+      &lt;td&gt;0.198300&lt;/td&gt;
+      &lt;td&gt;0.119009&lt;/td&gt;
+      &lt;td&gt;-0.670662&lt;/td&gt;
+      &lt;td&gt;0.377564&lt;/td&gt;
+      &lt;td&gt;0.121821&lt;/td&gt;
+      &lt;td&gt;1.129484&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;-0.638730&lt;/td&gt;
+      &lt;td&gt;0.423494&lt;/td&gt;
+      &lt;td&gt;0.077340&lt;/td&gt;
+      &lt;td&gt;-0.343854&lt;/td&gt;
+      &lt;td&gt;0.043597&lt;/td&gt;
+      &lt;td&gt;-0.620001&lt;/td&gt;
+      &lt;td&gt;0.698032&lt;/td&gt;
+      &lt;td&gt;0.444646&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0.000000&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;5 rows × 23 columns&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;First, we estimate the average treatment effect using the IPW estimator.&lt;/p&gt;
+&lt;p&gt;We use random forest to estimate $\mu^{(t)}(x)$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import LogisticRegression as lr
+from sklearn.ensemble import RandomForestRegressor as rfr
+
+def IPW(data, X):
+    mu = rfr(max_features=8).fit(data[X + [&#39;T&#39;]], data[&#39;Y&#39;])
+    mu0 = mu.predict(data[X + [&#39;T&#39;]].assign(T=0))
+    mu1 = mu.predict(data[X + [&#39;T&#39;]].assign(T=1))
+    tau_IPW = mu1 - mu0
+    return tau_IPW
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;hat_tau_IPW = IPW(df, dgp.X)
+print(f&amp;quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Mean: 0.025 and var 0.14
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The estimated coefficient is too big. We plot the distribution of $\hat \tau_i^{IPW}$ below.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(hat_tau_IPW, bins=20);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/AIPW_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We now turn to the AIPW estimator. First, we estimate the propensity scores using &lt;code&gt;LogisticRegression&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;e = lr().fit(df[dgp.X], df[&#39;T&#39;]).predict_proba(df[dgp.X])[:,1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s check if the &lt;strong&gt;bounded support&lt;/strong&gt; assumption is satisfied.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print(f&#39;Support of e is [{min(e):.2}, {max(e):.2}]&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Support of e is [0.018, 0.97]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The support assumption is satisfied. Note that this is guaranteed with logistic regression.&lt;/p&gt;
+&lt;p&gt;We can further plot the distribution of scores. They definitely do not seem constant.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(e, bins=100);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/AIPW_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def AIPW(data, X):
+    e = lr().fit(data[X], data[&#39;T&#39;]).predict_proba(data[X])[:,1]
+    mu = rfr(max_features=8).fit(data[X + [&#39;T&#39;]], data[&#39;Y&#39;])
+    mu0 = mu.predict(data[X + [&#39;T&#39;]].assign(T=0))
+    mu1 = mu.predict(data[X + [&#39;T&#39;]].assign(T=1))
+    D = mu1 - mu0
+    R = data[&#39;T&#39;] / e * (data[&#39;Y&#39;] - mu1) - (1-data[&#39;T&#39;]) / (1-e) * (data[&#39;Y&#39;] - mu0)
+    tau_AIPW = D + R
+    return D, R, tau_AIPW
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;D, R, hat_tau_AIPW = AIPW(df, dgp.X)
+print(f&amp;quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Mean: -0.0002 and var 0.43
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(hat_tau_AIPW, bins=20);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/AIPW_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sim_tau_AIPW = pd.DataFrame([np.mean(AIPW(dgp2().generate_data(seed=k), dgp.X), axis=1) for k in range(30)], 
+                            columns=[&#39;Direct&#39;, &#39;Correction&#39;, &#39;tau_AIPW&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Below we plot the AIPW estimator and its components.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x=&#39;variable&#39;, y=&#39;value&#39;);
+plot.axhline(-0.05, c=&#39;r&#39;, ls=&#39;:&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/AIPW_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the AIPW estimator is clower to the true value thanks to its correction that is always negative.&lt;/p&gt;
+&lt;h2 id=&#34;business-case&#34;&gt;Business Case&lt;/h2&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Original paper: &lt;a href=&#34;https://www.cambridge.org/core/journals/political-analysis/article/abs/an-introduction-to-the-augmented-inverse-propensity-weighted-estimator/4B1B8301E46F4432C4DCC91FE20780DB&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;An Introduction to the Augmented Inverse Propensity Weighted Estimator&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=IfZHUFFlsGc&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Video lecture&lt;/a&gt; by Prof. Stefan Wager (Stanford)&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Causal Trees for Dummies</title>
+      <link>https://matteocourthoud.github.io/post/cate/</link>
+      <pubDate>Tue, 29 Mar 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/cate/</guid>
+      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
+import pandas as pd
+import statsmodels.formula.api as smf
+
+from sklearn.tree import DecisionTreeRegressor, plot_tree
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Machine learning&lt;/strong&gt; methods are powerful tools for prediction. Can we use them for causal inference?&lt;/p&gt;
+&lt;p&gt;Yes, if we decompose our inference problem into&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;prediction problem&lt;/li&gt;
+&lt;li&gt;causal problem&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;potential-outcome-framework&#34;&gt;Potential Outcome Framework&lt;/h2&gt;
+&lt;p&gt;We assume that for a set of i.i.d. subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a feature vector $X_i \in \mathbb R^n$&lt;/li&gt;
+&lt;li&gt;a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
+&lt;li&gt;a response $Y_i \in \mathbb R$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Our goal is to estimate the &lt;strong&gt;conditional average treatment effect&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$$
+\tau(x) = \mathbb E \Big [ Y^{(1)} - Y^{(0)} \ \Big| \ X = x \Big ]
+$$&lt;/p&gt;
+&lt;p&gt;Crucially, we only get to observe $Y_i = Y_i^{(D_i)}$.&lt;/p&gt;
+&lt;p&gt;Wihtout further assumptions, we cannot estimate $\tau(x)$.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption: unconfoundedness&lt;/strong&gt; (or ignorability, or selection on observables)&lt;/p&gt;
+&lt;p&gt;$$
+\lbrace Y_i^{(1)} , Y^{(0)} \rbrace \perp W_i \ | \ X_i
+$$&lt;/p&gt;
+&lt;p&gt;i.e. conditional on observable characteristics the treatment assignment is as good as random.&lt;/p&gt;
+&lt;p&gt;When unconfoundedness holds, matching methods usually provide consistent estimates of the conditional average treatment effect.&lt;/p&gt;
+&lt;h2 id=&#34;prediction-problem&#34;&gt;Prediction Problem&lt;/h2&gt;
+&lt;p&gt;How can we make the inference problem a &lt;strong&gt;prediciton problem&lt;/strong&gt;?&lt;/p&gt;
+&lt;p&gt;In principle, we would like to divide the pupulation in subgroups in order to minimize the MSE of treatment effects.&lt;/p&gt;
+&lt;p&gt;The objective function is&lt;/p&gt;
+&lt;p&gt;$$
+\sum_i \Big [ ( \tau_i - \hat \tau_i(X))^2 \Big ]
+$$&lt;/p&gt;
+&lt;p&gt;However, this objective function is &lt;strong&gt;unfeasible&lt;/strong&gt; since we do not observe $\tau_i$.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;idea&lt;/strong&gt; is to transform our outcome variable as&lt;/p&gt;
+&lt;p&gt;$$
+Y_i^* = \frac{Y_i}{D_i * p(X_i) - (1-D_i) * (1-p(X_i))}
+$$&lt;/p&gt;
+&lt;p&gt;where $p_i$ is the &lt;strong&gt;propensity score&lt;/strong&gt; of observation $i$, i.e. its probability of being treated.&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s intuitive to verify that, given this specification, the expected value of $Y_i^*$ is the &lt;strong&gt;conditional average treatment effect&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Here is a proof:&lt;/p&gt;
+&lt;p&gt;$$
+\begin{aligned}
+\mathbb E \left[ Y_i^* \mid X_{i}=x\right] &amp;amp;= \mathbb E \left[ \frac{Y_i}{D_i * p(X_i) - (1-D_i) * (1-p(X_i))} \ \Big | \ X_i = x \right]
+\
+&amp;amp;= \mathbb E \left[ Y_{i} * \frac{D_{i}-p(X_i)}{p(X_i)\left(1-p(X_i)\right)} \ \Big | \ X_i = x \right]
+\
+&amp;amp;= \mathbb E \left[Y_{i} T_{i} * \frac{D_{i} - p(X_i)}{p(X_i)\left(1-p(X_i) \right)}+Y_{i}\left(1-T_{i}\right) * \frac{T_{i}-p(X_i)}{p(X_i)\left(1-p(X_i) \right)} \ \Big | \ X_i = x \right]
+\
+&amp;amp;= \mathbb E \Big[ Y(1)&lt;em&gt;{i} * \frac{D&lt;/em&gt;{i}\left(1-p(X_i)\right)}{p(X_i)\left(1-p(X_i)\right)} \ \Big | \ X_i = x \Big] - \mathbb E \left[Y(0)&lt;em&gt;{i} * \frac{\left(1-T&lt;/em&gt;{i}\right) p(X_i)}{p(X_i)\left(1-p(X_i)\right)} \ \Big | \ X_i = x \right]
+\
+&amp;amp;= \frac{1}{p(X_i)} \mathbb E \Big[ Y(1)&lt;em&gt;{i} * T&lt;/em&gt;{i} \ \Big | \ X_i = x \Big] - \frac{1}{1-p(X_i)} \mathbb E \left[Y(0)&lt;em&gt;{i} *\left(1-T&lt;/em&gt;{i}\right) \ \Big | \ X_i = x \right]
+\
+&amp;amp;= \frac{1}{p(X_i)} \mathbb E \left[Y(1)&lt;em&gt;{i} \ \Big | \ X_i = x \right] * \mathbb E \Big[T&lt;/em&gt;{i} \ \Big | \ X_i = x \Big] - \frac{1}{1-p(X_i)} \mathbb E \left[Y(0)&lt;em&gt;{i} \ \Big | \ X_i = x \right] * \mathbb E\left[\left(1-T&lt;/em&gt;{i}\right) \ \Big | \ X_i = x \right]
+\
+&amp;amp;= \mathbb E \Big[Y(1)&lt;em&gt;{i} \ \Big | \ X_i = x \Big] - \mathbb E \Big[Y(0)&lt;/em&gt;{i} \ \Big | \ X_i = x \Big]
+\
+&amp;amp;=\tau(x)_{i}
+\end{aligned}
+$$&lt;/p&gt;
+&lt;p&gt;How can &lt;strong&gt;regression trees&lt;/strong&gt; help estimate heterogeneous treatment effects?&lt;/p&gt;
+&lt;p&gt;If we fit a tree model on the modified outcome $Y^*$, we will get a partition of the data that minimizes the expected mean squared error of the conditional treatment effect. While the individual estimates are going to be inaccurate, within each leaf, we can estimate &lt;strong&gt;heteterogeneous treatment effects&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;In order to get an &lt;strong&gt;unbiased estimate&lt;/strong&gt; however, we need to use different data to build the tree and to estimate the effect. This procedure comes at the cost of increased variance.&lt;/p&gt;
+&lt;h2 id=&#34;example-1-simulated-data&#34;&gt;Example 1: Simulated Data&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s start with an example on synthetic data. We have the following individual characteristics:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;male&lt;/code&gt;: gender&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;black&lt;/code&gt;: race&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;age&lt;/code&gt;: age&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;educ&lt;/code&gt;: education, which depends on age and race&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Moreover, we maketreatment status &lt;code&gt;D&lt;/code&gt; depend on both gender and race so that it will be important to condition on observables.&lt;/p&gt;
+&lt;p&gt;Our outcome variable &lt;code&gt;y&lt;/code&gt; depends on the treatment assignment differently according to education and age.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We generate a dataset out of our DGP.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp1()
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;male&lt;/th&gt;
+      &lt;th&gt;black&lt;/th&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;th&gt;educ&lt;/th&gt;
+      &lt;th&gt;T&lt;/th&gt;
+      &lt;th&gt;Y&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;55.0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;True&lt;/td&gt;
+      &lt;td&gt;-0.556665&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;47.0&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;True&lt;/td&gt;
+      &lt;td&gt;-0.329725&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;31.0&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;-0.150055&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;51.0&lt;/td&gt;
+      &lt;td&gt;7&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;0.011573&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;48.0&lt;/td&gt;
+      &lt;td&gt;7&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;0.421084&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We can check the distribution of variables across treatment assignment.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.groupby(&#39;T&#39;).agg([&#39;mean&#39;, &#39;std&#39;]).T.unstack(1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead tr th {
+    text-align: left;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;T&lt;/th&gt;
+      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;False&lt;/th&gt;
+      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;True&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;mean&lt;/th&gt;
+      &lt;th&gt;std&lt;/th&gt;
+      &lt;th&gt;mean&lt;/th&gt;
+      &lt;th&gt;std&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;male&lt;/th&gt;
+      &lt;td&gt;0.432127&lt;/td&gt;
+      &lt;td&gt;0.495933&lt;/td&gt;
+      &lt;td&gt;0.564516&lt;/td&gt;
+      &lt;td&gt;0.496265&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;black&lt;/th&gt;
+      &lt;td&gt;0.570136&lt;/td&gt;
+      &lt;td&gt;0.495618&lt;/td&gt;
+      &lt;td&gt;0.496416&lt;/td&gt;
+      &lt;td&gt;0.500436&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;td&gt;44.794118&lt;/td&gt;
+      &lt;td&gt;10.186277&lt;/td&gt;
+      &lt;td&gt;44.756272&lt;/td&gt;
+      &lt;td&gt;10.138259&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;educ&lt;/th&gt;
+      &lt;td&gt;5.409502&lt;/td&gt;
+      &lt;td&gt;2.381371&lt;/td&gt;
+      &lt;td&gt;5.449821&lt;/td&gt;
+      &lt;td&gt;2.390171&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Y&lt;/th&gt;
+      &lt;td&gt;0.648196&lt;/td&gt;
+      &lt;td&gt;1.030889&lt;/td&gt;
+      &lt;td&gt;1.443246&lt;/td&gt;
+      &lt;td&gt;1.153021&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;As we can see, &lt;code&gt;male&lt;/code&gt; and &lt;code&gt;black&lt;/code&gt; are now balanced across groups.&lt;/p&gt;
+&lt;p&gt;We can get a first estimate of the &lt;strong&gt;average treatment effect&lt;/strong&gt; as a simple comparison of means.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.loc[df[&#39;T&#39;]==1, &#39;Y&#39;].mean() - df.loc[df[&#39;T&#39;]==0, &#39;Y&#39;].mean()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.795050419702685
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can visualize the difference with a barplot.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.barplot(x=&#39;T&#39;, y=&#39;Y&#39;, data=df);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/cate_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It seems there is a significant difference between the two groups. We can get a standard error around the estimate by regressing $Y$ on $D$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;Y ~ T&#39;, df).fit()
+est.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    0.6482&lt;/td&gt; &lt;td&gt;    0.052&lt;/td&gt; &lt;td&gt;   12.381&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.545&lt;/td&gt; &lt;td&gt;    0.751&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;T[T.True]&lt;/th&gt; &lt;td&gt;    0.7951&lt;/td&gt; &lt;td&gt;    0.070&lt;/td&gt; &lt;td&gt;   11.343&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.658&lt;/td&gt; &lt;td&gt;    0.933&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The coefficient is statistically significant. However, we know that the treatment assignment is not &lt;strong&gt;unconditionally exogenous&lt;/strong&gt;. We need to condition on observables $X$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;Y ~ T +&#39; + &#39; + &#39;.join(dgp.X), df).fit()
+est.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    0.2096&lt;/td&gt; &lt;td&gt;    0.171&lt;/td&gt; &lt;td&gt;    1.226&lt;/td&gt; &lt;td&gt; 0.220&lt;/td&gt; &lt;td&gt;   -0.126&lt;/td&gt; &lt;td&gt;    0.545&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;T[T.True]&lt;/th&gt; &lt;td&gt;    0.7663&lt;/td&gt; &lt;td&gt;    0.065&lt;/td&gt; &lt;td&gt;   11.808&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.639&lt;/td&gt; &lt;td&gt;    0.894&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;male&lt;/th&gt;      &lt;td&gt;    0.5143&lt;/td&gt; &lt;td&gt;    0.064&lt;/td&gt; &lt;td&gt;    7.997&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.388&lt;/td&gt; &lt;td&gt;    0.641&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;black&lt;/th&gt;     &lt;td&gt;    0.5747&lt;/td&gt; &lt;td&gt;    0.065&lt;/td&gt; &lt;td&gt;    8.813&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.447&lt;/td&gt; &lt;td&gt;    0.703&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;age&lt;/th&gt;       &lt;td&gt;   -0.0102&lt;/td&gt; &lt;td&gt;    0.003&lt;/td&gt; &lt;td&gt;   -3.261&lt;/td&gt; &lt;td&gt; 0.001&lt;/td&gt; &lt;td&gt;   -0.016&lt;/td&gt; &lt;td&gt;   -0.004&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;educ&lt;/th&gt;      &lt;td&gt;    0.0642&lt;/td&gt; &lt;td&gt;    0.014&lt;/td&gt; &lt;td&gt;    4.715&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.037&lt;/td&gt; &lt;td&gt;    0.091&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;We do not need to actually condition on the full vector of observables $X$. It is sufficient to condition on the &lt;strong&gt;propensity score&lt;/strong&gt; $p(X)$, i.e. the conditional probability of treatment.&lt;/p&gt;
+&lt;p&gt;We can estimate the propensity score with any method we want. The more flexible, the better.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;pscore&#39;] = RandomForestRegressor().fit(df[dgp.X], df[&#39;T&#39;]).predict(df[dgp.X])
+df[&#39;pscore&#39;].head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0    0.770000
+1    0.568000
+2    0.040000
+3    0.106333
+4    0.230000
+Name: pscore, dtype: float64
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We now estiamte the conditional average treatment effect regressing $Y$ on $D$ and on the p-score.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;Y ~ T + pscore&#39;, df).fit()
+est.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    0.6500&lt;/td&gt; &lt;td&gt;    0.071&lt;/td&gt; &lt;td&gt;    9.106&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.510&lt;/td&gt; &lt;td&gt;    0.790&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;T[T.True]&lt;/th&gt; &lt;td&gt;    0.7988&lt;/td&gt; &lt;td&gt;    0.121&lt;/td&gt; &lt;td&gt;    6.606&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.561&lt;/td&gt; &lt;td&gt;    1.036&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;pscore&lt;/th&gt;    &lt;td&gt;   -0.0070&lt;/td&gt; &lt;td&gt;    0.187&lt;/td&gt; &lt;td&gt;   -0.038&lt;/td&gt; &lt;td&gt; 0.970&lt;/td&gt; &lt;td&gt;   -0.374&lt;/td&gt; &lt;td&gt;    0.360&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;We are now ready to estimate &lt;strong&gt;heterogeneous treatment effects&lt;/strong&gt;. First, we need to compute the transformed outcome&lt;/p&gt;
+&lt;p&gt;$$
+Y_i^* = \frac{Y_i}{D_i * p_i - (1-D_i) * (1-p_i)}
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;y_star&#39;] = df[&#39;Y&#39;] /(df[&#39;T&#39;] * df[&#39;pscore&#39;] - (1-df[&#39;T&#39;]) * (1-df[&#39;pscore&#39;]))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we train a small tree on the transformed outcome $Y^*$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;tree = DecisionTreeRegressor(max_depth=2, min_samples_leaf=30).fit(df[dgp.X], df[&#39;y_star&#39;])
+df[&#39;y_hat&#39;] = tree.predict(df[dgp.X])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can plot the tree and visualize the estimated groups and treatment effects.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot tree
+fig, ax = plt.subplots(1,1, figsize=(10, 6))
+plot_tree(tree, filled=True, fontsize=12, feature_names=dgp.X, impurity=False, ax=ax);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/cate_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We still have one issue: we have trained our tree model and estimated the treatment effects using the same data. This introduces bias in the estimates.&lt;/p&gt;
+&lt;h2 id=&#34;example-2-lalonde-data&#34;&gt;Example 2: Lalonde Data&lt;/h2&gt;
+&lt;p&gt;For this tutorial, we are goind to use the data from Lalonde (1981). You can find the data here: &lt;a href=&#34;https://users.nber.org/~rdehejia/nswdata.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://users.nber.org/~rdehejia/nswdata.html&lt;/a&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = pd.read_stata(&#39;http://www.nber.org/~rdehejia/data/nsw_dw.dta&#39;).drop(columns=[&#39;data_id&#39;])
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;treat&lt;/th&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;th&gt;education&lt;/th&gt;
+      &lt;th&gt;black&lt;/th&gt;
+      &lt;th&gt;hispanic&lt;/th&gt;
+      &lt;th&gt;married&lt;/th&gt;
+      &lt;th&gt;nodegree&lt;/th&gt;
+      &lt;th&gt;re74&lt;/th&gt;
+      &lt;th&gt;re75&lt;/th&gt;
+      &lt;th&gt;re78&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;37.0&lt;/td&gt;
+      &lt;td&gt;11.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;9930.045898&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;22.0&lt;/td&gt;
+      &lt;td&gt;9.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;3595.894043&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;30.0&lt;/td&gt;
+      &lt;td&gt;12.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;24909.449219&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;27.0&lt;/td&gt;
+      &lt;td&gt;11.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;7506.145996&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;33.0&lt;/td&gt;
+      &lt;td&gt;8.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;289.789886&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;This dataset contains information about earnings for&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;treat&lt;/th&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;th&gt;education&lt;/th&gt;
+      &lt;th&gt;black&lt;/th&gt;
+      &lt;th&gt;hispanic&lt;/th&gt;
+      &lt;th&gt;married&lt;/th&gt;
+      &lt;th&gt;nodegree&lt;/th&gt;
+      &lt;th&gt;re74&lt;/th&gt;
+      &lt;th&gt;re75&lt;/th&gt;
+      &lt;th&gt;re78&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;37.0&lt;/td&gt;
+      &lt;td&gt;11.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;9930.045898&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;22.0&lt;/td&gt;
+      &lt;td&gt;9.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;3595.894043&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;30.0&lt;/td&gt;
+      &lt;td&gt;12.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;24909.449219&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;27.0&lt;/td&gt;
+      &lt;td&gt;11.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;7506.145996&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;33.0&lt;/td&gt;
+      &lt;td&gt;8.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;289.789886&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We can summarize each variable by its treatment status.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.groupby(&#39;treat&#39;).agg([&#39;mean&#39;, &#39;std&#39;]).T.unstack(1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead tr th {
+    text-align: left;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;treat&lt;/th&gt;
+      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;0.0&lt;/th&gt;
+      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;1.0&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;mean&lt;/th&gt;
+      &lt;th&gt;std&lt;/th&gt;
+      &lt;th&gt;mean&lt;/th&gt;
+      &lt;th&gt;std&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;td&gt;25.053846&lt;/td&gt;
+      &lt;td&gt;7.057745&lt;/td&gt;
+      &lt;td&gt;25.816216&lt;/td&gt;
+      &lt;td&gt;7.155019&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;education&lt;/th&gt;
+      &lt;td&gt;10.088462&lt;/td&gt;
+      &lt;td&gt;1.614325&lt;/td&gt;
+      &lt;td&gt;10.345946&lt;/td&gt;
+      &lt;td&gt;2.010650&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;black&lt;/th&gt;
+      &lt;td&gt;0.826923&lt;/td&gt;
+      &lt;td&gt;0.379043&lt;/td&gt;
+      &lt;td&gt;0.843243&lt;/td&gt;
+      &lt;td&gt;0.364558&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;hispanic&lt;/th&gt;
+      &lt;td&gt;0.107692&lt;/td&gt;
+      &lt;td&gt;0.310589&lt;/td&gt;
+      &lt;td&gt;0.059459&lt;/td&gt;
+      &lt;td&gt;0.237124&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;married&lt;/th&gt;
+      &lt;td&gt;0.153846&lt;/td&gt;
+      &lt;td&gt;0.361497&lt;/td&gt;
+      &lt;td&gt;0.189189&lt;/td&gt;
+      &lt;td&gt;0.392722&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;nodegree&lt;/th&gt;
+      &lt;td&gt;0.834615&lt;/td&gt;
+      &lt;td&gt;0.372244&lt;/td&gt;
+      &lt;td&gt;0.708108&lt;/td&gt;
+      &lt;td&gt;0.455867&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;re74&lt;/th&gt;
+      &lt;td&gt;2107.026611&lt;/td&gt;
+      &lt;td&gt;5687.905639&lt;/td&gt;
+      &lt;td&gt;2095.573730&lt;/td&gt;
+      &lt;td&gt;4886.620354&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;re75&lt;/th&gt;
+      &lt;td&gt;1266.909058&lt;/td&gt;
+      &lt;td&gt;3102.982088&lt;/td&gt;
+      &lt;td&gt;1532.055298&lt;/td&gt;
+      &lt;td&gt;3219.250879&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;re78&lt;/th&gt;
+      &lt;td&gt;4554.801270&lt;/td&gt;
+      &lt;td&gt;5483.836001&lt;/td&gt;
+      &lt;td&gt;6349.143555&lt;/td&gt;
+      &lt;td&gt;7867.402183&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;y = &#39;re78&#39;
+D = &#39;treat&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;re78 ~ treat&#39;, df).fit()
+est.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt; 4554.8011&lt;/td&gt; &lt;td&gt;  408.046&lt;/td&gt; &lt;td&gt;   11.162&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt; 3752.855&lt;/td&gt; &lt;td&gt; 5356.747&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt; 1794.3424&lt;/td&gt; &lt;td&gt;  632.853&lt;/td&gt; &lt;td&gt;    2.835&lt;/td&gt; &lt;td&gt; 0.005&lt;/td&gt; &lt;td&gt;  550.574&lt;/td&gt; &lt;td&gt; 3038.110&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X = [&#39;age&#39;, &#39;education&#39;, &#39;black&#39;, &#39;hispanic&#39;, &#39;married&#39;, &#39;nodegree&#39;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;re78 ~ treat +&#39; + &#39; + &#39;.join(X), df).fit()
+est.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt; 1168.0034&lt;/td&gt; &lt;td&gt; 3360.588&lt;/td&gt; &lt;td&gt;    0.348&lt;/td&gt; &lt;td&gt; 0.728&lt;/td&gt; &lt;td&gt;-5436.922&lt;/td&gt; &lt;td&gt; 7772.928&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt; 1671.1304&lt;/td&gt; &lt;td&gt;  637.973&lt;/td&gt; &lt;td&gt;    2.619&lt;/td&gt; &lt;td&gt; 0.009&lt;/td&gt; &lt;td&gt;  417.254&lt;/td&gt; &lt;td&gt; 2925.007&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;age&lt;/th&gt;       &lt;td&gt;   52.8219&lt;/td&gt; &lt;td&gt;   45.255&lt;/td&gt; &lt;td&gt;    1.167&lt;/td&gt; &lt;td&gt; 0.244&lt;/td&gt; &lt;td&gt;  -36.123&lt;/td&gt; &lt;td&gt;  141.767&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;education&lt;/th&gt; &lt;td&gt;  393.8213&lt;/td&gt; &lt;td&gt;  227.114&lt;/td&gt; &lt;td&gt;    1.734&lt;/td&gt; &lt;td&gt; 0.084&lt;/td&gt; &lt;td&gt;  -52.549&lt;/td&gt; &lt;td&gt;  840.192&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;black&lt;/th&gt;     &lt;td&gt;-2220.2622&lt;/td&gt; &lt;td&gt; 1168.317&lt;/td&gt; &lt;td&gt;   -1.900&lt;/td&gt; &lt;td&gt; 0.058&lt;/td&gt; &lt;td&gt;-4516.480&lt;/td&gt; &lt;td&gt;   75.956&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;hispanic&lt;/th&gt;  &lt;td&gt;   83.7193&lt;/td&gt; &lt;td&gt; 1550.348&lt;/td&gt; &lt;td&gt;    0.054&lt;/td&gt; &lt;td&gt; 0.957&lt;/td&gt; &lt;td&gt;-2963.346&lt;/td&gt; &lt;td&gt; 3130.785&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;married&lt;/th&gt;   &lt;td&gt;  158.2084&lt;/td&gt; &lt;td&gt;  850.326&lt;/td&gt; &lt;td&gt;    0.186&lt;/td&gt; &lt;td&gt; 0.852&lt;/td&gt; &lt;td&gt;-1513.029&lt;/td&gt; &lt;td&gt; 1829.446&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;nodegree&lt;/th&gt;  &lt;td&gt; -128.2203&lt;/td&gt; &lt;td&gt;  995.416&lt;/td&gt; &lt;td&gt;   -0.129&lt;/td&gt; &lt;td&gt; 0.898&lt;/td&gt; &lt;td&gt;-2084.617&lt;/td&gt; &lt;td&gt; 1828.177&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;pscore&#39;] = RandomForestRegressor().fit(df[X], df[D]).predict(df[X])
+df[&#39;pscore&#39;].head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0    0.770000
+1    0.755667
+2    0.535976
+3    0.653974
+4    0.730000
+Name: pscore, dtype: float64
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;re78 ~ treat + pscore&#39;, df).fit()
+est.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt; 4417.5436&lt;/td&gt; &lt;td&gt;  586.691&lt;/td&gt; &lt;td&gt;    7.530&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt; 3264.493&lt;/td&gt; &lt;td&gt; 5570.594&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt; 1602.3526&lt;/td&gt; &lt;td&gt;  865.065&lt;/td&gt; &lt;td&gt;    1.852&lt;/td&gt; &lt;td&gt; 0.065&lt;/td&gt; &lt;td&gt;  -97.799&lt;/td&gt; &lt;td&gt; 3302.504&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;pscore&lt;/th&gt;    &lt;td&gt;  519.6742&lt;/td&gt; &lt;td&gt; 1594.531&lt;/td&gt; &lt;td&gt;    0.326&lt;/td&gt; &lt;td&gt; 0.745&lt;/td&gt; &lt;td&gt;-2614.131&lt;/td&gt; &lt;td&gt; 3653.479&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Estimate CATE&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;d&#39;] = df[&#39;treat&#39;] * df[&#39;pscore&#39;] - (1-df[&#39;treat&#39;]) * (1-df[&#39;pscore&#39;])
+df[&#39;y_star&#39;] = df[&#39;re78&#39;] / df[&#39;d&#39;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;tree = DecisionTreeRegressor(max_depth=2).fit(df[X], df[&#39;y_star&#39;])
+df[&#39;y_hat&#39;] = tree.predict(df[X])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot tree
+fig, ax = plt.subplots(1,1, figsize=(10, 6))
+plot_tree(tree, filled=True, fontsize=12, feature_names=X, ax=ax, impurity=False);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/cate_51_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;y_hat&#39;].mean()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;829.6982690090036
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;key-insights&#34;&gt;Key Insights&lt;/h2&gt;
+&lt;p&gt;In this tutorial we have seen how to use machine learning to estimate heterogeneous treatment effects.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;key insights&lt;/strong&gt; are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;to apply machine learning in causal inference, split the problem into a prediction part&lt;/li&gt;
+&lt;li&gt;in this case, go from the infeasible outcome $\tau_i$ to the feasible outcome $Y_i^*$&lt;/li&gt;
+&lt;li&gt;to avoid bias, use different data for different estimation steps&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Chi-Squared Test for Dummies</title>
       <link>https://matteocourthoud.github.io/post/chisquared/</link>
-      <pubDate>Thu, 17 Mar 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 29 Mar 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/chisquared/</guid>
       <description>&lt;p&gt;If you search the Wikipedia definition of Chi-Squared test, you get the following:&lt;/p&gt;
 &lt;blockquote&gt;
@@ -26169,6 +27264,9 @@ chi2_stat
 &lt;p&gt;If the dice was fair, the test Pearson&amp;rsquo;s chi-squared test-statistic $T_{\chi^2}$ is distributed as a chi-squared distribution with $k-1$ degrees of freedom, $\chi^2_{k-1}$. For the moment, take this claim at face value, we will verify it later, both empirically and theoretically. We will also discuss the degrees of freedom in detail later on.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Important!&lt;/strong&gt; Do not confuse the chi-squared test statistic (a number) with the chi-squared distribution (a distribution).&lt;/p&gt;
 &lt;p&gt;What does a chi-squared distribution with $n-1$ degrees of freedom, $\chi^2_{k-1}$, look like?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import matplotlib.pyplot as plt
 from scipy.stats import chi2
 
@@ -26181,14 +27279,14 @@ chi2_5_pdf = chi2.pdf(x, df=5)
 # Plot 
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_10_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_11_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;How does the value of the statistic we have observed compares with its the distribution under the null hypothesis of a fair dice?&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# plot Chi-square distribution with 5 degrees of freedom
 plt.plot(x, chi2.pdf(x, df=5));
 plt.vlines(chi2_stat, ymin=0, ymax=plt.ylim()[1], color=&#39;k&#39;, label=&#39;chi2 statistic&#39;)
 plt.legend();
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_12_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_13_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The test statistic seems to fall well within the distribution, i.e. it does not seem to be an unusual event. Indeed, the question we want to answer is: &amp;ldquo;&lt;em&gt;under the null hypothesis that the dice is fair, how unlikely is the statistic we have observed?&lt;/em&gt;&amp;rdquo;.&lt;/p&gt;
 &lt;p&gt;The last component we need in order to built an hypothesis test, is a level of confidence, i.e. a threshold of &amp;ldquo;unlikeliness&amp;rdquo; of an event, below which we declare that the event is too unlikely under the model, for the model to be true. Let&amp;rsquo;s say we decide to set that threshold at 5%.&lt;/p&gt;
 &lt;p&gt;If the likelihood of observing an even that (or more) extreme than the one we have actually observed is less than 5%, we reject the nully hypothesis that the dice is fair.&lt;/p&gt;
@@ -26214,7 +27312,7 @@ def plot_test(x, stat, df):
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
 plot_test(x, chi2_stat, 5)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;From the plot, we can clearly see that we do not reject the null hypothesis that the dice is fair.&lt;/p&gt;
 &lt;h2 id=&#34;why-the-chi-squared-distribution&#34;&gt;Why the Chi-squared Distribution?&lt;/h2&gt;
 &lt;p&gt;How do we know that that particular statistic has that particular distribution?&lt;/p&gt;
@@ -26238,7 +27336,7 @@ def simulate_chi2stats(K, N, dgp):
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Since we only did it 100 times, the distribution looks pretty coarse, but vaguely close. Let&amp;rsquo;s now try 1000 times.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_dice)
 
@@ -26246,7 +27344,7 @@ plt.plot(x, chi2_5_pdf);
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The empirical distribution of the test statistic is indeed very close to its theoretical counterpart.&lt;/p&gt;
 &lt;h2 id=&#34;some-statistics&#34;&gt;Some Statistics&lt;/h2&gt;
 &lt;p&gt;Why does the distribution of the test statistic look like that? Let&amp;rsquo;s now dig deeper into the math.&lt;/p&gt;
@@ -26459,8 +27557,8 @@ chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_grades)
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_36_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;What happened? We forgot to change the degrees of freedom! The general formula for the degrees of freedom when testing independence of variables is $(N_i - 1) \times (N_j - 1)$. So in our case it&amp;rsquo;s $(4-1) \times (2-1) = 3$ instead of $7$&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_37_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;What happened? We forgot to change the degrees of freedom! The general formula for the degrees of freedom when testing independence of variables is $(N_i - 1) \times (N_j - 1)$. So in our case it&amp;rsquo;s $(4-1) \times (2-1) = 3$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_3_pdf = chi2.pdf(x, df=3)
 
 # Plot data
@@ -26468,12 +27566,12 @@ chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_grades)
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
 plt.plot(x, chi2_3_pdf);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_39_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Do we reject the null hypothesis of independend distributions of gender and grades?&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
 plot_test(x, chi2_stat, df=3)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_41_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;No, we &lt;strong&gt;do not reject&lt;/strong&gt; the null hypothesis of independend distributions of gender and grades.&lt;/p&gt;
 &lt;h2 id=&#34;example-3-testing-a-specific-data-generating-process&#34;&gt;Example 3: testing a specific data generating process&lt;/h2&gt;
 &lt;p&gt;As we have seen, the chi-square test can be used to compare observed means / frequencies against some null hypothesis. How can we use this statistic to &lt;strong&gt;test a distributional assumption&lt;/strong&gt;?&lt;/p&gt;
@@ -26555,7 +27653,7 @@ plt.hist(poisson_draws, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
 exp_pdf = expon.pdf(x)
 plt.plot(x, exp_pdf);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_47_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_48_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The two distributions seem close but we need a test statistic in order to assess whether the dgp is indeed an exponential distribution&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_stat = compute_chi2_stat(data_poisson)
 chi2_stat
@@ -26566,7 +27664,7 @@ chi2_stat
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
 plot_test(x, chi2_stat, df=3)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/chisquared_51_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/chisquared_52_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;No, we &lt;strong&gt;do not reject&lt;/strong&gt; the null hypothesis that the data is drawn from an exponential distribution.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;In this tutorial, we have seen how to perform two hypotesis tests&lt;/p&gt;
