@@ -1309,7 +1309,7 @@ df_prices = pd.read_csv(url_prices, compression=&quot;gzip&quot;)
 </table>
 </div>
 <p>If we want to build a new column by group, we can use <code>transform()</code> on the grouped data. Unfortunately, it does not work as nicely as <code>aggregate()</code> and we have to do one column at the time.</p>
-<pre><code class="language-python">df_listings.groupby('neighbourhood')[['price', 'reviews_per_month']].transform('mean')
+<pre><code class="language-python">df_listings.groupby('neighbourhood')[['price', 'reviews_per_month']].transform('mean').head()
 </code></pre>
 <div>
 <style scoped>
@@ -1359,39 +1359,8 @@ df_prices = pd.read_csv(url_prices, compression=&quot;gzip&quot;)
       <td>129.908312</td>
       <td>1.340325</td>
     </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>3448</th>
-      <td>142.200993</td>
-      <td>1.156745</td>
-    </tr>
-    <tr>
-      <th>3449</th>
-      <td>129.908312</td>
-      <td>1.340325</td>
-    </tr>
-    <tr>
-      <th>3450</th>
-      <td>142.200993</td>
-      <td>1.156745</td>
-    </tr>
-    <tr>
-      <th>3451</th>
-      <td>119.441841</td>
-      <td>1.344810</td>
-    </tr>
-    <tr>
-      <th>3452</th>
-      <td>129.908312</td>
-      <td>1.340325</td>
-    </tr>
   </tbody>
 </table>
-<p>3453 rows × 2 columns</p>
 </div>
 <h2 id="combining-datasets">Combining Datasets</h2>
 <p>We can <strong>concatenate</strong> datasets using <code>pd.concat()</code>. It takes as argument a list of dataframes. By default, <code>pd.concat()</code> performs the outer join. We can change it using the <code>join</code> option.</p>
@@ -1746,7 +1715,7 @@ df_wide.head()
 <li><code>data</code>: the dataframe</li>
 <li><code>id_vars</code>: the variable that was indexing the old dataset</li>
 </ul>
-<pre><code class="language-python">pd.melt(df_wide, id_vars='date', value_name='price')
+<pre><code class="language-python">pd.melt(df_wide, id_vars='date', value_name='price').head()
 </code></pre>
 <div>
 <style scoped>
@@ -1808,52 +1777,162 @@ df_wide.head()
       <td>Borgo Panigale - Reno</td>
       <td>83.020548</td>
     </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
+  </tbody>
+</table>
+</div>
+<p>If we do not have <code>MultiIndex</code> columns, but just a common prefix, we can <strong>reshape</strong> the dataset from <strong>wide to long</strong> using the <code>pd.wide_to_long()</code> command.</p>
+<pre><code class="language-python">df_wide2 = df_wide.copy()
+df_wide2.columns = [''.join(col) for col in df_wide2.columns]
+df_wide2.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>date</th>
+      <th>price_xBorgo Panigale - Reno</th>
+      <th>price_xNavile</th>
+      <th>price_xPorto - Saragozza</th>
+      <th>price_xSan Donato - San Vitale</th>
+      <th>price_xSanto Stefano</th>
+      <th>price_xSavena</th>
     </tr>
+  </thead>
+  <tbody>
     <tr>
-      <th>2185</th>
-      <td>2022-12-12</td>
-      <td>price_x</td>
-      <td>Savena</td>
+      <th>0</th>
+      <td>2021-12-17</td>
+      <td>83.020548</td>
+      <td>142.200993</td>
+      <td>129.908312</td>
+      <td>91.618138</td>
+      <td>119.441841</td>
       <td>69.626016</td>
     </tr>
     <tr>
-      <th>2186</th>
-      <td>2022-12-13</td>
-      <td>price_x</td>
-      <td>Savena</td>
+      <th>1</th>
+      <td>2021-12-18</td>
+      <td>83.020548</td>
+      <td>142.200993</td>
+      <td>129.908312</td>
+      <td>91.618138</td>
+      <td>119.441841</td>
       <td>69.626016</td>
     </tr>
     <tr>
-      <th>2187</th>
-      <td>2022-12-14</td>
-      <td>price_x</td>
-      <td>Savena</td>
+      <th>2</th>
+      <td>2021-12-19</td>
+      <td>83.020548</td>
+      <td>142.200993</td>
+      <td>129.908312</td>
+      <td>91.618138</td>
+      <td>119.441841</td>
       <td>69.626016</td>
     </tr>
     <tr>
-      <th>2188</th>
-      <td>2022-12-15</td>
-      <td>price_x</td>
-      <td>Savena</td>
+      <th>3</th>
+      <td>2021-12-20</td>
+      <td>83.020548</td>
+      <td>142.200993</td>
+      <td>129.908312</td>
+      <td>91.618138</td>
+      <td>119.441841</td>
       <td>69.626016</td>
     </tr>
     <tr>
-      <th>2189</th>
-      <td>2022-12-16</td>
-      <td>price_x</td>
-      <td>Savena</td>
+      <th>4</th>
+      <td>2021-12-21</td>
+      <td>83.020548</td>
+      <td>142.200993</td>
+      <td>129.908312</td>
+      <td>91.618138</td>
+      <td>119.441841</td>
       <td>69.626016</td>
     </tr>
   </tbody>
 </table>
-<p>2190 rows × 4 columns</p>
 </div>
+<p>The <code>pd.wide_to_long()</code> command takes the following arguments</p>
+<ul>
+<li><code>data</code>: the dataframe</li>
+<li><code>stubnames</code>: the prefixes of the variables that we want to reshape into one</li>
+<li><code>i</code>: the variable that was indexing the old dataset</li>
+<li><code>j</code>: the name of the new categorical variable that we extract from <code>stubnames</code></li>
+<li><code>suffix</code>: regular expression of the suffix, the default is <code>\d+</code>, i.e. digits</li>
+</ul>
+<pre><code class="language-python">pd.wide_to_long(df_wide2, stubnames='price_x', i='date', j='neighborhood', suffix='\D+').head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th></th>
+      <th>price_x</th>
+    </tr>
+    <tr>
+      <th>date</th>
+      <th>neighborhood</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2021-12-17</th>
+      <th>Borgo Panigale - Reno</th>
+      <td>83.020548</td>
+    </tr>
+    <tr>
+      <th>2021-12-18</th>
+      <th>Borgo Panigale - Reno</th>
+      <td>83.020548</td>
+    </tr>
+    <tr>
+      <th>2021-12-19</th>
+      <th>Borgo Panigale - Reno</th>
+      <td>83.020548</td>
+    </tr>
+    <tr>
+      <th>2021-12-20</th>
+      <th>Borgo Panigale - Reno</th>
+      <td>83.020548</td>
+    </tr>
+    <tr>
+      <th>2021-12-21</th>
+      <th>Borgo Panigale - Reno</th>
+      <td>83.020548</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Note that we had to change the <code>suffix</code> to <code>\D+</code>, i.e. not digits.</p>
 
           </div>
 

@@ -3030,7 +3030,7 @@ df_prices = pd.read_csv(url_prices, compression=&amp;quot;gzip&amp;quot;)
 &lt;/table&gt;
 &lt;/div&gt;
 &lt;p&gt;If we want to build a new column by group, we can use &lt;code&gt;transform()&lt;/code&gt; on the grouped data. Unfortunately, it does not work as nicely as &lt;code&gt;aggregate()&lt;/code&gt; and we have to do one column at the time.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.groupby(&#39;neighbourhood&#39;)[[&#39;price&#39;, &#39;reviews_per_month&#39;]].transform(&#39;mean&#39;)
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_listings.groupby(&#39;neighbourhood&#39;)[[&#39;price&#39;, &#39;reviews_per_month&#39;]].transform(&#39;mean&#39;).head()
 &lt;/code&gt;&lt;/pre&gt;
 &lt;div&gt;
 &lt;style scoped&gt;
@@ -3080,39 +3080,8 @@ df_prices = pd.read_csv(url_prices, compression=&amp;quot;gzip&amp;quot;)
       &lt;td&gt;129.908312&lt;/td&gt;
       &lt;td&gt;1.340325&lt;/td&gt;
     &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;...&lt;/th&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3448&lt;/th&gt;
-      &lt;td&gt;142.200993&lt;/td&gt;
-      &lt;td&gt;1.156745&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3449&lt;/th&gt;
-      &lt;td&gt;129.908312&lt;/td&gt;
-      &lt;td&gt;1.340325&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3450&lt;/th&gt;
-      &lt;td&gt;142.200993&lt;/td&gt;
-      &lt;td&gt;1.156745&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3451&lt;/th&gt;
-      &lt;td&gt;119.441841&lt;/td&gt;
-      &lt;td&gt;1.344810&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3452&lt;/th&gt;
-      &lt;td&gt;129.908312&lt;/td&gt;
-      &lt;td&gt;1.340325&lt;/td&gt;
-    &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;3453 rows × 2 columns&lt;/p&gt;
 &lt;/div&gt;
 &lt;h2 id=&#34;combining-datasets&#34;&gt;Combining Datasets&lt;/h2&gt;
 &lt;p&gt;We can &lt;strong&gt;concatenate&lt;/strong&gt; datasets using &lt;code&gt;pd.concat()&lt;/code&gt;. It takes as argument a list of dataframes. By default, &lt;code&gt;pd.concat()&lt;/code&gt; performs the outer join. We can change it using the &lt;code&gt;join&lt;/code&gt; option.&lt;/p&gt;
@@ -3467,7 +3436,7 @@ df_wide.head()
 &lt;li&gt;&lt;code&gt;data&lt;/code&gt;: the dataframe&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;id_vars&lt;/code&gt;: the variable that was indexing the old dataset&lt;/li&gt;
 &lt;/ul&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pd.melt(df_wide, id_vars=&#39;date&#39;, value_name=&#39;price&#39;)
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pd.melt(df_wide, id_vars=&#39;date&#39;, value_name=&#39;price&#39;).head()
 &lt;/code&gt;&lt;/pre&gt;
 &lt;div&gt;
 &lt;style scoped&gt;
@@ -3529,52 +3498,162 @@ df_wide.head()
       &lt;td&gt;Borgo Panigale - Reno&lt;/td&gt;
       &lt;td&gt;83.020548&lt;/td&gt;
     &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;...&lt;/th&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;If we do not have &lt;code&gt;MultiIndex&lt;/code&gt; columns, but just a common prefix, we can &lt;strong&gt;reshape&lt;/strong&gt; the dataset from &lt;strong&gt;wide to long&lt;/strong&gt; using the &lt;code&gt;pd.wide_to_long()&lt;/code&gt; command.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_wide2 = df_wide.copy()
+df_wide2.columns = [&#39;&#39;.join(col) for col in df_wide2.columns]
+df_wide2.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;date&lt;/th&gt;
+      &lt;th&gt;price_xBorgo Panigale - Reno&lt;/th&gt;
+      &lt;th&gt;price_xNavile&lt;/th&gt;
+      &lt;th&gt;price_xPorto - Saragozza&lt;/th&gt;
+      &lt;th&gt;price_xSan Donato - San Vitale&lt;/th&gt;
+      &lt;th&gt;price_xSanto Stefano&lt;/th&gt;
+      &lt;th&gt;price_xSavena&lt;/th&gt;
     &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
     &lt;tr&gt;
-      &lt;th&gt;2185&lt;/th&gt;
-      &lt;td&gt;2022-12-12&lt;/td&gt;
-      &lt;td&gt;price_x&lt;/td&gt;
-      &lt;td&gt;Savena&lt;/td&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;2021-12-17&lt;/td&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+      &lt;td&gt;142.200993&lt;/td&gt;
+      &lt;td&gt;129.908312&lt;/td&gt;
+      &lt;td&gt;91.618138&lt;/td&gt;
+      &lt;td&gt;119.441841&lt;/td&gt;
       &lt;td&gt;69.626016&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;2186&lt;/th&gt;
-      &lt;td&gt;2022-12-13&lt;/td&gt;
-      &lt;td&gt;price_x&lt;/td&gt;
-      &lt;td&gt;Savena&lt;/td&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2021-12-18&lt;/td&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+      &lt;td&gt;142.200993&lt;/td&gt;
+      &lt;td&gt;129.908312&lt;/td&gt;
+      &lt;td&gt;91.618138&lt;/td&gt;
+      &lt;td&gt;119.441841&lt;/td&gt;
       &lt;td&gt;69.626016&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;2187&lt;/th&gt;
-      &lt;td&gt;2022-12-14&lt;/td&gt;
-      &lt;td&gt;price_x&lt;/td&gt;
-      &lt;td&gt;Savena&lt;/td&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2021-12-19&lt;/td&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+      &lt;td&gt;142.200993&lt;/td&gt;
+      &lt;td&gt;129.908312&lt;/td&gt;
+      &lt;td&gt;91.618138&lt;/td&gt;
+      &lt;td&gt;119.441841&lt;/td&gt;
       &lt;td&gt;69.626016&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;2188&lt;/th&gt;
-      &lt;td&gt;2022-12-15&lt;/td&gt;
-      &lt;td&gt;price_x&lt;/td&gt;
-      &lt;td&gt;Savena&lt;/td&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;2021-12-20&lt;/td&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+      &lt;td&gt;142.200993&lt;/td&gt;
+      &lt;td&gt;129.908312&lt;/td&gt;
+      &lt;td&gt;91.618138&lt;/td&gt;
+      &lt;td&gt;119.441841&lt;/td&gt;
       &lt;td&gt;69.626016&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;2189&lt;/th&gt;
-      &lt;td&gt;2022-12-16&lt;/td&gt;
-      &lt;td&gt;price_x&lt;/td&gt;
-      &lt;td&gt;Savena&lt;/td&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;2021-12-21&lt;/td&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+      &lt;td&gt;142.200993&lt;/td&gt;
+      &lt;td&gt;129.908312&lt;/td&gt;
+      &lt;td&gt;91.618138&lt;/td&gt;
+      &lt;td&gt;119.441841&lt;/td&gt;
       &lt;td&gt;69.626016&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;2190 rows × 4 columns&lt;/p&gt;
 &lt;/div&gt;
+&lt;p&gt;The &lt;code&gt;pd.wide_to_long()&lt;/code&gt; command takes the following arguments&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;data&lt;/code&gt;: the dataframe&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;stubnames&lt;/code&gt;: the prefixes of the variables that we want to reshape into one&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;i&lt;/code&gt;: the variable that was indexing the old dataset&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;j&lt;/code&gt;: the name of the new categorical variable that we extract from &lt;code&gt;stubnames&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;suffix&lt;/code&gt;: regular expression of the suffix, the default is &lt;code&gt;\d+&lt;/code&gt;, i.e. digits&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pd.wide_to_long(df_wide2, stubnames=&#39;price_x&#39;, i=&#39;date&#39;, j=&#39;neighborhood&#39;, suffix=&#39;\D+&#39;).head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;price_x&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;date&lt;/th&gt;
+      &lt;th&gt;neighborhood&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-12-17&lt;/th&gt;
+      &lt;th&gt;Borgo Panigale - Reno&lt;/th&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-12-18&lt;/th&gt;
+      &lt;th&gt;Borgo Panigale - Reno&lt;/th&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-12-19&lt;/th&gt;
+      &lt;th&gt;Borgo Panigale - Reno&lt;/th&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-12-20&lt;/th&gt;
+      &lt;th&gt;Borgo Panigale - Reno&lt;/th&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2021-12-21&lt;/th&gt;
+      &lt;th&gt;Borgo Panigale - Reno&lt;/th&gt;
+      &lt;td&gt;83.020548&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;Note that we had to change the &lt;code&gt;suffix&lt;/code&gt; to &lt;code&gt;\D+&lt;/code&gt;, i.e. not digits.&lt;/p&gt;
 </description>
     </item>
     
