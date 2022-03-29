@@ -437,7 +437,7 @@
 </head>
 
 
-<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="84f3c2497812a10213f7d10605b99dbc" >
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="bc7e85f56e381bf28f3ee62ab0bf1da0" >
 
   
   
@@ -862,9 +862,9 @@
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 472px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 432px;">
   <div style="position: relative">
-    <img src="/post/aipw/featured_hu25a12dc419e33e594cdcd239c177e2f4_16099_720x0_resize_lanczos_3.png" alt="" class="featured-image">
+    <img src="/post/aipw/featured_huc3cb92c7db33a8e689a7d48a49c38cf7_29549_720x0_resize_lanczos_3.png" alt="" class="featured-image">
     
   </div>
 </div>
@@ -943,11 +943,11 @@ $$</p>
 $$</p>
 <p>We now have two prediction problems, $\hat \mu$ and $\hat e$.</p>
 <h2 id="example">Example</h2>
-<pre><code class="language-python">from src.utils import *
-from src.dgp import dgp2
-</code></pre>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
+</code></pre>
+<pre><code class="language-python">from src.utils import *
+from src.dgp import dgp2
 </code></pre>
 <p>In this example, we are going to use the following data generating process</p>
 <ul>
@@ -1149,7 +1149,7 @@ print(f&quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2}&qu
 <p>The estimated coefficient is too big. We plot the distribution of $\hat \tau_i^{IPW}$ below.</p>
 <pre><code class="language-python">sns.histplot(hat_tau_IPW, bins=20);
 </code></pre>
-<p><img src="img/AIPW_18_0.png" alt="png"></p>
+<p><img src="img/aipw_18_0.png" alt="png"></p>
 <p>We now turn to the AIPW estimator. First, we estimate the propensity scores using <code>LogisticRegression</code>.</p>
 <pre><code class="language-python">e = lr().fit(df[dgp.X], df['T']).predict_proba(df[dgp.X])[:,1]
 </code></pre>
@@ -1162,7 +1162,7 @@ print(f&quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2}&qu
 <p>We can further plot the distribution of scores. They definitely do not seem constant.</p>
 <pre><code class="language-python">sns.histplot(e, bins=100);
 </code></pre>
-<p><img src="img/AIPW_24_0.png" alt="png"></p>
+<p><img src="img/aipw_24_0.png" alt="png"></p>
 <p>We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.</p>
 <pre><code class="language-python">def AIPW(data, X):
     e = lr().fit(data[X], data['T']).predict_proba(data[X])[:,1]
@@ -1182,7 +1182,7 @@ print(f&quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&
 <p>Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.</p>
 <pre><code class="language-python">sns.histplot(hat_tau_AIPW, bins=20);
 </code></pre>
-<p><img src="img/AIPW_29_0.png" alt="png"></p>
+<p><img src="img/aipw_29_0.png" alt="png"></p>
 <p>To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.</p>
 <pre><code class="language-python">sim_tau_AIPW = pd.DataFrame([np.mean(AIPW(dgp2().generate_data(seed=k), dgp.X), axis=1) for k in range(30)], 
                             columns=['Direct', 'Correction', 'tau_AIPW'])
@@ -1191,7 +1191,7 @@ print(f&quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&
 <pre><code class="language-python">plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x='variable', y='value');
 plot.axhline(-0.05, c='r', ls=':');
 </code></pre>
-<p><img src="img/AIPW_33_0.png" alt="png"></p>
+<p><img src="img/aipw_33_0.png" alt="png"></p>
 <p>As we can see, the AIPW estimator is clower to the true value thanks to its correction that is always negative.</p>
 <h2 id="business-case">Business Case</h2>
 <h2 id="references">References</h2>

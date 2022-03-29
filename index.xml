@@ -11732,7 +11732,7 @@ from src.import_data import import_data
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%config InlineBackend.figure_format = &#39;retina&#39;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;You can choose set a general theme using &lt;code&gt;plt.style.use()&lt;/code&gt;. The list of themes is available &lt;a href=&#34;https://matplotlib.org/3.5.1/gallery/style_sheets/style_sheets_reference.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.style.use(&#39;ggplot&#39;)
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.style.use(&#39;seaborn&#39;)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;If you want to further customize some aspects of a theme, you can set some global paramters for all plots. You can find a list of all the options &lt;a href=&#34;https://matplotlib.org/stable/tutorials/introductory/customizing.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;. If you want to customize all plots in a project in the samy way, you can create a &lt;code&gt;filename.mplstyle&lt;/code&gt; file and call it at the beginning of each file as &lt;code&gt;plt.style.use(&#39;filename.mplstyle&#39;)&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;mpl.rcParams[&#39;figure.figsize&#39;] = (10,6)
@@ -26127,11 +26127,11 @@ $$&lt;/p&gt;
 $$&lt;/p&gt;
 &lt;p&gt;We now have two prediction problems, $\hat \mu$ and $\hat e$.&lt;/p&gt;
 &lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
-from src.dgp import dgp2
-&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp2
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;In this example, we are going to use the following data generating process&lt;/p&gt;
 &lt;ul&gt;
@@ -26333,7 +26333,7 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2
 &lt;p&gt;The estimated coefficient is too big. We plot the distribution of $\hat \tau_i^{IPW}$ below.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(hat_tau_IPW, bins=20);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/AIPW_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We now turn to the AIPW estimator. First, we estimate the propensity scores using &lt;code&gt;LogisticRegression&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;e = lr().fit(df[dgp.X], df[&#39;T&#39;]).predict_proba(df[dgp.X])[:,1]
 &lt;/code&gt;&lt;/pre&gt;
@@ -26346,7 +26346,7 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2
 &lt;p&gt;We can further plot the distribution of scores. They definitely do not seem constant.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(e, bins=100);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/AIPW_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def AIPW(data, X):
     e = lr().fit(data[X], data[&#39;T&#39;]).predict_proba(data[X])[:,1]
@@ -26366,7 +26366,7 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):
 &lt;p&gt;Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(hat_tau_AIPW, bins=20);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/AIPW_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sim_tau_AIPW = pd.DataFrame([np.mean(AIPW(dgp2().generate_data(seed=k), dgp.X), axis=1) for k in range(30)], 
                             columns=[&#39;Direct&#39;, &#39;Correction&#39;, &#39;tau_AIPW&#39;])
@@ -26375,7 +26375,7 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x=&#39;variable&#39;, y=&#39;value&#39;);
 plot.axhline(-0.05, c=&#39;r&#39;, ls=&#39;:&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/AIPW_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, the AIPW estimator is clower to the true value thanks to its correction that is always negative.&lt;/p&gt;
 &lt;h2 id=&#34;business-case&#34;&gt;Business Case&lt;/h2&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
@@ -26391,21 +26391,7 @@ plot.axhline(-0.05, c=&#39;r&#39;, ls=&#39;:&#39;);
       <link>https://matteocourthoud.github.io/post/cate/</link>
       <pubDate>Tue, 29 Mar 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/cate/</guid>
-      <description>&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
-import pandas as pd
-import statsmodels.formula.api as smf
-
-from sklearn.tree import DecisionTreeRegressor, plot_tree
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-%matplotlib inline
-%config InlineBackend.figure_format = &#39;retina&#39;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
+      <description>&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
 &lt;p&gt;&lt;strong&gt;Machine learning&lt;/strong&gt; methods are powerful tools for prediction. Can we use them for causal inference?&lt;/p&gt;
 &lt;p&gt;Yes, if we decompose our inference problem into&lt;/p&gt;
 &lt;ul&gt;
@@ -26448,21 +26434,21 @@ $$&lt;/p&gt;
 &lt;p&gt;Here is a proof:&lt;/p&gt;
 &lt;p&gt;$$
 \begin{aligned}
-\mathbb E \left[ Y_i^* \mid X_{i}=x\right] &amp;amp;= \mathbb E \left[ \frac{Y_i}{D_i * p(X_i) - (1-D_i) * (1-p(X_i))} \ \Big | \ X_i = x \right]
+\mathbb E \left[ Y_i^* \mid X_i = x \right] &amp;amp;= \mathbb E \left[ \frac{Y_i}{D_i * p(X_i) - (1-D_i) * (1-p(X_i))} \ \Big | \ X_i = x \right]
 \
 &amp;amp;= \mathbb E \left[ Y_{i} * \frac{D_{i}-p(X_i)}{p(X_i)\left(1-p(X_i)\right)} \ \Big | \ X_i = x \right]
 \
-&amp;amp;= \mathbb E \left[Y_{i} T_{i} * \frac{D_{i} - p(X_i)}{p(X_i)\left(1-p(X_i) \right)}+Y_{i}\left(1-T_{i}\right) * \frac{T_{i}-p(X_i)}{p(X_i)\left(1-p(X_i) \right)} \ \Big | \ X_i = x \right]
+&amp;amp;= \mathbb E \left[Y_i T_i * \frac{D_i - p(X_i)}{p(X_i)\left(1-p(X_i) \right)}+Y_{i}\left(1-T_{i}\right) * \frac{T_{i}-p(X_i)}{p(X_i)\left(1-p(X_i) \right)} \ \Big | \ X_i = x \right]
 \
-&amp;amp;= \mathbb E \Big[ Y(1)&lt;em&gt;{i} * \frac{D&lt;/em&gt;{i}\left(1-p(X_i)\right)}{p(X_i)\left(1-p(X_i)\right)} \ \Big | \ X_i = x \Big] - \mathbb E \left[Y(0)&lt;em&gt;{i} * \frac{\left(1-T&lt;/em&gt;{i}\right) p(X_i)}{p(X_i)\left(1-p(X_i)\right)} \ \Big | \ X_i = x \right]
+&amp;amp;= \mathbb E \Big[ Y(1)&lt;em&gt;{i} * \frac{D&lt;/em&gt;{i} \left(1-p(X_i)\right)}{p(X_i) \left(1-p(X_i)\right)} \ \Big | \ X_i = x \Big] - \mathbb E \left[Y(0)&lt;em&gt;{i} * \frac{\left(1-T_i\right) p(X_i)}{p(X_i) \left(1-p(X_i)\right)} \ \Big | \ X_i = x \right]
 \
-&amp;amp;= \frac{1}{p(X_i)} \mathbb E \Big[ Y(1)&lt;em&gt;{i} * T&lt;/em&gt;{i} \ \Big | \ X_i = x \Big] - \frac{1}{1-p(X_i)} \mathbb E \left[Y(0)&lt;em&gt;{i} *\left(1-T&lt;/em&gt;{i}\right) \ \Big | \ X_i = x \right]
+&amp;amp;= \frac{1}{p(X_i)} \mathbb E \Big[ Y^{(1)}&lt;/em&gt;{i} * T_{i} \ \Big | \ X_i = x \Big] - \frac{1}{1-p(X_i)} \mathbb E \left[Y^{(0)}&lt;em&gt;{i} *\left(1-T&lt;/em&gt;{i}\right) \ \Big | \ X_i = x \right]
 \
 &amp;amp;= \frac{1}{p(X_i)} \mathbb E \left[Y(1)&lt;em&gt;{i} \ \Big | \ X_i = x \right] * \mathbb E \Big[T&lt;/em&gt;{i} \ \Big | \ X_i = x \Big] - \frac{1}{1-p(X_i)} \mathbb E \left[Y(0)&lt;em&gt;{i} \ \Big | \ X_i = x \right] * \mathbb E\left[\left(1-T&lt;/em&gt;{i}\right) \ \Big | \ X_i = x \right]
 \
-&amp;amp;= \mathbb E \Big[Y(1)&lt;em&gt;{i} \ \Big | \ X_i = x \Big] - \mathbb E \Big[Y(0)&lt;/em&gt;{i} \ \Big | \ X_i = x \Big]
+&amp;amp;= \mathbb E \Big[ Y^{(1)}&lt;em&gt;{i} \ \Big | \ X_i = x \Big] - \mathbb E \Big[Y^{(0)}&lt;/em&gt;{i} \ \Big | \ X_i = x \Big]
 \
-&amp;amp;=\tau(x)_{i}
+&amp;amp;= \tau(x)_{i}
 \end{aligned}
 $$&lt;/p&gt;
 &lt;p&gt;How can &lt;strong&gt;regression trees&lt;/strong&gt; help estimate heterogeneous treatment effects?&lt;/p&gt;
@@ -26478,6 +26464,9 @@ $$&lt;/p&gt;
 &lt;/ul&gt;
 &lt;p&gt;Moreover, we maketreatment status &lt;code&gt;D&lt;/code&gt; depend on both gender and race so that it will be important to condition on observables.&lt;/p&gt;
 &lt;p&gt;Our outcome variable &lt;code&gt;y&lt;/code&gt; depends on the treatment assignment differently according to education and age.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
 from src.dgp import dgp1
 &lt;/code&gt;&lt;/pre&gt;
@@ -27146,24 +27135,24 @@ plot_tree(tree, filled=True, fontsize=12, feature_names=X, ax=ax, impurity=False
       <link>https://matteocourthoud.github.io/post/chisquared/</link>
       <pubDate>Tue, 29 Mar 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/chisquared/</guid>
-      <description>&lt;p&gt;If you search the Wikipedia definition of Chi-Squared test, you get the following:&lt;/p&gt;
+      <description>&lt;p&gt;If you search the Wikipedia definition of Chi-Squared test, you get the following definition:&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;Pearson&amp;rsquo;s chi-squared test $\chi^2$ is a statistical test applied to sets of categorical data to evaluate how likely it is that any observed difference between the sets arose by chance.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;What does it mean? Let&amp;rsquo;s see it together.&lt;/p&gt;
-&lt;h2 id=&#34;example-1-is-a-dice-fair&#34;&gt;Example 1: is a dice fair?&lt;/h2&gt;
-&lt;p&gt;Suppose you want to test whether a dice is fair.&lt;/p&gt;
-&lt;p&gt;You throw the dice 60 times and you count the number of times you get each outcome.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s simulate some data (from a fair dice).&lt;/p&gt;
+&lt;h2 id=&#34;example-1-is-a-die-fair&#34;&gt;Example 1: is a die fair?&lt;/h2&gt;
+&lt;p&gt;Suppose you want to test whether a die is fair.&lt;/p&gt;
+&lt;p&gt;You throw the die 60 times and you count the number of times you get each outcome.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s simulate some data (from a fair die).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
 import pandas as pd
 
 # Data generating process
-def generate_data_dice(N=60):
-    dice_numbers = [1,2,3,4,5,6]  # Dice numbers
-    dice_throws = np.random.choice(dice_numbers, size=N)  # Actual dice throws
-    data = pd.DataFrame({&amp;quot;dice number&amp;quot;: dice_numbers,
-                         &amp;quot;observed&amp;quot;: [sum(dice_throws==n) for n in dice_numbers],
+def generate_data_die(N=60):
+    die_numbers = [1,2,3,4,5,6]  # Dice numbers
+    die_throws = np.random.choice(die_numbers, size=N)  # Actual dice throws
+    data = pd.DataFrame({&amp;quot;die number&amp;quot;: die_numbers,
+                         &amp;quot;observed&amp;quot;: [sum(die_throws==n) for n in die_numbers],
                          &amp;quot;expected&amp;quot;: N / 6})
     return data
 &lt;/code&gt;&lt;/pre&gt;
@@ -27171,8 +27160,8 @@ def generate_data_dice(N=60):
 np.random.seed(1)
 
 # Generate data
-data_dice = generate_data_dice()
-data_dice
+data_die = generate_data_die()
+data_die
 &lt;/code&gt;&lt;/pre&gt;
 &lt;div&gt;
 &lt;style scoped&gt;
@@ -27192,7 +27181,7 @@ data_dice
   &lt;thead&gt;
     &lt;tr style=&#34;text-align: right;&#34;&gt;
       &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;dice number&lt;/th&gt;
+      &lt;th&gt;die number&lt;/th&gt;
       &lt;th&gt;observed&lt;/th&gt;
       &lt;th&gt;expected&lt;/th&gt;
     &lt;/tr&gt;
@@ -27237,8 +27226,8 @@ data_dice
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;If we were throwing the dice &lt;strong&gt;a lot&lt;/strong&gt; of times, we would expect the same number of observations for each dice-number. However, there is inherent noise in the process. How can we tell whether the fact that we didn&amp;rsquo;t get exactly 10 observations for each dice-number is just due to randomness or it&amp;rsquo;s because the dice is unfair?&lt;/p&gt;
-&lt;p&gt;The idea is to compute some statistic whose distribution is known under the assumption that the dice is fair, and then check if its value is &amp;ldquo;unusual&amp;rdquo; or not. If the value is particularly &amp;ldquo;unusual&amp;rdquo;, we reject the null hypothesis that the dice is fair.&lt;/p&gt;
+&lt;p&gt;If we were throwing the die &lt;strong&gt;a lot&lt;/strong&gt; of times, we would expect the same number of observations for each outcome. However, there is inherent noise in the process. How can we tell whether the fact that we didn&amp;rsquo;t get exactly 10 observations for each outcome is just due to randomness or it&amp;rsquo;s because the die is unfair?&lt;/p&gt;
+&lt;p&gt;The idea is to compute some statistic whose distribution is known under the assumption that the die is fair, and then check if its value is &amp;ldquo;unusual&amp;rdquo; or not. If the value is particularly &amp;ldquo;unusual&amp;rdquo;, we reject the null hypothesis that the die is fair.&lt;/p&gt;
 &lt;p&gt;In our case, the statistic we choose is the chi-squared $\chi^{2}$ test-statistic.&lt;/p&gt;
 &lt;p&gt;The value of the &lt;a href=&#34;https://en.wikipedia.org/wiki/Pearson%27s_chi-squared_test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Pearson&amp;rsquo;s chi-squared test-statistic&lt;/a&gt; is&lt;/p&gt;
 &lt;p&gt;$$
@@ -27255,20 +27244,20 @@ $$&lt;/p&gt;
 def compute_chi2_stat(data):
     return sum( (data.observed - data.expected)**2 / data.expected )
 
-chi2_stat = compute_chi2_stat(data_dice)
+chi2_stat = compute_chi2_stat(data_die)
 chi2_stat
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;4.0
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;What do we make of this number? Is it &amp;ldquo;unusual&amp;rdquo;?&lt;/p&gt;
-&lt;p&gt;If the dice was fair, the test Pearson&amp;rsquo;s chi-squared test-statistic $T_{\chi^2}$ is distributed as a chi-squared distribution with $k-1$ degrees of freedom, $\chi^2_{k-1}$. For the moment, take this claim at face value, we will verify it later, both empirically and theoretically. We will also discuss the degrees of freedom in detail later on.&lt;/p&gt;
+&lt;p&gt;If the dice were fair, the test Pearson&amp;rsquo;s chi-squared test-statistic $T_{\chi^2}$ is distributed as a chi-squared distribution with $k-1$ degrees of freedom, $\chi^2_{k-1}$. For the moment, take this claim at face value, we will verify it later, both empirically and theoretically. We will also discuss the degrees of freedom in detail later on.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Important!&lt;/strong&gt; Do not confuse the chi-squared test statistic (a number) with the chi-squared distribution (a distribution).&lt;/p&gt;
 &lt;p&gt;What does a chi-squared distribution with $n-1$ degrees of freedom, $\chi^2_{k-1}$, look like?&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
+from src.utils import *
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import matplotlib.pyplot as plt
-from scipy.stats import chi2
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.stats import chi2
 
 # x-axis ranges from 0 to 20 with .001 steps
 x = np.arange(0, 30, 0.001)
@@ -27280,7 +27269,7 @@ chi2_5_pdf = chi2.pdf(x, df=5)
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/chisquared_11_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;How does the value of the statistic we have observed compares with its the distribution under the null hypothesis of a fair dice?&lt;/p&gt;
+&lt;p&gt;How does the value of the statistic we have observed compares with its the distribution under the null hypothesis of a fair die?&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# plot Chi-square distribution with 5 degrees of freedom
 plt.plot(x, chi2.pdf(x, df=5));
 plt.vlines(chi2_stat, ymin=0, ymax=plt.ylim()[1], color=&#39;k&#39;, label=&#39;chi2 statistic&#39;)
@@ -27288,8 +27277,8 @@ plt.legend();
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/chisquared_13_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The test statistic seems to fall well within the distribution, i.e. it does not seem to be an unusual event. Indeed, the question we want to answer is: &amp;ldquo;&lt;em&gt;under the null hypothesis that the dice is fair, how unlikely is the statistic we have observed?&lt;/em&gt;&amp;rdquo;.&lt;/p&gt;
-&lt;p&gt;The last component we need in order to built an hypothesis test, is a level of confidence, i.e. a threshold of &amp;ldquo;unlikeliness&amp;rdquo; of an event, below which we declare that the event is too unlikely under the model, for the model to be true. Let&amp;rsquo;s say we decide to set that threshold at 5%.&lt;/p&gt;
-&lt;p&gt;If the likelihood of observing an even that (or more) extreme than the one we have actually observed is less than 5%, we reject the nully hypothesis that the dice is fair.&lt;/p&gt;
+&lt;p&gt;The last component we need in order to build a hypothesis test is a level of confidence, i.e. a threshold of &amp;ldquo;unlikeliness&amp;rdquo; of an event, below which we declare that the event is too unlikely under the model, for the model to be true. Let&amp;rsquo;s say we decide to set that threshold at 5%.&lt;/p&gt;
+&lt;p&gt;If the likelihood of observing an even that (or more) extreme than the one we have actually observed is less than 5%, we reject the null hypothesis that the die is fair.&lt;/p&gt;
 &lt;p&gt;What is this value for a chi-squared distribution with 5 degrees of freedom?&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Compute the Percent Point Function of the chi-squared distribution
 z95 = chi2.ppf(0.95, df=5)
@@ -27313,13 +27302,13 @@ def plot_test(x, stat, df):
 plot_test(x, chi2_stat, 5)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/chisquared_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;From the plot, we can clearly see that we do not reject the null hypothesis that the dice is fair.&lt;/p&gt;
+&lt;p&gt;From the plot, we can clearly see that we do not reject the null hypothesis that the die is fair.&lt;/p&gt;
 &lt;h2 id=&#34;why-the-chi-squared-distribution&#34;&gt;Why the Chi-squared Distribution?&lt;/h2&gt;
 &lt;p&gt;How do we know that that particular statistic has that particular distribution?&lt;/p&gt;
 &lt;p&gt;Before digging into the math, we can check this claim via &lt;strong&gt;simulation&lt;/strong&gt;. We will repeat the procedure above many times, i.e.&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;roll a (fair) dice 60 times&lt;/li&gt;
-&lt;li&gt;compute the chi square statistic&lt;/li&gt;
+&lt;li&gt;roll a (fair) die 60 times&lt;/li&gt;
+&lt;li&gt;compute the chi-square statistic&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;and then plot the distribution of chi square statistics.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Function to simulate data and compute chi2 stats
@@ -27330,18 +27319,18 @@ def simulate_chi2stats(K, N, dgp):
         chi2_stats += [compute_chi2_stat(data)]
     return np.array(chi2_stats)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_stats = simulate_chi2stats(K=100, N=60, dgp=generate_data_dice)
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_stats = simulate_chi2stats(K=100, N=60, dgp=generate_data_die)
 
 # Plot data
-plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
+plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;C0&#39;);
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/chisquared_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Since we only did it 100 times, the distribution looks pretty coarse, but vaguely close. Let&amp;rsquo;s now try 1000 times.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_dice)
+&lt;p&gt;Since we only did it 100 times, the distribution looks pretty coarse but vaguely close. Let&amp;rsquo;s now try 1000 times.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_die)
 
 # Plot data
-plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
+plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;C0&#39;);
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/chisquared_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
@@ -27357,11 +27346,11 @@ plt.plot(x, chi2_5_pdf);
 &lt;blockquote&gt;
 &lt;p&gt;In probability theory, the central limit theorem (CLT) establishes that, in many situations, when independent random variables are summed up, their properly normalized sum tends toward a normal distribution (informally a bell curve) even if the original variables themselves are not normally distributed.&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;Where does a normal distribution come up in our case? If we look at a single row in our data, i.e. the occurrences of a specific dice throw, it can be intepreted as the sum of realization from a &lt;a href=&#34;https://en.wikipedia.org/wiki/Bernoulli_distribution&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Bernoulli distribution&lt;/a&gt; with probability 1/6.&lt;/p&gt;
+&lt;p&gt;Where does a normal distribution come up in our case? If we look at a single row in our data, i.e. the occurrences of a specific dice throw, it can be interpreted as the sum of realization from a &lt;a href=&#34;https://en.wikipedia.org/wiki/Bernoulli_distribution&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Bernoulli distribution&lt;/a&gt; with probability 1/6.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;In probability theory and statistics, the Bernoulli distribution is the discrete probability distribution of a random variable which takes the value $1$ with probability $p$ and the value $0$ with probability $q=1-p$.&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;In our case, the probability of getting a particular number is exactly 1/6. What is the distribution of the sum of its realizations? The Central Limit Teorem also tes us that:&lt;/p&gt;
+&lt;p&gt;In our case, the probability of getting a particular number is exactly 1/6. What is the distribution of the sum of its realizations? The Central Limit Theorem also tells us that:&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;If $X_1, X_2, \dots , X_n, \dots$ are random samples drawn from a population with overall mean $\mu$ and finite variance $\sigma^2$, and if $\bar X_n$ is the sample mean of the first $n$ samples, then the limiting form of the distribution,&lt;/p&gt;
 &lt;p&gt;$$
@@ -27386,11 +27375,11 @@ Q = \sum_{i=1}^k Z_i^2
 $$
 is distributed according to the chi-squared distribution with $k$ degrees of freedom.&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;I.e. the sum of standard normal distributions is a chi-squared distribution, where the &lt;strong&gt;degrees of freedom&lt;/strong&gt; indicate the number of normal distributions we are summing over. Since the normalized sum of realizations of each dice number should converge to a standard normal distribution, their sum of squares should converge to a chi squared distribution. I.e.&lt;/p&gt;
+&lt;p&gt;I.e. the sum of standard normal distributions is a chi-squared distribution, where the &lt;strong&gt;degrees of freedom&lt;/strong&gt; indicate the number of normal distributions we are summing over. Since the normalized sum of realizations of each dice number should converge to a standard normal distribution, their sum of squares should converge to a chi-squared distribution. I.e.&lt;/p&gt;
 &lt;p&gt;$$
 \lim_{n \to \infty} \ \sum_k n \frac{(\bar X_n - p)^2}{p * (1-p)} \sim \chi^2_k
 $$&lt;/p&gt;
-&lt;p&gt;There is just one issue: the last distribution is not really independent from the others. In fact, as soon as we know that we have thrown 60 dices and how many 1s, 2s, 3s, 4s and 5s we got, we can compute the number of 6s. Therefore, we should exlude one distribution since only 5 (or, in general, $k-1$) are truly independent.&lt;/p&gt;
+&lt;p&gt;There is just one issue: the last distribution is not really independent from the others. In fact, as soon as we know that we have thrown 60 dices and how many 1s, 2s, 3s, 4s, and 5s we got, we can compute the number of 6s. Therefore, we should exclude one distribution since only 5 (or, in general, $k-1$) are truly independent.&lt;/p&gt;
 &lt;p&gt;In practice, however, we sum all distributions, but then we scale them down by multiplying them by $(1-p)$ so that we have&lt;/p&gt;
 &lt;p&gt;$$
 \lim_{n \to \infty} \ \sum_k n \frac{(\bar X_n - p)^2}{p} \sim \chi^2_{k-1}
@@ -27400,8 +27389,8 @@ $$&lt;/p&gt;
 T_{\chi^2} = \sum _{i=1}^{n} \frac{(O_i - E_i)^{2}}{E_i} = N \sum _{i=1}^{n} \frac{\left(O_i/N - p_i \right)^2 }{p_i}
 $$&lt;/p&gt;
 &lt;h2 id=&#34;example-2-are-grades-independent-from-gender&#34;&gt;Example 2: are grades independent from gender?&lt;/h2&gt;
-&lt;p&gt;Chi-squared tests can also be used to test independence between 2 variables. The idea is fundamentaly the same of the test in the previous section: checking systematic differences between observed and expected values, across different variables.&lt;/p&gt;
-&lt;p&gt;Suppose you have data on grades in a classroom, by gender. Grades go from $1$ to $4$. Assuming male and females are equally prepared for the test, you want to test whether there has been discrimination in grading.&lt;/p&gt;
+&lt;p&gt;Chi-squared tests can also be used to test independence between 2 variables. The idea is fundamentally the same as the test in the previous section: checking systematic differences between observed and expected values, across different variables.&lt;/p&gt;
+&lt;p&gt;Suppose you have data on grades in a classroom, by gender. Grades go from $1$ to $4$. Assuming males and females are equally prepared for the test, you want to test whether there has been discrimination in grading.&lt;/p&gt;
 &lt;p&gt;The problem is again asserting whether the observed differences are random or systematic.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s generate some data (under the no discrimination assumption).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Data generating process for grades
@@ -27554,28 +27543,28 @@ chi2_stat
 &lt;p&gt;As before, we can double-check whether the statistic is indeed distributed as a chi-squared with $k-1$ degrees of freedom by simulating the data generating process.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot data
 chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_grades)
-plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
+plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;C0&#39;);
 plt.plot(x, chi2_5_pdf);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/chisquared_37_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;What happened? We forgot to change the degrees of freedom! The general formula for the degrees of freedom when testing independence of variables is $(N_i - 1) \times (N_j - 1)$. So in our case it&amp;rsquo;s $(4-1) \times (2-1) = 3$.&lt;/p&gt;
+&lt;p&gt;What happened? We forgot to change the degrees of freedom! The general formula for the degrees of freedom when testing the independence of variables is $(N_i - 1) \times (N_j - 1)$. So in our case, it&amp;rsquo;s $(4-1) \times (2-1) = 3$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;chi2_3_pdf = chi2.pdf(x, df=3)
 
 # Plot data
 chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_grades)
-plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
+plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color=&#39;C0&#39;);
 plt.plot(x, chi2_3_pdf);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/chisquared_39_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Do we reject the null hypothesis of independend distributions of gender and grades?&lt;/p&gt;
+&lt;p&gt;Do we reject the null hypothesis of independent distributions of gender and grades?&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot
 plot_test(x, chi2_stat, df=3)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/chisquared_41_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;No, we &lt;strong&gt;do not reject&lt;/strong&gt; the null hypothesis of independend distributions of gender and grades.&lt;/p&gt;
 &lt;h2 id=&#34;example-3-testing-a-specific-data-generating-process&#34;&gt;Example 3: testing a specific data generating process&lt;/h2&gt;
-&lt;p&gt;As we have seen, the chi-square test can be used to compare observed means / frequencies against some null hypothesis. How can we use this statistic to &lt;strong&gt;test a distributional assumption&lt;/strong&gt;?&lt;/p&gt;
-&lt;p&gt;The answer is simple: we can contruct conditional means. The easiest way to do it is to bin the data into equally sized bins and then check if the observed frequencies match the expected probabilities.&lt;/p&gt;
+&lt;p&gt;As we have seen, the chi-square test can be used to compare observed means/frequencies against a null hypothesis. How can we use this statistic to &lt;strong&gt;test a distributional assumption&lt;/strong&gt;?&lt;/p&gt;
+&lt;p&gt;The answer is simple: we can construct conditional means. The easiest way to do it is to bin the data into equally sized bins and then check if the observed frequencies match the expected probabilities.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: we don&amp;rsquo;t need to have equally sized bins, but it&amp;rsquo;s useful since it ensures that we have as many observations in each bin as possible.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.stats import expon
 
@@ -27649,7 +27638,7 @@ data_poisson
 &lt;/div&gt;
 &lt;p&gt;We can also plot the observed and realized distribution of the data.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot data
-plt.hist(poisson_draws, density=True, bins=30, alpha=0.3, color=&#39;r&#39;);
+plt.hist(poisson_draws, density=True, bins=30, alpha=0.3, color=&#39;C0&#39;);
 exp_pdf = expon.pdf(x)
 plt.plot(x, exp_pdf);
 &lt;/code&gt;&lt;/pre&gt;
@@ -27667,14 +27656,14 @@ plot_test(x, chi2_stat, df=3)
 &lt;p&gt;&lt;img src=&#34;img/chisquared_52_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;No, we &lt;strong&gt;do not reject&lt;/strong&gt; the null hypothesis that the data is drawn from an exponential distribution.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;In this tutorial, we have seen how to perform two hypotesis tests&lt;/p&gt;
+&lt;p&gt;In this tutorial, we have seen how to perform two hypoteses tests&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;testing if a set of means or sums is coming from the expected distribution&lt;/li&gt;
 &lt;li&gt;testing if two distributions are independent or not&lt;/li&gt;
-&lt;li&gt;testing a specifig data generating process&lt;/li&gt;
+&lt;li&gt;testing a specific data generating process&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;The underlying principle is the same: testing discrepancies between expected and observed count data.&lt;/p&gt;
-&lt;p&gt;The key statistic is Pearson&amp;rsquo;s chi-square statistic and the key distribution is the chi-squared distribution. We have seen how to compute the statistic, why it has a chi-squared distribution and how to use this information to perform a statistical hypothesis test.&lt;/p&gt;
+&lt;p&gt;The key statistic is Pearson&amp;rsquo;s chi-square statistic and the key distribution is the chi-squared distribution. We have seen how to compute the statistic, why it has a chi-squared distribution, and how to use this information to perform a statistical hypothesis test.&lt;/p&gt;
 </description>
     </item>
     
