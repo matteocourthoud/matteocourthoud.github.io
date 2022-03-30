@@ -26188,7 +26188,7 @@ $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
 from src.dgp import dgp2
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example, we are going to use the following data generating process&lt;/p&gt;
+&lt;p&gt;In this example, we are going to use the following &lt;strong&gt;data generating process&lt;/strong&gt;&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;$N = 1000$&lt;/li&gt;
 &lt;li&gt;$p = 20$&lt;/li&gt;
@@ -26368,29 +26368,87 @@ df.head()
 &lt;/table&gt;
 &lt;p&gt;5 rows × 23 columns&lt;/p&gt;
 &lt;/div&gt;
-&lt;p&gt;First, we estimate the average treatment effect using the IPW estimator.&lt;/p&gt;
-&lt;p&gt;We use random forest to estimate $\mu^{(t)}(x)$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import LogisticRegression as lr
-from sklearn.ensemble import RandomForestRegressor as rfr
+&lt;p&gt;First, we check for covariate imbalance across treatment arms, with a &lt;strong&gt;balance table&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.groupby(&#39;T&#39;).agg([&#39;mean&#39;, &#39;std&#39;]).T.unstack(1).head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
 
-def IPW(data, X):
-    mu = rfr(max_features=8).fit(data[X + [&#39;T&#39;]], data[&#39;Y&#39;])
-    mu0 = mu.predict(data[X + [&#39;T&#39;]].assign(T=0))
-    mu1 = mu.predict(data[X + [&#39;T&#39;]].assign(T=1))
-    tau_IPW = mu1 - mu0
-    return tau_IPW
+.dataframe thead tr th {
+    text-align: left;
+}
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;hat_tau_IPW = IPW(df, dgp.X)
-print(f&amp;quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2}&amp;quot;)
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;T&lt;/th&gt;
+      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;0&lt;/th&gt;
+      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;1&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;mean&lt;/th&gt;
+      &lt;th&gt;std&lt;/th&gt;
+      &lt;th&gt;mean&lt;/th&gt;
+      &lt;th&gt;std&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;x1&lt;/th&gt;
+      &lt;td&gt;-0.462644&lt;/td&gt;
+      &lt;td&gt;0.920626&lt;/td&gt;
+      &lt;td&gt;0.413837&lt;/td&gt;
+      &lt;td&gt;0.882116&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;x2&lt;/th&gt;
+      &lt;td&gt;0.007900&lt;/td&gt;
+      &lt;td&gt;1.010610&lt;/td&gt;
+      &lt;td&gt;-0.054072&lt;/td&gt;
+      &lt;td&gt;0.991680&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;x3&lt;/th&gt;
+      &lt;td&gt;-0.005718&lt;/td&gt;
+      &lt;td&gt;0.950997&lt;/td&gt;
+      &lt;td&gt;-0.042624&lt;/td&gt;
+      &lt;td&gt;1.059308&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;x4&lt;/th&gt;
+      &lt;td&gt;0.122930&lt;/td&gt;
+      &lt;td&gt;0.936591&lt;/td&gt;
+      &lt;td&gt;0.095082&lt;/td&gt;
+      &lt;td&gt;1.004048&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;x5&lt;/th&gt;
+      &lt;td&gt;0.032637&lt;/td&gt;
+      &lt;td&gt;0.955479&lt;/td&gt;
+      &lt;td&gt;0.119788&lt;/td&gt;
+      &lt;td&gt;1.039616&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We can also get a first (wrong) estimate of the treatment effect as a difference in means.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.loc[df[&#39;T&#39;]==1, &#39;Y&#39;].mean() - df.loc[df[&#39;T&#39;]==0, &#39;Y&#39;].mean()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Mean: 0.025 and var 0.14
+&lt;pre&gt;&lt;code&gt;0.3483874988628668
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The estimated coefficient is too big. We plot the distribution of $\hat \tau_i^{IPW}$ below.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(hat_tau_IPW, bins=20);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_20_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;We now turn to the AIPW estimator. First, we estimate the propensity scores using &lt;code&gt;LogisticRegression&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;e = lr().fit(df[dgp.X], df[&#39;T&#39;]).predict_proba(df[dgp.X])[:,1]
+&lt;p&gt;We know this estimate is wrong since the treatment is not unconditionally randomized. Therefore, we estimate the average treatment effect using the &lt;strong&gt;AIPW estimator&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;First, we estimate the &lt;strong&gt;propensity scores&lt;/strong&gt; $e(x)$ using &lt;code&gt;LogisticRegression&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import LogisticRegression as lr
+
+e = lr().fit(df[dgp.X], df[&#39;T&#39;]).predict_proba(df[dgp.X])[:,1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Let&amp;rsquo;s check if the &lt;strong&gt;bounded support&lt;/strong&gt; assumption is satisfied.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print(f&#39;Support of e is [{min(e):.2}, {max(e):.2}]&#39;)
@@ -26401,11 +26459,14 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2
 &lt;p&gt;We can further plot the distribution of scores. They definitely do not seem constant.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(e, bins=100);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_26_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def AIPW(data, X):
+&lt;p&gt;We use &lt;code&gt;RandomForestRegressor&lt;/code&gt; to estimate the conditional expectation of $Y$, $\hat \mu^{(t)}(x)$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.ensemble import RandomForestRegressor as rfr
+
+def AIPW(data, X):
     e = lr().fit(data[X], data[&#39;T&#39;]).predict_proba(data[X])[:,1]
-    mu = rfr(max_features=8).fit(data[X + [&#39;T&#39;]], data[&#39;Y&#39;])
+    mu = rfr(max_features=10).fit(data[X + [&#39;T&#39;]], data[&#39;Y&#39;])
     mu0 = mu.predict(data[X + [&#39;T&#39;]].assign(T=0))
     mu1 = mu.predict(data[X + [&#39;T&#39;]].assign(T=1))
     D = mu1 - mu0
@@ -26416,12 +26477,12 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;D, R, hat_tau_AIPW = AIPW(df, dgp.X)
 print(f&amp;quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Mean: -0.0002 and var 0.43
+&lt;pre&gt;&lt;code&gt;Mean: -0.0071 and var 0.43
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(hat_tau_AIPW, bins=20);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_30_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from joblib import Parallel, delayed
 
@@ -26434,7 +26495,7 @@ sim_tau_AIPW = pd.DataFrame(r, columns=[&#39;Direct&#39;, &#39;Correction&#39;, 
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x=&#39;variable&#39;, y=&#39;value&#39;);
 plot.axhline(-0.05, c=&#39;r&#39;, ls=&#39;:&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_35_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, the AIPW estimator is clower to the true value thanks to its correction that is always negative.&lt;/p&gt;
 &lt;h2 id=&#34;business-case&#34;&gt;Business Case&lt;/h2&gt;
 &lt;p&gt;TBD&lt;/p&gt;
