@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 29 Mar 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Wed, 30 Mar 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -26054,12 +26054,12 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     <item>
       <title>AIPW for Dummies</title>
       <link>https://matteocourthoud.github.io/post/aipw/</link>
-      <pubDate>Tue, 29 Mar 2022 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 30 Mar 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/aipw/</guid>
       <description>&lt;h2 id=&#34;requisites&#34;&gt;Requisites&lt;/h2&gt;
 &lt;p&gt;For this tutorial, I assume you are familiar with the following concepts&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Rubin Causal Framework&lt;/li&gt;
+&lt;li&gt;Rubin&amp;rsquo;s Potential Outcome Framework&lt;/li&gt;
 &lt;li&gt;Propensity Score Matching&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
@@ -26069,11 +26069,16 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
 &lt;li&gt;a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
 &lt;li&gt;a response $Y_i \in \mathbb R$&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;Assumption 1&lt;/strong&gt;: &lt;strong&gt;unconfoundedness&lt;/strong&gt; (or ignorability, or selection on observables)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 1 : unconfoundedness&lt;/strong&gt; (or ignorability, or selection on observables)&lt;/p&gt;
 &lt;p&gt;$$
 \big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ X_i
 $$&lt;/p&gt;
 &lt;p&gt;i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 2: overlap&lt;/strong&gt; (or bounded support)&lt;/p&gt;
+&lt;p&gt;$$
+\exists \eta &amp;gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
+$$&lt;/p&gt;
+&lt;p&gt;i.e. no observation is deterministically assigned to the treatment or control group.&lt;/p&gt;
 &lt;h2 id=&#34;the-ipw-estimator&#34;&gt;The IPW Estimator&lt;/h2&gt;
 &lt;p&gt;We want to estimate the &lt;strong&gt;average treatment effect&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;$$
@@ -26165,6 +26170,17 @@ $$&lt;/p&gt;
 \end{aligned}
 $$&lt;/p&gt;
 &lt;p&gt;even if $\hat \mu$ is misspecified. The reason is that if there is bias left from the estimation of $\mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, IPW fully corrects for it.&lt;/p&gt;
+&lt;h2 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;1. Check Covariate Balance&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Both IPW and AIPW were built for settings in which the treatment $T$ is not uconditionally randomly assigned, but might depend on some observables $X$. This information can be checked in two ways:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Produce a balance table, summarizing the covariates across treatment arms. If undonditional randomization does not hold, we expect to see significant differences across some observables&lt;/li&gt;
+&lt;li&gt;Plot the estimated propensity scores. If undonditional randomization holds, we expect the propensity scores to be constant&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;2. Check the Overlap Assumption&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Another assumption that we can check is the &lt;strong&gt;overlap&lt;/strong&gt; assumption, i.e. $\exists \eta \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta$. To check this assumption we can simply check the bounds of the predicted propensity scores. If the overlap assumption is violated, we end up dividing some term of the estimator by zero.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;3. Use LOO Predictors&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;It is best practice, whenever we build a prediction it is best pratice to exclude observation $i$ when fitting the algorithm for predicting $\hat \mu^{(t)} (X_i)$ or $\hat e (X_i)$. These predictors are called &lt;strong&gt;Leave One Out&lt;/strong&gt; predictors.&lt;/p&gt;
 &lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
@@ -26372,7 +26388,7 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2
 &lt;p&gt;The estimated coefficient is too big. We plot the distribution of $\hat \tau_i^{IPW}$ below.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(hat_tau_IPW, bins=20);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_20_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We now turn to the AIPW estimator. First, we estimate the propensity scores using &lt;code&gt;LogisticRegression&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;e = lr().fit(df[dgp.X], df[&#39;T&#39;]).predict_proba(df[dgp.X])[:,1]
 &lt;/code&gt;&lt;/pre&gt;
@@ -26385,7 +26401,7 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2
 &lt;p&gt;We can further plot the distribution of scores. They definitely do not seem constant.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(e, bins=100);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_26_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def AIPW(data, X):
     e = lr().fit(data[X], data[&#39;T&#39;]).predict_proba(data[X])[:,1]
@@ -26405,7 +26421,7 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):
 &lt;p&gt;Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(hat_tau_AIPW, bins=20);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from joblib import Parallel, delayed
 
@@ -26418,7 +26434,7 @@ sim_tau_AIPW = pd.DataFrame(r, columns=[&#39;Direct&#39;, &#39;Correction&#39;, 
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x=&#39;variable&#39;, y=&#39;value&#39;);
 plot.axhline(-0.05, c=&#39;r&#39;, ls=&#39;:&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_35_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, the AIPW estimator is clower to the true value thanks to its correction that is always negative.&lt;/p&gt;
 &lt;h2 id=&#34;business-case&#34;&gt;Business Case&lt;/h2&gt;
 &lt;p&gt;TBD&lt;/p&gt;
@@ -26433,16 +26449,16 @@ plot.axhline(-0.05, c=&#39;r&#39;, ls=&#39;:&#39;);
     <item>
       <title>Causal Trees for Dummies</title>
       <link>https://matteocourthoud.github.io/post/cate/</link>
-      <pubDate>Tue, 29 Mar 2022 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 30 Mar 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/cate/</guid>
-      <description>&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;Machine learning&lt;/strong&gt; methods are powerful tools for prediction. Can we use them for causal inference?&lt;/p&gt;
-&lt;p&gt;Yes, if we decompose our inference problem into&lt;/p&gt;
+      <description>&lt;h2 id=&#34;requisites&#34;&gt;Requisites&lt;/h2&gt;
+&lt;p&gt;For this tutorial, I assume you are familiar with the following concepts&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;prediction problem&lt;/li&gt;
-&lt;li&gt;causal problem&lt;/li&gt;
+&lt;li&gt;Rubin&amp;rsquo;s Potential Outcome Framework&lt;/li&gt;
+&lt;li&gt;Decision Tree Methods&lt;/li&gt;
+&lt;li&gt;Propensity Score Matching&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;potential-outcome-framework&#34;&gt;Potential Outcome Framework&lt;/h2&gt;
+&lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
 &lt;p&gt;We assume that for a set of i.i.d. subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;a feature vector $X_i \in \mathbb R^n$&lt;/li&gt;
@@ -27163,13 +27179,10 @@ plot_tree(tree, filled=True, fontsize=12, feature_names=X, ax=ax, impurity=False
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;829.6982690090036
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;key-insights&#34;&gt;Key Insights&lt;/h2&gt;
-&lt;p&gt;In this tutorial we have seen how to use machine learning to estimate heterogeneous treatment effects.&lt;/p&gt;
-&lt;p&gt;The &lt;strong&gt;key insights&lt;/strong&gt; are:&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;to apply machine learning in causal inference, split the problem into a prediction part&lt;/li&gt;
-&lt;li&gt;in this case, go from the infeasible outcome $\tau_i$ to the feasible outcome $Y_i^*$&lt;/li&gt;
-&lt;li&gt;to avoid bias, use different data for different estimation steps&lt;/li&gt;
+&lt;li&gt;Original paper: &lt;a href=&#34;https://www.pnas.org/doi/abs/10.1073/pnas.1510489113&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Recursive partitioning for heterogeneous causal effects&lt;/a&gt; (2016) by Athey and Imbens&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=JtDRpM6Mnnw&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Video lecture&lt;/a&gt; by Prof. Susan Athey (Stanford)&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
@@ -27177,7 +27190,7 @@ plot_tree(tree, filled=True, fontsize=12, feature_names=X, ax=ax, impurity=False
     <item>
       <title>Chi-Squared Test for Dummies</title>
       <link>https://matteocourthoud.github.io/post/chisquared/</link>
-      <pubDate>Tue, 29 Mar 2022 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 30 Mar 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/chisquared/</guid>
       <description>&lt;p&gt;If you search the Wikipedia definition of Chi-Squared test, you get the following definition:&lt;/p&gt;
 &lt;blockquote&gt;

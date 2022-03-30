@@ -31,7 +31,7 @@
     
   
   <meta name="description" content="Requisites For this tutorial, I assume you are familiar with the following concepts
- Rubin Causal Framework Propensity Score Matching  Setting We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of" />
+ Rubin&rsquo;s Potential Outcome Framework Propensity Score Matching  Setting We assume that for a set of i." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/aipw/" />
@@ -335,16 +335,16 @@
   <meta property="og:url" content="https://matteocourthoud.github.io/post/aipw/" />
   <meta property="og:title" content="AIPW for Dummies | Matteo Courthoud" />
   <meta property="og:description" content="Requisites For this tutorial, I assume you are familiar with the following concepts
- Rubin Causal Framework Propensity Score Matching  Setting We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of" /><meta property="og:image" content="https://matteocourthoud.github.io/post/aipw/featured.png" />
+ Rubin&rsquo;s Potential Outcome Framework Propensity Score Matching  Setting We assume that for a set of i." /><meta property="og:image" content="https://matteocourthoud.github.io/post/aipw/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/aipw/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-03-29T00:00:00&#43;00:00"
+        content="2022-03-30T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-03-29T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-03-30T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@
     "https://matteocourthoud.github.io/post/aipw/featured.png"
   ],
   
-  "datePublished": "2022-03-29T00:00:00Z",
-  "dateModified": "2022-03-29T00:00:00Z",
+  "datePublished": "2022-03-30T00:00:00Z",
+  "dateModified": "2022-03-30T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -387,7 +387,7 @@
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "Requisites For this tutorial, I assume you are familiar with the following concepts\n Rubin Causal Framework Propensity Score Matching  Setting We assume that for a set of i.i.d. subjects $i = 1, \u0026hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of"
+  "description": "Requisites For this tutorial, I assume you are familiar with the following concepts\n Rubin\u0026rsquo;s Potential Outcome Framework Propensity Score Matching  Setting We assume that for a set of i."
 }
 </script>
 
@@ -773,6 +773,7 @@
     <li><a href="#setting">Setting</a></li>
     <li><a href="#the-ipw-estimator">The IPW Estimator</a></li>
     <li><a href="#the-aipw-estimator">The AIPW Estimator</a></li>
+    <li><a href="#best-practices">Best Practices</a></li>
     <li><a href="#example">Example</a></li>
     <li><a href="#business-case">Business Case</a></li>
     <li><a href="#references">References</a></li>
@@ -828,7 +829,7 @@
     
       
     
-    Mar 29, 2022
+    Mar 30, 2022
   </span>
   
 
@@ -837,7 +838,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    8 min read
+    9 min read
   </span>
   
 
@@ -875,7 +876,7 @@
             <h2 id="requisites">Requisites</h2>
 <p>For this tutorial, I assume you are familiar with the following concepts</p>
 <ul>
-<li>Rubin Causal Framework</li>
+<li>Rubin&rsquo;s Potential Outcome Framework</li>
 <li>Propensity Score Matching</li>
 </ul>
 <h2 id="setting">Setting</h2>
@@ -885,11 +886,16 @@
 <li>a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$</li>
 <li>a response $Y_i \in \mathbb R$</li>
 </ul>
-<p><strong>Assumption 1</strong>: <strong>unconfoundedness</strong> (or ignorability, or selection on observables)</p>
+<p><strong>Assumption 1 : unconfoundedness</strong> (or ignorability, or selection on observables)</p>
 <p>$$
 \big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ X_i
 $$</p>
 <p>i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random.</p>
+<p><strong>Assumption 2: overlap</strong> (or bounded support)</p>
+<p>$$
+\exists \eta &gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
+$$</p>
+<p>i.e. no observation is deterministically assigned to the treatment or control group.</p>
 <h2 id="the-ipw-estimator">The IPW Estimator</h2>
 <p>We want to estimate the <strong>average treatment effect</strong></p>
 <p>$$
@@ -981,6 +987,17 @@ $$</p>
 \end{aligned}
 $$</p>
 <p>even if $\hat \mu$ is misspecified. The reason is that if there is bias left from the estimation of $\mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, IPW fully corrects for it.</p>
+<h2 id="best-practices">Best Practices</h2>
+<p><strong>1. Check Covariate Balance</strong></p>
+<p>Both IPW and AIPW were built for settings in which the treatment $T$ is not uconditionally randomly assigned, but might depend on some observables $X$. This information can be checked in two ways:</p>
+<ol>
+<li>Produce a balance table, summarizing the covariates across treatment arms. If undonditional randomization does not hold, we expect to see significant differences across some observables</li>
+<li>Plot the estimated propensity scores. If undonditional randomization holds, we expect the propensity scores to be constant</li>
+</ol>
+<p><strong>2. Check the Overlap Assumption</strong></p>
+<p>Another assumption that we can check is the <strong>overlap</strong> assumption, i.e. $\exists \eta \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta$. To check this assumption we can simply check the bounds of the predicted propensity scores. If the overlap assumption is violated, we end up dividing some term of the estimator by zero.</p>
+<p><strong>3. Use LOO Predictors</strong></p>
+<p>It is best practice, whenever we build a prediction it is best pratice to exclude observation $i$ when fitting the algorithm for predicting $\hat \mu^{(t)} (X_i)$ or $\hat e (X_i)$. These predictors are called <strong>Leave One Out</strong> predictors.</p>
 <h2 id="example">Example</h2>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
@@ -1188,7 +1205,7 @@ print(f&quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2}&qu
 <p>The estimated coefficient is too big. We plot the distribution of $\hat \tau_i^{IPW}$ below.</p>
 <pre><code class="language-python">sns.histplot(hat_tau_IPW, bins=20);
 </code></pre>
-<p><img src="img/aipw_18_0.png" alt="png"></p>
+<p><img src="img/aipw_20_0.png" alt="png"></p>
 <p>We now turn to the AIPW estimator. First, we estimate the propensity scores using <code>LogisticRegression</code>.</p>
 <pre><code class="language-python">e = lr().fit(df[dgp.X], df['T']).predict_proba(df[dgp.X])[:,1]
 </code></pre>
@@ -1201,7 +1218,7 @@ print(f&quot;Mean: {np.mean(hat_tau_IPW):.2} and var {np.var(hat_tau_IPW):.2}&qu
 <p>We can further plot the distribution of scores. They definitely do not seem constant.</p>
 <pre><code class="language-python">sns.histplot(e, bins=100);
 </code></pre>
-<p><img src="img/aipw_24_0.png" alt="png"></p>
+<p><img src="img/aipw_26_0.png" alt="png"></p>
 <p>We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.</p>
 <pre><code class="language-python">def AIPW(data, X):
     e = lr().fit(data[X], data['T']).predict_proba(data[X])[:,1]
@@ -1221,7 +1238,7 @@ print(f&quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&
 <p>Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.</p>
 <pre><code class="language-python">sns.histplot(hat_tau_AIPW, bins=20);
 </code></pre>
-<p><img src="img/aipw_29_0.png" alt="png"></p>
+<p><img src="img/aipw_31_0.png" alt="png"></p>
 <p>To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.</p>
 <pre><code class="language-python">from joblib import Parallel, delayed
 
@@ -1234,7 +1251,7 @@ sim_tau_AIPW = pd.DataFrame(r, columns=['Direct', 'Correction', 'tau_AIPW'])
 <pre><code class="language-python">plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x='variable', y='value');
 plot.axhline(-0.05, c='r', ls=':');
 </code></pre>
-<p><img src="img/aipw_33_0.png" alt="png"></p>
+<p><img src="img/aipw_35_0.png" alt="png"></p>
 <p>As we can see, the AIPW estimator is clower to the true value thanks to its correction that is always negative.</p>
 <h2 id="business-case">Business Case</h2>
 <p>TBD</p>
