@@ -30,11 +30,11 @@
   
     
   
-  <meta name="description" content="In this tutorial, we are going to see how to robustly estimate treatment effects when treatment is conditionally randomnly assigned, using the Augmented Inverse Propensity Weighted estimator.
+  <meta name="description" content="In this tutorial, we are going to explore and compare different methods that leverage machine learning to estimate heterogeneous treatment effects.
 For this tutorial, I assume you are familiar with the following concepts:" />
 
   
-  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/aipw/" />
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/meta_learners/" />
 
   
 
@@ -316,7 +316,7 @@ For this tutorial, I assume you are familiar with the following concepts:" />
   <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
   <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
 
-  <link rel="canonical" href="https://matteocourthoud.github.io/post/aipw/" />
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/meta_learners/" />
 
   
   
@@ -332,11 +332,11 @@ For this tutorial, I assume you are familiar with the following concepts:" />
   <meta property="twitter:card" content="summary_large_image" />
   
   <meta property="og:site_name" content="Matteo Courthoud" />
-  <meta property="og:url" content="https://matteocourthoud.github.io/post/aipw/" />
-  <meta property="og:title" content="AIPW for Dummies | Matteo Courthoud" />
-  <meta property="og:description" content="In this tutorial, we are going to see how to robustly estimate treatment effects when treatment is conditionally randomnly assigned, using the Augmented Inverse Propensity Weighted estimator.
-For this tutorial, I assume you are familiar with the following concepts:" /><meta property="og:image" content="https://matteocourthoud.github.io/post/aipw/featured.png" />
-    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/aipw/featured.png" /><meta property="og:locale" content="en-us" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/meta_learners/" />
+  <meta property="og:title" content="Meta Learners | Matteo Courthoud" />
+  <meta property="og:description" content="In this tutorial, we are going to explore and compare different methods that leverage machine learning to estimate heterogeneous treatment effects.
+For this tutorial, I assume you are familiar with the following concepts:" /><meta property="og:image" content="https://matteocourthoud.github.io/post/meta_learners/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/meta_learners/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
@@ -368,12 +368,12 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
   "@type": "BlogPosting",
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https://matteocourthoud.github.io/post/aipw/"
+    "@id": "https://matteocourthoud.github.io/post/meta_learners/"
   },
-  "headline": "AIPW for Dummies",
+  "headline": "Meta Learners",
   
   "image": [
-    "https://matteocourthoud.github.io/post/aipw/featured.png"
+    "https://matteocourthoud.github.io/post/meta_learners/featured.png"
   ],
   
   "datePublished": "2022-03-30T00:00:00Z",
@@ -387,7 +387,7 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "In this tutorial, we are going to see how to robustly estimate treatment effects when treatment is conditionally randomnly assigned, using the Augmented Inverse Propensity Weighted estimator.\nFor this tutorial, I assume you are familiar with the following concepts:"
+  "description": "In this tutorial, we are going to explore and compare different methods that leverage machine learning to estimate heterogeneous treatment effects.\nFor this tutorial, I assume you are familiar with the following concepts:"
 }
 </script>
 
@@ -433,11 +433,11 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 
 
 
-  <title>AIPW for Dummies | Matteo Courthoud</title>
+  <title>Meta Learners | Matteo Courthoud</title>
 </head>
 
 
-<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="bc7e85f56e381bf28f3ee62ab0bf1da0" >
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="23b98ec03768fc1a97168ce2e40c689a" >
 
   
   
@@ -770,11 +770,8 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
       <nav id="TableOfContents">
   <ul>
     <li><a href="#setting">Setting</a></li>
-    <li><a href="#the-ipw-estimator">The IPW Estimator</a></li>
-    <li><a href="#the-aipw-estimator">The AIPW Estimator</a></li>
-    <li><a href="#best-practices">Best Practices</a></li>
+    <li><a href="#meta-learners">Meta Learners</a></li>
     <li><a href="#example">Example</a></li>
-    <li><a href="#business-case">Business Case</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
@@ -810,7 +807,7 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 
 
 <div class="article-container pt-3">
-  <h1>AIPW for Dummies</h1>
+  <h1>Meta Learners</h1>
 
   
 
@@ -837,7 +834,7 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    9 min read
+    6 min read
   </span>
   
 
@@ -862,9 +859,9 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 432px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 253px;">
   <div style="position: relative">
-    <img src="/post/aipw/featured_huc3cb92c7db33a8e689a7d48a49c38cf7_29549_720x0_resize_lanczos_3.png" alt="" class="featured-image">
+    <img src="/post/meta_learners/featured_hu7ef5f065f525551a694dcc2daca03645_739981_720x0_resize_lanczos_3.png" alt="" class="featured-image">
     
   </div>
 </div>
@@ -872,12 +869,12 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>In this tutorial, we are going to see how to robustly estimate treatment effects when treatment is conditionally randomnly assigned, using the Augmented Inverse Propensity Weighted estimator.</p>
+            <p>In this tutorial, we are going to explore and compare different methods that leverage machine learning to estimate heterogeneous treatment effects.</p>
 <p>For this tutorial, I assume you are familiar with the following concepts:</p>
 <ul>
 <li>Rubin&rsquo;s potential outcome framework</li>
 <li>Propensity score weighting</li>
-<li>Basic machine learning</li>
+<li>Basic machine learning models</li>
 </ul>
 <h2 id="setting">Setting</h2>
 <p>We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of</p>
@@ -896,126 +893,77 @@ $$</p>
 \exists \eta &gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
 $$</p>
 <p>i.e. no observation is deterministically assigned to the treatment or control group.</p>
-<h2 id="the-ipw-estimator">The IPW Estimator</h2>
-<p>We want to estimate the <strong>average treatment effect</strong></p>
+<h2 id="meta-learners">Meta Learners</h2>
+<p><strong>S-Learner</strong></p>
+<p>The simplest meta-algorithm is the single learner or <strong>S-learner</strong>. To build the S-learner estimator, we fit a single model for all observations.</p>
 <p>$$
-\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right]
+\mu(z) = \mathbb E \left[ Y_i \ \big | \ (X_i, T_i) = z \right]
 $$</p>
-<p>We would like to obtain an unbiased estimator that satifies a central limit theorem of the form</p>
+<p>the estimator is given by the difference between the predicted values evaluated at $t=1$ and $t=0$.</p>
 <p>$$
-\sqrt{n} ( \hat \tau - \tau) \ \overset{d}{\to} \ N(0, V)
+\hat \tau_{S} (x) = \hat \mu(x,1) - \hat \mu(x,0)
 $$</p>
-<p>thus enabling us to construct <strong>confidence intervals</strong>.</p>
-<p>Under <strong>unconfoundedness</strong>, we can rewrite the average treatment effect as</p>
+<p><strong>T-learner</strong></p>
+<p>To build the two-learner or <strong>T-learner</strong> estimator, we fit two different models, one for treated units and one for control units.</p>
 <p>$$
-\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{T_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right]
+\mu^{(1)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = 1 \right] \qquad ; \qquad \mu^{(0)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = 0 \right]
 $$</p>
-<p>where $e(X_i)$ is the <strong>propensity score</strong> of observation $i$,</p>
+<p>the estimator is given by the difference between the predicted values of the two algorithms.</p>
 <p>$$
-e(x) = \mathbb P \left[ T_i = 1 \ \big | \ X_i = x \right]
+\hat \tau_{T} (x) = \hat \mu^{(1)}(x) - \hat \mu^{(0)}(x)
 $$</p>
-<p>i.e. its probability of being treated.</p>
-<p>Note that this formulation of the average treatment effect does not depend on the potential outcomes $Y_i^{(1)}$ and $Y_i^{(0)}$, but only on the observed outcomes $Y_i$.</p>
-<p>This implies the <strong>Inverse Propensity Weighted</strong> estimator which is unbiased estimator for the average treatment effect $\tau$</p>
-<p>$$
-\hat \tau^{*}_{IPW} = \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{T_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right)
-$$</p>
-<p>However, this estimator is <strong>unfeasible</strong> since we do not observe the propensity scores $e(X_i)$.</p>
-<h2 id="the-aipw-estimator">The AIPW Estimator</h2>
-<p>A feasible estimator is</p>
-<p>$$
-\hat \tau_{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i}{1-\hat e(X_i)} \right)
-$$</p>
-<p>where we have replaced the propensity scores $e (X_i)$ with their estimates $\hat e (X_i)$.</p>
-<p>With a linear model, $Y_i = \alpha T_i + \beta X_i + \varepsilon_i$, we can get a central limit theorem for $\hat \tau$. However, we want to take a non-parametric / <strong>machine learning</strong> approach with respect to the relationship between $Y$ and $X$.</p>
-<p><strong>Advantages</strong></p>
-<ul>
-<li>flexible functional form for $\mathbb E[Y | X]$</li>
-</ul>
-<p><strong>Disadvantages</strong></p>
-<ul>
-<li>machine learning methods have slow convergence rates</li>
-<li>it impacts inference, i.e. we cannot easily get a central limit theorem result to build confidence intervals</li>
-</ul>
-<p>Is there a way to get around the slow rate of convergence of machine learning methods?</p>
-<p><strong>Yes!</strong> Idea: combine two prediciton problems instead of one.</p>
-<p>The <strong>Augmented Inverse Propensity Weighted</strong> estimator is given by</p>
-<p>$$
-\hat \tau_{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right)
-$$</p>
-<p>where</p>
-<p>$$
-\mu^{(t)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right] \qquad ; \qquad e(x) = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]
-$$</p>
-<p>The formula of the AIPW estimator might seem scary at first, so let&rsquo;s decompose it into 2 components.</p>
-<p>First,</p>
-<p>$$
-D = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right)
-$$</p>
-<p>is basically the direct estimate of the average treatment effect. This is a consistent estimator of the ATE but, since machine learning estimators' rate of convergence is too slow, it does not provide correct confidence intervals.</p>
-<p>Instead,</p>
-<p>$$
-R = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)}  \right)
-$$</p>
-<p>is basically IPW, applied to the residuals $Y_i - \hat \mu^{(t)}(X_i)$ instead of $Y_i$. The idea is that after the estimate $\hat \mu$, there might still be some signal left over which we can use to improve our estimate using IPW.</p>
-<p>Why is the AIPW estimator so <strong>compelling</strong>? It just needs one of the two predictions, $\hat \mu$ and $\hat e$, to be right in order to be unbiased. Let&rsquo;s check it.</p>
-<p>If $\hat \mu$ is correctly specified, i.e. $\mathbb E \left[ \mu^{(t)}(x) \right] = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, then</p>
-<p>$$
-\begin{aligned}
-\hat \tau_{IPW} &amp;\overset{p}{\to} \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right] =
-\newline
-&amp;= \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right] =
-\newline
-&amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] =
-\newline
-&amp;= \tau
-\end{aligned}
-$$</p>
-<p>even if $\hat e$ is misspecified. The reason is that the residuals converge to zero and therefore IPW has no relevance.</p>
-<p>On the other hand, if $\hat e$ is correctly specified, i.e. $\mathbb E \left[\hat e(x) \right] = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]$, then</p>
-<p>$$
-\begin{aligned}
-\hat \tau_{IPW} &amp;\overset{p}{\to} \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right] =
-\newline
-&amp;= \mathbb E \left[ \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i }{1-\hat e(X_i)} + \left(1 - \frac{T_i}{\hat e(X_i)} \right) \hat \mu^{(1)}(X_i) - \left(1 - \frac{1-T_i}{1-\hat e(X_i)} \right) \hat \mu^{(0)}(X_i)  \right] =
-\newline
-&amp;= \mathbb E \left[ \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i }{1-\hat e(X_i)}\right] =
-\newline
-&amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] =
-\newline
-&amp;= \tau
-\end{aligned}
-$$</p>
-<p>even if $\hat \mu$ is misspecified. The reason is that if there is bias left from the estimation of $\mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, IPW fully corrects for it.</p>
-<h2 id="best-practices">Best Practices</h2>
-<p><strong>1. Check Covariate Balance</strong></p>
-<p>Both IPW and AIPW were built for settings in which the treatment $T$ is not uconditionally randomly assigned, but might depend on some observables $X$. This information can be checked in two ways:</p>
+<p><strong>X-learner</strong></p>
+<p>The cross-learner or <strong>X-learner</strong> estimator is an extension of the T-learner estimator. It is built in the following way:</p>
 <ol>
-<li>Produce a balance table, summarizing the covariates across treatment arms. If undonditional randomization does not hold, we expect to see significant differences across some observables</li>
-<li>Plot the estimated propensity scores. If undonditional randomization holds, we expect the propensity scores to be constant</li>
+<li>
+<p>As for the T-learner, compute separate models for $\mu^{(1)}(x)$ and $\mu^{(0)}(x)$ using the treated and control units, respectively</p>
+</li>
+<li>
+<p>Compute the estimated treatment effects as</p>
+</li>
 </ol>
-<p><strong>2. Check the Overlap Assumption</strong></p>
-<p>Another assumption that we can check is the <strong>overlap</strong> assumption, i.e. $\exists \eta \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta$. To check this assumption we can simply check the bounds of the predicted propensity scores. If the overlap assumption is violated, we end up dividing some term of the estimator by zero.</p>
-<p><strong>3. Use LOO Predictors</strong></p>
-<p>It is best practice, whenever we build a prediction it is best pratice to exclude observation $i$ when fitting the algorithm for predicting $\hat \mu^{(t)} (X_i)$ or $\hat e (X_i)$. These predictors are called <strong>Leave One Out</strong> predictors.</p>
+<p>$$
+\Delta_i =
+\begin{cases}
+Y_i - \hat \mu^{(0)}(x) &amp;\quad \text{ if } T_i = 1
+\newline
+\hat \mu^{(1)}(x) - Y_i &amp;\quad \text{ if } T_i = 0
+\end{cases}
+$$</p>
+<ol start="3">
+<li>
+<p>Compute $\hat \tau^{(0)}(x)$ from treated units and  $\hat \tau^{(1)}(x)$ from control units</p>
+</li>
+<li>
+<p>Estimate $e(x) = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]$</p>
+</li>
+<li>
+<p>Compute</p>
+</li>
+</ol>
+<p>$$
+\hat \tau_X(x) = \hat \tau^{(0)}(x) \hat e(x) + \hat \tau^{(1)}(x) (1 - \hat e(x))
+$$</p>
 <h2 id="example">Example</h2>
+<p>In this example, we are going to use the following <strong>data generating process</strong></p>
+<ul>
+<li>$N = 4000$</li>
+<li>$p = 10$</li>
+<li>$X_i \sim N(0, I_p)$</li>
+<li>$e(x) = 0.3$</li>
+<li>$\varepsilon_i \sim N(0, 1)$</li>
+<li>$\mu^{(0)}(x) = (x_1 + x_2)_{+} + \varepsilon$</li>
+<li>$\mu^{(1)}(x) = (x_1 + x_2)_{+} + \frac{1}{1 + e^{-x_3}} + \varepsilon$</li>
+</ul>
+<p>So that the propensity score is constant $e(x) = 0.3$, the treatment effect is $\frac{1}{1 + e^{-x_3}}$ and the average treatment effect is $0.5$.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
 </code></pre>
 <pre><code class="language-python">from src.utils import *
-from src.dgp import dgp2
+from src.dgp import dgp4
 </code></pre>
-<p>In this example, we are going to use the following <strong>data generating process</strong></p>
-<ul>
-<li>$N = 1000$</li>
-<li>$p = 20$</li>
-<li>$X_i \sim N(0, I_p)$</li>
-<li>$e(x) = 1 / (1 + e^{-x_1})$</li>
-<li>$\mu^{(0)}(x) = (x_1 + x_2)_+$</li>
-<li>$\mu^{(1)}(x) = (x_1 + x_3)_+ \mathbf{- 0.05}$</li>
-</ul>
-<p>So that the average treatment effect is $- 0.05$.</p>
-<pre><code class="language-python">dgp = dgp2()
+<p>We generate a dataset out of our DGP.</p>
+<pre><code class="language-python">dgp = dgp4()
 df = dgp.generate_data()
 df.head()
 </code></pre>
@@ -1047,16 +995,9 @@ df.head()
       <th>x8</th>
       <th>x9</th>
       <th>x10</th>
-      <th>...</th>
-      <th>x14</th>
-      <th>x15</th>
-      <th>x16</th>
-      <th>x17</th>
-      <th>x18</th>
-      <th>x19</th>
-      <th>x20</th>
       <th>e</th>
       <th>T</th>
+      <th>tau</th>
       <th>Y</th>
     </tr>
   </thead>
@@ -1073,7 +1014,16 @@ df.head()
       <td>-0.761207</td>
       <td>0.319039</td>
       <td>-0.249370</td>
-      <td>...</td>
+      <td>0.3</td>
+      <td>0</td>
+      <td>0.370943</td>
+      <td>1.116502</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.462108</td>
+      <td>-2.060141</td>
+      <td>-0.322417</td>
       <td>-0.384054</td>
       <td>1.133769</td>
       <td>-1.099891</td>
@@ -1081,12 +1031,13 @@ df.head()
       <td>-0.877858</td>
       <td>0.042214</td>
       <td>0.582815</td>
-      <td>0.835394</td>
-      <td>1</td>
-      <td>1.046174</td>
+      <td>0.3</td>
+      <td>0</td>
+      <td>0.420087</td>
+      <td>-0.248671</td>
     </tr>
     <tr>
-      <th>1</th>
+      <th>2</th>
       <td>-1.100619</td>
       <td>1.144724</td>
       <td>0.901591</td>
@@ -1097,7 +1048,16 @@ df.head()
       <td>-0.935769</td>
       <td>-0.267888</td>
       <td>0.530355</td>
-      <td>...</td>
+      <td>0.3</td>
+      <td>0</td>
+      <td>0.711276</td>
+      <td>0.651441</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.691661</td>
+      <td>-0.396754</td>
+      <td>-0.687173</td>
       <td>-0.845206</td>
       <td>-0.671246</td>
       <td>-0.012665</td>
@@ -1105,12 +1065,13 @@ df.head()
       <td>0.234416</td>
       <td>1.659802</td>
       <td>0.742044</td>
-      <td>0.249624</td>
+      <td>0.3</td>
       <td>0</td>
-      <td>0.044105</td>
+      <td>0.334662</td>
+      <td>-0.913644</td>
     </tr>
     <tr>
-      <th>2</th>
+      <th>4</th>
       <td>-0.191836</td>
       <td>-0.887629</td>
       <td>-0.747158</td>
@@ -1121,205 +1082,101 @@ df.head()
       <td>2.100255</td>
       <td>0.120159</td>
       <td>0.617203</td>
-      <td>...</td>
-      <td>-0.349343</td>
-      <td>-0.208894</td>
-      <td>0.586623</td>
-      <td>0.838983</td>
-      <td>0.931102</td>
-      <td>0.285587</td>
-      <td>0.885141</td>
-      <td>0.452188</td>
-      <td>1</td>
-      <td>-0.050000</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>-0.754398</td>
-      <td>1.252868</td>
-      <td>0.512930</td>
-      <td>-0.298093</td>
-      <td>0.488518</td>
-      <td>-0.075572</td>
-      <td>1.131629</td>
-      <td>1.519817</td>
-      <td>2.185575</td>
-      <td>-1.396496</td>
-      <td>...</td>
-      <td>0.876169</td>
-      <td>0.315635</td>
-      <td>-2.022201</td>
-      <td>-0.306204</td>
-      <td>0.827975</td>
-      <td>0.230095</td>
-      <td>0.762011</td>
-      <td>0.319864</td>
-      <td>1</td>
-      <td>-0.050000</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>-0.222328</td>
-      <td>-0.200758</td>
-      <td>0.186561</td>
-      <td>0.410052</td>
-      <td>0.198300</td>
-      <td>0.119009</td>
-      <td>-0.670662</td>
-      <td>0.377564</td>
-      <td>0.121821</td>
-      <td>1.129484</td>
-      <td>...</td>
-      <td>-0.638730</td>
-      <td>0.423494</td>
-      <td>0.077340</td>
-      <td>-0.343854</td>
-      <td>0.043597</td>
-      <td>-0.620001</td>
-      <td>0.698032</td>
-      <td>0.444646</td>
+      <td>0.3</td>
       <td>0</td>
-      <td>0.000000</td>
-    </tr>
-  </tbody>
-</table>
-<p>5 rows × 23 columns</p>
-</div>
-<p>First, we check for covariate imbalance across treatment arms, with a <strong>balance table</strong>.</p>
-<pre><code class="language-python">df.groupby('T').agg(['mean', 'std']).T.unstack(1).head()
-</code></pre>
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-<pre><code>.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead tr th {
-    text-align: left;
-}
-</code></pre>
-<p></style></p>
-<table border="1" class="dataframe">
-  <thead>
-    <tr>
-      <th>T</th>
-      <th colspan="2" halign="left">0</th>
-      <th colspan="2" halign="left">1</th>
-    </tr>
-    <tr>
-      <th></th>
-      <th>mean</th>
-      <th>std</th>
-      <th>mean</th>
-      <th>std</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>x1</th>
-      <td>-0.462644</td>
-      <td>0.920626</td>
-      <td>0.413837</td>
-      <td>0.882116</td>
-    </tr>
-    <tr>
-      <th>x2</th>
-      <td>0.007900</td>
-      <td>1.010610</td>
-      <td>-0.054072</td>
-      <td>0.991680</td>
-    </tr>
-    <tr>
-      <th>x3</th>
-      <td>-0.005718</td>
-      <td>0.950997</td>
-      <td>-0.042624</td>
-      <td>1.059308</td>
-    </tr>
-    <tr>
-      <th>x4</th>
-      <td>0.122930</td>
-      <td>0.936591</td>
-      <td>0.095082</td>
-      <td>1.004048</td>
-    </tr>
-    <tr>
-      <th>x5</th>
-      <td>0.032637</td>
-      <td>0.955479</td>
-      <td>0.119788</td>
-      <td>1.039616</td>
+      <td>0.321441</td>
+      <td>0.121779</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>We can also get a first (wrong) estimate of the treatment effect as a difference in means.</p>
-<pre><code class="language-python">df.loc[df['T']==1, 'Y'].mean() - df.loc[df['T']==0, 'Y'].mean()
-</code></pre>
-<pre><code>0.3483874988628668
-</code></pre>
-<p>We know this estimate is wrong since the treatment is not unconditionally randomized. Therefore, we estimate the average treatment effect using the <strong>AIPW estimator</strong>.</p>
-<p>First, we estimate the <strong>propensity scores</strong> $e(x)$ using <code>LogisticRegression</code>.</p>
-<pre><code class="language-python">from sklearn.linear_model import LogisticRegression as lr
-
-e = lr().fit(df[dgp.X], df['T']).predict_proba(df[dgp.X])[:,1]
-</code></pre>
-<p>Let&rsquo;s check if the <strong>bounded support</strong> assumption is satisfied.</p>
-<pre><code class="language-python">print(f'Support of e is [{min(e):.2}, {max(e):.2}]')
-</code></pre>
-<pre><code>Support of e is [0.018, 0.97]
-</code></pre>
-<p>The support assumption is satisfied. Note that this is guaranteed with logistic regression.</p>
-<p>We can further plot the distribution of scores. They definitely do not seem constant.</p>
-<pre><code class="language-python">sns.histplot(e, bins=100);
-</code></pre>
-<p><img src="img/aipw_24_0.png" alt="png"></p>
-<p>We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.</p>
-<p>We use <code>RandomForestRegressor</code> to estimate the conditional expectation of $Y$, $\hat \mu^{(t)}(x)$.</p>
+<p>First, we implement the simplest machine learning method for learning heterogeneous treatment effects: the <strong>S-learner</strong>.</p>
+<p>We fit a single <code>RandomForestRegressor</code> method to all the data.</p>
 <pre><code class="language-python">from sklearn.ensemble import RandomForestRegressor as rfr
 
-def AIPW(data, X):
-    e = lr().fit(data[X], data['T']).predict_proba(data[X])[:,1]
-    mu = rfr(max_features=10).fit(data[X + ['T']], data['Y'])
-    mu0 = mu.predict(data[X + ['T']].assign(T=0))
-    mu1 = mu.predict(data[X + ['T']].assign(T=1))
-    D = mu1 - mu0
-    R = data['T'] / e * (data['Y'] - mu1) - (1-data['T']) / (1-e) * (data['Y'] - mu0)
-    tau_AIPW = D + R
-    return D, R, tau_AIPW
+mu_S = rfr(min_samples_leaf=30)
+mu_S.fit(df[dgp.X + ['T']], df['Y']);
 </code></pre>
-<pre><code class="language-python">D, R, hat_tau_AIPW = AIPW(df, dgp.X)
-print(f&quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&quot;)
+<p>Then, we use it to predict $\mu^{(1)}(x)$ and $\mu^{(0)}(x)$.</p>
+<pre><code class="language-python">df['hat_mu0_S'] = mu_S.predict(df[dgp.X + ['T']].assign(T=0))
+df['hat_mu1_S'] = mu_S.predict(df[dgp.X + ['T']].assign(T=1))
 </code></pre>
-<pre><code>Mean: -0.0079 and var 0.45
+<p>We estimate the average treatment effect as the difference between the two predictions.</p>
+<pre><code class="language-python">df['hat_tau_S'] = df['hat_mu1_S'] - df['hat_mu0_S']
+print(f&quot;S-learner estimate : {np.mean(df['hat_tau_S']):.4}&quot;)
 </code></pre>
-<p>Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.</p>
-<pre><code class="language-python">sns.histplot(hat_tau_AIPW, bins=20);
+<pre><code>S-learner estimate : 0.3657
 </code></pre>
-<p><img src="img/aipw_29_0.png" alt="png"></p>
-<p>To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.</p>
-<pre><code class="language-python">from joblib import Parallel, delayed
+<p>How close are we to the true treatment effect?</p>
+<pre><code class="language-python">sns.scatterplot(data=df, x='x3', y='hat_tau_S', alpha=0.3);
+sns.scatterplot(data=df, x='x3', y='tau', color='C2');
+</code></pre>
+<p><img src="img/meta_learners_21_0.png" alt="png"></p>
+<p>The <strong>T-learner</strong> method instead fits different model for treated and control units. The advantage is that it can</p>
+<pre><code class="language-python">mu0_T = rfr(min_samples_leaf=30)
+mu0_T.fit(df.loc[df['T']==0, dgp.X + ['T']], df.loc[df['T']==0, 'Y'])
+mu1_T = rfr(min_samples_leaf=30)
+mu1_T.fit(df.loc[df['T']==1, dgp.X + ['T']], df.loc[df['T']==1, 'Y']);
+</code></pre>
+<p>Then, we use it to predict $\mu^{(1)}(x)$ and $\mu^{(0)}(x)$.</p>
+<pre><code class="language-python">df['hat_mu0_T'] = mu0_T.predict(df[dgp.X + ['T']])
+df['hat_mu1_T'] = mu1_T.predict(df[dgp.X + ['T']])
+</code></pre>
+<p>We estimate the average treatment effect as the difference between the two predictions.</p>
+<pre><code class="language-python">df['hat_tau_T'] = df['hat_mu1_T'] - df['hat_mu0_T']
+print(f&quot;S-learner estimate : {np.mean(df['hat_tau_T']):.4}&quot;)
+</code></pre>
+<pre><code>S-learner estimate : 0.5231
+</code></pre>
+<p>We can plot the distribution of treatment effect estimates against the true values.</p>
+<pre><code class="language-python">sns.scatterplot(data=df, x='x3', y='hat_tau_T', alpha=0.3);
+sns.scatterplot(data=df, x='x3', y='tau', color='C2');
+</code></pre>
+<p><img src="img/meta_learners_29_0.png" alt="png"></p>
+<p>Let&rsquo;s now estimate the <strong>X-learner</strong>. The first step is exactly the same as for the T-learner: estimate $\hat \mu^{(1)}(x)$ and $\hat \mu^{(0)}(x)$ using the treated and control group, respectively.</p>
+<p>Afterwards, we compute the estimated treatment effect on the treated using the the estimated counterfactual outcome estimated on the control group $\hat \mu^{(0)}(x)$, and viceversa.</p>
+<pre><code class="language-python">df['Delta'] = 0
+df.loc[df['T']==0, 'Delta'] = (df['hat_mu1_T'] - df['Y'])[df['T']==0]
+df.loc[df['T']==1, 'Delta'] = (df['Y'] - df['hat_mu0_T'])[df['T']==1]
+</code></pre>
+<p>Then, we basically repeat the process for the T-learner, but using Delta as outcome variable.</p>
+<pre><code class="language-python">tau0_X = rfr(min_samples_leaf=30)
+tau0_X.fit(df.loc[df['T']==0, dgp.X + ['T']], df.loc[df['T']==0, 'Delta'])
+tau1_X = rfr(min_samples_leaf=30)
+tau1_X.fit(df.loc[df['T']==1, dgp.X + ['T']], df.loc[df['T']==1, 'Delta']);
+</code></pre>
+<pre><code class="language-python">df['hat_tau0_X'] = tau0_X.predict(df[dgp.X + ['T']])
+df['hat_tau1_X'] = tau1_X.predict(df[dgp.X + ['T']])
+</code></pre>
+<p>Finally, we estimate the propensity score.</p>
+<pre><code class="language-python">from sklearn.linear_model import LogisticRegression as lr
 
-# Parallelize simulation
-draw_data = lambda k : np.mean(AIPW(dgp2().generate_data(seed=k), dgp.X), axis=1)
-r = Parallel(n_jobs=8)(delayed(draw_data)(i) for i in range(100))
-sim_tau_AIPW = pd.DataFrame(r, columns=['Direct', 'Correction', 'tau_AIPW'])
+df['hat_e'] = lr().fit(df[dgp.X], df['T']).predict_proba(df[dgp.X])[:,1]
 </code></pre>
-<p>Below we plot the AIPW estimator and its components.</p>
-<pre><code class="language-python">plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x='variable', y='value');
-plot.axhline(-0.05, c='r', ls=':');
+<p>Now we can compute the <strong>X-learner estimate</strong> as</p>
+<pre><code class="language-python">df['hat_tau_X'] = df['hat_e'] * df['hat_tau0_X'] + (1-df['hat_e']) * df['hat_tau1_X']
+print(f&quot;X-learner estimate : {np.mean(df['hat_tau_X']):.4}&quot;)
 </code></pre>
-<p><img src="img/aipw_33_0.png" alt="png"></p>
-<p>As we can see, the AIPW estimator is clower to the true value thanks to its correction that is always negative.</p>
-<h2 id="business-case">Business Case</h2>
-<p>TBD</p>
+<pre><code>X-learner estimate : 0.5253
+</code></pre>
+<p>We can plot the distribution of treatment effect estimates against the true values.</p>
+<pre><code class="language-python">X_plot = sns.scatterplot(data=df, x='x3', y='hat_tau_X', alpha=0.3);
+sns.scatterplot(data=df, x='x3', y='tau', color='C2');
+</code></pre>
+<p><img src="img/meta_learners_40_0.png" alt="png"></p>
+<p>The X-learner estimator is heavily superior to both the S-learner and the T-learner. This is particularly evident if we combine all the plots.</p>
+<pre><code class="language-python">fig, axs = plt.subplots(1,3, sharex=True, sharey=True, figsize=(20,6))
+for i, l in enumerate(['S', 'T', 'X']):
+    sns.scatterplot(data=df, x='x3', y=f&quot;hat_tau_{l}&quot;, alpha=0.3, ax=axs[i]);
+    sns.scatterplot(data=df, x='x3', y='tau', color='C2', ax=axs[i]).\
+    set(title=f&quot;{l}-learner&quot;, ylabel='');
+</code></pre>
+<p><img src="img/meta_learners_42_0.png" alt="png"></p>
 <h2 id="references">References</h2>
 <ul>
-<li>Original paper: <a href="https://www.cambridge.org/core/journals/political-analysis/article/abs/an-introduction-to-the-augmented-inverse-propensity-weighted-estimator/4B1B8301E46F4432C4DCC91FE20780DB" target="_blank" rel="noopener">An Introduction to the Augmented Inverse Propensity Weighted Estimator</a></li>
-<li><a href="https://www.youtube.com/watch?v=IfZHUFFlsGc" target="_blank" rel="noopener">Video lecture</a> by Prof. Stefan Wager (Stanford)</li>
+<li>Meta learners: <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1804597116" target="_blank" rel="noopener">Metalearners for estimating heterogeneous treatment effects using machine learning</a> (2019) by Künzel, Sekhon, Bickel, and Yu</li>
+<li>Taxonomy of methods: <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1510489113" target="_blank" rel="noopener">Recursive partitioning for heterogeneous causal effects</a> (2016) by Athey and Imbens</li>
+<li><a href="https://www.youtube.com/watch?v=N9ThAs7NS0g" target="_blank" rel="noopener">Video lecture</a> by Stefan Wager (Stanford)</li>
 </ul>
 
           </div>
@@ -1343,7 +1200,7 @@ plot.axhline(-0.05, c='r', ls=':');
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/aipw/&amp;text=AIPW%20for%20Dummies" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/meta_learners/&amp;text=Meta%20Learners" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -1356,7 +1213,7 @@ plot.axhline(-0.05, c='r', ls=':');
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/aipw/&amp;t=AIPW%20for%20Dummies" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/meta_learners/&amp;t=Meta%20Learners" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook"></i>
         </a>
       </li>
@@ -1369,7 +1226,7 @@ plot.axhline(-0.05, c='r', ls=':');
       
       
       <li>
-        <a href="mailto:?subject=AIPW%20for%20Dummies&amp;body=https://matteocourthoud.github.io/post/aipw/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=Meta%20Learners&amp;body=https://matteocourthoud.github.io/post/meta_learners/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -1382,7 +1239,7 @@ plot.axhline(-0.05, c='r', ls=':');
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/aipw/&amp;title=AIPW%20for%20Dummies" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/meta_learners/&amp;title=Meta%20Learners" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -1395,7 +1252,7 @@ plot.axhline(-0.05, c='r', ls=':');
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=AIPW%20for%20Dummies%20https://matteocourthoud.github.io/post/aipw/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=Meta%20Learners%20https://matteocourthoud.github.io/post/meta_learners/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>
@@ -1408,7 +1265,7 @@ plot.axhline(-0.05, c='r', ls=':');
       
       
       <li>
-        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/aipw/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/meta_learners/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
           <i class="fab fa-telegram"></i>
         </a>
       </li>
