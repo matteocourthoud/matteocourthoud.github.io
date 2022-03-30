@@ -770,7 +770,13 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
       <nav id="TableOfContents">
   <ul>
     <li><a href="#setting">Setting</a></li>
-    <li><a href="#meta-learners">Meta Learners</a></li>
+    <li><a href="#meta-learners">Meta Learners</a>
+      <ul>
+        <li><a href="#s-learner">S-Learner</a></li>
+        <li><a href="#t-learner">T-learner</a></li>
+        <li><a href="#x-learner">X-learner</a></li>
+      </ul>
+    </li>
     <li><a href="#example">Example</a></li>
     <li><a href="#references">References</a></li>
   </ul>
@@ -894,7 +900,7 @@ $$</p>
 $$</p>
 <p>i.e. no observation is deterministically assigned to the treatment or control group.</p>
 <h2 id="meta-learners">Meta Learners</h2>
-<p><strong>S-Learner</strong></p>
+<h3 id="s-learner">S-Learner</h3>
 <p>The simplest meta-algorithm is the single learner or <strong>S-learner</strong>. To build the S-learner estimator, we fit a single model for all observations.</p>
 <p>$$
 \mu(z) = \mathbb E \left[ Y_i \ \big | \ (X_i, T_i) = z \right]
@@ -903,7 +909,16 @@ $$</p>
 <p>$$
 \hat \tau_{S} (x) = \hat \mu(x,1) - \hat \mu(x,0)
 $$</p>
-<p><strong>T-learner</strong></p>
+<p><strong>Problems</strong></p>
+<ul>
+<li>We are learning a single model so we hope that the model uncovers heterogeneity in $T$ but it might not be the case</li>
+<li>If the model is heavily regularized because of the high dimensionality of $X$, it might not recover any treatment effect
+<ul>
+<li>e.g. with trees, it might not split on $T$</li>
+</ul>
+</li>
+</ul>
+<h3 id="t-learner">T-learner</h3>
 <p>To build the two-learner or <strong>T-learner</strong> estimator, we fit two different models, one for treated units and one for control units.</p>
 <p>$$
 \mu^{(1)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = 1 \right] \qquad ; \qquad \mu^{(0)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = 0 \right]
@@ -912,7 +927,16 @@ $$</p>
 <p>$$
 \hat \tau_{T} (x) = \hat \mu^{(1)}(x) - \hat \mu^{(0)}(x)
 $$</p>
-<p><strong>X-learner</strong></p>
+<p><strong>Problems</strong></p>
+<ul>
+<li>We are using just a fraction of the data for each prediction problem
+<ul>
+<li>S-learner was using all the data</li>
+</ul>
+</li>
+<li></li>
+</ul>
+<h3 id="x-learner">X-learner</h3>
 <p>The cross-learner or <strong>X-learner</strong> estimator is an extension of the T-learner estimator. It is built in the following way:</p>
 <ol>
 <li>
@@ -923,7 +947,7 @@ $$</p>
 </li>
 </ol>
 <p>$$
-\Delta_i =
+\Delta_i (x) =
 \begin{cases}
 Y_i - \hat \mu^{(0)}(x) &amp;\quad \text{ if } T_i = 1
 \newline
@@ -932,7 +956,7 @@ Y_i - \hat \mu^{(0)}(x) &amp;\quad \text{ if } T_i = 1
 $$</p>
 <ol start="3">
 <li>
-<p>Compute $\hat \tau^{(0)}(x)$ from treated units and  $\hat \tau^{(1)}(x)$ from control units</p>
+<p>Predicting $\Delta$ from $X$, compute $\hat \tau^{(0)}(x)$ from treated units and  $\hat \tau^{(1)}(x)$ from control units</p>
 </li>
 <li>
 <p>Estimate $e(x) = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]$</p>
@@ -1111,7 +1135,7 @@ print(f&quot;S-learner estimate : {np.mean(df['hat_tau_S']):.4}&quot;)
 <pre><code class="language-python">sns.scatterplot(data=df, x='x3', y='hat_tau_S', alpha=0.3);
 sns.scatterplot(data=df, x='x3', y='tau', color='C2');
 </code></pre>
-<p><img src="img/meta_learners_21_0.png" alt="png"></p>
+<p><img src="img/meta_learners_24_0.png" alt="png"></p>
 <p>The <strong>T-learner</strong> method instead fits different model for treated and control units. The advantage is that it can</p>
 <pre><code class="language-python">mu0_T = rfr(min_samples_leaf=30)
 mu0_T.fit(df.loc[df['T']==0, dgp.X + ['T']], df.loc[df['T']==0, 'Y'])
@@ -1132,7 +1156,7 @@ print(f&quot;S-learner estimate : {np.mean(df['hat_tau_T']):.4}&quot;)
 <pre><code class="language-python">sns.scatterplot(data=df, x='x3', y='hat_tau_T', alpha=0.3);
 sns.scatterplot(data=df, x='x3', y='tau', color='C2');
 </code></pre>
-<p><img src="img/meta_learners_29_0.png" alt="png"></p>
+<p><img src="img/meta_learners_32_0.png" alt="png"></p>
 <p>Let&rsquo;s now estimate the <strong>X-learner</strong>. The first step is exactly the same as for the T-learner: estimate $\hat \mu^{(1)}(x)$ and $\hat \mu^{(0)}(x)$ using the treated and control group, respectively.</p>
 <p>Afterwards, we compute the estimated treatment effect on the treated using the the estimated counterfactual outcome estimated on the control group $\hat \mu^{(0)}(x)$, and viceversa.</p>
 <pre><code class="language-python">df['Delta'] = 0
@@ -1163,7 +1187,7 @@ print(f&quot;X-learner estimate : {np.mean(df['hat_tau_X']):.4}&quot;)
 <pre><code class="language-python">X_plot = sns.scatterplot(data=df, x='x3', y='hat_tau_X', alpha=0.3);
 sns.scatterplot(data=df, x='x3', y='tau', color='C2');
 </code></pre>
-<p><img src="img/meta_learners_40_0.png" alt="png"></p>
+<p><img src="img/meta_learners_43_0.png" alt="png"></p>
 <p>The X-learner estimator is heavily superior to both the S-learner and the T-learner. This is particularly evident if we combine all the plots.</p>
 <pre><code class="language-python">fig, axs = plt.subplots(1,3, sharex=True, sharey=True, figsize=(20,6))
 for i, l in enumerate(['S', 'T', 'X']):
@@ -1171,7 +1195,7 @@ for i, l in enumerate(['S', 'T', 'X']):
     sns.scatterplot(data=df, x='x3', y='tau', color='C2', ax=axs[i]).\
     set(title=f&quot;{l}-learner&quot;, ylabel='');
 </code></pre>
-<p><img src="img/meta_learners_42_0.png" alt="png"></p>
+<p><img src="img/meta_learners_45_0.png" alt="png"></p>
 <h2 id="references">References</h2>
 <ul>
 <li>Meta learners: <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1804597116" target="_blank" rel="noopener">Metalearners for estimating heterogeneous treatment effects using machine learning</a> (2019) by Künzel, Sekhon, Bickel, and Yu</li>
