@@ -26462,16 +26462,26 @@ df.head()
 
 e = lr().fit(df[dgp.X], df[&#39;T&#39;]).predict_proba(df[dgp.X])[:,1]
 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;A best practice is to use the &lt;code&gt;LeaveOneOut&lt;/code&gt; estimator to make predictions, i.e., for each observations, build a model using the remaining observations. This procedure helps preventing overfitting bias. The main issue is that it&amp;rsquo;s particularly slow since we need to fit one model per observation. However, it is parallelizable.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.model_selection import cross_val_predict, LeaveOneOut
+
+e = cross_val_predict(estimator=lr(), 
+                      X=df[dgp.X], 
+                      y=df[&#39;T&#39;],
+                      cv=LeaveOneOut(),
+                      method=&#39;predict_proba&#39;,
+                      n_jobs=-1)[:,1]
+&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Let&amp;rsquo;s check if the &lt;strong&gt;bounded support&lt;/strong&gt; assumption is satisfied.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print(f&#39;Support of e is [{min(e):.2}, {max(e):.2}]&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Support of e is [0.018, 0.97]
+&lt;pre&gt;&lt;code&gt;Support of e is [0.019, 0.97]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The support assumption is satisfied. Note that this is guaranteed with logistic regression.&lt;/p&gt;
 &lt;p&gt;We can further plot the distribution of scores. They definitely do not seem constant.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(e, bins=100);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_26_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.&lt;/p&gt;
 &lt;p&gt;We use &lt;code&gt;RandomForestRegressor&lt;/code&gt; to estimate the conditional expectation of $Y$, $\hat \mu^{(t)}(x)$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.ensemble import RandomForestRegressor as rfr
@@ -26494,7 +26504,7 @@ print(f&amp;quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):
 &lt;p&gt;Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(hat_tau_AIPW, bins=20);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from joblib import Parallel, delayed
 
@@ -26507,7 +26517,8 @@ sim_tau_AIPW = pd.DataFrame(r, columns=[&#39;Direct&#39;, &#39;Correction&#39;, 
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x=&#39;variable&#39;, y=&#39;value&#39;);
 plot.axhline(-0.05, c=&#39;r&#39;, ls=&#39;:&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;As we can see, the AIPW estimator is clower to the true value thanks to its correction that is always negative.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_35_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the AIPW estimator is closer to the true value thanks to the correction term that is always negative.&lt;/p&gt;
 &lt;h2 id=&#34;business-case&#34;&gt;Business Case&lt;/h2&gt;
 &lt;p&gt;TBD&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
@@ -27793,6 +27804,696 @@ plot_test(x, chi2_stat, df=3)
 &lt;/ol&gt;
 &lt;p&gt;The underlying principle is the same: testing discrepancies between expected and observed count data.&lt;/p&gt;
 &lt;p&gt;The key statistic is Pearson&amp;rsquo;s chi-square statistic and the key distribution is the chi-squared distribution. We have seen how to compute the statistic, why it has a chi-squared distribution, and how to use this information to perform a statistical hypothesis test.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Instrumental Variables</title>
+      <link>https://matteocourthoud.github.io/post/iv/</link>
+      <pubDate>Thu, 31 Mar 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/iv/</guid>
+      <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, but we have access to a third variable that is randomly assigned and is correlated (only) with the treatment. These variables are called instrumental variables and are a powerful tool for causal inference, especially in observational studies.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Rubin&amp;rsquo;s potential outcome framework&lt;/li&gt;
+&lt;li&gt;Ordinary least squares regression&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Academic Application 1&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;As a first academic application, we are going to replicate &lt;a href=&#34;https://www.jstor.org/stable/2937954&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Does Compulsory School Attendance Affect Schooling and Earnings?&lt;/a&gt; (1991) by Angrist and Krueger. The authors study the effect of education on wages.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Academic Application 2&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;As a further academic application, we are going to replicate &lt;a href=&#34;https://economics.mit.edu/files/4123&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Colonial Origins of Comparative Development&lt;/a&gt; (2002) by Acemoglu, Johnson, Robinson. The authors study the effect of academic institution on economic development.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Business Case&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;As a business case, we are going to study a travel that wants to find out whether customer membership has an effect on revenues. Since the travel agency cannot force customers to become members, it uses the A/B test of a simplified sign-up procedure to infer the effect of signing-up on revenues.&lt;/p&gt;
+&lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
+&lt;p&gt;We assume that for a set of i.i.d. subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a feature vector $X_i \in \mathbb R^n$&lt;/li&gt;
+&lt;li&gt;a treatment variable $T_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
+&lt;li&gt;a response $Y_i \in \mathbb R$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Crucially, we do not assume unconfoundedness / strong ignorability hence&lt;/p&gt;
+&lt;p&gt;$$
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \not \perp \ T_i \ | \ X_i
+$$&lt;/p&gt;
+&lt;h2 id=&#34;instrumental-variables&#34;&gt;Instrumental Variables&lt;/h2&gt;
+&lt;p&gt;On the other hand, we observe an &lt;strong&gt;instrumental variable&lt;/strong&gt; $Z_i \in \mathbb R^k$ that satisfies the following assumptions.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 1: Exclusion&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$\mathbb E [Z Y | X] = 0$&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 2: Relevance&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$\mathbb E [Z X] \neq 0$&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;standard linear IV model&lt;/strong&gt; is the following&lt;/p&gt;
+&lt;p&gt;$$
+Y_i = T_i \alpha + X_i \beta_1 + \varepsilon_i
+\newline
+T_i = Z_i \gamma + X_i \beta_2 + u_i
+$$&lt;/p&gt;
+&lt;p&gt;And the assumptions become&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Exclusion: $\mathbb E [Z \varepsilon] = 0$&lt;/li&gt;
+&lt;li&gt;Relevance: $\mathbb E [Z T] \neq 0$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The model can be represented by a DAG.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.plots import dag_iv
+dag_iv()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/iv_6_0.svg&#34; alt=&#34;svg&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The IV estimator is instead unbiased&lt;/p&gt;
+&lt;p&gt;$$
+\hat \beta_{IV} = (Z&amp;rsquo;X)^{-1}(Z&amp;rsquo;Y)
+$$&lt;/p&gt;
+&lt;h3 id=&#34;potential-outcomes-perspective&#34;&gt;Potential Outcomes Perspective&lt;/h3&gt;
+&lt;p&gt;We need to extend the potential outcomes framework in order to allow for the instrumental variable $Z$. First we define the potential outcomes as $Y^{(D(Z_i))}(Z_i)$&lt;/p&gt;
+&lt;p&gt;The assumptions become&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Exclusion: $Y^{(D(Z_i))}(Z_i) = Y^{(T(Z_i))}$&lt;/li&gt;
+&lt;li&gt;Relevance: $P(z) = \mathbb E [T, Z=z]$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We assume that $Z$ is fully randomly assigned (while $T$ is not).&lt;/p&gt;
+&lt;p&gt;What does IV estimate?&lt;/p&gt;
+&lt;p&gt;$$
+\begin{aligned}
+\mathbb E[Y_i | Z_i = 1] - \mathbb E[Y_i | Z_i = 0] &amp;amp;= \Pr (D_i^{(1)} - D_i^{(0)} = 1) \times \mathbb E \Big[ Y_i^{(1)} - Y_i^{(0)} = 1 \ \Big | \ D_i^{(1)} - D_i^{(0)} = 1 \Big] -
+\newline
+&amp;amp;- \Pr (D_i^{(1)} - D_i^{(0)} = -1) \times \mathbb E \Big[ Y_i^{(1)} - Y_i^{(0)} = 1 \ \Big | \ D_i^{(1)} - D_i^{(0)} = -1 \Big]
+\end{aligned}
+$$&lt;/p&gt;
+&lt;p&gt;Is this a quantity of interest? Almost. There are &lt;strong&gt;two issues&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;First, the first term is the treatment effect, but only for those individuals for whom $D_i^{(1)} - D_i^{(0)} = 1$, i.e. those that are induced into treatment by $Z_i$. These individuals are referred to as &lt;strong&gt;compliers&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Second, the second term is problematic since it removes from the first effect, the local effect of another subpopulation: $D_i^{(1)} - D_i^{(0)} = -1$, i.e. those that are induced out of treatment by $Z_i$. These individuals are referred to as &lt;strong&gt;defiers&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;We can get rid of defiers with a simple assumption.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 3: monotonocity&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Then, the IV estimator can be expressed as a ration between two differences in means&lt;/p&gt;
+&lt;p&gt;$$
+\hat \beta_{IV} = \frac{\mathbb E[Y_i | Z_i = 1] - \mathbb E[Y_i | Z_i = 0]}{\mathbb E[T_i | Z_i = 1] - \mathbb E[T_i | Z_i = 0]}
+$$&lt;/p&gt;
+&lt;h3 id=&#34;structural-perspective&#34;&gt;Structural Perspective&lt;/h3&gt;
+&lt;p&gt;One can interpret the IV estimator as a GMM estimator that uses the exclusion restriction as estimating equation.&lt;/p&gt;
+&lt;p&gt;$$
+\hat \beta_{GMM} = \arg \min_{\beta} \mathbb E \Big[ Z (Y - \alpha T - \beta X) \Big]^2
+$$&lt;/p&gt;
+&lt;h2 id=&#34;demand-and-supply&#34;&gt;Demand and Supply&lt;/h2&gt;
+&lt;p&gt;TBD&lt;/p&gt;
+&lt;h2 id=&#34;academic-application-1&#34;&gt;Academic Application 1&lt;/h2&gt;
+&lt;p&gt;As an academic application, we are going to replicate &lt;a href=&#34;https://www.jstor.org/stable/2937954&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Does compulsory school attendance affect schooling and earnings?&lt;/a&gt; (1991) by Angrist and Krueger. The authors study the effect of education on wages.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;problem&lt;/strong&gt; of studying the relationship of education on wages is that there might be factors that influence both education and wages but we do not observe, for example ability. Students that have higher ability might decide to stay longer in school and also get higher wages afterwards.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;idea&lt;/strong&gt; of the authors is to use the quarter of birth as an instrument for education. In fact, quarter of birth is plausibly exogenous with respect to wages while, on the other hand, is correlated with education. Why? Students that are both in the last quarter of the year cannot drop out as early as other students and therefore are exposed to more eduction.&lt;/p&gt;
+&lt;p&gt;We can represent the DAG of their model as follows.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dag_iv(Y=&amp;quot;wage&amp;quot;, T=&amp;quot;education&amp;quot;, Z=&amp;quot;quarter of birth&amp;quot;, U=&amp;quot;ability&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/iv_18_0.svg&#34; alt=&#34;svg&#34;&gt;&lt;/p&gt;
+&lt;p&gt;A shortcoming of this instrument comes out of the fact that the population of &lt;strong&gt;compliers&lt;/strong&gt; is students that drop out of school as soon as possible, we will know the treatment effect only for this population. It&amp;rsquo;s important to keep this in mind when interpreting the results.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s load the data, freely available &lt;a href=&#34;https://economics.mit.edu/faculty/angrist/data1/data/angkru1991&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = pd.read_csv(&#39;data/ak91.csv&#39;)
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;log_wage&lt;/th&gt;
+      &lt;th&gt;years_of_schooling&lt;/th&gt;
+      &lt;th&gt;date_of_birth&lt;/th&gt;
+      &lt;th&gt;year_of_birth&lt;/th&gt;
+      &lt;th&gt;quarter_of_birth&lt;/th&gt;
+      &lt;th&gt;state_of_birth&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;5.790019&lt;/td&gt;
+      &lt;td&gt;12.0&lt;/td&gt;
+      &lt;td&gt;1930.0&lt;/td&gt;
+      &lt;td&gt;1930.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;45.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;5.952494&lt;/td&gt;
+      &lt;td&gt;11.0&lt;/td&gt;
+      &lt;td&gt;1930.0&lt;/td&gt;
+      &lt;td&gt;1930.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;45.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;5.315949&lt;/td&gt;
+      &lt;td&gt;12.0&lt;/td&gt;
+      &lt;td&gt;1930.0&lt;/td&gt;
+      &lt;td&gt;1930.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;45.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;5.595926&lt;/td&gt;
+      &lt;td&gt;12.0&lt;/td&gt;
+      &lt;td&gt;1930.0&lt;/td&gt;
+      &lt;td&gt;1930.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;45.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;6.068915&lt;/td&gt;
+      &lt;td&gt;12.0&lt;/td&gt;
+      &lt;td&gt;1930.0&lt;/td&gt;
+      &lt;td&gt;1930.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;37.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have the variables of interest, &lt;code&gt;log_wage&lt;/code&gt;, &lt;code&gt;years_of_schooling&lt;/code&gt; and &lt;code&gt;quarter_of_birth&lt;/code&gt;, together with a set of controls.&lt;/p&gt;
+&lt;h3 id=&#34;ols&#34;&gt;OLS&lt;/h3&gt;
+&lt;p&gt;If we were to ignore the endogeneity problem we would estimate a linear regression of &lt;code&gt;log_wage&lt;/code&gt; on &lt;code&gt;years_of_schooling&lt;/code&gt;, plus control dummy variables for the &lt;code&gt;state_of_birth&lt;/code&gt; and &lt;code&gt;year_of_birth&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;log_wage ~ years_of_schooling&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+           &lt;td&gt;&lt;/td&gt;             &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;          &lt;td&gt;    4.9952&lt;/td&gt; &lt;td&gt;    0.004&lt;/td&gt; &lt;td&gt; 1118.882&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.986&lt;/td&gt; &lt;td&gt;    5.004&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;years_of_schooling&lt;/th&gt; &lt;td&gt;    0.0709&lt;/td&gt; &lt;td&gt;    0.000&lt;/td&gt; &lt;td&gt;  209.243&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.070&lt;/td&gt; &lt;td&gt;    0.072&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;iv&#34;&gt;IV&lt;/h3&gt;
+&lt;p&gt;We now use &lt;code&gt;quarter_of_birth&lt;/code&gt; as an instrument for &lt;code&gt;years_of_schooling&lt;/code&gt;. We cannot check the exclusion restriction condition, but we can check the &lt;strong&gt;relevance&lt;/strong&gt; condition.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s start first by plotting average &lt;code&gt;years_of_schooling&lt;/code&gt; by date of birth.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;group_df = df.groupby(&amp;quot;date_of_birth&amp;quot;).mean().reset_index()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.figure(figsize=(15,6))
+sns.lineplot(data=group_df, x=&amp;quot;date_of_birth&amp;quot;, y=&amp;quot;years_of_schooling&amp;quot;, zorder=1)\
+.set(title=&amp;quot;First Stage&amp;quot;, xlabel=&amp;quot;Year of Birth&amp;quot;, ylabel=&amp;quot;Years of Schooling&amp;quot;);
+
+for q in range(1, 5):
+    x = group_df.loc[group_df[&#39;quarter_of_birth&#39;]==q, &amp;quot;date_of_birth&amp;quot;]
+    y = group_df.loc[group_df[&#39;quarter_of_birth&#39;]==q, &amp;quot;years_of_schooling&amp;quot;]
+    plt.scatter(x, y, marker=&amp;quot;s&amp;quot;, s=200, c=f&amp;quot;C{q}&amp;quot;)
+    plt.scatter(x, y, marker=f&amp;quot;${q}$&amp;quot;, s=100, c=f&amp;quot;white&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/iv_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, there is an upward trend but, within each year, people both in the last quarter usually have more years of schooling than people born in other quarters of the year.&lt;/p&gt;
+&lt;p&gt;We can check this correlation more formally by regressing &lt;code&gt;years_of_schooling&lt;/code&gt; of a set of dummies for &lt;code&gt;quarter_of_birth&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;years_of_schooling ~ C(quarter_of_birth)&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+               &lt;td&gt;&lt;/td&gt;                 &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;                  &lt;td&gt;   12.6881&lt;/td&gt; &lt;td&gt;    0.011&lt;/td&gt; &lt;td&gt; 1105.239&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   12.666&lt;/td&gt; &lt;td&gt;   12.711&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;C(quarter_of_birth)[T.2.0]&lt;/th&gt; &lt;td&gt;    0.0566&lt;/td&gt; &lt;td&gt;    0.016&lt;/td&gt; &lt;td&gt;    3.473&lt;/td&gt; &lt;td&gt; 0.001&lt;/td&gt; &lt;td&gt;    0.025&lt;/td&gt; &lt;td&gt;    0.089&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;C(quarter_of_birth)[T.3.0]&lt;/th&gt; &lt;td&gt;    0.1173&lt;/td&gt; &lt;td&gt;    0.016&lt;/td&gt; &lt;td&gt;    7.338&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.086&lt;/td&gt; &lt;td&gt;    0.149&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;C(quarter_of_birth)[T.4.0]&lt;/th&gt; &lt;td&gt;    0.1514&lt;/td&gt; &lt;td&gt;    0.016&lt;/td&gt; &lt;td&gt;    9.300&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.119&lt;/td&gt; &lt;td&gt;    0.183&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The relationship between &lt;code&gt;years_of_schooling&lt;/code&gt; and &lt;code&gt;quarter_of_birth&lt;/code&gt; is indeed statistically significant.&lt;/p&gt;
+&lt;p&gt;Does it translate it into higher wages? We can have a first glimpse of potential IV effects by plotting wages against the date of birth.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.figure(figsize=(15,6))
+sns.lineplot(data=group_df, x=&amp;quot;date_of_birth&amp;quot;, y=&amp;quot;log_wage&amp;quot;, zorder=1)\
+.set(title=&amp;quot;Reduced Form&amp;quot;, xlabel=&amp;quot;Year of Birth&amp;quot;, ylabel=&amp;quot;Log Wage&amp;quot;);
+
+for q in range(1, 5):
+    x = group_df.loc[group_df[&#39;quarter_of_birth&#39;]==q, &amp;quot;date_of_birth&amp;quot;]
+    y = group_df.loc[group_df[&#39;quarter_of_birth&#39;]==q, &amp;quot;log_wage&amp;quot;]
+    plt.scatter(x, y, marker=&amp;quot;s&amp;quot;, s=200, c=f&amp;quot;C{q}&amp;quot;)
+    plt.scatter(x, y, marker=f&amp;quot;${q}$&amp;quot;, s=100, c=f&amp;quot;white&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/iv_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It seems that indeed people both in later quarters earn higher wages later in life.&lt;/p&gt;
+&lt;p&gt;We now turn into the estimation of the causal effect of education on wages.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[[&#39;q1&#39;, &#39;q2&#39;, &#39;q3&#39;, &#39;q4&#39;]] = pd.get_dummies(df[&#39;quarter_of_birth&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from linearmodels.iv import IV2SLS
+
+IV2SLS.from_formula(&#39;log_wage ~ 1 + [years_of_schooling ~ q1 + q2 + q3]&#39;, data=df).fit().summary.tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;caption&gt;Parameter Estimates&lt;/caption&gt;
+&lt;tr&gt;
+           &lt;td&gt;&lt;/td&gt;          &lt;th&gt;Parameter&lt;/th&gt; &lt;th&gt;Std. Err.&lt;/th&gt; &lt;th&gt;T-stat&lt;/th&gt; &lt;th&gt;P-value&lt;/th&gt; &lt;th&gt;Lower CI&lt;/th&gt; &lt;th&gt;Upper CI&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;           &lt;td&gt;4.5898&lt;/td&gt;    &lt;td&gt;0.2494&lt;/td&gt;   &lt;td&gt;18.404&lt;/td&gt; &lt;td&gt;0.0000&lt;/td&gt;   &lt;td&gt;4.1010&lt;/td&gt;   &lt;td&gt;5.0786&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;years_of_schooling&lt;/th&gt;  &lt;td&gt;0.1026&lt;/td&gt;    &lt;td&gt;0.0195&lt;/td&gt;   &lt;td&gt;5.2539&lt;/td&gt; &lt;td&gt;0.0000&lt;/td&gt;   &lt;td&gt;0.0643&lt;/td&gt;   &lt;td&gt;0.1409&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The coefficient is slightly higher than the OLS coefficient. It&amp;rsquo;s important to remember that the estimated effect is specific to the subpopulation of people that drop out of school as soon as they can.&lt;/p&gt;
+&lt;h2 id=&#34;academic-application-2&#34;&gt;Academic Application 2&lt;/h2&gt;
+&lt;p&gt;In &lt;a href=&#34;https://economics.mit.edu/files/4123&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Acemoglu, Johnson, Robinson (2002), &amp;ldquo;&lt;em&gt;The Colonial Origins of Comparative Development&lt;/em&gt;&amp;quot;&lt;/a&gt; the authors wish to determine whether or not differences in institutions can help to explain observed economic outcomes.&lt;/p&gt;
+&lt;p&gt;How do we measure &lt;em&gt;institutional differences&lt;/em&gt; and &lt;em&gt;economic outcomes&lt;/em&gt;?&lt;/p&gt;
+&lt;p&gt;In this paper,&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;economic outcomes are proxied by log GDP per capita in 1995, adjusted for exchange rates.&lt;/li&gt;
+&lt;li&gt;institutional differences are proxied by an index of protection against expropriation on average over 1985-95, constructed by the &lt;a href=&#34;https://www.prsgroup.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Political Risk Services Group&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;strong&gt;problem&lt;/strong&gt; is that there might exist other factors that affects both the quality of institutions and GDP. The authors suggest the following problems as sources of endogeneity:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;richer countries may be able to afford or prefer better institutions&lt;/li&gt;
+&lt;li&gt;variables that affect income may also be correlated with institutional differences&lt;/li&gt;
+&lt;li&gt;the construction of the index may be biased; analysts may be biased towards seeing countries with higher income having better institutions&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;strong&gt;idea&lt;/strong&gt; of the authors is to use settler&amp;rsquo;s mortality during the colonization period as an instrument for the quality of institutions. They hypothesize that higher mortality rates of colonizers led to the establishment of institutions that were more extractive in nature (less protection against expropriation), and these institutions still persist today.&lt;/p&gt;
+&lt;p&gt;We can represent their DAG as follows.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dag_iv(Y=&amp;quot;GDP&amp;quot;, T=&amp;quot;institutions&amp;quot;, Z=&amp;quot;settlers&#39; mortality&amp;quot;, U=&amp;quot;tons of stuff&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/iv_40_0.svg&#34; alt=&#34;svg&#34;&gt;&lt;/p&gt;
+&lt;p&gt;First, let&amp;rsquo;s load the data (available &lt;a href=&#34;https://economics.mit.edu/faculty/acemoglu/data/ajr2001&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;) and have a look at it.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = pd.read_csv(&#39;data/ajr02.csv&#39;,index_col=0)
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;GDP&lt;/th&gt;
+      &lt;th&gt;Exprop&lt;/th&gt;
+      &lt;th&gt;Mort&lt;/th&gt;
+      &lt;th&gt;Latitude&lt;/th&gt;
+      &lt;th&gt;Neo&lt;/th&gt;
+      &lt;th&gt;Africa&lt;/th&gt;
+      &lt;th&gt;Asia&lt;/th&gt;
+      &lt;th&gt;Namer&lt;/th&gt;
+      &lt;th&gt;Samer&lt;/th&gt;
+      &lt;th&gt;logMort&lt;/th&gt;
+      &lt;th&gt;Latitude2&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;8.39&lt;/td&gt;
+      &lt;td&gt;6.50&lt;/td&gt;
+      &lt;td&gt;78.20&lt;/td&gt;
+      &lt;td&gt;0.3111&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;4.359270&lt;/td&gt;
+      &lt;td&gt;0.096783&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;7.77&lt;/td&gt;
+      &lt;td&gt;5.36&lt;/td&gt;
+      &lt;td&gt;280.00&lt;/td&gt;
+      &lt;td&gt;0.1367&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5.634790&lt;/td&gt;
+      &lt;td&gt;0.018687&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;9.13&lt;/td&gt;
+      &lt;td&gt;6.39&lt;/td&gt;
+      &lt;td&gt;68.90&lt;/td&gt;
+      &lt;td&gt;0.3778&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4.232656&lt;/td&gt;
+      &lt;td&gt;0.142733&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;9.90&lt;/td&gt;
+      &lt;td&gt;9.32&lt;/td&gt;
+      &lt;td&gt;8.55&lt;/td&gt;
+      &lt;td&gt;0.3000&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2.145931&lt;/td&gt;
+      &lt;td&gt;0.090000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;9.29&lt;/td&gt;
+      &lt;td&gt;7.50&lt;/td&gt;
+      &lt;td&gt;85.00&lt;/td&gt;
+      &lt;td&gt;0.2683&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;4.442651&lt;/td&gt;
+      &lt;td&gt;0.071985&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;The data contains the main variables, &lt;code&gt;DGP&lt;/code&gt;, &lt;code&gt;Exprop&lt;/code&gt; and &lt;code&gt;Mort&lt;/code&gt;, plus some geographical information.&lt;/p&gt;
+&lt;h3 id=&#34;ols-1&#34;&gt;OLS&lt;/h3&gt;
+&lt;p&gt;What would we get if we were to ignore the endogeneity problem? We estimate the following misspecified model by OLS&lt;/p&gt;
+&lt;p&gt;$$
+{GDP}_i = \beta_0 + \beta_1 {Exprop}_i + \varepsilon_i
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;reg1 = smf.ols(&#39;GDP ~ Exprop&#39;, df).fit()
+reg1.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    4.6609&lt;/td&gt; &lt;td&gt;    0.409&lt;/td&gt; &lt;td&gt;   11.402&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    3.844&lt;/td&gt; &lt;td&gt;    5.478&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Exprop&lt;/th&gt;    &lt;td&gt;    0.5220&lt;/td&gt; &lt;td&gt;    0.061&lt;/td&gt; &lt;td&gt;    8.527&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.400&lt;/td&gt; &lt;td&gt;    0.644&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The coefficient of &lt;code&gt;Exprop&lt;/code&gt; is positive and significant but we know it is a biased estimate of the causal effect.&lt;/p&gt;
+&lt;p&gt;One direction we could take in addressing the endogeneity problem could be to control for any factor that affects both &lt;code&gt;GDP&lt;/code&gt; and &lt;code&gt;Exprop&lt;/code&gt;. In particular, the authors consider the following sets of variables:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;climat; proxied by latitude&lt;/li&gt;
+&lt;li&gt;differences that affect both economic performance and institutions, eg. cultural, historical, etc.; controlled for with the use of continent dummies&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;reg2 = smf.ols(&#39;GDP ~ Exprop + Latitude + Latitude2&#39;, df).fit()
+reg3 = smf.ols(&#39;GDP ~ Exprop + Latitude + Latitude2 + Asia + Africa + Namer + Samer&#39;, df).fit()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from statsmodels.iolib.summary2 import summary_col
+
+summary_col(results=[reg1,reg2,reg3],
+            float_format=&#39;%0.2f&#39;,
+            stars = True,
+            info_dict={&#39;No. observations&#39; : lambda x: f&amp;quot;{int(x.nobs):d}&amp;quot;},
+            regressor_order=[&#39;Intercept&#39;,&#39;Exprop&#39;,&#39;Latitude&#39;,&#39;Latitude2&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+          &lt;td&gt;&lt;/td&gt;          &lt;th&gt;GDP I&lt;/th&gt;  &lt;th&gt;GDP II&lt;/th&gt;  &lt;th&gt;GDP III&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;        &lt;td&gt;4.66***&lt;/td&gt; &lt;td&gt;4.55***&lt;/td&gt; &lt;td&gt;5.95***&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;&lt;/th&gt;                 &lt;td&gt;(0.41)&lt;/td&gt;  &lt;td&gt;(0.45)&lt;/td&gt;  &lt;td&gt;(0.68)&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Exprop&lt;/th&gt;           &lt;td&gt;0.52***&lt;/td&gt; &lt;td&gt;0.49***&lt;/td&gt; &lt;td&gt;0.40***&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;&lt;/th&gt;                 &lt;td&gt;(0.06)&lt;/td&gt;  &lt;td&gt;(0.07)&lt;/td&gt;  &lt;td&gt;(0.06)&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Latitude&lt;/th&gt;            &lt;td&gt;&lt;/td&gt;      &lt;td&gt;2.16&lt;/td&gt;    &lt;td&gt;0.42&lt;/td&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;&lt;/th&gt;                    &lt;td&gt;&lt;/td&gt;     &lt;td&gt;(1.68)&lt;/td&gt;  &lt;td&gt;(1.47)&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Latitude2&lt;/th&gt;           &lt;td&gt;&lt;/td&gt;      &lt;td&gt;-2.12&lt;/td&gt;   &lt;td&gt;0.44&lt;/td&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;&lt;/th&gt;                    &lt;td&gt;&lt;/td&gt;     &lt;td&gt;(2.86)&lt;/td&gt;  &lt;td&gt;(2.48)&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Africa&lt;/th&gt;              &lt;td&gt;&lt;/td&gt;        &lt;td&gt;&lt;/td&gt;     &lt;td&gt;-1.06**&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;&lt;/th&gt;                    &lt;td&gt;&lt;/td&gt;        &lt;td&gt;&lt;/td&gt;     &lt;td&gt;(0.41)&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Asia&lt;/th&gt;                &lt;td&gt;&lt;/td&gt;        &lt;td&gt;&lt;/td&gt;     &lt;td&gt;-0.74*&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;&lt;/th&gt;                    &lt;td&gt;&lt;/td&gt;        &lt;td&gt;&lt;/td&gt;     &lt;td&gt;(0.42)&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Namer&lt;/th&gt;               &lt;td&gt;&lt;/td&gt;        &lt;td&gt;&lt;/td&gt;      &lt;td&gt;-0.17&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;&lt;/th&gt;                    &lt;td&gt;&lt;/td&gt;        &lt;td&gt;&lt;/td&gt;     &lt;td&gt;(0.40)&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Samer&lt;/th&gt;               &lt;td&gt;&lt;/td&gt;        &lt;td&gt;&lt;/td&gt;      &lt;td&gt;-0.12&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;&lt;/th&gt;                    &lt;td&gt;&lt;/td&gt;        &lt;td&gt;&lt;/td&gt;     &lt;td&gt;(0.42)&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;R-squared&lt;/th&gt;         &lt;td&gt;0.54&lt;/td&gt;    &lt;td&gt;0.56&lt;/td&gt;    &lt;td&gt;0.71&lt;/td&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;R-squared Adj.&lt;/th&gt;    &lt;td&gt;0.53&lt;/td&gt;    &lt;td&gt;0.54&lt;/td&gt;    &lt;td&gt;0.67&lt;/td&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;No. observations&lt;/th&gt;   &lt;td&gt;64&lt;/td&gt;      &lt;td&gt;64&lt;/td&gt;      &lt;td&gt;64&lt;/td&gt;   
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The coefficient of &lt;code&gt;Expropr&lt;/code&gt; decreases in magnitude but remains positive and significant after the addition of geographical control variables. This might suggest that the endogeneity problem is not very pronounced. However, it&amp;rsquo;s hard to say given the large number of factors that could affect both institutions and GDP.&lt;/p&gt;
+&lt;h3 id=&#34;iv-1&#34;&gt;IV&lt;/h3&gt;
+&lt;p&gt;In order for &lt;code&gt;Mort&lt;/code&gt; to be a valid instrument it needs to satisfy the two IV conditions:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;Exclusion&lt;/strong&gt;: &lt;code&gt;Mort&lt;/code&gt; must be correlated to &lt;code&gt;GDP&lt;/code&gt; only through &lt;code&gt;Exprop&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Relevance&lt;/strong&gt;: &lt;code&gt;Mort&lt;/code&gt; must be correlated with &lt;code&gt;Exprop&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The &lt;strong&gt;exclusion restriction&lt;/strong&gt; condition is untestable, however, we may not be satisfied if settler mortality rates in the 17th to 19th centuries have a direct effect on current GDP (in addition to their indirect effect through institutions).&lt;/p&gt;
+&lt;p&gt;For example, settler mortality rates may be related to the current disease environment in a country, which could affect current economic performance.&lt;/p&gt;
+&lt;p&gt;The authors argue this is unlikely because:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The majority of settler deaths were due to malaria and yellow fever and had a limited effect on local people.&lt;/li&gt;
+&lt;li&gt;The disease burden on local people in Africa or India, for example, did not appear to be higher than average, supported by relatively high population densities in these areas before colonization.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;strong&gt;relevance&lt;/strong&gt; condition is testable and we can check it by computing the partial correlation between &lt;code&gt;Mort&lt;/code&gt; and &lt;code&gt;Exprop&lt;/code&gt;. Let&amp;rsquo;s start by visual inspection first.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(data=df, x=&#39;Mort&#39;, y=&#39;Exprop&#39;)\
+.set(title=&#39;First Stage&#39;,
+    xlabel=&#39;Settler mortality&#39;,
+    ylabel=&#39;Risk of expropriation&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/iv_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Visually, the first stage seems weak, at best. However, a regression of &lt;code&gt;Exprop&lt;/code&gt; on &lt;code&gt;Mort&lt;/code&gt; can help us better assess whether the relationship is significant or not.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;Exprop ~ Mort&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    6.7094&lt;/td&gt; &lt;td&gt;    0.202&lt;/td&gt; &lt;td&gt;   33.184&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    6.305&lt;/td&gt; &lt;td&gt;    7.114&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Mort&lt;/th&gt;      &lt;td&gt;   -0.0008&lt;/td&gt; &lt;td&gt;    0.000&lt;/td&gt; &lt;td&gt;   -2.059&lt;/td&gt; &lt;td&gt; 0.044&lt;/td&gt; &lt;td&gt;   -0.002&lt;/td&gt; &lt;td&gt;-2.28e-05&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The coefficient is negative, as expected, and statistically significant.&lt;/p&gt;
+&lt;p&gt;The second-stage regression results give us an unbiased and consistent estimate of the effect of institutions on economic outcomes.&lt;/p&gt;
+&lt;p&gt;$$
+{GDP}_i = \beta_0 + \beta_1 {Exprop}_i + \varepsilon_i \
+{Exprop}_i = \delta_0 + \delta_1 {logMort}_i + v_i
+$$&lt;/p&gt;
+&lt;p&gt;Note that while our parameter estimates are correct, our standard errors
+are not and for this reason, computing 2SLS ‘manually’ (in stages with
+OLS) is not recommended.&lt;/p&gt;
+&lt;p&gt;We can correctly estimate a 2SLS regression in one step using the
+&lt;a href=&#34;https://github.com/bashtage/linearmodels&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;linearmodels&lt;/a&gt; package, an extension of &lt;code&gt;statsmodels&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Note that when using &lt;code&gt;IV2SLS&lt;/code&gt;, the exogenous and instrument variables
+are split up in the function arguments (whereas before the instrument
+included exogenous variables)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;IV2SLS.from_formula(&#39;GDP ~ 1 + [Exprop ~ logMort]&#39;, data=df).fit().summary.tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;caption&gt;Parameter Estimates&lt;/caption&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;      &lt;th&gt;Parameter&lt;/th&gt; &lt;th&gt;Std. Err.&lt;/th&gt; &lt;th&gt;T-stat&lt;/th&gt; &lt;th&gt;P-value&lt;/th&gt; &lt;th&gt;Lower CI&lt;/th&gt; &lt;th&gt;Upper CI&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;  &lt;td&gt;2.0448&lt;/td&gt;    &lt;td&gt;1.1273&lt;/td&gt;   &lt;td&gt;1.8139&lt;/td&gt; &lt;td&gt;0.0697&lt;/td&gt;   &lt;td&gt;-0.1647&lt;/td&gt;  &lt;td&gt;4.2542&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Exprop&lt;/th&gt;     &lt;td&gt;0.9235&lt;/td&gt;    &lt;td&gt;0.1691&lt;/td&gt;   &lt;td&gt;5.4599&lt;/td&gt; &lt;td&gt;0.0000&lt;/td&gt;   &lt;td&gt;0.5920&lt;/td&gt;   &lt;td&gt;1.2550&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The result suggests a stronger positive relationship than what the OLS results indicated.&lt;/p&gt;
+&lt;h2 id=&#34;business-case&#34;&gt;Business Case&lt;/h2&gt;
+&lt;p&gt;We are given the following problem:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A firm would like to understand whether a premium membership is working to increase revenue. However, it cannot force customers to become premium members. Instead, the firm distributes a discount coupon to a random sample of customers for the premium membership. Estimate the effect of the premium membership on revenue.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;We start by simulating the data.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import dgp_premium
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_premium()
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;discount&lt;/th&gt;
+      &lt;th&gt;premium&lt;/th&gt;
+      &lt;th&gt;revenue&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0.582809&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3.427162&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1.953731&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2.902038&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0.826724&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;From the data, we know the &lt;code&gt;revenue&lt;/code&gt; per customer, whether it was given a &lt;code&gt;discount&lt;/code&gt; for the premium membership and whether it actually decided to get the &lt;code&gt;premium&lt;/code&gt; membership.&lt;/p&gt;
+&lt;p&gt;If we to estimate the effect of &lt;code&gt;premium&lt;/code&gt; on &lt;code&gt;revenue&lt;/code&gt;, we might get a biased estimate because the decision of getting a premium membership is endogenous. For example, we can imagine that wealthier customers are generating more revenue but are also less likely to get the premium membership.&lt;/p&gt;
+&lt;p&gt;We can represent the model with a DAG.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dag_iv(Y=&amp;quot;revenue&amp;quot;, T=&amp;quot;premium&amp;quot;, Z=&amp;quot;discount&amp;quot;, U=&amp;quot;income&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/iv_67_0.svg&#34; alt=&#34;svg&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;ols-2&#34;&gt;OLS&lt;/h3&gt;
+&lt;p&gt;By directly inspecting the data, it seems that premium members actually generate less revenue than normal customers.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.barplot(x=&#39;premium&#39;, y=&#39;revenue&#39;, data=df);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/iv_70_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;A linear regression confirms the graphical intuition.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ 1 + premium&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    1.7752&lt;/td&gt; &lt;td&gt;    0.086&lt;/td&gt; &lt;td&gt;   20.697&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.607&lt;/td&gt; &lt;td&gt;    1.943&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;premium&lt;/th&gt;   &lt;td&gt;   -0.7441&lt;/td&gt; &lt;td&gt;    0.140&lt;/td&gt; &lt;td&gt;   -5.334&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.018&lt;/td&gt; &lt;td&gt;   -0.470&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;iv-2&#34;&gt;IV&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s now exploit the random variation induced by the discount. In order for our instrument to be valid, we need it to be exogenous (untestable) and relevant. We can test the relevance with the &lt;strong&gt;first stage&lt;/strong&gt; regresssion of &lt;code&gt;discount&lt;/code&gt; on &lt;code&gt;premium&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;premium ~ 1 + discount&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    0.2368&lt;/td&gt; &lt;td&gt;    0.021&lt;/td&gt; &lt;td&gt;   11.324&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.196&lt;/td&gt; &lt;td&gt;    0.278&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;discount&lt;/th&gt;  &lt;td&gt;    0.2790&lt;/td&gt; &lt;td&gt;    0.029&lt;/td&gt; &lt;td&gt;    9.488&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.221&lt;/td&gt; &lt;td&gt;    0.337&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;It seems that the instrument is valid. We can now estimate the IV regression.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;IV2SLS.from_formula(&#39;revenue ~ 1 + [premium ~ discount]&#39;, data=df).fit().summary.tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;caption&gt;Parameter Estimates&lt;/caption&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;      &lt;th&gt;Parameter&lt;/th&gt; &lt;th&gt;Std. Err.&lt;/th&gt; &lt;th&gt;T-stat&lt;/th&gt; &lt;th&gt;P-value&lt;/th&gt; &lt;th&gt;Lower CI&lt;/th&gt; &lt;th&gt;Upper CI&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;  &lt;td&gt;0.9485&lt;/td&gt;    &lt;td&gt;0.2147&lt;/td&gt;   &lt;td&gt;4.4184&lt;/td&gt; &lt;td&gt;0.0000&lt;/td&gt;   &lt;td&gt;0.5278&lt;/td&gt;   &lt;td&gt;1.3693&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;premium&lt;/th&gt;    &lt;td&gt;1.4428&lt;/td&gt;    &lt;td&gt;0.5406&lt;/td&gt;   &lt;td&gt;2.6689&lt;/td&gt; &lt;td&gt;0.0076&lt;/td&gt;   &lt;td&gt;0.3832&lt;/td&gt;   &lt;td&gt;2.5023&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The estimated coefficient has now flipped sign and turned positive! Ignoring the endogeneity problem would have lead us to the wrong conclusion.&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=LEAx0He_KBI&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Video lectures&lt;/a&gt; by Paul Goldsmith-Pinkham (Yale)&lt;/li&gt;
+&lt;/ul&gt;
 </description>
     </item>
     

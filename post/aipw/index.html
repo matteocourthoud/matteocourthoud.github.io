@@ -837,7 +837,7 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    9 min read
+    10 min read
   </span>
   
 
@@ -1267,16 +1267,26 @@ df.head()
 
 e = lr().fit(df[dgp.X], df['T']).predict_proba(df[dgp.X])[:,1]
 </code></pre>
+<p>A best practice is to use the <code>LeaveOneOut</code> estimator to make predictions, i.e., for each observations, build a model using the remaining observations. This procedure helps preventing overfitting bias. The main issue is that it&rsquo;s particularly slow since we need to fit one model per observation. However, it is parallelizable.</p>
+<pre><code class="language-python">from sklearn.model_selection import cross_val_predict, LeaveOneOut
+
+e = cross_val_predict(estimator=lr(), 
+                      X=df[dgp.X], 
+                      y=df['T'],
+                      cv=LeaveOneOut(),
+                      method='predict_proba',
+                      n_jobs=-1)[:,1]
+</code></pre>
 <p>Let&rsquo;s check if the <strong>bounded support</strong> assumption is satisfied.</p>
 <pre><code class="language-python">print(f'Support of e is [{min(e):.2}, {max(e):.2}]')
 </code></pre>
-<pre><code>Support of e is [0.018, 0.97]
+<pre><code>Support of e is [0.019, 0.97]
 </code></pre>
 <p>The support assumption is satisfied. Note that this is guaranteed with logistic regression.</p>
 <p>We can further plot the distribution of scores. They definitely do not seem constant.</p>
 <pre><code class="language-python">sns.histplot(e, bins=100);
 </code></pre>
-<p><img src="img/aipw_24_0.png" alt="png"></p>
+<p><img src="img/aipw_26_0.png" alt="png"></p>
 <p>We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.</p>
 <p>We use <code>RandomForestRegressor</code> to estimate the conditional expectation of $Y$, $\hat \mu^{(t)}(x)$.</p>
 <pre><code class="language-python">from sklearn.ensemble import RandomForestRegressor as rfr
@@ -1299,7 +1309,7 @@ print(f&quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&
 <p>Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.</p>
 <pre><code class="language-python">sns.histplot(hat_tau_AIPW, bins=20);
 </code></pre>
-<p><img src="img/aipw_29_0.png" alt="png"></p>
+<p><img src="img/aipw_31_0.png" alt="png"></p>
 <p>To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.</p>
 <pre><code class="language-python">from joblib import Parallel, delayed
 
@@ -1312,7 +1322,8 @@ sim_tau_AIPW = pd.DataFrame(r, columns=['Direct', 'Correction', 'tau_AIPW'])
 <pre><code class="language-python">plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x='variable', y='value');
 plot.axhline(-0.05, c='r', ls=':');
 </code></pre>
-<p>As we can see, the AIPW estimator is clower to the true value thanks to its correction that is always negative.</p>
+<p><img src="img/aipw_35_0.png" alt="png"></p>
+<p>As we can see, the AIPW estimator is closer to the true value thanks to the correction term that is always negative.</p>
 <h2 id="business-case">Business Case</h2>
 <p>TBD</p>
 <h2 id="references">References</h2>

@@ -1,0 +1,1995 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, but we have access to a third variable that is randomly assigned and is correlated (only) with the treatment." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/iv/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.c33f4b329e0a33fe4775a5e6a9fd13b3.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/iv/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/iv/" />
+  <meta property="og:title" content="Instrumental Variables | Matteo Courthoud" />
+  <meta property="og:description" content="In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, but we have access to a third variable that is randomly assigned and is correlated (only) with the treatment." /><meta property="og:image" content="https://matteocourthoud.github.io/post/iv/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/iv/featured.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2022-03-31T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2022-03-31T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/iv/"
+  },
+  "headline": "Instrumental Variables",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/iv/featured.png"
+  ],
+  
+  "datePublished": "2022-03-31T00:00:00Z",
+  "dateModified": "2022-03-31T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, but we have access to a third variable that is randomly assigned and is correlated (only) with the treatment."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Instrumental Variables | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="c1ba7293fd6ef944fe34ab3ec2773d15" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#setting">Setting</a></li>
+    <li><a href="#instrumental-variables">Instrumental Variables</a>
+      <ul>
+        <li><a href="#potential-outcomes-perspective">Potential Outcomes Perspective</a></li>
+        <li><a href="#structural-perspective">Structural Perspective</a></li>
+      </ul>
+    </li>
+    <li><a href="#demand-and-supply">Demand and Supply</a></li>
+    <li><a href="#academic-application-1">Academic Application 1</a>
+      <ul>
+        <li><a href="#ols">OLS</a></li>
+        <li><a href="#iv">IV</a></li>
+      </ul>
+    </li>
+    <li><a href="#academic-application-2">Academic Application 2</a>
+      <ul>
+        <li><a href="#ols-1">OLS</a></li>
+        <li><a href="#iv-1">IV</a></li>
+      </ul>
+    </li>
+    <li><a href="#business-case">Business Case</a>
+      <ul>
+        <li><a href="#ols-2">OLS</a></li>
+        <li><a href="#iv-2">IV</a></li>
+      </ul>
+    </li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+
+<div class="article-container pt-3">
+  <h1>Instrumental Variables</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Mar 31, 2022
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    14 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 328px;">
+  <div style="position: relative">
+    <img src="/post/iv/featured_hu7045f3b59cf46f263a5c4ee095757316_70832_720x0_resize_lanczos_3.png" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p>In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, but we have access to a third variable that is randomly assigned and is correlated (only) with the treatment. These variables are called instrumental variables and are a powerful tool for causal inference, especially in observational studies.</p>
+<p><strong>Requisites</strong></p>
+<p>For this tutorial, I assume you are familiar with the following concepts:</p>
+<ul>
+<li>Rubin&rsquo;s potential outcome framework</li>
+<li>Ordinary least squares regression</li>
+</ul>
+<p><strong>Academic Application 1</strong></p>
+<p>As a first academic application, we are going to replicate <a href="https://www.jstor.org/stable/2937954" target="_blank" rel="noopener">Does Compulsory School Attendance Affect Schooling and Earnings?</a> (1991) by Angrist and Krueger. The authors study the effect of education on wages.</p>
+<p><strong>Academic Application 2</strong></p>
+<p>As a further academic application, we are going to replicate <a href="https://economics.mit.edu/files/4123" target="_blank" rel="noopener">The Colonial Origins of Comparative Development</a> (2002) by Acemoglu, Johnson, Robinson. The authors study the effect of academic institution on economic development.</p>
+<p><strong>Business Case</strong></p>
+<p>As a business case, we are going to study a travel that wants to find out whether customer membership has an effect on revenues. Since the travel agency cannot force customers to become members, it uses the A/B test of a simplified sign-up procedure to infer the effect of signing-up on revenues.</p>
+<h2 id="setting">Setting</h2>
+<p>We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of</p>
+<ul>
+<li>a feature vector $X_i \in \mathbb R^n$</li>
+<li>a treatment variable $T_i \in \lbrace 0, 1 \rbrace$</li>
+<li>a response $Y_i \in \mathbb R$</li>
+</ul>
+<p>Crucially, we do not assume unconfoundedness / strong ignorability hence</p>
+<p>$$
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \not \perp \ T_i \ | \ X_i
+$$</p>
+<h2 id="instrumental-variables">Instrumental Variables</h2>
+<p>On the other hand, we observe an <strong>instrumental variable</strong> $Z_i \in \mathbb R^k$ that satisfies the following assumptions.</p>
+<p><strong>Assumption 1: Exclusion</strong></p>
+<p>$\mathbb E [Z Y | X] = 0$</p>
+<p><strong>Assumption 2: Relevance</strong></p>
+<p>$\mathbb E [Z X] \neq 0$</p>
+<p>The <strong>standard linear IV model</strong> is the following</p>
+<p>$$
+Y_i = T_i \alpha + X_i \beta_1 + \varepsilon_i
+\newline
+T_i = Z_i \gamma + X_i \beta_2 + u_i
+$$</p>
+<p>And the assumptions become</p>
+<ul>
+<li>Exclusion: $\mathbb E [Z \varepsilon] = 0$</li>
+<li>Relevance: $\mathbb E [Z T] \neq 0$</li>
+</ul>
+<p>The model can be represented by a DAG.</p>
+<pre><code class="language-python">from src.plots import dag_iv
+dag_iv()
+</code></pre>
+<p><img src="img/iv_6_0.svg" alt="svg"></p>
+<p>The IV estimator is instead unbiased</p>
+<p>$$
+\hat \beta_{IV} = (Z&rsquo;X)^{-1}(Z&rsquo;Y)
+$$</p>
+<h3 id="potential-outcomes-perspective">Potential Outcomes Perspective</h3>
+<p>We need to extend the potential outcomes framework in order to allow for the instrumental variable $Z$. First we define the potential outcomes as $Y^{(D(Z_i))}(Z_i)$</p>
+<p>The assumptions become</p>
+<ul>
+<li>Exclusion: $Y^{(D(Z_i))}(Z_i) = Y^{(T(Z_i))}$</li>
+<li>Relevance: $P(z) = \mathbb E [T, Z=z]$</li>
+</ul>
+<p>We assume that $Z$ is fully randomly assigned (while $T$ is not).</p>
+<p>What does IV estimate?</p>
+<p>$$
+\begin{aligned}
+\mathbb E[Y_i | Z_i = 1] - \mathbb E[Y_i | Z_i = 0] &amp;= \Pr (D_i^{(1)} - D_i^{(0)} = 1) \times \mathbb E \Big[ Y_i^{(1)} - Y_i^{(0)} = 1 \ \Big | \ D_i^{(1)} - D_i^{(0)} = 1 \Big] -
+\newline
+&amp;- \Pr (D_i^{(1)} - D_i^{(0)} = -1) \times \mathbb E \Big[ Y_i^{(1)} - Y_i^{(0)} = 1 \ \Big | \ D_i^{(1)} - D_i^{(0)} = -1 \Big]
+\end{aligned}
+$$</p>
+<p>Is this a quantity of interest? Almost. There are <strong>two issues</strong>.</p>
+<p>First, the first term is the treatment effect, but only for those individuals for whom $D_i^{(1)} - D_i^{(0)} = 1$, i.e. those that are induced into treatment by $Z_i$. These individuals are referred to as <strong>compliers</strong>.</p>
+<p>Second, the second term is problematic since it removes from the first effect, the local effect of another subpopulation: $D_i^{(1)} - D_i^{(0)} = -1$, i.e. those that are induced out of treatment by $Z_i$. These individuals are referred to as <strong>defiers</strong>.</p>
+<p>We can get rid of defiers with a simple assumption.</p>
+<p><strong>Assumption 3: monotonocity</strong></p>
+<p>Then, the IV estimator can be expressed as a ration between two differences in means</p>
+<p>$$
+\hat \beta_{IV} = \frac{\mathbb E[Y_i | Z_i = 1] - \mathbb E[Y_i | Z_i = 0]}{\mathbb E[T_i | Z_i = 1] - \mathbb E[T_i | Z_i = 0]}
+$$</p>
+<h3 id="structural-perspective">Structural Perspective</h3>
+<p>One can interpret the IV estimator as a GMM estimator that uses the exclusion restriction as estimating equation.</p>
+<p>$$
+\hat \beta_{GMM} = \arg \min_{\beta} \mathbb E \Big[ Z (Y - \alpha T - \beta X) \Big]^2
+$$</p>
+<h2 id="demand-and-supply">Demand and Supply</h2>
+<p>TBD</p>
+<h2 id="academic-application-1">Academic Application 1</h2>
+<p>As an academic application, we are going to replicate <a href="https://www.jstor.org/stable/2937954" target="_blank" rel="noopener">Does compulsory school attendance affect schooling and earnings?</a> (1991) by Angrist and Krueger. The authors study the effect of education on wages.</p>
+<p>The <strong>problem</strong> of studying the relationship of education on wages is that there might be factors that influence both education and wages but we do not observe, for example ability. Students that have higher ability might decide to stay longer in school and also get higher wages afterwards.</p>
+<p>The <strong>idea</strong> of the authors is to use the quarter of birth as an instrument for education. In fact, quarter of birth is plausibly exogenous with respect to wages while, on the other hand, is correlated with education. Why? Students that are both in the last quarter of the year cannot drop out as early as other students and therefore are exposed to more eduction.</p>
+<p>We can represent the DAG of their model as follows.</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+</code></pre>
+<pre><code class="language-python">from src.utils import *
+</code></pre>
+<pre><code class="language-python">dag_iv(Y=&quot;wage&quot;, T=&quot;education&quot;, Z=&quot;quarter of birth&quot;, U=&quot;ability&quot;)
+</code></pre>
+<p><img src="img/iv_18_0.svg" alt="svg"></p>
+<p>A shortcoming of this instrument comes out of the fact that the population of <strong>compliers</strong> is students that drop out of school as soon as possible, we will know the treatment effect only for this population. It&rsquo;s important to keep this in mind when interpreting the results.</p>
+<p>Let&rsquo;s load the data, freely available <a href="https://economics.mit.edu/faculty/angrist/data1/data/angkru1991" target="_blank" rel="noopener">here</a>.</p>
+<pre><code class="language-python">df = pd.read_csv('data/ak91.csv')
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>log_wage</th>
+      <th>years_of_schooling</th>
+      <th>date_of_birth</th>
+      <th>year_of_birth</th>
+      <th>quarter_of_birth</th>
+      <th>state_of_birth</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>5.790019</td>
+      <td>12.0</td>
+      <td>1930.0</td>
+      <td>1930.0</td>
+      <td>1.0</td>
+      <td>45.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5.952494</td>
+      <td>11.0</td>
+      <td>1930.0</td>
+      <td>1930.0</td>
+      <td>1.0</td>
+      <td>45.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>5.315949</td>
+      <td>12.0</td>
+      <td>1930.0</td>
+      <td>1930.0</td>
+      <td>1.0</td>
+      <td>45.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>5.595926</td>
+      <td>12.0</td>
+      <td>1930.0</td>
+      <td>1930.0</td>
+      <td>1.0</td>
+      <td>45.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>6.068915</td>
+      <td>12.0</td>
+      <td>1930.0</td>
+      <td>1930.0</td>
+      <td>1.0</td>
+      <td>37.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We have the variables of interest, <code>log_wage</code>, <code>years_of_schooling</code> and <code>quarter_of_birth</code>, together with a set of controls.</p>
+<h3 id="ols">OLS</h3>
+<p>If we were to ignore the endogeneity problem we would estimate a linear regression of <code>log_wage</code> on <code>years_of_schooling</code>, plus control dummy variables for the <code>state_of_birth</code> and <code>year_of_birth</code>.</p>
+<pre><code class="language-python">smf.ols('log_wage ~ years_of_schooling', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>          <td>    4.9952</td> <td>    0.004</td> <td> 1118.882</td> <td> 0.000</td> <td>    4.986</td> <td>    5.004</td>
+</tr>
+<tr>
+  <th>years_of_schooling</th> <td>    0.0709</td> <td>    0.000</td> <td>  209.243</td> <td> 0.000</td> <td>    0.070</td> <td>    0.072</td>
+</tr>
+</table>
+<h3 id="iv">IV</h3>
+<p>We now use <code>quarter_of_birth</code> as an instrument for <code>years_of_schooling</code>. We cannot check the exclusion restriction condition, but we can check the <strong>relevance</strong> condition.</p>
+<p>Let&rsquo;s start first by plotting average <code>years_of_schooling</code> by date of birth.</p>
+<pre><code class="language-python">group_df = df.groupby(&quot;date_of_birth&quot;).mean().reset_index()
+</code></pre>
+<pre><code class="language-python">plt.figure(figsize=(15,6))
+sns.lineplot(data=group_df, x=&quot;date_of_birth&quot;, y=&quot;years_of_schooling&quot;, zorder=1)\
+.set(title=&quot;First Stage&quot;, xlabel=&quot;Year of Birth&quot;, ylabel=&quot;Years of Schooling&quot;);
+
+for q in range(1, 5):
+    x = group_df.loc[group_df['quarter_of_birth']==q, &quot;date_of_birth&quot;]
+    y = group_df.loc[group_df['quarter_of_birth']==q, &quot;years_of_schooling&quot;]
+    plt.scatter(x, y, marker=&quot;s&quot;, s=200, c=f&quot;C{q}&quot;)
+    plt.scatter(x, y, marker=f&quot;${q}$&quot;, s=100, c=f&quot;white&quot;)
+</code></pre>
+<p><img src="img/iv_29_0.png" alt="png"></p>
+<p>As we can see, there is an upward trend but, within each year, people both in the last quarter usually have more years of schooling than people born in other quarters of the year.</p>
+<p>We can check this correlation more formally by regressing <code>years_of_schooling</code> of a set of dummies for <code>quarter_of_birth</code>.</p>
+<pre><code class="language-python">smf.ols('years_of_schooling ~ C(quarter_of_birth)', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+               <td></td>                 <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>                  <td>   12.6881</td> <td>    0.011</td> <td> 1105.239</td> <td> 0.000</td> <td>   12.666</td> <td>   12.711</td>
+</tr>
+<tr>
+  <th>C(quarter_of_birth)[T.2.0]</th> <td>    0.0566</td> <td>    0.016</td> <td>    3.473</td> <td> 0.001</td> <td>    0.025</td> <td>    0.089</td>
+</tr>
+<tr>
+  <th>C(quarter_of_birth)[T.3.0]</th> <td>    0.1173</td> <td>    0.016</td> <td>    7.338</td> <td> 0.000</td> <td>    0.086</td> <td>    0.149</td>
+</tr>
+<tr>
+  <th>C(quarter_of_birth)[T.4.0]</th> <td>    0.1514</td> <td>    0.016</td> <td>    9.300</td> <td> 0.000</td> <td>    0.119</td> <td>    0.183</td>
+</tr>
+</table>
+<p>The relationship between <code>years_of_schooling</code> and <code>quarter_of_birth</code> is indeed statistically significant.</p>
+<p>Does it translate it into higher wages? We can have a first glimpse of potential IV effects by plotting wages against the date of birth.</p>
+<pre><code class="language-python">plt.figure(figsize=(15,6))
+sns.lineplot(data=group_df, x=&quot;date_of_birth&quot;, y=&quot;log_wage&quot;, zorder=1)\
+.set(title=&quot;Reduced Form&quot;, xlabel=&quot;Year of Birth&quot;, ylabel=&quot;Log Wage&quot;);
+
+for q in range(1, 5):
+    x = group_df.loc[group_df['quarter_of_birth']==q, &quot;date_of_birth&quot;]
+    y = group_df.loc[group_df['quarter_of_birth']==q, &quot;log_wage&quot;]
+    plt.scatter(x, y, marker=&quot;s&quot;, s=200, c=f&quot;C{q}&quot;)
+    plt.scatter(x, y, marker=f&quot;${q}$&quot;, s=100, c=f&quot;white&quot;)
+</code></pre>
+<p><img src="img/iv_33_0.png" alt="png"></p>
+<p>It seems that indeed people both in later quarters earn higher wages later in life.</p>
+<p>We now turn into the estimation of the causal effect of education on wages.</p>
+<pre><code class="language-python">df[['q1', 'q2', 'q3', 'q4']] = pd.get_dummies(df['quarter_of_birth'])
+</code></pre>
+<pre><code class="language-python">from linearmodels.iv import IV2SLS
+
+IV2SLS.from_formula('log_wage ~ 1 + [years_of_schooling ~ q1 + q2 + q3]', data=df).fit().summary.tables[1]
+</code></pre>
+<table class="simpletable">
+<caption>Parameter Estimates</caption>
+<tr>
+           <td></td>          <th>Parameter</th> <th>Std. Err.</th> <th>T-stat</th> <th>P-value</th> <th>Lower CI</th> <th>Upper CI</th>
+</tr>
+<tr>
+  <th>Intercept</th>           <td>4.5898</td>    <td>0.2494</td>   <td>18.404</td> <td>0.0000</td>   <td>4.1010</td>   <td>5.0786</td> 
+</tr>
+<tr>
+  <th>years_of_schooling</th>  <td>0.1026</td>    <td>0.0195</td>   <td>5.2539</td> <td>0.0000</td>   <td>0.0643</td>   <td>0.1409</td> 
+</tr>
+</table>
+<p>The coefficient is slightly higher than the OLS coefficient. It&rsquo;s important to remember that the estimated effect is specific to the subpopulation of people that drop out of school as soon as they can.</p>
+<h2 id="academic-application-2">Academic Application 2</h2>
+<p>In <a href="https://economics.mit.edu/files/4123" target="_blank" rel="noopener">Acemoglu, Johnson, Robinson (2002), &ldquo;<em>The Colonial Origins of Comparative Development</em>&quot;</a> the authors wish to determine whether or not differences in institutions can help to explain observed economic outcomes.</p>
+<p>How do we measure <em>institutional differences</em> and <em>economic outcomes</em>?</p>
+<p>In this paper,</p>
+<ul>
+<li>economic outcomes are proxied by log GDP per capita in 1995, adjusted for exchange rates.</li>
+<li>institutional differences are proxied by an index of protection against expropriation on average over 1985-95, constructed by the <a href="https://www.prsgroup.com/" target="_blank" rel="noopener">Political Risk Services Group</a>.</li>
+</ul>
+<p>The <strong>problem</strong> is that there might exist other factors that affects both the quality of institutions and GDP. The authors suggest the following problems as sources of endogeneity:</p>
+<ul>
+<li>richer countries may be able to afford or prefer better institutions</li>
+<li>variables that affect income may also be correlated with institutional differences</li>
+<li>the construction of the index may be biased; analysts may be biased towards seeing countries with higher income having better institutions</li>
+</ul>
+<p>The <strong>idea</strong> of the authors is to use settler&rsquo;s mortality during the colonization period as an instrument for the quality of institutions. They hypothesize that higher mortality rates of colonizers led to the establishment of institutions that were more extractive in nature (less protection against expropriation), and these institutions still persist today.</p>
+<p>We can represent their DAG as follows.</p>
+<pre><code class="language-python">dag_iv(Y=&quot;GDP&quot;, T=&quot;institutions&quot;, Z=&quot;settlers' mortality&quot;, U=&quot;tons of stuff&quot;)
+</code></pre>
+<p><img src="img/iv_40_0.svg" alt="svg"></p>
+<p>First, let&rsquo;s load the data (available <a href="https://economics.mit.edu/faculty/acemoglu/data/ajr2001" target="_blank" rel="noopener">here</a>) and have a look at it.</p>
+<pre><code class="language-python">df = pd.read_csv('data/ajr02.csv',index_col=0)
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>GDP</th>
+      <th>Exprop</th>
+      <th>Mort</th>
+      <th>Latitude</th>
+      <th>Neo</th>
+      <th>Africa</th>
+      <th>Asia</th>
+      <th>Namer</th>
+      <th>Samer</th>
+      <th>logMort</th>
+      <th>Latitude2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>8.39</td>
+      <td>6.50</td>
+      <td>78.20</td>
+      <td>0.3111</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4.359270</td>
+      <td>0.096783</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>7.77</td>
+      <td>5.36</td>
+      <td>280.00</td>
+      <td>0.1367</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5.634790</td>
+      <td>0.018687</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>9.13</td>
+      <td>6.39</td>
+      <td>68.90</td>
+      <td>0.3778</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>4.232656</td>
+      <td>0.142733</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>9.90</td>
+      <td>9.32</td>
+      <td>8.55</td>
+      <td>0.3000</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2.145931</td>
+      <td>0.090000</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>9.29</td>
+      <td>7.50</td>
+      <td>85.00</td>
+      <td>0.2683</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>4.442651</td>
+      <td>0.071985</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>The data contains the main variables, <code>DGP</code>, <code>Exprop</code> and <code>Mort</code>, plus some geographical information.</p>
+<h3 id="ols-1">OLS</h3>
+<p>What would we get if we were to ignore the endogeneity problem? We estimate the following misspecified model by OLS</p>
+<p>$$
+{GDP}_i = \beta_0 + \beta_1 {Exprop}_i + \varepsilon_i
+$$</p>
+<pre><code class="language-python">reg1 = smf.ols('GDP ~ Exprop', df).fit()
+reg1.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    4.6609</td> <td>    0.409</td> <td>   11.402</td> <td> 0.000</td> <td>    3.844</td> <td>    5.478</td>
+</tr>
+<tr>
+  <th>Exprop</th>    <td>    0.5220</td> <td>    0.061</td> <td>    8.527</td> <td> 0.000</td> <td>    0.400</td> <td>    0.644</td>
+</tr>
+</table>
+<p>The coefficient of <code>Exprop</code> is positive and significant but we know it is a biased estimate of the causal effect.</p>
+<p>One direction we could take in addressing the endogeneity problem could be to control for any factor that affects both <code>GDP</code> and <code>Exprop</code>. In particular, the authors consider the following sets of variables:</p>
+<ul>
+<li>climat; proxied by latitude</li>
+<li>differences that affect both economic performance and institutions, eg. cultural, historical, etc.; controlled for with the use of continent dummies</li>
+</ul>
+<pre><code class="language-python">reg2 = smf.ols('GDP ~ Exprop + Latitude + Latitude2', df).fit()
+reg3 = smf.ols('GDP ~ Exprop + Latitude + Latitude2 + Asia + Africa + Namer + Samer', df).fit()
+</code></pre>
+<pre><code class="language-python">from statsmodels.iolib.summary2 import summary_col
+
+summary_col(results=[reg1,reg2,reg3],
+            float_format='%0.2f',
+            stars = True,
+            info_dict={'No. observations' : lambda x: f&quot;{int(x.nobs):d}&quot;},
+            regressor_order=['Intercept','Exprop','Latitude','Latitude2'])
+</code></pre>
+<table class="simpletable">
+<tr>
+          <td></td>          <th>GDP I</th>  <th>GDP II</th>  <th>GDP III</th>
+</tr>
+<tr>
+  <th>Intercept</th>        <td>4.66***</td> <td>4.55***</td> <td>5.95***</td>
+</tr>
+<tr>
+  <th></th>                 <td>(0.41)</td>  <td>(0.45)</td>  <td>(0.68)</td> 
+</tr>
+<tr>
+  <th>Exprop</th>           <td>0.52***</td> <td>0.49***</td> <td>0.40***</td>
+</tr>
+<tr>
+  <th></th>                 <td>(0.06)</td>  <td>(0.07)</td>  <td>(0.06)</td> 
+</tr>
+<tr>
+  <th>Latitude</th>            <td></td>      <td>2.16</td>    <td>0.42</td>  
+</tr>
+<tr>
+  <th></th>                    <td></td>     <td>(1.68)</td>  <td>(1.47)</td> 
+</tr>
+<tr>
+  <th>Latitude2</th>           <td></td>      <td>-2.12</td>   <td>0.44</td>  
+</tr>
+<tr>
+  <th></th>                    <td></td>     <td>(2.86)</td>  <td>(2.48)</td> 
+</tr>
+<tr>
+  <th>Africa</th>              <td></td>        <td></td>     <td>-1.06**</td>
+</tr>
+<tr>
+  <th></th>                    <td></td>        <td></td>     <td>(0.41)</td> 
+</tr>
+<tr>
+  <th>Asia</th>                <td></td>        <td></td>     <td>-0.74*</td> 
+</tr>
+<tr>
+  <th></th>                    <td></td>        <td></td>     <td>(0.42)</td> 
+</tr>
+<tr>
+  <th>Namer</th>               <td></td>        <td></td>      <td>-0.17</td> 
+</tr>
+<tr>
+  <th></th>                    <td></td>        <td></td>     <td>(0.40)</td> 
+</tr>
+<tr>
+  <th>Samer</th>               <td></td>        <td></td>      <td>-0.12</td> 
+</tr>
+<tr>
+  <th></th>                    <td></td>        <td></td>     <td>(0.42)</td> 
+</tr>
+<tr>
+  <th>R-squared</th>         <td>0.54</td>    <td>0.56</td>    <td>0.71</td>  
+</tr>
+<tr>
+  <th>R-squared Adj.</th>    <td>0.53</td>    <td>0.54</td>    <td>0.67</td>  
+</tr>
+<tr>
+  <th>No. observations</th>   <td>64</td>      <td>64</td>      <td>64</td>   
+</tr>
+</table>
+<p>The coefficient of <code>Expropr</code> decreases in magnitude but remains positive and significant after the addition of geographical control variables. This might suggest that the endogeneity problem is not very pronounced. However, it&rsquo;s hard to say given the large number of factors that could affect both institutions and GDP.</p>
+<h3 id="iv-1">IV</h3>
+<p>In order for <code>Mort</code> to be a valid instrument it needs to satisfy the two IV conditions:</p>
+<ol>
+<li><strong>Exclusion</strong>: <code>Mort</code> must be correlated to <code>GDP</code> only through <code>Exprop</code></li>
+<li><strong>Relevance</strong>: <code>Mort</code> must be correlated with <code>Exprop</code></li>
+</ol>
+<p>The <strong>exclusion restriction</strong> condition is untestable, however, we may not be satisfied if settler mortality rates in the 17th to 19th centuries have a direct effect on current GDP (in addition to their indirect effect through institutions).</p>
+<p>For example, settler mortality rates may be related to the current disease environment in a country, which could affect current economic performance.</p>
+<p>The authors argue this is unlikely because:</p>
+<ul>
+<li>The majority of settler deaths were due to malaria and yellow fever and had a limited effect on local people.</li>
+<li>The disease burden on local people in Africa or India, for example, did not appear to be higher than average, supported by relatively high population densities in these areas before colonization.</li>
+</ul>
+<p>The <strong>relevance</strong> condition is testable and we can check it by computing the partial correlation between <code>Mort</code> and <code>Exprop</code>. Let&rsquo;s start by visual inspection first.</p>
+<pre><code class="language-python">sns.scatterplot(data=df, x='Mort', y='Exprop')\
+.set(title='First Stage',
+    xlabel='Settler mortality',
+    ylabel='Risk of expropriation');
+</code></pre>
+<p><img src="img/iv_55_0.png" alt="png"></p>
+<p>Visually, the first stage seems weak, at best. However, a regression of <code>Exprop</code> on <code>Mort</code> can help us better assess whether the relationship is significant or not.</p>
+<pre><code class="language-python">smf.ols('Exprop ~ Mort', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    6.7094</td> <td>    0.202</td> <td>   33.184</td> <td> 0.000</td> <td>    6.305</td> <td>    7.114</td>
+</tr>
+<tr>
+  <th>Mort</th>      <td>   -0.0008</td> <td>    0.000</td> <td>   -2.059</td> <td> 0.044</td> <td>   -0.002</td> <td>-2.28e-05</td>
+</tr>
+</table>
+<p>The coefficient is negative, as expected, and statistically significant.</p>
+<p>The second-stage regression results give us an unbiased and consistent estimate of the effect of institutions on economic outcomes.</p>
+<p>$$
+{GDP}_i = \beta_0 + \beta_1 {Exprop}_i + \varepsilon_i \
+{Exprop}_i = \delta_0 + \delta_1 {logMort}_i + v_i
+$$</p>
+<p>Note that while our parameter estimates are correct, our standard errors
+are not and for this reason, computing 2SLS ‘manually’ (in stages with
+OLS) is not recommended.</p>
+<p>We can correctly estimate a 2SLS regression in one step using the
+<a href="https://github.com/bashtage/linearmodels" target="_blank" rel="noopener">linearmodels</a> package, an extension of <code>statsmodels</code></p>
+<p>Note that when using <code>IV2SLS</code>, the exogenous and instrument variables
+are split up in the function arguments (whereas before the instrument
+included exogenous variables)</p>
+<pre><code class="language-python">IV2SLS.from_formula('GDP ~ 1 + [Exprop ~ logMort]', data=df).fit().summary.tables[1]
+</code></pre>
+<table class="simpletable">
+<caption>Parameter Estimates</caption>
+<tr>
+      <td></td>      <th>Parameter</th> <th>Std. Err.</th> <th>T-stat</th> <th>P-value</th> <th>Lower CI</th> <th>Upper CI</th>
+</tr>
+<tr>
+  <th>Intercept</th>  <td>2.0448</td>    <td>1.1273</td>   <td>1.8139</td> <td>0.0697</td>   <td>-0.1647</td>  <td>4.2542</td> 
+</tr>
+<tr>
+  <th>Exprop</th>     <td>0.9235</td>    <td>0.1691</td>   <td>5.4599</td> <td>0.0000</td>   <td>0.5920</td>   <td>1.2550</td> 
+</tr>
+</table>
+<p>The result suggests a stronger positive relationship than what the OLS results indicated.</p>
+<h2 id="business-case">Business Case</h2>
+<p>We are given the following problem:</p>
+<blockquote>
+<p>A firm would like to understand whether a premium membership is working to increase revenue. However, it cannot force customers to become premium members. Instead, the firm distributes a discount coupon to a random sample of customers for the premium membership. Estimate the effect of the premium membership on revenue.</p>
+</blockquote>
+<p>We start by simulating the data.</p>
+<pre><code class="language-python">from src.dgp import dgp_premium
+</code></pre>
+<pre><code class="language-python">dgp = dgp_premium()
+df = dgp.generate_data()
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>discount</th>
+      <th>premium</th>
+      <th>revenue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>1</td>
+      <td>0.582809</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>0</td>
+      <td>3.427162</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1.953731</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>0</td>
+      <td>2.902038</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0.826724</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>From the data, we know the <code>revenue</code> per customer, whether it was given a <code>discount</code> for the premium membership and whether it actually decided to get the <code>premium</code> membership.</p>
+<p>If we to estimate the effect of <code>premium</code> on <code>revenue</code>, we might get a biased estimate because the decision of getting a premium membership is endogenous. For example, we can imagine that wealthier customers are generating more revenue but are also less likely to get the premium membership.</p>
+<p>We can represent the model with a DAG.</p>
+<pre><code class="language-python">dag_iv(Y=&quot;revenue&quot;, T=&quot;premium&quot;, Z=&quot;discount&quot;, U=&quot;income&quot;)
+</code></pre>
+<p><img src="img/iv_67_0.svg" alt="svg"></p>
+<h3 id="ols-2">OLS</h3>
+<p>By directly inspecting the data, it seems that premium members actually generate less revenue than normal customers.</p>
+<pre><code class="language-python">sns.barplot(x='premium', y='revenue', data=df);
+</code></pre>
+<p><img src="img/iv_70_0.png" alt="png"></p>
+<p>A linear regression confirms the graphical intuition.</p>
+<pre><code class="language-python">smf.ols('revenue ~ 1 + premium', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    1.7752</td> <td>    0.086</td> <td>   20.697</td> <td> 0.000</td> <td>    1.607</td> <td>    1.943</td>
+</tr>
+<tr>
+  <th>premium</th>   <td>   -0.7441</td> <td>    0.140</td> <td>   -5.334</td> <td> 0.000</td> <td>   -1.018</td> <td>   -0.470</td>
+</tr>
+</table>
+<h3 id="iv-2">IV</h3>
+<p>Let&rsquo;s now exploit the random variation induced by the discount. In order for our instrument to be valid, we need it to be exogenous (untestable) and relevant. We can test the relevance with the <strong>first stage</strong> regresssion of <code>discount</code> on <code>premium</code>.</p>
+<pre><code class="language-python">smf.ols('premium ~ 1 + discount', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    0.2368</td> <td>    0.021</td> <td>   11.324</td> <td> 0.000</td> <td>    0.196</td> <td>    0.278</td>
+</tr>
+<tr>
+  <th>discount</th>  <td>    0.2790</td> <td>    0.029</td> <td>    9.488</td> <td> 0.000</td> <td>    0.221</td> <td>    0.337</td>
+</tr>
+</table>
+<p>It seems that the instrument is valid. We can now estimate the IV regression.</p>
+<pre><code class="language-python">IV2SLS.from_formula('revenue ~ 1 + [premium ~ discount]', data=df).fit().summary.tables[1]
+</code></pre>
+<table class="simpletable">
+<caption>Parameter Estimates</caption>
+<tr>
+      <td></td>      <th>Parameter</th> <th>Std. Err.</th> <th>T-stat</th> <th>P-value</th> <th>Lower CI</th> <th>Upper CI</th>
+</tr>
+<tr>
+  <th>Intercept</th>  <td>0.9485</td>    <td>0.2147</td>   <td>4.4184</td> <td>0.0000</td>   <td>0.5278</td>   <td>1.3693</td> 
+</tr>
+<tr>
+  <th>premium</th>    <td>1.4428</td>    <td>0.5406</td>   <td>2.6689</td> <td>0.0076</td>   <td>0.3832</td>   <td>2.5023</td> 
+</tr>
+</table>
+<p>The estimated coefficient has now flipped sign and turned positive! Ignoring the endogeneity problem would have lead us to the wrong conclusion.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=LEAx0He_KBI" target="_blank" rel="noopener">Video lectures</a> by Paul Goldsmith-Pinkham (Yale)</li>
+</ul>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/iv/&amp;text=Instrumental%20Variables" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/iv/&amp;t=Instrumental%20Variables" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Instrumental%20Variables&amp;body=https://matteocourthoud.github.io/post/iv/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/iv/&amp;title=Instrumental%20Variables" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Instrumental%20Variables%20https://matteocourthoud.github.io/post/iv/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/iv/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+          <i class="fab fa-telegram"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">My research fields are empirical Industrial Organization and Competition Policy. My research interests include the relationship between competition and innovation, big data, artificial intelligence, platform markets, peer to peer services.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.econ.uzh.ch/en/people/graduatestudents/courthoud.html" target="_blank" rel="noopener">
+        <i class="fas fa-envelope"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>
