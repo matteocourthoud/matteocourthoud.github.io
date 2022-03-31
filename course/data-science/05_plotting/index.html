@@ -1,0 +1,1263 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="import numpy as np import pandas as pd import folium import geopandas import contextily import matplotlib as mpl import matplotlib.pyplot as plt import seaborn as sns from src.import_data import import_data  For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/data-science/05_plotting/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.a284b69209ae3b1847f86ecdbf4e555f.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/data-science/05_plotting/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/data-science/05_plotting/" />
+  <meta property="og:title" content="Plotting | Matteo Courthoud" />
+  <meta property="og:description" content="import numpy as np import pandas as pd import folium import geopandas import contextily import matplotlib as mpl import matplotlib.pyplot as plt import seaborn as sns from src.import_data import import_data  For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2022-03-31T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2022-03-31T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Plotting | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="bb056caedc679d8e403fac05680718fb" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/data-science/">Data Science</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/data-science/01_data_structures/">Data Structures</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/02_data_exploration/">Data Exploration</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/03_data_types/">Data Types</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/04_data_wrangling/">Data Wrangling</a></li>
+
+
+
+  <li class="active"><a href="/course/data-science/05_plotting/">Plotting</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/06_ml_pipeline/">Machine Learning Pipeline</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/07_web_scraping/">Web Scraping</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#intro">Intro</a></li>
+    <li><a href="#distributions">Distributions</a></li>
+    <li><a href="#time-series">Time Series</a></li>
+    <li><a href="#correlations">Correlations</a></li>
+    <li><a href="#geographical-data">Geographical data</a></li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Plotting</h1>
+
+          <p>Last updated on Mar 31, 2022</p>
+
+          <div class="article-style">
+            <pre><code class="language-python">import numpy as np
+import pandas as pd
+
+import folium
+import geopandas
+import contextily
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from src.import_data import import_data
+</code></pre>
+<p>For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at <strong>Inside AirBnb</strong>: <a href="http://insideairbnb.com/get-the-data.html" target="_blank" rel="noopener">http://insideairbnb.com/get-the-data.html</a>.</p>
+<p>A description of all variables in all datasets is avaliable <a href="https://docs.google.com/spreadsheets/d/1iWCNJcSutYqpULSQHlNyGInUvHg2BoUGoNRIGa6Szc4/edit#gid=982310896" target="_blank" rel="noopener">here</a>.</p>
+<p>We are going to use 2 datasets:</p>
+<ul>
+<li>listing dataset: contains listing-level information</li>
+<li>pricing dataset: contains pricing data, over time</li>
+</ul>
+<p>We import and clean them with a script. If you want more details, have a look at the <a href="https://matteocourthoud.github.io/course/data-science/01_data_exploration/" target="_blank" rel="noopener">data exploration</a> and <a href="https://matteocourthoud.github.io/course/data-science/03_data_wrangling" target="_blank" rel="noopener">data wrangling</a> sections.</p>
+<pre><code class="language-python">df_listings, df_prices, df = import_data()
+</code></pre>
+<h2 id="intro">Intro</h2>
+<p>The default library for plotting in python is <code>matplotlib</code>. However, a more modern package that builds on top of it, is <code>seaborn</code>.</p>
+<p>We start by telling the notebook to display the plots inline.</p>
+<pre><code class="language-python">%matplotlib inline
+</code></pre>
+<p>Another important configuration is the plot resulution. We set it to <code>retina</code> to have high resolution plots.</p>
+<pre><code class="language-python">%config InlineBackend.figure_format = 'retina'
+</code></pre>
+<p>You can choose set a general theme using <code>plt.style.use()</code>. The list of themes is available <a href="https://matplotlib.org/3.5.1/gallery/style_sheets/style_sheets_reference.html" target="_blank" rel="noopener">here</a>.</p>
+<pre><code class="language-python">plt.style.use('seaborn')
+</code></pre>
+<p>If you want to further customize some aspects of a theme, you can set some global paramters for all plots. You can find a list of all the options <a href="https://matplotlib.org/stable/tutorials/introductory/customizing.html" target="_blank" rel="noopener">here</a>. If you want to customize all plots in a project in the samy way, you can create a <code>filename.mplstyle</code> file and call it at the beginning of each file as <code>plt.style.use('filename.mplstyle')</code>.</p>
+<pre><code class="language-python">mpl.rcParams['figure.figsize'] = (10,6)
+mpl.rcParams['axes.labelsize'] = 16
+mpl.rcParams['axes.titlesize'] = 18
+mpl.rcParams['axes.titleweight'] = 'bold'
+mpl.rcParams['figure.titlesize'] = 18
+mpl.rcParams['figure.titleweight'] = 'bold'
+mpl.rcParams['axes.titlepad'] = 20
+mpl.rcParams['legend.facecolor'] = 'w'
+</code></pre>
+<h2 id="distributions">Distributions</h2>
+<p>Suppose you have a numerical variable and you want to see how it&rsquo;s distributed. The best option is to use an <strong>histogram</strong>. Seaborn function is <code>sns.histplot</code>.</p>
+<pre><code class="language-python">df_listings['log_price'] = np.log(1+df_listings['mean_price'])
+</code></pre>
+<pre><code class="language-python">sns.histplot(df_listings['log_price'], bins=50)\
+.set(title='Distribution of log-prices');
+</code></pre>
+<p><img src="../img/05_plotting_17_0.png" alt="png"></p>
+<p>We can add a smooth kernel density approximation with the <code>kde</code> option.</p>
+<pre><code class="language-python">sns.histplot(df_listings['log_price'], bins=50, kde=True)\
+.set(title='Distribution of log-prices with density');
+</code></pre>
+<p><img src="../img/05_plotting_19_0.png" alt="png"></p>
+<p>If we have a categorical variable, we might want to plot the distribution of the data across its values. We can use a <strong>barplot</strong>. Seaborn function is <code>sns.countplot()</code> for count data.</p>
+<pre><code class="language-python">sns.countplot(x=&quot;neighborhood&quot;, data=df_listings)\
+.set(title='Number of observations by neighborhood');
+</code></pre>
+<p><img src="../img/05_plotting_21_0.png" alt="png"></p>
+<p>If instead we want to see the distribution of another variable across some group, we can use the <code>sns.barplot()</code> function.</p>
+<pre><code class="language-python">sns.barplot(x=&quot;neighborhood&quot;, y=&quot;mean_price&quot;, data=df_listings)\
+.set(title='Average price by neighborhood');
+</code></pre>
+<p><img src="../img/05_plotting_23_0.png" alt="png"></p>
+<p>We can also use other metrics besides the mean with the <code>estimator</code> option.</p>
+<pre><code class="language-python">sns.barplot(x=&quot;neighborhood&quot;, y=&quot;mean_price&quot;, data=df_listings, estimator=np.median)\
+.set(title='Median price by neighborhood');
+</code></pre>
+<p><img src="../img/05_plotting_25_0.png" alt="png"></p>
+<p>We can also plot the full distribution using, for example <strong>boxplots</strong> with <code>sns.boxplot()</code>. Boxplots display quartiles and outliers.</p>
+<pre><code class="language-python">sns.boxplot(x=&quot;neighborhood&quot;, y=&quot;log_price&quot;, data=df_listings)\
+.set(title='Price distribution across neighborhoods');
+</code></pre>
+<p><img src="../img/05_plotting_27_0.png" alt="png"></p>
+<p>If we want to see the full distribution, we can use the <code>sns.violinplot()</code> function.</p>
+<pre><code class="language-python">sns.violinplot(x=&quot;neighborhood&quot;, y=&quot;log_price&quot;, data=df_listings)\
+.set(title='Price distribution across neighborhoods');
+</code></pre>
+<p><img src="../img/05_plotting_29_0.png" alt="png"></p>
+<h2 id="time-series">Time Series</h2>
+<p>If the dataset has a time dimension, we might want to explore how a variable evolves over time. Seaborn function is <code>sns.lineplot()</code>. If the data has multiple observations for each time period, it will also display a 95% confidence interval around the mean.</p>
+<pre><code class="language-python">sns.lineplot(data=df, x='date', y='price')\
+.set(title=&quot;Price distribution over time&quot;);
+</code></pre>
+<p><img src="../img/05_plotting_32_0.png" alt="png"></p>
+<p>We can do the samy by group, with the <code>hue</code> option. We can suppress confidence intervals setting <code>ci=None</code> (making the code much faster).</p>
+<pre><code class="language-python">sns.lineplot(data=df, x='date', y='price', hue='neighborhood', ci=None)\
+.set(title=&quot;Price distribution over time&quot;);
+</code></pre>
+<p><img src="../img/05_plotting_34_0.png" alt="png"></p>
+<h2 id="correlations">Correlations</h2>
+<pre><code class="language-python">df_listings[&quot;log_reviews&quot;] = np.log(1 + df_listings[&quot;number_of_reviews&quot;])
+df_listings[&quot;log_rpm&quot;] = np.log(1 + df_listings[&quot;reviews_per_month&quot;])
+</code></pre>
+<p>The most intuitive way to plot a correlation between two variables is a <strong>scatterplot</strong>. Seaborn function is <code>sns.scatterplot()</code></p>
+<pre><code class="language-python">sns.scatterplot(data=df_listings, x=&quot;log_rpm&quot;, y=&quot;log_price&quot;, alpha=0.3)\
+.set(title='Prices and Reviews');
+</code></pre>
+<p><img src="../img/05_plotting_38_0.png" alt="png"></p>
+<p>We can highlight the best linear approximation adding a line of fit using <code>sns.regplot()</code>.</p>
+<pre><code class="language-python">sns.regplot(x=&quot;log_rpm&quot;, y=&quot;log_price&quot;, data=df_listings,
+            scatter_kws={'alpha':.1},
+            line_kws={'color':'C1'})\
+.set(title='Price and Reviews');
+</code></pre>
+<p><img src="../img/05_plotting_40_0.png" alt="png"></p>
+<p>If we want a more flexible representation of the data, we can use the <code>binscatter</code> package. <code>binscatter</code> splits the data into equally sized bins and displays a scatterplot of the averages.</p>
+<p>The main difference between a binscatterplot and an histogram is that in a histogram bins have the same <em>width</em> while in a binscatterplot bins have the same <em>number of observations</em>.</p>
+<p>An advantage of <code>binscatter</code> is that it makes the nature of the data much more transparent, at the cost of hiding some of the background noise.</p>
+<pre><code class="language-python">import binscatter
+
+# Remove nans
+temp = df_listings[[&quot;log_rpm&quot;, &quot;log_price&quot;]].dropna()
+
+# Binned scatter plot of Wage vs Tenure
+fig, ax = plt.subplots()
+ax.binscatter(temp[&quot;log_rpm&quot;], temp[&quot;log_price&quot;]);
+ax.set_title('Price and Reviews');
+</code></pre>
+<p><img src="../img/05_plotting_42_0.png" alt="png"></p>
+<p>As usual, we can split the data by group with the <code>hue</code> option.</p>
+<pre><code class="language-python">sns.scatterplot(data=df_listings, x=&quot;log_rpm&quot;, y=&quot;log_price&quot;, 
+                hue=&quot;room_type&quot;, alpha=0.3)\
+.set(title=&quot;Prices and Ratings, by room type&quot;);
+</code></pre>
+<p><img src="../img/05_plotting_44_0.png" alt="png"></p>
+<p>We can also add the marginal distributions using the <code>sns.jointplot()</code> function.</p>
+<pre><code class="language-python">sns.jointplot(data=df_listings, x=&quot;log_rpm&quot;, y=&quot;log_price&quot;, kind=&quot;hex&quot;)\
+.fig.suptitle(&quot;Prices and Reviews, with marginals&quot;)  
+plt.subplots_adjust(top=0.9);
+</code></pre>
+<p><img src="../img/05_plotting_46_0.png" alt="png"></p>
+<p>If we want to plot correlations (and marginals) of multiple variables, we can use the <code>sns.pairplot()</code> function.</p>
+<pre><code class="language-python">sns.pairplot(data=df_listings,
+             vars=[&quot;log_rpm&quot;, &quot;log_reviews&quot;, &quot;log_price&quot;],
+             plot_kws={'s':2})\
+.fig.suptitle(&quot;Correlations&quot;);
+plt.subplots_adjust(top=0.9)
+</code></pre>
+<p><img src="../img/05_plotting_48_0.png" alt="png"></p>
+<p>We can distinguish across groups with the <code>hue</code> option.</p>
+<pre><code class="language-python">sns.pairplot(data=df_listings,
+             vars=[&quot;log_rpm&quot;, &quot;log_reviews&quot;, &quot;log_price&quot;],
+             hue='room_type',
+             plot_kws={'s':2})\
+.fig.suptitle(&quot;Correlations, by room type&quot;);
+plt.subplots_adjust(top=0.9)
+</code></pre>
+<p><img src="../img/05_plotting_50_0.png" alt="png"></p>
+<p>If we want to plot all the correlations in the data, we can use the <code>sns.heatmap()</code> function on top of a correlation matrix generated by <code>.corr()</code>.</p>
+<pre><code class="language-python"># Plot
+sns.heatmap(df.corr(), vmin=-1, vmax=1, linewidths=.5, cmap=&quot;RdBu&quot;)\
+ .set(title=&quot;Correlations&quot;);
+</code></pre>
+<p><img src="../img/05_plotting_52_0.png" alt="png"></p>
+<h2 id="geographical-data">Geographical data</h2>
+<p>We can in principle plot geographical data as a simple scatterplot.</p>
+<pre><code class="language-python">sns.scatterplot(data=df_listings, x=&quot;longitude&quot;, y=&quot;latitude&quot;)\
+.set(title='Listing coordinates');
+</code></pre>
+<p><img src="../img/05_plotting_55_0.png" alt="png"></p>
+<p>However, we can do better and do the scatterplot over a map layer.</p>
+<p>First, we neeed to convert the <code>latitude</code> and <code>longitude</code> variables into coordinates. We use the library <code>geopandas</code>. Note that the original coordinate system is <code>4326</code> (3D) and we need to <code>3857</code> (2D).</p>
+<pre><code class="language-python">geom = geopandas.points_from_xy(df_listings.longitude, df_listings.latitude)
+gdf = geopandas.GeoDataFrame(
+    df_listings, 
+    geometry=geom,
+    crs=4326).to_crs(3857)
+</code></pre>
+<p>We import a map of Bologna using the library <code>contextily</code>.</p>
+<pre><code class="language-python">bologna = contextily.Place(&quot;Bologna&quot;, source=contextily.providers.Stamen.TonerLite)
+</code></pre>
+<p>We are now ready to plot it with the airbnb listings.</p>
+<pre><code class="language-python">ax = bologna.plot()
+ax.set_ylim([5530000, 5555000])
+gdf.plot(ax=ax, c=df_listings['mean_price'], cmap='viridis', alpha=0.8);
+</code></pre>
+<p><img src="../img/05_plotting_61_0.png" alt="png"></p>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/data-science/04_data_wrangling/" rel="next">Data Wrangling</a>
+  </div>
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/data-science/06_ml_pipeline/" rel="prev">Machine Learning Pipeline</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

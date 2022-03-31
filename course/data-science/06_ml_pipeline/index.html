@@ -1,0 +1,1709 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="In this notebook, we are going to build a pipeline for a general prediction problem.
+# Standard Imports from src.utils import * from src.get_feature_names import get_feature_names  # Set inline graphs sns." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/data-science/06_ml_pipeline/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.a284b69209ae3b1847f86ecdbf4e555f.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/course/data-science/06_ml_pipeline/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/course/data-science/06_ml_pipeline/" />
+  <meta property="og:title" content="Machine Learning Pipeline | Matteo Courthoud" />
+  <meta property="og:description" content="In this notebook, we are going to build a pipeline for a general prediction problem.
+# Standard Imports from src.utils import * from src.get_feature_names import get_feature_names  # Set inline graphs sns." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2022-03-31T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2022-03-31T00:00:00&#43;00:00">
+  
+
+  
+
+
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Machine Learning Pipeline | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="e8c0f32bd58d0f20f450a3facf21546b" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    
+
+<div class="container-fluid docs">
+  <div class="row flex-xl-nowrap">
+    <div class="col-12 col-md-3 col-xl-2 docs-sidebar">
+      
+<nav class="collapse docs-links" id="docs-nav">
+  
+  
+  
+  
+  
+  
+
+  
+  
+    
+
+    
+      
+
+      <ul class="nav docs-sidenav">
+        <li><a href="/course/"><i class="fas fa-arrow-left pr-1"></i>Courses</a></li>
+      </ul>
+
+      
+      
+        
+          
+        
+      
+
+
+  
+    
+    
+    
+    
+      
+    
+    
+
+    
+      <div class="docs-toc-item">
+        <a class="docs-toc-link " href="/course/data-science/">Data Science</a>
+    
+      
+        <ul class="nav docs-sidenav">
+      
+
+
+  <li class=""><a href="/course/data-science/01_data_structures/">Data Structures</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/02_data_exploration/">Data Exploration</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/03_data_types/">Data Types</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/04_data_wrangling/">Data Wrangling</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/05_plotting/">Plotting</a></li>
+
+
+
+  <li class="active"><a href="/course/data-science/06_ml_pipeline/">Machine Learning Pipeline</a></li>
+
+
+
+  <li class=""><a href="/course/data-science/07_web_scraping/">Web Scraping</a></li>
+
+      
+        </ul>
+      
+    
+
+    
+      </div>
+    
+
+    
+  
+</nav>
+
+    </div>
+
+    
+    
+    <div class="d-none d-xl-block col-xl-2 docs-toc">
+      
+
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#setup">Setup</a></li>
+    <li><a href="#data-exploration">Data Exploration</a></li>
+    <li><a href="#pre-processing">Pre-processing</a></li>
+    <li><a href="#information-and-components">Information and components</a></li>
+    <li><a href="#feature-importance">Feature Importance</a></li>
+    <li><a href="#weighting">Weighting</a></li>
+    <li><a href="#model">Model</a></li>
+    <li><a href="#pipeline">Pipeline</a></li>
+  </ul>
+</nav>
+
+      
+    </div>
+    
+
+    <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 docs-content" role="main">
+
+      <article class="article">
+
+        <div class="docs-article-container">
+
+          <h1>Machine Learning Pipeline</h1>
+
+          <p>Last updated on Mar 31, 2022</p>
+
+          <div class="article-style">
+            <p>In this notebook, we are going to build a pipeline for a general prediction problem.</p>
+<pre><code class="language-python"># Standard Imports
+from src.utils import *
+from src.get_feature_names import get_feature_names
+</code></pre>
+<pre><code class="language-python"># Set inline graphs
+sns.set()
+%matplotlib inline
+</code></pre>
+<h2 id="introduction">Introduction</h2>
+<p>Usually, in machine learning prediction tasks, the data consists in 3 files:</p>
+<ul>
+<li><em>X_train.csv</em></li>
+<li><em>y_train.csv</em></li>
+<li><em>X_test.csv</em></li>
+</ul>
+<p>The purpose of the exercise is to produce a <em>y_test.csv</em> file, with the predicted values corresponding to the <em>X_test.csv</em> observations.</p>
+<p>The functions we will write are going to be general and will adapt to any type of dataset, and we will test them on the <a href="https://www.kaggle.com/c/house-prices-advanced-regression-techniques" target="_blank" rel="noopener">House Prices Dataset</a> which is a standard dataset for these kind of tasks. The data consists of 2 files:</p>
+<ul>
+<li><em>train.csv</em></li>
+<li><em>test.csv</em></li>
+</ul>
+<p>The target variable that we want to predict is <code>SalePrice</code>.</p>
+<h2 id="setup">Setup</h2>
+<p>First we want to import the data.</p>
+<pre><code class="language-python"># Import data
+df_train = pd.read_csv(&quot;data/train.csv&quot;)
+df_test = pd.read_csv(&quot;data/test.csv&quot;)
+
+print(f&quot;Training data: {np.shape(df_train)} \n Testing data: {np.shape(df_test)}&quot;)
+</code></pre>
+<pre><code>Training data: (1460, 81) 
+ Testing data: (1459, 80)
+</code></pre>
+<p>The training data also includes the target variable <code>SalePrice</code>, while, as usual, the testing data does not. We need to separate the training data into two parts:</p>
+<ul>
+<li><code>X</code>: the <strong>features</strong></li>
+<li><code>y</code>: the <strong>target</strong></li>
+</ul>
+<pre><code class="language-python"># Select the features
+X_train = df_train.drop(['SalePrice'], axis=1)
+X_test = df_test
+
+# Check size
+print(f&quot;Training features: {np.shape(X_train)} \n Testing features: {np.shape(X_test)}&quot;)
+</code></pre>
+<pre><code>Training features: (1460, 80) 
+ Testing features: (1459, 80)
+</code></pre>
+<pre><code class="language-python"># Select the target
+y_train = df_train['SalePrice']
+
+# Check size
+print(f&quot;Training target: {np.shape(y_train)}&quot;)
+</code></pre>
+<pre><code>Training target: (1460,)
+</code></pre>
+<p>It&rsquo;s good practice to immediately set aside a <strong>validation</strong> sample with 20% of the observations. The purpose of the validation sample is to give us unbiased estimate of the prediction score. Therefore, we want to set it aside as soon as possible, not to be conditioned in any way by it. Possibly, set it away even before data exploration.</p>
+<p>The more we tune the algorithm based on the feedback received from the validation sample, the more biased our estimate is going to be. Ideally, one would use only cross-validation on the training data and tune only a couple of times using the validation data.</p>
+<pre><code class="language-python"># Set aside the validation sample
+X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2)
+</code></pre>
+<p>Now we are ready to build and test our pipeline.</p>
+<h2 id="data-exploration">Data Exploration</h2>
+<p>First, let&rsquo;s have a quick look at the data.</p>
+<pre><code class="language-python">X_train.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Id</th>
+      <th>MSSubClass</th>
+      <th>MSZoning</th>
+      <th>LotFrontage</th>
+      <th>LotArea</th>
+      <th>Street</th>
+      <th>Alley</th>
+      <th>LotShape</th>
+      <th>LandContour</th>
+      <th>Utilities</th>
+      <th>...</th>
+      <th>ScreenPorch</th>
+      <th>PoolArea</th>
+      <th>PoolQC</th>
+      <th>Fence</th>
+      <th>MiscFeature</th>
+      <th>MiscVal</th>
+      <th>MoSold</th>
+      <th>YrSold</th>
+      <th>SaleType</th>
+      <th>SaleCondition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>563</th>
+      <td>564</td>
+      <td>50</td>
+      <td>RL</td>
+      <td>66.0</td>
+      <td>21780</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>144</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>7</td>
+      <td>2008</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>49</td>
+      <td>190</td>
+      <td>RM</td>
+      <td>33.0</td>
+      <td>4456</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>6</td>
+      <td>2009</td>
+      <td>New</td>
+      <td>Partial</td>
+    </tr>
+    <tr>
+      <th>148</th>
+      <td>149</td>
+      <td>20</td>
+      <td>RL</td>
+      <td>63.0</td>
+      <td>7500</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>4</td>
+      <td>2008</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>801</th>
+      <td>802</td>
+      <td>30</td>
+      <td>RM</td>
+      <td>40.0</td>
+      <td>4800</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>7</td>
+      <td>2007</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+    <tr>
+      <th>1374</th>
+      <td>1375</td>
+      <td>60</td>
+      <td>FV</td>
+      <td>85.0</td>
+      <td>10625</td>
+      <td>Pave</td>
+      <td>NaN</td>
+      <td>Reg</td>
+      <td>Lvl</td>
+      <td>AllPub</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>7</td>
+      <td>2008</td>
+      <td>WD</td>
+      <td>Normal</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 80 columns</p>
+</div>
+<p>The <code>Id</code> column is clearly not useful for prediction, let&rsquo;s drop it from both datasets.</p>
+<pre><code class="language-python"># Drop Id 
+X_train.drop([&quot;Id&quot;], axis=1, inplace=True)
+X_test.drop([&quot;Id&quot;], axis=1, inplace=True)
+</code></pre>
+<p>Now we want to identify categorical and numerical variables.</p>
+<pre><code class="language-python"># Save column types
+numerical_cols = list(X_train.describe().columns)
+categorical_cols = list(X_train.describe(include=object).columns)
+print(&quot;There are %i numerical and %i categorical variables&quot; % (len(numerical_cols), len(categorical_cols)))
+</code></pre>
+<pre><code>There are 36 numerical and 43 categorical variables
+</code></pre>
+<p>Let&rsquo;s start by analyzing the numerical variables.</p>
+<pre><code class="language-python">X_numerical = X_train.loc[:, numerical_cols]
+corr = X_numerical.corr()
+</code></pre>
+<pre><code class="language-python">fig, ax = plt.subplots(1, 1, figsize=(10,10))
+fig.suptitle(&quot;Correlation between categorical variables&quot;, fontsize=16)
+cbar_ax = fig.add_axes([.95, .12, .05, .76])
+sns.heatmap(corr, vmin=-1, vmax=1, center=0, cmap=sns.diverging_palette(20, 220, n=20), 
+            square=True, ax=ax, cbar_ax = cbar_ax)
+plt.show()
+</code></pre>
+<p><img src="../img/06_ml_pipeline_24_0.png" alt="png"></p>
+<p>For the non/numeric columns, we need a further option.</p>
+<pre><code class="language-python">unique_values = X_train.describe(include=object).T.unique
+</code></pre>
+<pre><code class="language-python"># Plot
+fig, ax = plt.subplots(1, 1, figsize=(10,6))
+fig.suptitle(&quot;Distribution of unique values for categorical variables&quot;, fontsize=16)
+sns.histplot(data=unique_values)
+plt.show();
+</code></pre>
+<p><img src="../img/06_ml_pipeline_27_0.png" alt="png"></p>
+<p>Let&rsquo;s save the identity of the numerical and categorical columns.</p>
+<pre><code class="language-python"># Save column types
+numerical_cols = list(X_train.describe().columns)
+categorical_cols = list(X_train.describe(include=object).columns)
+</code></pre>
+<p>How many missing values are there in the dataset?</p>
+<pre><code class="language-python">missing_values = X_train.isnull().sum().sort_values(ascending=True)[-20:] / len(X_train)
+</code></pre>
+<pre><code class="language-python">fig, ax = plt.subplots(figsize=(10,8))
+ax.set_title(&quot;Variables with most missing values&quot;, fontsize=16)
+ax.barh(np.arange(len(missing_values)), missing_values)
+ax.set_yticks(np.arange(len(missing_values)))
+ax.set_yticklabels(missing_values.index)
+ax.set_xlabel('Percentage of missig values')
+plt.show()
+</code></pre>
+<p><img src="../img/06_ml_pipeline_32_0.png" alt="png"></p>
+<p>Around 10% of each feature is missing. We will have to deal with that.</p>
+<h2 id="pre-processing">Pre-processing</h2>
+<p>First, let&rsquo;s process <strong>numerical variables</strong>. We want to do two things:</p>
+<ul>
+<li>inpute missing values</li>
+<li>standardize all variables</li>
+</ul>
+<p>Which imputer should to use? It depends on the <strong>type of missing data</strong>:</p>
+<ul>
+<li>
+<p><strong>Missing absolutely at random</strong>: as the name says, in this case we believe that missing values are distributed uniformly at random, independently across variables.</p>
+<ul>
+<li>In this case, the only information on missing values comes from the distribution of non-missing values of the same variable.</li>
+<li>No information on missing values is contained in other variables.</li>
+</ul>
+</li>
+<li>
+<p><strong>Missing at random</strong>: in this case, missing values are random, conditional on values of other observed variables.</p>
+<ul>
+<li>In this case, information in other variables might help filling missing values.</li>
+</ul>
+</li>
+<li>
+<p><strong>Missing non at random</strong>: in this last case, missing values depend on information that we do not observe.</p>
+<ul>
+<li>This is the most tricky category of missing values since data alone does not tell us which values might be missing. For example, we might have that older women might be less likely to report the age.</li>
+<li>If we consider the data missing at random (absolutely or not), we would underestimate the missing ages.</li>
+<li>External information such as the sample population might help. For example, we could estimate the probability of not reporting the age and fill the missing values with the expected age, <em>conditional</em> on age not being reported.</li>
+</ul>
+</li>
+</ul>
+<p>So, which imputers are readily available in <code>sklearn</code> for numerical data?</p>
+<p>For data <strong>missing absolutely at random</strong>, there is one standard <code>sklearn</code> library: <code>SimpleImputer()</code>. It allows different <code>strategy</code> options such as</p>
+<ul>
+<li><code>&quot;mean&quot;</code></li>
+<li><code>&quot;median&quot;</code></li>
+<li><code>&quot;most_frequent&quot;</code></li>
+</ul>
+<p>For data <strong>missing at random</strong>, there are multiple <code>sklearn</code> libraries:</p>
+<ul>
+<li><code>KNNImputer()</code>: uses KNN</li>
+<li><code>IterativeImputer()</code>: uses a variety of ML algorithms
+<ul>
+<li>see comparison <a href="https://scikit-learn.org/stable/auto_examples/impute/plot_iterative_imputer_variants_comparison.html" target="_blank" rel="noopener">here</a></li>
+</ul>
+</li>
+</ul>
+<p>After we have inputed missing values, we want to standardize numerical variables to make the algorithm more efficient and robust to outliers.</p>
+<p>The two main options for standardization are:</p>
+<ul>
+<li><code>StandardScaler()</code>: which normalizes each variable to mean zero and unit variance</li>
+<li><code>MinMaxScaler()</code>: which normalizes each variable to an interval between zero an one</li>
+</ul>
+<pre><code class="language-python"># Inputer for numerical variables
+num = Pipeline(steps=[
+    ('ii', IterativeImputer()),
+    ('ss', StandardScaler())
+    ])
+</code></pre>
+<p>For <strong>categorical variables</strong>, we do not have to worry about scaling. However, we still need to impute missing values and, crucially, we need to transform them into numerical variables. This process is called <strong>encoding</strong>.</p>
+<p>Which imputer should to use?</p>
+<p>For data <strong>missing absolutely at random</strong>, the only available <code>strategy</code> option for <code>SimpleImputer()</code> is</p>
+<ul>
+<li><code>&quot;most_frequent&quot;</code></li>
+</ul>
+<p>For data <strong>missing at random</strong>, we can still use both</p>
+<ul>
+<li><code>KNNImputer()</code></li>
+<li><code>IterativeImputer()</code></li>
+</ul>
+<p>For <strong>encoding</strong> categorical variables, the standard option is <code>OneHotEncoder()</code> which generates unique binary variables out of every values of the categorical variable.</p>
+<pre><code class="language-python"># One Hot Encoder for categorical data
+cat = Pipeline(steps=[
+    ('si', SimpleImputer(strategy=&quot;most_frequent&quot;)),
+    ('ohe', OneHotEncoder(handle_unknown=&quot;ignore&quot;)),
+    ])
+</code></pre>
+<pre><code class="language-python"># Preprocess column transformer for preprocessing data
+preprocess = ColumnTransformer(
+                    transformers=[
+                        ('num', num, numerical_cols),
+                        ('cat', cat, categorical_cols),
+                    ])
+</code></pre>
+<h2 id="information-and-components">Information and components</h2>
+<p>How much information is contained in our dataset? It is a dense or sparse dataset?</p>
+<pre><code class="language-python">X_clean = num.fit_transform(X_numerical)
+pca = PCA().fit(X_clean)
+explained_variance = pca.explained_variance_ratio_
+</code></pre>
+<pre><code class="language-python">fig, (ax1, ax2) = plt.subplots(1,2, figsize=(15,6))
+fig.suptitle('Principal Component Analysis', fontsize=16);
+
+# Relative 
+ax1.plot(range(len(explained_variance)), explained_variance)
+ax1.set_ylabel('Prop. Variance Explained')
+ax1.set_xlabel('Principal Component');
+
+# Cumulative
+ax2.plot(range(len(explained_variance)), np.cumsum(explained_variance))
+ax2.set_ylabel('Cumulative Variance Explained');
+ax2.set_xlabel('Principal Component');
+</code></pre>
+<p><img src="../img/06_ml_pipeline_48_0.png" alt="png"></p>
+<h2 id="feature-importance">Feature Importance</h2>
+<p>Before starting our prediction analysis, we would like to understand which variables are most important for our prediction problem.</p>
+<pre><code class="language-python">def plot_featureimportance(importance, preprocess):
+    df = pd.DataFrame({&quot;names&quot;: get_feature_names(preprocess), &quot;values&quot;: importance})
+    df = df.sort_values(&quot;values&quot;).iloc[:20, :]
+    # plot
+    fig, ax = plt.subplots(figsize=(10,8))
+    ax.set_title(&quot;Feature importance&quot;, fontsize=16)
+    sns.barplot(y=&quot;names&quot;, x=&quot;values&quot;, data=df)
+    ax.barh(np.arange(len(df)), df[&quot;values&quot;])
+    plt.show()
+</code></pre>
+<p>We start with linear regression feature importance: we standardize all variables to be mean vero and unit variance, and we run a linear regression over the test set.</p>
+<pre><code class="language-python">def featureimportance_lr(X, y):
+    X_clean = preprocess.fit_transform(X)
+    # fit the model
+    model = LinearRegression()
+    model.fit(X_clean, y)
+    # get importance
+    importance = np.abs(model.coef_)
+    plot_featureimportance(importance, preprocess)
+</code></pre>
+<pre><code class="language-python"># Plot linear feature importance
+featureimportance_lr(X_train, y_train)
+</code></pre>
+<p><img src="../img/06_ml_pipeline_54_0.png" alt="png"></p>
+<p>We now look at regression tree feature importance.</p>
+<pre><code class="language-python">def featureimportance_forest(X, y):
+    X_clean = preprocess.fit_transform(X)
+    # fit the model
+    model = RandomForestRegressor()
+    model.fit(X_clean, y)
+    # get importance
+    importance = model.feature_importances_
+    plot_featureimportance(importance, preprocess)
+</code></pre>
+<pre><code class="language-python"># Plot tree feature importance
+featureimportance_forest(X_train, y_train)
+</code></pre>
+<p><img src="../img/06_ml_pipeline_57_0.png" alt="png"></p>
+<h2 id="weighting">Weighting</h2>
+<p>Another important check to perform concerns weighting. Is the distribution of our objective variable the same in the training and in the test sample? If it is not the case, we might get a poor performance just because our training sample is not representative of our testing sample.</p>
+<p>This is something that usually <strong>we cannot test</strong>, since we do not have access to the distribution of the target variable in the test data. However, we might be given the information ex-ante as a warning.</p>
+<p>In this case, we perform the analysis on the validation set. Since we have selected the validation set at random, we do not expect significant differences.</p>
+<pre><code class="language-python">fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15,6))
+
+# Plot 1
+sns.histplot(data=y_train, kde=True, ax=ax1)
+sns.histplot(data=y_validation, kde=True, ax=ax1, color='orange')
+ax1.set_title(&quot;Density Function of y&quot;, fontsize=16);
+ax1.legend(['y train', 'y validation'])
+
+# Plot 2
+sns.histplot(data=y_train,  element=&quot;step&quot;, fill=False,
+    cumulative=True, stat=&quot;density&quot;, common_norm=False, ax=ax2)
+sns.histplot(data=y_validation, element=&quot;step&quot;, fill=False,
+    cumulative=True, stat=&quot;density&quot;, common_norm=False, ax=ax2, color='orange')
+ax2.set_title(&quot;Cumulative Distribution of y&quot;, fontsize=16);
+ax2.legend(['y train', 'y validation']);
+</code></pre>
+<p><img src="../img/06_ml_pipeline_60_0.png" alt="png"></p>
+<p>Since the size of the test sample is smaller than the size of the training sample, the two densities are different. However, the distributions indicate that the standardized distributions are the same.</p>
+<h2 id="model">Model</h2>
+<p>There are many models to choose among.</p>
+<pre><code class="language-python"># prepare models
+models = {&quot;Lasso&quot;: Lasso(alpha=100),
+          &quot;Ridge&quot;: BayesianRidge(),
+          &quot;KNN&quot;: KNeighborsRegressor(),
+          &quot;Kernel&quot;: KernelRidge(),
+          &quot;Naive&quot;: GaussianNB(),
+          &quot;SVM&quot;: SVR(),
+          &quot;Ada&quot;: AdaBoostRegressor(),
+          &quot;Tree&quot;: DecisionTreeRegressor(),
+          &quot;Forest&quot;: RandomForestRegressor(),
+          &quot;GBoost&quot;: GradientBoostingRegressor(),
+          &quot;XGBoost&quot;: XGBRegressor(),
+          &quot;LGBoost&quot;: LGBMRegressor()}
+</code></pre>
+<pre><code class="language-python">def evaluate_model(model, name, X, y, cv, scoring):
+    X_clean = preprocess.fit_transform(X)
+    start = time.perf_counter()
+    cv_results = cross_val_score(model, X_clean, y, cv=cv, scoring=scoring)
+    t = time.perf_counter()-start
+    score = {&quot;model&quot;:name, &quot;mean&quot;:-np.mean(cv_results), &quot;std&quot;:np.std(cv_results), &quot;time&quot;:t}
+    print(&quot;%s: %f (%f) in %f seconds&quot; % (name, -np.mean(cv_results), np.std(cv_results), t))
+    return score
+</code></pre>
+<pre><code class="language-python">def plot_model_scores(scores):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15,6))
+    fig.suptitle(&quot;Comparing algorithms&quot;, fontsize=16)
+    
+    # Plot 1
+    scores.sort_values(&quot;mean&quot;, ascending=False, inplace=True)
+    ax1.set_title(&quot;Mean squared error&quot;, fontsize=16)
+    ax1.barh(range(len(scores)), scores[&quot;mean&quot;], xerr=scores[&quot;std&quot;])
+    ax1.set_yticks(range(len(scores)))
+    ax1.set_yticklabels([s for s in scores[&quot;model&quot;]])
+    
+    # Plot 2
+    scores.sort_values(&quot;time&quot;, ascending=False, inplace=True)
+    ax2.set_title(&quot;Time&quot;, fontsize=16)
+    ax2.barh(range(len(scores)), scores[&quot;time&quot;], color='tab:orange')
+    ax2.set_yticks(range(len(scores)))
+    ax2.set_yticklabels([s for s in scores[&quot;model&quot;]])
+    plt.show()
+</code></pre>
+<pre><code class="language-python">def compare_models(models):
+    scores = pd.DataFrame()
+    cv = KFold(n_splits=5)
+    scoring = 'neg_mean_squared_error'
+    for name, model in models.items():
+        score = evaluate_model(model, name, X_validation, y_validation, cv, scoring)
+        scores = scores.append(score, ignore_index=True)
+    return scores
+</code></pre>
+<pre><code class="language-python">scores = compare_models(models)
+</code></pre>
+<pre><code>Lasso: 1309794414.859426 (1313338809.546610) in 0.126276 seconds
+Ridge: 715278312.108788 (217652788.836596) in 0.582577 seconds
+KNN: 1413048071.753012 (430146510.332671) in 0.016970 seconds
+Kernel: 1477920100.374237 (1401354461.497433) in 0.083176 seconds
+Naive: 3649023680.704793 (1021600484.370466) in 0.041219 seconds
+SVM: 5817131318.486010 (1454335763.390944) in 0.044825 seconds
+Ada: 1022540011.988822 (407906261.283972) in 0.302022 seconds
+Tree: 1709270763.177791 (294314053.687804) in 0.017814 seconds
+Forest: 865948793.183670 (397233796.258241) in 1.088624 seconds
+GBoost: 778348874.875873 (314733456.217197) in 0.492180 seconds
+XGBoost: 1055015638.687999 (377350793.401314) in 0.586652 seconds
+LGBoost: 877619178.062008 (311547130.916242) in 0.271566 seconds
+</code></pre>
+<pre><code class="language-python">plot_model_scores(scores)
+</code></pre>
+<p><img src="../img/06_ml_pipeline_69_0.png" alt="png"></p>
+<h2 id="pipeline">Pipeline</h2>
+<p>We are now ready to pick a model.</p>
+<pre><code class="language-python"># Set model
+model = LGBMRegressor()
+</code></pre>
+<p>We need to choose a cross-validation procedure to test our model.</p>
+<pre><code class="language-python">cv = KFold()
+</code></pre>
+<p>Finally, we can combine all the parts into a single pipeline.</p>
+<pre><code class="language-python">final_pipeline = Pipeline(steps=[
+        ('preprocess', preprocess),
+        ('model', model)
+        ])
+</code></pre>
+<p>Now we can decide which parts of the pipeline to test.</p>
+<pre><code class="language-python"># Select parameters to explore
+param_grid = {'preprocess__num__ii': [SimpleImputer(), KNNImputer(), IterativeImputer()],
+              'preprocess__cat__si__strategy': [&quot;most_frequent&quot;, &quot;constant&quot;],
+              'model__learning_rate': [0.1, 0.2],
+              'model__subsample': [1.0, 0.5],
+              'model__max_depth': [30, -1]}
+</code></pre>
+<p>We now generate a grid of parameters we want to search over.</p>
+<pre><code class="language-python"># Save pipeline
+grid_search = GridSearchCV(final_pipeline, 
+                           param_grid, 
+                           cv=cv,
+                           n_jobs=-1, 
+                           scoring='neg_mean_squared_error',
+                           verbose=3)
+</code></pre>
+<p>We fit the pipeline and pick the best estimator, from the cross-validation score.</p>
+<pre><code class="language-python"># Fit pipeline
+grid_search.fit(X_train, y_train)
+grid_search.best_estimator_
+</code></pre>
+<pre><code>Fitting 5 folds for each of 48 candidates, totalling 240 fits
+
+
+
+
+
+Pipeline(steps=[('preprocess',
+                 ColumnTransformer(transformers=[('num',
+                                                  Pipeline(steps=[('ii',
+                                                                   SimpleImputer()),
+                                                                  ('ss',
+                                                                   StandardScaler())]),
+                                                  ['MSSubClass', 'LotFrontage',
+                                                   'LotArea', 'OverallQual',
+                                                   'OverallCond', 'YearBuilt',
+                                                   'YearRemodAdd', 'MasVnrArea',
+                                                   'BsmtFinSF1', 'BsmtFinSF2',
+                                                   'BsmtUnfSF', 'TotalBsmtSF',
+                                                   '1stFlrSF', '2ndFlrSF',
+                                                   'LowQualFinSF', 'GrLivArea',
+                                                   'BsmtFull...
+                                                   'LotConfig', 'LandSlope',
+                                                   'Neighborhood', 'Condition1',
+                                                   'Condition2', 'BldgType',
+                                                   'HouseStyle', 'RoofStyle',
+                                                   'RoofMatl', 'Exterior1st',
+                                                   'Exterior2nd', 'MasVnrType',
+                                                   'ExterQual', 'ExterCond',
+                                                   'Foundation', 'BsmtQual',
+                                                   'BsmtCond', 'BsmtExposure',
+                                                   'BsmtFinType1',
+                                                   'BsmtFinType2', 'Heating',
+                                                   'HeatingQC', 'CentralAir',
+                                                   'Electrical', ...])])),
+                ('model', LGBMRegressor(max_depth=30))])
+</code></pre>
+<p>We have three ways of testing the quality of fit of our model:</p>
+<ul>
+<li>score on the training data</li>
+<li>score on the validation data</li>
+<li>score on the test data</li>
+</ul>
+<p><strong>Score on the training data</strong>: this is a biased score since we have picked the model that was best fitting the training data. Kfold cross-validation is efficient in terms of data use, but still evaluates the model over the same data it was trained.</p>
+<pre><code class="language-python"># Cross/validation score
+y_train_hat = grid_search.best_estimator_.predict(X_train)
+train_rmse = mean_squared_error(y_train, y_train_hat, squared=False)
+print('RMSE on training data :', train_rmse)
+</code></pre>
+<pre><code>RMSE on training data : 12343.48585393485
+</code></pre>
+<p><strong>Score on the validation data</strong>: this is an unbiased score since we have left out this sample exactly for this purpose. However, be aware that the validation score is unbiased on on the first run. Once we change the grid and pick the algorithm based on previous validation data scores, also this score becomes biased.</p>
+<pre><code class="language-python"># Validation set score
+y_validation_hat = grid_search.best_estimator_.predict(X_validation)
+validation_rmse = mean_squared_error(y_validation, y_validation_hat, squared=False)
+print('RMSE on validation data :', validation_rmse)
+</code></pre>
+<pre><code>RMSE on validation data : 26213.18659495431
+</code></pre>
+<p><strong>Final predictions</strong>: we can now use our model to output the predictions.</p>
+<pre><code class="language-python"># Validation score
+y_test_hat = grid_search.best_estimator_.predict(X_test)
+</code></pre>
+
+          </div>
+
+          
+
+
+
+          
+          
+          <div class="article-widget">
+            
+<div class="post-nav">
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Previous</div>
+    <a href="/course/data-science/05_plotting/" rel="next">Plotting</a>
+  </div>
+  
+  
+  
+  <div class="post-nav-item">
+    <div class="meta-nav">Next</div>
+    <a href="/course/data-science/07_web_scraping/" rel="prev">Web Scraping</a>
+  </div>
+  
+</div>
+
+          </div>
+          
+        </div>
+
+        <div class="body-footer">
+
+          
+
+
+
+
+
+          
+
+
+
+
+          
+
+
+  
+  
+
+
+
+        </div>
+
+      </article>
+
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+
+    </main>
+  </div>
+</div>
+
+  </div>
+
+  <div class="page-footer">
+    
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha512-I7w3ZdSFzw5j3jU3ZkNikBNeIrl3i+hEuEdwNmqUJvwNcaBUNcijnP2gd9DtGlgVYDplfjGoD8vTNsID+lCjqg==" crossorigin="anonymous"></script>
+    <script>
+      anchors.add();
+    </script>
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>
