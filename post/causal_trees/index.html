@@ -343,10 +343,10 @@ For this tutorial, I assume you are familiar with the following concepts:
     
       <meta
         property="article:published_time"
-        content="2022-04-04T00:00:00&#43;00:00"
+        content="2022-04-05T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-04T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-04-05T00:00:00&#43;00:00">
   
 
   
@@ -378,8 +378,8 @@ For this tutorial, I assume you are familiar with the following concepts:
     "https://matteocourthoud.github.io/post/causal_trees/featured.png"
   ],
   
-  "datePublished": "2022-04-04T00:00:00Z",
-  "dateModified": "2022-04-04T00:00:00Z",
+  "datePublished": "2022-04-05T00:00:00Z",
+  "dateModified": "2022-04-05T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -828,7 +828,7 @@ For this tutorial, I assume you are familiar with the following concepts:
     
       
     
-    Apr 4, 2022
+    Apr 5, 2022
   </span>
   
 
@@ -949,10 +949,10 @@ $$</p>
 %config InlineBackend.figure_format = 'retina'
 </code></pre>
 <pre><code class="language-python">from src.utils import *
-from src.dgp import dgp1
+from src.dgp import dgp_ad
 </code></pre>
 <p>We generate a dataset out of our DGP.</p>
-<pre><code class="language-python">dgp = dgp1()
+<pre><code class="language-python">dgp = dgp_ad()
 df = dgp.generate_data()
 df.head()
 </code></pre>
@@ -978,8 +978,8 @@ df.head()
       <th>black</th>
       <th>age</th>
       <th>educ</th>
-      <th>T</th>
-      <th>Y</th>
+      <th>ad_exposure</th>
+      <th>revenue</th>
     </tr>
   </thead>
   <tbody>
@@ -989,50 +989,50 @@ df.head()
       <td>0</td>
       <td>55.0</td>
       <td>1</td>
-      <td>True</td>
-      <td>-0.556665</td>
+      <td>False</td>
+      <td>-0.327221</td>
     </tr>
     <tr>
       <th>1</th>
       <td>1</td>
       <td>1</td>
       <td>47.0</td>
-      <td>4</td>
-      <td>True</td>
-      <td>-0.329725</td>
+      <td>2</td>
+      <td>False</td>
+      <td>0.659393</td>
     </tr>
     <tr>
       <th>2</th>
       <td>0</td>
       <td>1</td>
       <td>31.0</td>
-      <td>3</td>
-      <td>False</td>
-      <td>-0.150055</td>
+      <td>2</td>
+      <td>True</td>
+      <td>2.805178</td>
     </tr>
     <tr>
       <th>3</th>
       <td>0</td>
       <td>1</td>
       <td>51.0</td>
-      <td>7</td>
+      <td>2</td>
       <td>False</td>
-      <td>0.011573</td>
+      <td>-0.508548</td>
     </tr>
     <tr>
       <th>4</th>
       <td>0</td>
       <td>0</td>
       <td>48.0</td>
-      <td>7</td>
-      <td>False</td>
-      <td>0.421084</td>
+      <td>0</td>
+      <td>True</td>
+      <td>0.762280</td>
     </tr>
   </tbody>
 </table>
 </div>
 <p>We can check the distribution of variables across treatment assignment.</p>
-<pre><code class="language-python">df.groupby('T').agg(['mean', 'std']).T.unstack(1)
+<pre><code class="language-python">df.groupby(dgp.T).agg(['mean', 'std']).T.unstack(1)
 </code></pre>
 <div>
 <style scoped>
@@ -1051,7 +1051,7 @@ df.head()
 <table border="1" class="dataframe">
   <thead>
     <tr>
-      <th>T</th>
+      <th>ad_exposure</th>
       <th colspan="2" halign="left">False</th>
       <th colspan="2" halign="left">True</th>
     </tr>
@@ -1066,129 +1066,129 @@ df.head()
   <tbody>
     <tr>
       <th>male</th>
-      <td>0.432127</td>
-      <td>0.495933</td>
-      <td>0.564516</td>
-      <td>0.496265</td>
+      <td>0.42000</td>
+      <td>0.494053</td>
+      <td>0.592000</td>
+      <td>0.491955</td>
     </tr>
     <tr>
       <th>black</th>
-      <td>0.570136</td>
-      <td>0.495618</td>
-      <td>0.496416</td>
-      <td>0.500436</td>
+      <td>0.58800</td>
+      <td>0.492688</td>
+      <td>0.470000</td>
+      <td>0.499599</td>
     </tr>
     <tr>
       <th>age</th>
-      <td>44.794118</td>
-      <td>10.186277</td>
-      <td>44.756272</td>
-      <td>10.138259</td>
+      <td>44.57600</td>
+      <td>10.350386</td>
+      <td>44.970000</td>
+      <td>9.961102</td>
     </tr>
     <tr>
       <th>educ</th>
-      <td>5.409502</td>
-      <td>2.381371</td>
-      <td>5.449821</td>
-      <td>2.390171</td>
+      <td>2.19200</td>
+      <td>1.824773</td>
+      <td>1.968000</td>
+      <td>1.724216</td>
     </tr>
     <tr>
-      <th>Y</th>
-      <td>0.648196</td>
-      <td>1.030889</td>
-      <td>1.443246</td>
-      <td>1.153021</td>
+      <th>revenue</th>
+      <td>-0.11697</td>
+      <td>1.057941</td>
+      <td>1.156387</td>
+      <td>2.147342</td>
     </tr>
   </tbody>
 </table>
 </div>
 <p>As we can see, <code>male</code> and <code>black</code> are now balanced across groups.</p>
 <p>We can get a first estimate of the <strong>average treatment effect</strong> as a simple comparison of means.</p>
-<pre><code class="language-python">df.loc[df['T']==1, 'Y'].mean() - df.loc[df['T']==0, 'Y'].mean()
+<pre><code class="language-python">df.loc[df[dgp.T]==1, dgp.Y].mean() - df.loc[df[dgp.T]==0, dgp.Y].mean()
 </code></pre>
-<pre><code>0.795050419702685
+<pre><code>1.2733576182695898
 </code></pre>
 <p>We can visualize the difference with a barplot.</p>
-<pre><code class="language-python">sns.barplot(x='T', y='Y', data=df);
+<pre><code class="language-python">sns.barplot(x=dgp.T, y=dgp.Y, data=df);
 </code></pre>
 <p><img src="img/causal_trees_18_0.png" alt="png"></p>
 <p>It seems there is a significant difference between the two groups. We can get a standard error around the estimate by regressing $Y$ on $D$.</p>
-<pre><code class="language-python">est = smf.ols('Y ~ T', df).fit()
+<pre><code class="language-python">est = smf.ols(f'{dgp.Y} ~ {dgp.T}', df).fit()
 est.summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+           <td></td>              <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>    0.6482</td> <td>    0.052</td> <td>   12.381</td> <td> 0.000</td> <td>    0.545</td> <td>    0.751</td>
+  <th>Intercept</th>           <td>   -0.1170</td> <td>    0.076</td> <td>   -1.545</td> <td> 0.123</td> <td>   -0.266</td> <td>    0.032</td>
 </tr>
 <tr>
-  <th>T[T.True]</th> <td>    0.7951</td> <td>    0.070</td> <td>   11.343</td> <td> 0.000</td> <td>    0.658</td> <td>    0.933</td>
+  <th>ad_exposure[T.True]</th> <td>    1.2734</td> <td>    0.107</td> <td>   11.894</td> <td> 0.000</td> <td>    1.063</td> <td>    1.483</td>
 </tr>
 </table>
 <p>The coefficient is statistically significant. However, we know that the treatment assignment is not <strong>unconditionally exogenous</strong>. We need to condition on observables $X$.</p>
-<pre><code class="language-python">est = smf.ols('Y ~ T +' + ' + '.join(dgp.X), df).fit()
+<pre><code class="language-python">est = smf.ols(f'{dgp.Y} ~ {dgp.T} +' + ' + '.join(dgp.X), df).fit()
 est.summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+           <td></td>              <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>    0.2096</td> <td>    0.171</td> <td>    1.226</td> <td> 0.220</td> <td>   -0.126</td> <td>    0.545</td>
+  <th>Intercept</th>           <td>   -0.1026</td> <td>    0.247</td> <td>   -0.416</td> <td> 0.678</td> <td>   -0.587</td> <td>    0.382</td>
 </tr>
 <tr>
-  <th>T[T.True]</th> <td>    0.7663</td> <td>    0.065</td> <td>   11.808</td> <td> 0.000</td> <td>    0.639</td> <td>    0.894</td>
+  <th>ad_exposure[T.True]</th> <td>    1.0342</td> <td>    0.103</td> <td>   10.044</td> <td> 0.000</td> <td>    0.832</td> <td>    1.236</td>
 </tr>
 <tr>
-  <th>male</th>      <td>    0.5143</td> <td>    0.064</td> <td>    7.997</td> <td> 0.000</td> <td>    0.388</td> <td>    0.641</td>
+  <th>male</th>                <td>    0.9987</td> <td>    0.102</td> <td>    9.765</td> <td> 0.000</td> <td>    0.798</td> <td>    1.199</td>
 </tr>
 <tr>
-  <th>black</th>     <td>    0.5747</td> <td>    0.065</td> <td>    8.813</td> <td> 0.000</td> <td>    0.447</td> <td>    0.703</td>
+  <th>black</th>               <td>   -0.8234</td> <td>    0.126</td> <td>   -6.555</td> <td> 0.000</td> <td>   -1.070</td> <td>   -0.577</td>
 </tr>
 <tr>
-  <th>age</th>       <td>   -0.0102</td> <td>    0.003</td> <td>   -3.261</td> <td> 0.001</td> <td>   -0.016</td> <td>   -0.004</td>
+  <th>age</th>                 <td>   -0.0050</td> <td>    0.005</td> <td>   -1.001</td> <td> 0.317</td> <td>   -0.015</td> <td>    0.005</td>
 </tr>
 <tr>
-  <th>educ</th>      <td>    0.0642</td> <td>    0.014</td> <td>    4.715</td> <td> 0.000</td> <td>    0.037</td> <td>    0.091</td>
+  <th>educ</th>                <td>    0.1240</td> <td>    0.035</td> <td>    3.533</td> <td> 0.000</td> <td>    0.055</td> <td>    0.193</td>
 </tr>
 </table>
 <p>We do not need to actually condition on the full vector of observables $X$. It is sufficient to condition on the <strong>propensity score</strong> $p(X)$, i.e. the conditional probability of treatment.</p>
 <p>We can estimate the propensity score with any method we want. The more flexible, the better.</p>
-<pre><code class="language-python">df['pscore'] = RandomForestRegressor().fit(df[dgp.X], df['T']).predict(df[dgp.X])
+<pre><code class="language-python">df['pscore'] = RandomForestRegressor().fit(df[dgp.X], df[dgp.T]).predict(df[dgp.X])
 df['pscore'].head()
 </code></pre>
-<pre><code>0    0.770000
-1    0.568000
-2    0.040000
-3    0.106333
-4    0.230000
+<pre><code>0    0.368726
+1    0.036667
+2    0.675000
+3    0.701702
+4    0.307456
 Name: pscore, dtype: float64
 </code></pre>
 <p>We now estiamte the conditional average treatment effect regressing $Y$ on $D$ and on the p-score.</p>
-<pre><code class="language-python">est = smf.ols('Y ~ T + pscore', df).fit()
+<pre><code class="language-python">est = smf.ols(f'{dgp.Y} ~ {dgp.T} + pscore', df).fit()
 est.summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+           <td></td>              <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>    0.6500</td> <td>    0.071</td> <td>    9.106</td> <td> 0.000</td> <td>    0.510</td> <td>    0.790</td>
+  <th>Intercept</th>           <td>   -0.3402</td> <td>    0.103</td> <td>   -3.315</td> <td> 0.001</td> <td>   -0.542</td> <td>   -0.139</td>
 </tr>
 <tr>
-  <th>T[T.True]</th> <td>    0.7988</td> <td>    0.121</td> <td>    6.606</td> <td> 0.000</td> <td>    0.561</td> <td>    1.036</td>
+  <th>ad_exposure[T.True]</th> <td>    0.8957</td> <td>    0.159</td> <td>    5.638</td> <td> 0.000</td> <td>    0.584</td> <td>    1.208</td>
 </tr>
 <tr>
-  <th>pscore</th>    <td>   -0.0070</td> <td>    0.187</td> <td>   -0.038</td> <td> 0.970</td> <td>   -0.374</td> <td>    0.360</td>
+  <th>pscore</th>              <td>    0.8235</td> <td>    0.257</td> <td>    3.204</td> <td> 0.001</td> <td>    0.319</td> <td>    1.328</td>
 </tr>
 </table>
 <p>We are now ready to estimate <strong>heterogeneous treatment effects</strong>. First, we need to compute the transformed outcome</p>
 <p>$$
 Y_i^* = \frac{Y_i}{T_i * e_i - (1-T_i) * (1-e_i)}
 $$</p>
-<pre><code class="language-python">df['y_star'] = df['Y'] /(df['T'] * df['pscore'] - (1-df['T']) * (1-df['pscore']))
+<pre><code class="language-python">df['y_star'] = df[dgp.Y] /(df[dgp.T] * df['pscore'] - (1-df[dgp.T]) * (1-df['pscore']))
 </code></pre>
 <p>Now we train a small tree on the transformed outcome $Y^*$.</p>
 <pre><code class="language-python">tree = DecisionTreeRegressor(max_depth=2, min_samples_leaf=30).fit(df[dgp.X], df['y_star'])
@@ -1196,14 +1196,24 @@ df['y_hat'] = tree.predict(df[dgp.X])
 </code></pre>
 <p>We can plot the tree and visualize the estimated groups and treatment effects.</p>
 <pre><code class="language-python"># Plot tree
-fig, ax = plt.subplots(1,1, figsize=(10, 6))
-plot_tree(tree, filled=True, fontsize=12, feature_names=dgp.X, impurity=False, ax=ax);
+plot_tree(tree, filled=True, fontsize=12, feature_names=dgp.X, impurity=False);
 </code></pre>
 <p><img src="img/causal_trees_32_0.png" alt="png"></p>
 <p>We still have one issue: we have trained our tree model and estimated the treatment effects using the same data. This introduces bias in the estimates.</p>
+<pre><code class="language-python">from econml.causal_forest import CausalForest
+
+model = CausalForest(max_depth=2).fit(Y=df[dgp.Y], X=df[dgp.X], T=df[dgp.T])
+</code></pre>
+<p>We can plot a tree</p>
+<pre><code class="language-python">from econml.cate_interpreter import SingleTreeCateInterpreter
+
+intrp = SingleTreeCateInterpreter(max_depth=2).interpret(model, df[dgp.X])
+intrp.plot(feature_names=dgp.X, fontsize=10)
+</code></pre>
+<p><img src="img/causal_trees_36_0.png" alt="png"></p>
 <h2 id="example-2-lalonde-data">Example 2: Lalonde Data</h2>
 <p>For this tutorial, we are goind to use the data from Lalonde (1981). You can find the data here: <a href="https://users.nber.org/~rdehejia/nswdata.html" target="_blank" rel="noopener">https://users.nber.org/~rdehejia/nswdata.html</a></p>
-<pre><code class="language-python">df = pd.read_stata('http://www.nber.org/~rdehejia/data/nsw_dw.dta').drop(columns=['data_id'])
+<pre><code class="language-python">df = pd.read_csv('data/lalonde86.csv')
 df.head()
 </code></pre>
 <div>
@@ -1248,7 +1258,7 @@ df.head()
       <td>1.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>9930.045898</td>
+      <td>9930.0460</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1261,7 +1271,7 @@ df.head()
       <td>1.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>3595.894043</td>
+      <td>3595.8940</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1274,7 +1284,7 @@ df.head()
       <td>0.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>24909.449219</td>
+      <td>24909.4500</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1287,7 +1297,7 @@ df.head()
       <td>1.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>7506.145996</td>
+      <td>7506.1460</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1300,109 +1310,7 @@ df.head()
       <td>1.0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>289.789886</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-<p>This dataset contains information about earnings for</p>
-<pre><code class="language-python">df.head()
-</code></pre>
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-<pre><code>.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-</code></pre>
-<p></style></p>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>treat</th>
-      <th>age</th>
-      <th>education</th>
-      <th>black</th>
-      <th>hispanic</th>
-      <th>married</th>
-      <th>nodegree</th>
-      <th>re74</th>
-      <th>re75</th>
-      <th>re78</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1.0</td>
-      <td>37.0</td>
-      <td>11.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>9930.045898</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1.0</td>
-      <td>22.0</td>
-      <td>9.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>3595.894043</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1.0</td>
-      <td>30.0</td>
-      <td>12.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>24909.449219</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>1.0</td>
-      <td>27.0</td>
-      <td>11.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>7506.145996</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>1.0</td>
-      <td>33.0</td>
-      <td>8.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>289.789886</td>
+      <td>289.7899</td>
     </tr>
   </tbody>
 </table>
@@ -1484,24 +1392,24 @@ df.head()
     </tr>
     <tr>
       <th>re74</th>
-      <td>2107.026611</td>
-      <td>5687.905639</td>
-      <td>2095.573730</td>
-      <td>4886.620354</td>
+      <td>2107.026658</td>
+      <td>5687.905694</td>
+      <td>2095.573689</td>
+      <td>4886.620353</td>
     </tr>
     <tr>
       <th>re75</th>
-      <td>1266.909058</td>
-      <td>3102.982088</td>
-      <td>1532.055298</td>
-      <td>3219.250879</td>
+      <td>1266.909002</td>
+      <td>3102.982044</td>
+      <td>1532.055314</td>
+      <td>3219.250870</td>
     </tr>
     <tr>
       <th>re78</th>
-      <td>4554.801270</td>
-      <td>5483.836001</td>
-      <td>6349.143555</td>
-      <td>7867.402183</td>
+      <td>4554.801126</td>
+      <td>5483.835991</td>
+      <td>6349.143530</td>
+      <td>7867.402218</td>
     </tr>
   </tbody>
 </table>
@@ -1533,7 +1441,7 @@ est.summary().tables[1]
       <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td> 1168.0034</td> <td> 3360.588</td> <td>    0.348</td> <td> 0.728</td> <td>-5436.922</td> <td> 7772.928</td>
+  <th>Intercept</th> <td> 1168.0035</td> <td> 3360.588</td> <td>    0.348</td> <td> 0.728</td> <td>-5436.921</td> <td> 7772.928</td>
 </tr>
 <tr>
   <th>treat</th>     <td> 1671.1304</td> <td>  637.973</td> <td>    2.619</td> <td> 0.009</td> <td>  417.254</td> <td> 2925.007</td>
@@ -1560,11 +1468,11 @@ est.summary().tables[1]
 <pre><code class="language-python">df['pscore'] = RandomForestRegressor().fit(df[X], df[D]).predict(df[X])
 df['pscore'].head()
 </code></pre>
-<pre><code>0    0.770000
-1    0.755667
-2    0.535976
-3    0.653974
-4    0.730000
+<pre><code>0    0.810000
+1    0.752000
+2    0.485786
+3    0.670023
+4    0.731667
 Name: pscore, dtype: float64
 </code></pre>
 <pre><code class="language-python">est = smf.ols('re78 ~ treat + pscore', df).fit()
@@ -1575,31 +1483,26 @@ est.summary().tables[1]
       <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td> 4417.5436</td> <td>  586.691</td> <td>    7.530</td> <td> 0.000</td> <td> 3264.493</td> <td> 5570.594</td>
+  <th>Intercept</th> <td> 4313.9001</td> <td>  591.433</td> <td>    7.294</td> <td> 0.000</td> <td> 3151.530</td> <td> 5476.270</td>
 </tr>
 <tr>
-  <th>treat</th>     <td> 1602.3526</td> <td>  865.065</td> <td>    1.852</td> <td> 0.065</td> <td>  -97.799</td> <td> 3302.504</td>
+  <th>treat</th>     <td> 1461.6324</td> <td>  866.171</td> <td>    1.687</td> <td> 0.092</td> <td> -240.692</td> <td> 3163.957</td>
 </tr>
 <tr>
-  <th>pscore</th>    <td>  519.6742</td> <td> 1594.531</td> <td>    0.326</td> <td> 0.745</td> <td>-2614.131</td> <td> 3653.479</td>
+  <th>pscore</th>    <td>  894.6072</td> <td> 1588.766</td> <td>    0.563</td> <td> 0.574</td> <td>-2227.867</td> <td> 4017.082</td>
 </tr>
 </table>
 <p>Estimate CATE</p>
-<pre><code class="language-python">df['d'] = df['treat'] * df['pscore'] - (1-df['treat']) * (1-df['pscore'])
-df['y_star'] = df['re78'] / df['d']
+<pre><code class="language-python">from econml.causal_forest import CausalForest
+
+model = CausalForest(max_depth=2).fit(Y=df[y], X=df[X], T=df[D])
 </code></pre>
-<pre><code class="language-python">tree = DecisionTreeRegressor(max_depth=2).fit(df[X], df['y_star'])
-df['y_hat'] = tree.predict(df[X])
-</code></pre>
-<pre><code class="language-python"># Plot tree
-fig, ax = plt.subplots(1,1, figsize=(10, 6))
-plot_tree(tree, filled=True, fontsize=12, feature_names=X, ax=ax, impurity=False);
+<pre><code class="language-python">from econml.cate_interpreter import SingleTreeCateInterpreter
+
+intrp = SingleTreeCateInterpreter(max_depth=2).interpret(model, df[X])
+intrp.plot(feature_names=X, fontsize=10)
 </code></pre>
 <p><img src="img/causal_trees_50_0.png" alt="png"></p>
-<pre><code class="language-python">df['y_hat'].mean()
-</code></pre>
-<pre><code>829.6982690090036
-</code></pre>
 <h2 id="references">References</h2>
 <ul>
 <li>Original paper: <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1510489113" target="_blank" rel="noopener">Recursive partitioning for heterogeneous causal effects</a> (2016) by Athey and Imbens</li>

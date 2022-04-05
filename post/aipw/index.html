@@ -339,10 +339,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-04-04T00:00:00&#43;00:00"
+        content="2022-04-05T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-04T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-04-05T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/aipw/featured.png"
   ],
   
-  "datePublished": "2022-04-04T00:00:00Z",
-  "dateModified": "2022-04-04T00:00:00Z",
+  "datePublished": "2022-04-05T00:00:00Z",
+  "dateModified": "2022-04-05T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -831,7 +831,7 @@
     
       
     
-    Apr 4, 2022
+    Apr 5, 2022
   </span>
   
 
@@ -944,7 +944,7 @@ $$</p>
 <p><strong>Yes!</strong> Idea: combine two predicton problems instead of one.</p>
 <p>The <strong>Augmented Inverse Propensity Weighted</strong> estimator is given by</p>
 <p>$$
-\hat \tau_{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right)
+\hat \tau_{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-T_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right) \right)
 $$</p>
 <p>where</p>
 <p>$$
@@ -958,9 +958,9 @@ $$</p>
 <p>is basically the <strong>direct estimate</strong> of the average treatment effect. This is a consistent estimator of the ATE but, since machine learning estimators' rate of convergence is too slow, it does not provide correct confidence intervals.</p>
 <p>Instead,</p>
 <p>$$
-R = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)}  \right)
+R = \frac{1}{n} \sum_{i=1}^{n} \left(\frac{T_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-T_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right) \right)
 $$</p>
-<p>is basically <strong>IPW applied to the residuals</strong> $Y_i - \hat \mu^{(t)}(X_i)$ instead of $Y_i$. The idea is that after we estimate $\hat \mu$, there might still be some signal left over which we can use to improve our estimate using IPW.</p>
+<p>is basically <strong>IPW applied to the residuals</strong> $Y_i - \hat \mu^{(t)}(X_i)$ instead of $Y_i$.</p>
 <h3 id="double-robustness">Double Robustness</h3>
 <p>Why is the AIPW estimator so <strong>compelling</strong>? It just needs one of the two predictions, $\hat \mu$ and $\hat e$, to be right in order to be unbiased. Let&rsquo;s check it.</p>
 <p>If $\hat \mu$ is correctly specified, i.e. $\mathbb E \left[ \hat \mu^{(t)}(x) \right] = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, then</p>
@@ -975,7 +975,8 @@ $$</p>
 &amp;= \tau
 \end{aligned}
 $$</p>
-<p>even if $\hat e$ is misspecified. The reason is that the residuals $\left( Y_i - \hat \mu^{(t)}(X_i) \right)$ converge to zero and therefore IPW has no relevance.</p>
+<p>even if $\hat e$ is misspecified.</p>
+<p>The <strong>intuition</strong> is that the residuals $\left( Y_i - \hat \mu^{(t)}(X_i) \right)$ converge to zero and therefore IPW has no relevance.</p>
 <p>On the other hand, if $\hat e$ is correctly specified, i.e. $\mathbb E \left[\hat e(x) \right] = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]$, then</p>
 <p>$$
 \begin{aligned}
@@ -990,7 +991,8 @@ $$</p>
 &amp;= \tau
 \end{aligned}
 $$</p>
-<p>even if $\hat \mu$ is misspecified. The reason is that if there is bias left from the estimation of $\mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, IPW fully corrects for it.</p>
+<p>even if $\hat \mu$ is misspecified.</p>
+<p>The <strong>intuition</strong> is that, if we have a wrong model of $\mu(x)$ for $\mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, it will not capture differences between treatment and control group or, even worse, it will capture wrong ones. Running IPW on the residuals we can not only recover the treatment effect but also compensate for eventual biases introduced by $\mu(x)$.</p>
 <h2 id="best-practices">Best Practices</h2>
 <p><strong>1. Check Covariate Balance</strong></p>
 <p>Both IPW and AIPW were built for settings in which the treatment $T$ is not uconditionally randomly assigned, but might depend on some observables $X$. This information can be checked in two ways:</p>
@@ -1267,13 +1269,13 @@ df.head()
 </code></pre>
 <p>We know this estimate is wrong since the treatment is not unconditionally randomized. Therefore, we estimate the average treatment effect using the <strong>AIPW estimator</strong>.</p>
 <p>First, we estimate the <strong>propensity scores</strong> $e(x)$ using <code>LogisticRegression</code>.</p>
-<pre><code class="language-python">from sklearn.linear_model import LogisticRegression as logit
-
-def estimate_e(df, X, model_e):
+<pre><code class="language-python">def estimate_e(df, X, model_e):
     e = model_e.fit(df[dgp.X], df['T']).predict_proba(df[dgp.X])[:,1]
     return e
 </code></pre>
-<pre><code class="language-python">e = estimate_e(df, dgp.X, logit())
+<pre><code class="language-python">from sklearn.linear_model import LogisticRegression as logit
+
+e = estimate_e(df, dgp.X, logit())
 </code></pre>
 <p>A best practice is to use the <code>LeaveOneOut</code> estimator to make predictions, i.e., for each observations, build a model using the remaining observations. This procedure helps preventing overfitting bias. The main issue is that it&rsquo;s particularly slow since we need to fit one model per observation. However, it is parallelizable.</p>
 <pre><code class="language-python">from sklearn.model_selection import cross_val_predict, LeaveOneOut
@@ -1297,16 +1299,15 @@ e = cross_val_predict(estimator=logit(),
 <p><img src="img/aipw_29_0.png" alt="png"></p>
 <p>We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.</p>
 <p>We use <code>RandomForestRegressor</code> to estimate the conditional expectation of $Y$, $\hat \mu^{(t)}(x)$.</p>
-<pre><code class="language-python">from sklearn.linear_model import LinearRegression as ols
-from sklearn.ensemble import RandomForestRegressor as rfr
-
-def estimate_mu(df, X, model_mu):
+<pre><code class="language-python">def estimate_mu(df, X, model_mu):
     mu = model_mu.fit(df[X + ['T']], df['Y'])
     mu0 = mu.predict(df[X + ['T']].assign(T=0))
     mu1 = mu.predict(df[X + ['T']].assign(T=1))
     return mu0, mu1
 </code></pre>
-<pre><code class="language-python">mu0, mu1 = estimate_mu(df, dgp.X, rfr(max_features=2))
+<pre><code class="language-python">from sklearn.ensemble import RandomForestRegressor as rfr
+
+mu0, mu1 = estimate_mu(df, dgp.X, rfr(max_features=5))
 </code></pre>
 <p>We now have all the elements to estimate AIPW</p>
 <pre><code class="language-python">def AIPW(df, X, e, mu0, mu1):
@@ -1318,7 +1319,7 @@ def estimate_mu(df, X, model_mu):
 <pre><code class="language-python">D, R, hat_tau_AIPW = AIPW(df, dgp.X, e, mu0, mu1)
 print(f&quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&quot;)
 </code></pre>
-<pre><code>Mean: 0.018 and var 0.51
+<pre><code>Mean: -0.02 and var 0.48
 </code></pre>
 <p>Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.</p>
 <pre><code class="language-python">sns.histplot(hat_tau_AIPW, bins=20).set(title='Estimated $τ_{AIPW}$');
@@ -1327,8 +1328,8 @@ print(f&quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&
 <p>To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.</p>
 <pre><code class="language-python">def simulate_AIPW(k):
     df = dgp_aipw().generate_data(seed=k)
-    e = logit().fit(df[dgp.X], df['T']).predict_proba(df[dgp.X])[:,1]
-    mu0, mu1 = estimate_mu(df, dgp.X, rfr(max_features=3))
+    e = estimate_e(df, dgp.X, logit())
+    mu0, mu1 = estimate_mu(df, dgp.X, rfr())
     aipw = AIPW(df, dgp.X, e, mu0, mu1)
     return np.mean(aipw, axis=1)
 </code></pre>
@@ -1345,29 +1346,68 @@ def distribution_AIPW(t):
 <pre><code class="language-python">distribution_AIPW(&quot;Distribution of $\hat τ_{AIPW}$ and its components&quot;)
 </code></pre>
 <p><img src="img/aipw_42_0.png" alt="png"></p>
-<p>As we can see, the AIPW estimator is closer to the true value thanks to the correction term that is always negative.</p>
+<p>Since the model is well specified, the correction is close to zero and the final estimates are very close to the direct estimates.</p>
 <p>We now turn into checking the <strong>double-robustness</strong> of the estimator.</p>
-<p>What happens if we misspecify the propensity score? Let&rsquo;s assume now that the propensity score is $\hat e(X_i) = (x_4 &gt; 0)$.</p>
+<p>What happens if we misspecify the propensity score? Let&rsquo;s assume now that the propensity score is $\hat e(X_i) = 1 /(1 + e^{x_4})$.</p>
 <pre><code class="language-python">def estimate_e(df, X, model_e):
-    e = df['x4'] &gt; 0
+    e = 1 / (1 + np.exp(df['x4']))
     return e
 </code></pre>
 <pre><code class="language-python">distribution_AIPW(&quot;Distribution of $\hat τ_{AIPW}$ with misspecified $\hat e$&quot;)
 </code></pre>
 <p><img src="img/aipw_45_0.png" alt="png"></p>
-<p>Let&rsquo;s now misspecify $\mu$ and assume it is constant at $\bar Y$.</p>
+<p>Not much changes. In fact, since we have a good direct model of $\mu(x)$, the residuals are small and the correction does not play a big role.</p>
+<p>Let&rsquo;s now misspecify $\mu(x)$ and assume it is equal to $|x_5|$.</p>
 <pre><code class="language-python">def estimate_e(df, X, model_e):
     e = model_e.fit(df[dgp.X], df['T']).predict_proba(df[dgp.X])[:,1]
-    return df['e']
+    return e
 
 def estimate_mu(df, X, model_mu):
-    mu0 = df['Y'] 
-    mu1 = df['Y'] + 1 - 5*df['x5']
+    mu0 = 0
+    mu1 = np.abs(df['x6'])
     return mu0, mu1
 </code></pre>
 <pre><code class="language-python">distribution_AIPW(&quot;Distribution of $\hat τ_{AIPW}$ with misspecified $\hat μ$&quot;)
 </code></pre>
 <p><img src="img/aipw_48_0.png" alt="png"></p>
+<p>In this case, the correction term is crucial and fully offsets the bias of the original estimator.</p>
+<p>The <a href="https://econml.azurewebsites.net/index.html" target="_blank" rel="noopener"><code>EconML</code></a> library offers a plug and play estimator, <code>LinearDRLearner</code>.</p>
+<pre><code class="language-python">from econml.drlearner import LinearDRLearner
+
+model = LinearDRLearner(model_propensity=logit(), model_regression=rfr())
+model.fit(Y=df[dgp.Y], X=df[dgp.X], T=df[dgp.T])
+</code></pre>
+<pre><code>&lt;econml.drlearner.LinearDRLearner at 0x14bdb2610&gt;
+</code></pre>
+<pre><code class="language-python">model.ate_inference(X=df[dgp.X].values, T0=0, T1=1)
+</code></pre>
+<table class="simpletable">
+<caption>Uncertainty of Mean Point Estimate</caption>
+<tr>
+  <th>mean_point</th> <th>stderr_mean</th>  <th>zstat</th> <th>pvalue</th> <th>ci_mean_lower</th> <th>ci_mean_upper</th>
+</tr>
+<tr>
+    <td>-0.081</td>      <td>0.036</td>    <td>-2.236</td>  <td>0.025</td>    <td>-0.152</td>         <td>-0.01</td>    
+</tr>
+</table>
+<table class="simpletable">
+<caption>Distribution of Point Estimate</caption>
+<tr>
+  <th>std_point</th> <th>pct_point_lower</th> <th>pct_point_upper</th>
+</tr>
+<tr>
+    <td>0.692</td>       <td>-1.531</td>           <td>1.205</td>     
+</tr>
+</table>
+<table class="simpletable">
+<caption>Total Variance of Point Estimate</caption>
+<tr>
+  <th>stderr_point</th> <th>ci_point_lower</th> <th>ci_point_upper</th>
+</tr>
+<tr>
+      <td>0.692</td>        <td>-1.543</td>          <td>1.278</td>    
+</tr>
+</table>
 <h2 id="research-paper-replication">Research Paper Replication</h2>
 <p>TBD</p>
 <h2 id="business-case">Business Case</h2>
