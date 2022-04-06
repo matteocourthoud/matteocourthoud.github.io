@@ -341,10 +341,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-04-05T00:00:00&#43;00:00"
+        content="2022-04-06T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-05T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-04-06T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@
     "https://matteocourthoud.github.io/post/chisquared/featured.png"
   ],
   
-  "datePublished": "2022-04-05T00:00:00Z",
-  "dateModified": "2022-04-05T00:00:00Z",
+  "datePublished": "2022-04-06T00:00:00Z",
+  "dateModified": "2022-04-06T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -769,7 +769,7 @@
       </ul>
       <nav id="TableOfContents">
   <ul>
-    <li><a href="#example-1-is-a-die-fair">Example 1: is a die fair?</a></li>
+    <li><a href="#example-1-is-a-dice-fair">Example 1: is a dice fair?</a></li>
     <li><a href="#why-the-chi-squared-distribution">Why the Chi-squared Distribution?</a></li>
     <li><a href="#some-statistics">Some Statistics</a></li>
     <li><a href="#example-2-are-grades-independent-from-gender">Example 2: are grades independent from gender?</a></li>
@@ -827,7 +827,7 @@
     
       
     
-    Apr 5, 2022
+    Apr 6, 2022
   </span>
   
 
@@ -876,28 +876,26 @@
 <p>Pearson&rsquo;s chi-squared test $\chi^2$ is a statistical test applied to sets of categorical data to evaluate how likely it is that any observed difference between the sets arose by chance.</p>
 </blockquote>
 <p>What does it mean? Let&rsquo;s see it together.</p>
-<h2 id="example-1-is-a-die-fair">Example 1: is a die fair?</h2>
-<p>Suppose you want to test whether a die is fair.</p>
-<p>You throw the die 60 times and you count the number of times you get each outcome.</p>
-<p>Let&rsquo;s simulate some data (from a fair die).</p>
+<h2 id="example-1-is-a-dice-fair">Example 1: is a dice fair?</h2>
+<p>Suppose you want to test whether a dice is fair.</p>
+<p>You throw the dice 60 times and you count the number of times you get each outcome.</p>
+<p>Let&rsquo;s simulate some data (from a fair dice).</p>
 <pre><code class="language-python">import numpy as np
 import pandas as pd
 
 # Data generating process
-def generate_data_die(N=60):
-    die_numbers = [1,2,3,4,5,6]  # Dice numbers
-    die_throws = np.random.choice(die_numbers, size=N)  # Actual dice throws
-    data = pd.DataFrame({&quot;die number&quot;: die_numbers,
-                         &quot;observed&quot;: [sum(die_throws==n) for n in die_numbers],
+def generate_data_dice(N=60, seed=1):
+    np.random.seed(1) # Set seed for replicability
+    dice_numbers = [1,2,3,4,5,6]  # Dice numbers
+    dice_throws = np.random.choice(dice_numbers, size=N)  # Actual dice throws
+    data = pd.DataFrame({&quot;dice number&quot;: dice_numbers,
+                         &quot;observed&quot;: [sum(dice_throws==n) for n in dice_numbers],
                          &quot;expected&quot;: N / 6})
     return data
 </code></pre>
-<pre><code class="language-python"># Set seed for replicability
-np.random.seed(1)
-
-# Generate data
-data_die = generate_data_die()
-data_die
+<pre><code class="language-python"># Generate data
+data_dice = generate_data_dice()
+data_dice
 </code></pre>
 <div>
 <style scoped>
@@ -917,7 +915,7 @@ data_die
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>die number</th>
+      <th>dice number</th>
       <th>observed</th>
       <th>expected</th>
     </tr>
@@ -962,8 +960,8 @@ data_die
   </tbody>
 </table>
 </div>
-<p>If we were throwing the die <strong>a lot</strong> of times, we would expect the same number of observations for each outcome. However, there is inherent noise in the process. How can we tell whether the fact that we didn&rsquo;t get exactly 10 observations for each outcome is just due to randomness or it&rsquo;s because the die is unfair?</p>
-<p>The idea is to compute some statistic whose distribution is known under the assumption that the die is fair, and then check if its value is &ldquo;unusual&rdquo; or not. If the value is particularly &ldquo;unusual&rdquo;, we reject the null hypothesis that the die is fair.</p>
+<p>If we were throwing the dice <strong>a lot</strong> of times, we would expect the same number of observations for each outcome. However, there is inherent noise in the process. How can we tell whether the fact that we didn&rsquo;t get exactly 10 observations for each outcome is just due to randomness or it&rsquo;s because the dice is unfair?</p>
+<p>The idea is to compute some statistic whose distribution is known under the assumption that the dice is fair, and then check if its value is &ldquo;unusual&rdquo; or not. If the value is particularly &ldquo;unusual&rdquo;, we reject the null hypothesis that the dice is fair.</p>
 <p>In our case, the statistic we choose is the chi-squared $\chi^{2}$ test-statistic.</p>
 <p>The value of the <a href="https://en.wikipedia.org/wiki/Pearson%27s_chi-squared_test" target="_blank" rel="noopener">Pearson&rsquo;s chi-squared test-statistic</a> is</p>
 <p>$$
@@ -980,7 +978,7 @@ $$</p>
 def compute_chi2_stat(data):
     return sum( (data.observed - data.expected)**2 / data.expected )
 
-chi2_stat = compute_chi2_stat(data_die)
+chi2_stat = compute_chi2_stat(data_dice)
 chi2_stat
 </code></pre>
 <pre><code>4.0
@@ -1005,7 +1003,7 @@ chi2_5_pdf = chi2.pdf(x, df=5)
 plt.plot(x, chi2_5_pdf);
 </code></pre>
 <p><img src="img/chisquared_11_0.png" alt="png"></p>
-<p>How does the value of the statistic we have observed compares with its the distribution under the null hypothesis of a fair die?</p>
+<p>How does the value of the statistic we have observed compares with its the distribution under the null hypothesis of a fair dice?</p>
 <pre><code class="language-python"># plot Chi-square distribution with 5 degrees of freedom
 plt.plot(x, chi2.pdf(x, df=5));
 plt.vlines(chi2_stat, ymin=0, ymax=plt.ylim()[1], color='k', label='chi2 statistic')
@@ -1014,7 +1012,7 @@ plt.legend();
 <p><img src="img/chisquared_13_0.png" alt="png"></p>
 <p>The test statistic seems to fall well within the distribution, i.e. it does not seem to be an unusual event. Indeed, the question we want to answer is: &ldquo;<em>under the null hypothesis that the dice is fair, how unlikely is the statistic we have observed?</em>&rdquo;.</p>
 <p>The last component we need in order to build a hypothesis test is a level of confidence, i.e. a threshold of &ldquo;unlikeliness&rdquo; of an event, below which we declare that the event is too unlikely under the model, for the model to be true. Let&rsquo;s say we decide to set that threshold at 5%.</p>
-<p>If the likelihood of observing an even that (or more) extreme than the one we have actually observed is less than 5%, we reject the null hypothesis that the die is fair.</p>
+<p>If the likelihood of observing an even that (or more) extreme than the one we have actually observed is less than 5%, we reject the null hypothesis that the dice is fair.</p>
 <p>What is this value for a chi-squared distribution with 5 degrees of freedom?</p>
 <pre><code class="language-python"># Compute the Percent Point Function of the chi-squared distribution
 z95 = chi2.ppf(0.95, df=5)
@@ -1038,12 +1036,12 @@ def plot_test(x, stat, df):
 plot_test(x, chi2_stat, 5)
 </code></pre>
 <p><img src="img/chisquared_18_0.png" alt="png"></p>
-<p>From the plot, we can clearly see that we do not reject the null hypothesis that the die is fair.</p>
+<p>From the plot, we can clearly see that we do not reject the null hypothesis that the dice is fair.</p>
 <h2 id="why-the-chi-squared-distribution">Why the Chi-squared Distribution?</h2>
 <p>How do we know that that particular statistic has that particular distribution?</p>
 <p>Before digging into the math, we can check this claim via <strong>simulation</strong>. We will repeat the procedure above many times, i.e.</p>
 <ul>
-<li>roll a (fair) die 60 times</li>
+<li>roll a (fair) dice 60 times</li>
 <li>compute the chi-square statistic</li>
 </ul>
 <p>and then plot the distribution of chi square statistics.</p>
@@ -1055,7 +1053,7 @@ def simulate_chi2stats(K, N, dgp):
         chi2_stats += [compute_chi2_stat(data)]
     return np.array(chi2_stats)
 </code></pre>
-<pre><code class="language-python">chi2_stats = simulate_chi2stats(K=100, N=60, dgp=generate_data_die)
+<pre><code class="language-python">chi2_stats = simulate_chi2stats(K=100, N=60, dgp=generate_data_dice)
 
 # Plot data
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='C0');
@@ -1063,7 +1061,7 @@ plt.plot(x, chi2_5_pdf);
 </code></pre>
 <p><img src="img/chisquared_23_0.png" alt="png"></p>
 <p>Since we only did it 100 times, the distribution looks pretty coarse but vaguely close. Let&rsquo;s now try 1000 times.</p>
-<pre><code class="language-python">chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_die)
+<pre><code class="language-python">chi2_stats = simulate_chi2stats(K=1000, N=60, dgp=generate_data_dice)
 
 # Plot data
 plt.hist(chi2_stats, density=True, bins=30, alpha=0.3, color='C0');
@@ -1392,7 +1390,7 @@ plot_test(x, chi2_stat, df=3)
 <p><img src="img/chisquared_52_0.png" alt="png"></p>
 <p>No, we <strong>do not reject</strong> the null hypothesis that the data is drawn from an exponential distribution.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>In this tutorial, we have seen how to perform two hypoteses tests</p>
+<p>In this tutorial, we have seen how to perform 3 hypoteses tests</p>
 <ol>
 <li>testing if a set of means or sums is coming from the expected distribution</li>
 <li>testing if two distributions are independent or not</li>
