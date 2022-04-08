@@ -768,8 +768,13 @@
       <nav id="TableOfContents">
   <ul>
     <li><a href="#setting">Setting</a></li>
-    <li><a href="#synthetic-control">Synthetic Control</a>
+    <li><a href="#synthetic-control">Synthetic Control</a></li>
+  </ul>
+
+  <ul>
+    <li>
       <ul>
+        <li><a href="#weights">Weights</a></li>
         <li><a href="#synthetic-control-vs-ols">Synthetic Control vs OLS</a></li>
       </ul>
     </li>
@@ -893,24 +898,21 @@
 <p>The simplest approach, would be just to compare pre and post periods. This is called the <strong>event study</strong> approach.</p>
 <p>However, we can do better than this. In fact, even though treatment was not randomly assigned, we still have access to some units that were not treated.</p>
 <p>For the outcome variable we have the following setup</p>
-<p>$$
+<h1 id="endbmatrix">$$
 Y =
 \begin{bmatrix}
 Y_{t, post} \ &amp; Y_{c, post} \newline
 Y_{t, pre} \ &amp; Y_{c, pre}
+\end{bmatrix}</h1>
+<p>\begin{bmatrix}
+Y^{(1)} _ {t, post} \ &amp; Y^{(0)} _ {c, post} \newline
+Y^{(0)} _ {t, pre} \ &amp; Y^{(0)} _ {c, pre}
 \end{bmatrix}
 $$</p>
-<p>which we can rewrite as</p>
-<p>$$
-Y =
-\begin{bmatrix} Y^{(1)}<em>{t, post} \ &amp; Y^{(0)}</em>{c, post} \newline
-Y^{(0)}<em>{t, pre} \ &amp; Y^{(0)}</em>{c, pre}
-\end{bmatrix}
-$$</p>
-<p>We basically have a <strong>missing data problem</strong> since we do not observe $Y^{(0)}_{t, post}$.</p>
+<p>We basically have a <strong>missing data problem</strong> since we do not observe $Y^{(0)} _ {t, post}$.</p>
 <p>Following Doudchenko and Inbens (2018), we can formulate an estimate of the counterfactual outcome for the treated unit as a linear combination of the observed outcomes for the control units.</p>
 <p>$$
-\hat Y^{(0)}<em>{t, post} = \alpha + \sum</em>{i \in c} \beta_{i} Y^{(0)}_{i, post}
+\hat Y^{(0)} _ {t, post} = \alpha + \sum_{i \in c} \beta_{i} Y^{(0)} _ {i, post}
 $$</p>
 <p>where</p>
 <ul>
@@ -921,6 +923,30 @@ $$</p>
 </ul>
 </li>
 </ul>
+<h3 id="weights">Weights</h3>
+<p>How should we choose which weights to use? One <strong>option</strong> could be to simply run a linear regression of the pre-treatment outcome of the treatment unit $Y^{(0)}<em>{t, pre}$ on the pre-treatment outcome of the control group $Y^{(0)}</em>{c, pre}$.</p>
+<p>There are two problems with this approach:</p>
+<ol>
+<li>
+<p>the weights might be negative</p>
+<ul>
+<li>how should we interpret them?</li>
+<li>they make no sense in the potential outcome framework</li>
+</ul>
+</li>
+<li>
+<p>weights could be greater or lower than one</p>
+<ul>
+<li>therefore we would not be able to interpret the synthetic control as a weighted average of untreated units</li>
+</ul>
+</li>
+</ol>
+<p>To solve this problem, Abadie et al (2010) propose the following weights:</p>
+<p>$$
+\hat \beta = \arg \min_{\beta} || \boldsymbol X_t - \boldsymbol \beta \boldsymbol X_c || = \sqrt{ \sum_{p} \left( X_{t, p}  - \sum_{i \in c} \beta_{p} X_{c, p} \right)^2 }
+\quad \text{s.t.} \quad \sum_{p} \beta_p = 1 \quad \text{and} \quad \beta_p \geq 0 \ \forall p
+$$</p>
+<p>With this approach we get an interpretable counterfactual.</p>
 <h3 id="synthetic-control-vs-ols">Synthetic Control vs OLS</h3>
 <p>What are the advantages and disadvantages of synthetic control methods with respect to a simple regression?</p>
 <ol>
@@ -1311,7 +1337,7 @@ df['Other States'] = df[[s for s in states if s != 'California']].mean(axis=1)
 </code></pre>
 <pre><code class="language-python">plot_lines(df, 'California', 'Other States')
 </code></pre>
-<p><img src="img/synthetic_control_20_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_22_0.png" alt="png"></p>
 <p>It looks like the trends are slightly diverging after 1989, the year of Proposition 99. However, it also looks like the trends are sensibly different before 1989. Therefore, it feels quite a stretch to attribute the differences in cigarette sales post 1989 to Proposition 99 alone.</p>
 <p>The idea is to <strong>build a synthetic control</strong> state for California. Maybe no single state is a good control, but a combination of them could actually provide a good approximation to California. Intuitively, one could think that better approximations are states that are</p>
 <ul>
@@ -1333,13 +1359,13 @@ def synth_predict(df, state, model):
 <p>Let&rsquo;s now plot the predicted against the actual time series.</p>
 <pre><code class="language-python">plot_lines(df, 'California', 'Synthetic California')
 </code></pre>
-<p><img src="img/synthetic_control_25_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_27_0.png" alt="png"></p>
 <p>It looks like the policy had a sensible <strong>negative effect</strong> on cigarette sales.</p>
 <p>We can also observe that we are clearly <strong>overfitting</strong>: the pre-policy predicted cigarette consumption line is exactly flat. One way to avoid overfitting is to use a penalized estimator.</p>
 <p>Another problem concerns the <strong>weights</strong>. We have not set any constraint on the weights. Let&rsquo;s see what they look like.</p>
 <pre><code class="language-python">sns.histplot(coef, bins=30).set(title='Coefficients');
 </code></pre>
-<p><img src="img/synthetic_control_27_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_30_0.png" alt="png"></p>
 <p>We have many <strong>negative weights</strong>, which do not make much sense from a causal inference perspective. In principle all weights should be between zero and one.</p>
 <p>To address both concerns, we are going to build a new estimator called <code>SyntheticControl()</code> which constrains weights to sum to 1 and to be positive.</p>
 <pre><code class="language-python">from typing import List
@@ -1370,7 +1396,7 @@ class SyntheticControl():
 <pre><code class="language-python">synth_predict(df, 'California', SyntheticControl())
 plot_lines(df, 'California', 'Synthetic California')
 </code></pre>
-<p><img src="img/synthetic_control_30_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_33_0.png" alt="png"></p>
 <p>Let&rsquo;s plot the <strong>difference</strong> between the two lines to better visualize the magnitude of the effect.</p>
 <pre><code class="language-python">def plot_difference(df, state, vline=True, hline=True, **kwargs):
     sns.lineplot(x=df['year'], y=df[state] - df[f'Synthetic {state}'], **kwargs)
@@ -1382,7 +1408,7 @@ plot_lines(df, 'California', 'Synthetic California')
 </code></pre>
 <pre><code class="language-python">plot_difference(df, 'California', label='California')
 </code></pre>
-<p><img src="img/synthetic_control_33_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_36_0.png" alt="png"></p>
 <p>The normalized estimator gives a very similar prediction, however it does not blatantly overfit the pre-period.</p>
 <p>Is the estimate significant? The question we are trying to answer is &ldquo;<em>how unusual is this estimate under the null hypothesis of no policy effect</em>?&rdquo;. We are going to perform a randomization/permutation test in order to answer this question. The <strong>idea</strong> is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.</p>
 <p>Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.</p>
@@ -1391,7 +1417,7 @@ plot_lines(df, 'California', 'Synthetic California')
     plot_difference(df, state, vline=False, alpha=0.2, color='grey')
 plot_difference(df, 'California', label='California')
 </code></pre>
-<p><img src="img/synthetic_control_35_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_38_0.png" alt="png"></p>
 <p>It looks like the effect for California is quite extreme, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales). We get more extreme only for a couple of states, especially in the first 10 years. Therefore, we conclude that the effect of the Proposition 99 policy is statistically different from zero.</p>
 <h2 id="references">References</h2>
 <ul>
