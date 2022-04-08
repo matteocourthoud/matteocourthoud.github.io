@@ -768,10 +768,11 @@
       <nav id="TableOfContents">
   <ul>
     <li><a href="#setting">Setting</a></li>
-    <li><a href="#synthetic-control">Synthetic Control</a></li>
-  </ul>
-
-  <ul>
+    <li><a href="#synthetic-control">Synthetic Control</a>
+      <ul>
+        <li><a href="#synthetic-control-vs-ols">Synthetic Control vs OLS</a></li>
+      </ul>
+    </li>
     <li><a href="#academic-application">Academic Application</a></li>
     <li><a href="#references">References</a></li>
   </ul>
@@ -832,7 +833,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    7 min read
+    9 min read
   </span>
   
 
@@ -892,23 +893,24 @@
 <p>The simplest approach, would be just to compare pre and post periods. This is called the <strong>event study</strong> approach.</p>
 <p>However, we can do better than this. In fact, even though treatment was not randomly assigned, we still have access to some units that were not treated.</p>
 <p>For the outcome variable we have the following setup</p>
-<h1 id="endarray-right">$$
+<p>$$
 Y =
-\left[ \begin{array}{l}
-Y_{t, post} \ &amp; Y_{c, post}
-\newline
+\begin{bmatrix}
+Y_{t, post} \ &amp; Y_{c, post} \newline
 Y_{t, pre} \ &amp; Y_{c, pre}
-\end{array} \right]</h1>
-<p>\left[ \begin{array}{l}
-Y^{(1)}<em>{t, post} \ &amp; Y^{(0)}</em>{c, post}
-\newline
+\end{bmatrix}
+$$</p>
+<p>which we can rewrite as</p>
+<p>$$
+Y =
+\begin{bmatrix} Y^{(1)}<em>{t, post} \ &amp; Y^{(0)}</em>{c, post} \newline
 Y^{(0)}<em>{t, pre} \ &amp; Y^{(0)}</em>{c, pre}
-\end{array} \right]
+\end{bmatrix}
 $$</p>
 <p>We basically have a <strong>missing data problem</strong> since we do not observe $Y^{(0)}_{t, post}$.</p>
 <p>Following Doudchenko and Inbens (2018), we can formulate an estimate of the counterfactual outcome for the treated unit as a linear combination of the observed outcomes for the control units.</p>
 <p>$$
-\hat Y^{(0)}<em>{t, post} = \alpha + \sum</em>{i \in c} \beta_i Y^{(0)}_{i, post}
+\hat Y^{(0)}<em>{t, post} = \alpha + \sum</em>{i \in c} \beta_{i} Y^{(0)}_{i, post}
 $$</p>
 <p>where</p>
 <ul>
@@ -919,6 +921,34 @@ $$</p>
 </ul>
 </li>
 </ul>
+<h3 id="synthetic-control-vs-ols">Synthetic Control vs OLS</h3>
+<p>What are the advantages and disadvantages of synthetic control methods with respect to a simple regression?</p>
+<ol>
+<li>
+<p>As long as we use positive weights that are constrained to sum to one, the method avoid extrapolation</p>
+<ul>
+<li>we will never go out of the support of the data</li>
+</ul>
+</li>
+<li>
+<p>It can be &ldquo;pre-registered&rdquo; in the sense that you don&rsquo;t need post-treatment observations to build the method</p>
+<ul>
+<li>could avoid p-hacking and cherry picking</li>
+</ul>
+</li>
+<li>
+<p>Weights make explicit the counterfactual analysis</p>
+<ul>
+<li>one can look at the weights and understand which comparison we are making</li>
+</ul>
+</li>
+<li>
+<p>It&rsquo;s a bridge between quantitative and qualitative research</p>
+<ul>
+<li>can be used to inspect single-treated unit cases</li>
+</ul>
+</li>
+</ol>
 <h2 id="academic-application">Academic Application</h2>
 <p>As an academic application, we are going to replicate <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program</a> (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.</p>
 <p>In particular, in 1989, California passes a tobacco control program that significantly reduces the sales of cigarettes. Was this program effective? Unfortunately, there is neither a counterfactual scenario, nor a randomized experiment.</p>
@@ -951,67 +981,73 @@ df.head()
       <th></th>
       <th>state</th>
       <th>year</th>
-      <th>cost_per_pack</th>
       <th>cig_sales</th>
-      <th>tax</th>
-      <th>tax_revenue</th>
+      <th>lnincome</th>
+      <th>beer</th>
+      <th>age15to24</th>
+      <th>retprice</th>
       <th>california</th>
-      <th>post</th>
+      <th>after_treatment</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>AK</td>
+      <td>1</td>
       <td>1970</td>
-      <td>0.418</td>
-      <td>121.3</td>
-      <td>0.16</td>
-      <td>38.3</td>
+      <td>89.800003</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.178862</td>
+      <td>39.599998</td>
       <td>False</td>
       <td>False</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>AK</td>
+      <td>1</td>
       <td>1971</td>
-      <td>0.421</td>
-      <td>123.0</td>
-      <td>0.16</td>
-      <td>38.0</td>
+      <td>95.400002</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.179928</td>
+      <td>42.700001</td>
       <td>False</td>
       <td>False</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>AK</td>
+      <td>1</td>
       <td>1972</td>
-      <td>0.420</td>
-      <td>130.0</td>
-      <td>0.16</td>
-      <td>38.1</td>
+      <td>101.099998</td>
+      <td>9.498476</td>
+      <td>NaN</td>
+      <td>0.180994</td>
+      <td>42.299999</td>
       <td>False</td>
       <td>False</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>AK</td>
+      <td>1</td>
       <td>1973</td>
-      <td>0.438</td>
-      <td>125.8</td>
-      <td>0.16</td>
-      <td>36.5</td>
+      <td>102.900002</td>
+      <td>9.550107</td>
+      <td>NaN</td>
+      <td>0.182060</td>
+      <td>42.099998</td>
       <td>False</td>
       <td>False</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>AK</td>
+      <td>1</td>
       <td>1974</td>
-      <td>0.449</td>
-      <td>130.4</td>
-      <td>0.16</td>
-      <td>35.6</td>
+      <td>108.199997</td>
+      <td>9.537163</td>
+      <td>NaN</td>
+      <td>0.183126</td>
+      <td>43.099998</td>
       <td>False</td>
       <td>False</td>
     </tr>
@@ -1019,6 +1055,79 @@ df.head()
 </table>
 </div>
 <p>We have information on cigarette costs, sales, tax rate and revenues for all US states for years from 1970 to 2014.</p>
+<pre><code class="language-python">from causalml.match import create_table_one
+
+create_table_one(df, 'california', ['cig_sales', 'lnincome', 'beer', 'age15to24', 'retprice'])
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Control</th>
+      <th>Treatment</th>
+      <th>SMD</th>
+    </tr>
+    <tr>
+      <th>Variable</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>n</th>
+      <td>1178</td>
+      <td>31</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>age15to24</th>
+      <td>0.18 (0.02)</td>
+      <td>0.18 (0.01)</td>
+      <td>0.0454</td>
+    </tr>
+    <tr>
+      <th>beer</th>
+      <td>23.46 (4.26)</td>
+      <td>22.26 (2.11)</td>
+      <td>-0.3559</td>
+    </tr>
+    <tr>
+      <th>cig_sales</th>
+      <td>119.53 (32.60)</td>
+      <td>94.59 (30.01)</td>
+      <td>-0.7962</td>
+    </tr>
+    <tr>
+      <th>lnincome</th>
+      <td>9.86 (0.17)</td>
+      <td>10.07 (0.08)</td>
+      <td>1.6107</td>
+    </tr>
+    <tr>
+      <th>retprice</th>
+      <td>108.04 (64.00)</td>
+      <td>119.92 (77.90)</td>
+      <td>0.1667</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 <p>We are interested in the sales of cigarettes <code>cig_sales</code> over time. Let&rsquo;s start by reshaping the dataset so that each state is a time series.</p>
 <pre><code class="language-python">df = df.pivot(index='year', columns='state', values='cig_sales').reset_index()
 df.head()
@@ -1042,163 +1151,167 @@ df.head()
     <tr style="text-align: right;">
       <th>state</th>
       <th>year</th>
-      <th>AK</th>
-      <th>AL</th>
-      <th>AR</th>
-      <th>AZ</th>
-      <th>CA</th>
-      <th>CO</th>
-      <th>CT</th>
-      <th>DC</th>
-      <th>DE</th>
+      <th>1</th>
+      <th>10</th>
+      <th>11</th>
+      <th>12</th>
+      <th>13</th>
+      <th>14</th>
+      <th>15</th>
+      <th>16</th>
+      <th>17</th>
       <th>...</th>
-      <th>SD</th>
-      <th>TN</th>
-      <th>TX</th>
-      <th>UT</th>
-      <th>VA</th>
-      <th>VT</th>
-      <th>WA</th>
-      <th>WI</th>
-      <th>WV</th>
-      <th>WY</th>
+      <th>37</th>
+      <th>38</th>
+      <th>39</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>9</th>
+      <th>California</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
       <td>1970</td>
-      <td>121.3</td>
-      <td>89.8</td>
-      <td>100.3</td>
-      <td>115.2</td>
-      <td>123.0</td>
-      <td>124.8</td>
-      <td>120.0</td>
-      <td>200.4</td>
-      <td>155.0</td>
+      <td>89.800003</td>
+      <td>134.600006</td>
+      <td>108.500000</td>
+      <td>114.000000</td>
+      <td>155.800003</td>
+      <td>115.900002</td>
+      <td>128.500000</td>
+      <td>104.300003</td>
+      <td>93.400002</td>
       <td>...</td>
-      <td>92.7</td>
-      <td>99.8</td>
-      <td>106.4</td>
-      <td>65.5</td>
-      <td>124.3</td>
-      <td>122.6</td>
-      <td>96.7</td>
-      <td>106.4</td>
-      <td>114.5</td>
-      <td>132.2</td>
+      <td>114.500000</td>
+      <td>106.400002</td>
+      <td>132.199997</td>
+      <td>124.800003</td>
+      <td>120.000000</td>
+      <td>155.000000</td>
+      <td>109.900002</td>
+      <td>102.400002</td>
+      <td>124.800003</td>
+      <td>123.000000</td>
     </tr>
     <tr>
       <th>1</th>
       <td>1971</td>
-      <td>123.0</td>
-      <td>95.4</td>
-      <td>104.1</td>
-      <td>109.6</td>
-      <td>121.0</td>
-      <td>125.5</td>
-      <td>117.6</td>
-      <td>213.0</td>
-      <td>161.1</td>
+      <td>95.400002</td>
+      <td>139.300003</td>
+      <td>108.400002</td>
+      <td>102.800003</td>
+      <td>163.500000</td>
+      <td>119.800003</td>
+      <td>133.199997</td>
+      <td>116.400002</td>
+      <td>105.400002</td>
       <td>...</td>
-      <td>96.7</td>
-      <td>106.3</td>
-      <td>108.9</td>
-      <td>67.7</td>
-      <td>128.4</td>
-      <td>124.4</td>
-      <td>97.0</td>
-      <td>105.4</td>
-      <td>111.5</td>
-      <td>131.7</td>
+      <td>111.500000</td>
+      <td>105.400002</td>
+      <td>131.699997</td>
+      <td>125.500000</td>
+      <td>117.599998</td>
+      <td>161.100006</td>
+      <td>115.699997</td>
+      <td>108.500000</td>
+      <td>125.599998</td>
+      <td>121.000000</td>
     </tr>
     <tr>
       <th>2</th>
       <td>1972</td>
-      <td>130.0</td>
-      <td>101.1</td>
-      <td>103.9</td>
-      <td>125.0</td>
-      <td>123.5</td>
-      <td>134.3</td>
-      <td>110.8</td>
-      <td>220.6</td>
-      <td>156.3</td>
+      <td>101.099998</td>
+      <td>149.199997</td>
+      <td>109.400002</td>
+      <td>111.000000</td>
+      <td>179.399994</td>
+      <td>125.300003</td>
+      <td>136.500000</td>
+      <td>96.800003</td>
+      <td>112.099998</td>
       <td>...</td>
-      <td>103.0</td>
-      <td>111.5</td>
-      <td>108.6</td>
-      <td>71.3</td>
-      <td>137.0</td>
-      <td>138.0</td>
-      <td>88.5</td>
-      <td>108.8</td>
-      <td>117.5</td>
-      <td>140.0</td>
+      <td>117.500000</td>
+      <td>108.800003</td>
+      <td>140.000000</td>
+      <td>134.300003</td>
+      <td>110.800003</td>
+      <td>156.300003</td>
+      <td>117.000000</td>
+      <td>126.099998</td>
+      <td>126.599998</td>
+      <td>123.500000</td>
     </tr>
     <tr>
       <th>3</th>
       <td>1973</td>
-      <td>125.8</td>
-      <td>102.9</td>
-      <td>108.0</td>
-      <td>128.3</td>
-      <td>124.4</td>
-      <td>137.9</td>
-      <td>109.3</td>
-      <td>209.4</td>
-      <td>154.7</td>
+      <td>102.900002</td>
+      <td>156.000000</td>
+      <td>110.599998</td>
+      <td>115.199997</td>
+      <td>201.899994</td>
+      <td>126.699997</td>
+      <td>138.000000</td>
+      <td>106.800003</td>
+      <td>115.000000</td>
       <td>...</td>
-      <td>103.5</td>
-      <td>109.7</td>
-      <td>110.4</td>
-      <td>72.7</td>
-      <td>143.1</td>
-      <td>146.8</td>
-      <td>91.0</td>
-      <td>109.5</td>
-      <td>116.6</td>
-      <td>141.2</td>
+      <td>116.599998</td>
+      <td>109.500000</td>
+      <td>141.199997</td>
+      <td>137.899994</td>
+      <td>109.300003</td>
+      <td>154.699997</td>
+      <td>119.800003</td>
+      <td>121.800003</td>
+      <td>124.400002</td>
+      <td>124.400002</td>
     </tr>
     <tr>
       <th>4</th>
       <td>1974</td>
-      <td>130.4</td>
-      <td>108.2</td>
-      <td>109.7</td>
-      <td>133.1</td>
-      <td>126.7</td>
-      <td>132.8</td>
-      <td>112.4</td>
-      <td>182.7</td>
-      <td>151.3</td>
+      <td>108.199997</td>
+      <td>159.600006</td>
+      <td>116.099998</td>
+      <td>118.599998</td>
+      <td>212.399994</td>
+      <td>129.899994</td>
+      <td>142.100006</td>
+      <td>110.599998</td>
+      <td>117.099998</td>
       <td>...</td>
-      <td>108.4</td>
-      <td>114.8</td>
-      <td>114.7</td>
-      <td>75.6</td>
-      <td>149.6</td>
-      <td>151.8</td>
-      <td>98.6</td>
-      <td>111.8</td>
-      <td>119.9</td>
-      <td>145.8</td>
+      <td>119.900002</td>
+      <td>111.800003</td>
+      <td>145.800003</td>
+      <td>132.800003</td>
+      <td>112.400002</td>
+      <td>151.300003</td>
+      <td>123.699997</td>
+      <td>125.599998</td>
+      <td>131.899994</td>
+      <td>126.699997</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 52 columns</p>
+<p>5 rows × 40 columns</p>
 </div>
 <p>In an ideal world, one could use the average of all the other states in the United States as a control. Let&rsquo;s plot what that would look like.</p>
 <pre><code class="language-python">states = [c for c in df.columns if c not in ['year']]
-df['not CA'] = df[[s for s in states if s != 'CA']].mean(axis=1)
+df['Other States'] = df[[s for s in states if s != 'California']].mean(axis=1)
 </code></pre>
-<pre><code class="language-python">sns.lineplot(x=df['year'], y=df['CA'].values, label='California')
-sns.lineplot(x=df['year'], y=df['not CA'].values, label='Other States')
-plt.vlines(x=1988, ymin=plt.ylim()[0], ymax=plt.ylim()[1], linestyle=&quot;:&quot;, color='C2')
-plt.title(&quot;Per-capita cigarette sales (in packs)&quot;);
+<pre><code class="language-python">def plot_lines(df, line1, line2, hline=True):
+    sns.lineplot(x=df['year'], y=df[line1].values, label=line1)
+    sns.lineplot(x=df['year'], y=df[line2].values, label=line2)
+    plt.axvline(x=1988, ls=&quot;:&quot;, color='C2', label='Proposition 99', zorder=1)
+    plt.legend();
+    plt.title(&quot;Per-capita cigarette sales (in packs)&quot;);
 </code></pre>
-<p><img src="img/synthetic_control_15_0.png" alt="png"></p>
+<pre><code class="language-python">plot_lines(df, 'California', 'Other States')
+</code></pre>
+<p><img src="img/synthetic_control_20_0.png" alt="png"></p>
 <p>It looks like the trends are slightly diverging after 1989, the year of Proposition 99. However, it also looks like the trends are sensibly different before 1989. Therefore, it feels quite a stretch to attribute the differences in cigarette sales post 1989 to Proposition 99 alone.</p>
 <p>The idea is to <strong>build a synthetic control</strong> state for California. Maybe no single state is a good control, but a combination of them could actually provide a good approximation to California. Intuitively, one could think that better approximations are states that are</p>
 <ul>
@@ -1212,57 +1325,78 @@ def synth_predict(df, state, model):
     y = df.loc[df['year'] &lt;= 1988, state]
     other_states = [c for c in states if c not in ['year', state]]
     X = df.loc[df['year'] &lt;= 1988, other_states]
-    df[f's_{state}'] = model.fit(X, y).predict(df[other_states])
-    return model
+    df[f'Synthetic {state}'] = model.fit(X, y).predict(df[other_states])
+    return model.coef_
 </code></pre>
-<pre><code class="language-python">model = synth_predict(df, 'CA', LinearRegression())
+<pre><code class="language-python">coef = synth_predict(df, 'California', LinearRegression())
 </code></pre>
-<p>Let&rsquo;s now plot the predicted against the forea</p>
-<pre><code class="language-python">sns.lineplot(x=df['year'], y=df['CA'].values, label=&quot;California&quot;)
-sns.lineplot(x=df['year'], y=df[f's_CA'].values, label='Synthetic California')
-plt.vlines(x=1988, ymin=plt.ylim()[0], ymax=plt.ylim()[1], ls=&quot;:&quot;, color='C2', label='Proposition 99', zorder=-1)
-plt.legend();
-plt.title(&quot;Per-capita cigarette sales (in packs)&quot;);
+<p>Let&rsquo;s now plot the predicted against the actual time series.</p>
+<pre><code class="language-python">plot_lines(df, 'California', 'Synthetic California')
 </code></pre>
-<p><img src="img/synthetic_control_20_0.png" alt="png"></p>
-<pre><code class="language-python">def plot_normalized(df, state, vline=True, hline=True, **kwargs):
-    sns.lineplot(x=df['year'], y=df[state] - df[f's_{state}'], **kwargs)
+<p><img src="img/synthetic_control_25_0.png" alt="png"></p>
+<p>It looks like the policy had a sensible <strong>negative effect</strong> on cigarette sales.</p>
+<p>We can also observe that we are clearly <strong>overfitting</strong>: the pre-policy predicted cigarette consumption line is exactly flat. One way to avoid overfitting is to use a penalized estimator.</p>
+<p>Another problem concerns the <strong>weights</strong>. We have not set any constraint on the weights. Let&rsquo;s see what they look like.</p>
+<pre><code class="language-python">sns.histplot(coef, bins=30).set(title='Coefficients');
+</code></pre>
+<p><img src="img/synthetic_control_27_0.png" alt="png"></p>
+<p>We have many <strong>negative weights</strong>, which do not make much sense from a causal inference perspective. In principle all weights should be between zero and one.</p>
+<p>To address both concerns, we are going to build a new estimator called <code>SyntheticControl()</code> which constrains weights to sum to 1 and to be positive.</p>
+<pre><code class="language-python">from typing import List
+from operator import add
+from toolz import reduce, partial
+from scipy.optimize import fmin_slsqp
+
+class SyntheticControl():
+    
+    # Loss function
+    def loss(self, W, X, y) -&gt; float:
+        return np.sqrt(np.mean((y - X.dot(W))**2))
+
+    # Fit model
+    def fit(self, X, y):
+        w_start = [1/X.shape[1]]*X.shape[1]
+        self.coef_ = fmin_slsqp(partial(self.loss, X=X, y=y),
+                         np.array(w_start),
+                         f_eqcons=lambda x: np.sum(x) - 1,
+                         bounds=[(0.0, 1.0)]*len(w_start),
+                         disp=False)
+        return self
+    
+    # Predict 
+    def predict(self, X):
+        return X.dot(self.coef_)
+</code></pre>
+<pre><code class="language-python">synth_predict(df, 'California', SyntheticControl())
+plot_lines(df, 'California', 'Synthetic California')
+</code></pre>
+<p><img src="img/synthetic_control_30_0.png" alt="png"></p>
+<p>Let&rsquo;s plot the <strong>difference</strong> between the two lines to better visualize the magnitude of the effect.</p>
+<pre><code class="language-python">def plot_difference(df, state, vline=True, hline=True, **kwargs):
+    sns.lineplot(x=df['year'], y=df[state] - df[f'Synthetic {state}'], **kwargs)
     if vline: 
-        plt.vlines(x=1988, ymin=0.9*plt.ylim()[0], ymax=0.9*plt.ylim()[1], ls=&quot;:&quot;, color='C2', label='Proposition 99', zorder=-3);
+        plt.axvline(x=1988, ls=&quot;:&quot;, color='C2', label='Proposition 99', zorder=1)
         plt.legend()
     if hline: sns.lineplot(x=df['year'], y=0, lw=1, color='black', zorder=1)
     plt.title(&quot;Normalized per-capita cigarette sales (in packs)&quot;);
 </code></pre>
-<pre><code class="language-python">plot_normalized(df, 'CA', label=&quot;California&quot;)
+<pre><code class="language-python">plot_difference(df, 'California', label='California')
 </code></pre>
-<p><img src="img/synthetic_control_23_0.png" alt="png"></p>
-<p>Now we can clearly see the negative effect of the policy and how it rebounds back over time.</p>
-<p>We can also observe that we are clearly <strong>overfitting</strong>: the pre-policy predicted cigarette consumption line is exactly flat. One way to avoid overfitting is to use a penalized estimator.</p>
-<p>Another problem concerns the <strong>weights</strong>. We have not set any constraint on the weights. Let&rsquo;s see what they look like.</p>
-<pre><code class="language-python">sns.histplot(model.coef_, bins=30).set(title='Coefficients');
-</code></pre>
-<p><img src="img/synthetic_control_25_0.png" alt="png"></p>
-<p>We have many <strong>negative weights</strong>, which do not make much sense from a causal inference perspective. In principle all weights should be between zero and one.</p>
-<p>To adress both concerns, we are going to use the <code>Lasso</code> estimator, which uses a norm-1 penalty for parameters in linear regression. Moreover, we will constrain it to have only positive weights.</p>
-<pre><code class="language-python">from sklearn.linear_model import Lasso
-
-synth_predict(df, 'CA', Lasso(positive=True, alpha=5))
-plot_normalized(df, 'CA', label='California')
-</code></pre>
-<p><img src="img/synthetic_control_27_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_33_0.png" alt="png"></p>
 <p>The normalized estimator gives a very similar prediction, however it does not blatantly overfit the pre-period.</p>
 <p>Is the estimate significant? The question we are trying to answer is &ldquo;<em>how unusual is this estimate under the null hypothesis of no policy effect</em>?&rdquo;. We are going to perform a randomization/permutation test in order to answer this question. The <strong>idea</strong> is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.</p>
 <p>Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.</p>
 <pre><code class="language-python">for state in states:
-    synth_predict(df, state, Lasso(positive=True, alpha=5))
-    plot_normalized(df, state, vline=False, alpha=0.2, color='grey')
-plot_normalized(df, 'CA', vline=True, label='California')
+    synth_predict(df, state, SyntheticControl())
+    plot_difference(df, state, vline=False, alpha=0.2, color='grey')
+plot_difference(df, 'California', label='California')
 </code></pre>
-<p><img src="img/synthetic_control_29_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_35_0.png" alt="png"></p>
 <p>It looks like the effect for California is quite extreme, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales). We get more extreme only for a couple of states, especially in the first 10 years. Therefore, we conclude that the effect of the Proposition 99 policy is statistically different from zero.</p>
 <h2 id="references">References</h2>
 <ul>
 <li><a href="https://www.youtube.com/watch?v=BsRqy7juMus" target="_blank" rel="noopener">Synthetic Control</a> video lecture by Paul Goldsmith-Pinkham (Yale)</li>
+<li><a href="https://mixtape.scunning.com/synthetic-control.html" target="_blank" rel="noopener">Synthetic Control</a> chapter of the Causal Inference Mixtape by Scott Cunningham</li>
 </ul>
 
           </div>

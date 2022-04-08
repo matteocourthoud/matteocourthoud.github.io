@@ -4169,23 +4169,24 @@ df_nsw[&#39;pscore&#39;] = pi.predict_proba(df_nsw[X])[:,1]
 &lt;p&gt;The simplest approach, would be just to compare pre and post periods. This is called the &lt;strong&gt;event study&lt;/strong&gt; approach.&lt;/p&gt;
 &lt;p&gt;However, we can do better than this. In fact, even though treatment was not randomly assigned, we still have access to some units that were not treated.&lt;/p&gt;
 &lt;p&gt;For the outcome variable we have the following setup&lt;/p&gt;
-&lt;h1 id=&#34;endarray-right&#34;&gt;$$
+&lt;p&gt;$$
 Y =
-\left[ \begin{array}{l}
-Y_{t, post} \ &amp;amp; Y_{c, post}
-\newline
+\begin{bmatrix}
+Y_{t, post} \ &amp;amp; Y_{c, post} \newline
 Y_{t, pre} \ &amp;amp; Y_{c, pre}
-\end{array} \right]&lt;/h1&gt;
-&lt;p&gt;\left[ \begin{array}{l}
-Y^{(1)}&lt;em&gt;{t, post} \ &amp;amp; Y^{(0)}&lt;/em&gt;{c, post}
-\newline
+\end{bmatrix}
+$$&lt;/p&gt;
+&lt;p&gt;which we can rewrite as&lt;/p&gt;
+&lt;p&gt;$$
+Y =
+\begin{bmatrix} Y^{(1)}&lt;em&gt;{t, post} \ &amp;amp; Y^{(0)}&lt;/em&gt;{c, post} \newline
 Y^{(0)}&lt;em&gt;{t, pre} \ &amp;amp; Y^{(0)}&lt;/em&gt;{c, pre}
-\end{array} \right]
+\end{bmatrix}
 $$&lt;/p&gt;
 &lt;p&gt;We basically have a &lt;strong&gt;missing data problem&lt;/strong&gt; since we do not observe $Y^{(0)}_{t, post}$.&lt;/p&gt;
 &lt;p&gt;Following Doudchenko and Inbens (2018), we can formulate an estimate of the counterfactual outcome for the treated unit as a linear combination of the observed outcomes for the control units.&lt;/p&gt;
 &lt;p&gt;$$
-\hat Y^{(0)}&lt;em&gt;{t, post} = \alpha + \sum&lt;/em&gt;{i \in c} \beta_i Y^{(0)}_{i, post}
+\hat Y^{(0)}&lt;em&gt;{t, post} = \alpha + \sum&lt;/em&gt;{i \in c} \beta_{i} Y^{(0)}_{i, post}
 $$&lt;/p&gt;
 &lt;p&gt;where&lt;/p&gt;
 &lt;ul&gt;
@@ -4196,6 +4197,34 @@ $$&lt;/p&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;h3 id=&#34;synthetic-control-vs-ols&#34;&gt;Synthetic Control vs OLS&lt;/h3&gt;
+&lt;p&gt;What are the advantages and disadvantages of synthetic control methods with respect to a simple regression?&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;As long as we use positive weights that are constrained to sum to one, the method avoid extrapolation&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;we will never go out of the support of the data&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It can be &amp;ldquo;pre-registered&amp;rdquo; in the sense that you don&amp;rsquo;t need post-treatment observations to build the method&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;could avoid p-hacking and cherry picking&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Weights make explicit the counterfactual analysis&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;one can look at the weights and understand which comparison we are making&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It&amp;rsquo;s a bridge between quantitative and qualitative research&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;can be used to inspect single-treated unit cases&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
 &lt;h2 id=&#34;academic-application&#34;&gt;Academic Application&lt;/h2&gt;
 &lt;p&gt;As an academic application, we are going to replicate &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program&lt;/a&gt; (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.&lt;/p&gt;
 &lt;p&gt;In particular, in 1989, California passes a tobacco control program that significantly reduces the sales of cigarettes. Was this program effective? Unfortunately, there is neither a counterfactual scenario, nor a randomized experiment.&lt;/p&gt;
@@ -4228,67 +4257,73 @@ df.head()
       &lt;th&gt;&lt;/th&gt;
       &lt;th&gt;state&lt;/th&gt;
       &lt;th&gt;year&lt;/th&gt;
-      &lt;th&gt;cost_per_pack&lt;/th&gt;
       &lt;th&gt;cig_sales&lt;/th&gt;
-      &lt;th&gt;tax&lt;/th&gt;
-      &lt;th&gt;tax_revenue&lt;/th&gt;
+      &lt;th&gt;lnincome&lt;/th&gt;
+      &lt;th&gt;beer&lt;/th&gt;
+      &lt;th&gt;age15to24&lt;/th&gt;
+      &lt;th&gt;retprice&lt;/th&gt;
       &lt;th&gt;california&lt;/th&gt;
-      &lt;th&gt;post&lt;/th&gt;
+      &lt;th&gt;after_treatment&lt;/th&gt;
     &lt;/tr&gt;
   &lt;/thead&gt;
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;AK&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;1970&lt;/td&gt;
-      &lt;td&gt;0.418&lt;/td&gt;
-      &lt;td&gt;121.3&lt;/td&gt;
-      &lt;td&gt;0.16&lt;/td&gt;
-      &lt;td&gt;38.3&lt;/td&gt;
+      &lt;td&gt;89.800003&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.178862&lt;/td&gt;
+      &lt;td&gt;39.599998&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;AK&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;1971&lt;/td&gt;
-      &lt;td&gt;0.421&lt;/td&gt;
-      &lt;td&gt;123.0&lt;/td&gt;
-      &lt;td&gt;0.16&lt;/td&gt;
-      &lt;td&gt;38.0&lt;/td&gt;
+      &lt;td&gt;95.400002&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.179928&lt;/td&gt;
+      &lt;td&gt;42.700001&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;AK&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;1972&lt;/td&gt;
-      &lt;td&gt;0.420&lt;/td&gt;
-      &lt;td&gt;130.0&lt;/td&gt;
-      &lt;td&gt;0.16&lt;/td&gt;
-      &lt;td&gt;38.1&lt;/td&gt;
+      &lt;td&gt;101.099998&lt;/td&gt;
+      &lt;td&gt;9.498476&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.180994&lt;/td&gt;
+      &lt;td&gt;42.299999&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;AK&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;1973&lt;/td&gt;
-      &lt;td&gt;0.438&lt;/td&gt;
-      &lt;td&gt;125.8&lt;/td&gt;
-      &lt;td&gt;0.16&lt;/td&gt;
-      &lt;td&gt;36.5&lt;/td&gt;
+      &lt;td&gt;102.900002&lt;/td&gt;
+      &lt;td&gt;9.550107&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.182060&lt;/td&gt;
+      &lt;td&gt;42.099998&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;AK&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;1974&lt;/td&gt;
-      &lt;td&gt;0.449&lt;/td&gt;
-      &lt;td&gt;130.4&lt;/td&gt;
-      &lt;td&gt;0.16&lt;/td&gt;
-      &lt;td&gt;35.6&lt;/td&gt;
+      &lt;td&gt;108.199997&lt;/td&gt;
+      &lt;td&gt;9.537163&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.183126&lt;/td&gt;
+      &lt;td&gt;43.099998&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
     &lt;/tr&gt;
@@ -4296,6 +4331,79 @@ df.head()
 &lt;/table&gt;
 &lt;/div&gt;
 &lt;p&gt;We have information on cigarette costs, sales, tax rate and revenues for all US states for years from 1970 to 2014.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import create_table_one
+
+create_table_one(df, &#39;california&#39;, [&#39;cig_sales&#39;, &#39;lnincome&#39;, &#39;beer&#39;, &#39;age15to24&#39;, &#39;retprice&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Control&lt;/th&gt;
+      &lt;th&gt;Treatment&lt;/th&gt;
+      &lt;th&gt;SMD&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Variable&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;n&lt;/th&gt;
+      &lt;td&gt;1178&lt;/td&gt;
+      &lt;td&gt;31&lt;/td&gt;
+      &lt;td&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;age15to24&lt;/th&gt;
+      &lt;td&gt;0.18 (0.02)&lt;/td&gt;
+      &lt;td&gt;0.18 (0.01)&lt;/td&gt;
+      &lt;td&gt;0.0454&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;beer&lt;/th&gt;
+      &lt;td&gt;23.46 (4.26)&lt;/td&gt;
+      &lt;td&gt;22.26 (2.11)&lt;/td&gt;
+      &lt;td&gt;-0.3559&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;cig_sales&lt;/th&gt;
+      &lt;td&gt;119.53 (32.60)&lt;/td&gt;
+      &lt;td&gt;94.59 (30.01)&lt;/td&gt;
+      &lt;td&gt;-0.7962&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;lnincome&lt;/th&gt;
+      &lt;td&gt;9.86 (0.17)&lt;/td&gt;
+      &lt;td&gt;10.07 (0.08)&lt;/td&gt;
+      &lt;td&gt;1.6107&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;retprice&lt;/th&gt;
+      &lt;td&gt;108.04 (64.00)&lt;/td&gt;
+      &lt;td&gt;119.92 (77.90)&lt;/td&gt;
+      &lt;td&gt;0.1667&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
 &lt;p&gt;We are interested in the sales of cigarettes &lt;code&gt;cig_sales&lt;/code&gt; over time. Let&amp;rsquo;s start by reshaping the dataset so that each state is a time series.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = df.pivot(index=&#39;year&#39;, columns=&#39;state&#39;, values=&#39;cig_sales&#39;).reset_index()
 df.head()
@@ -4319,163 +4427,167 @@ df.head()
     &lt;tr style=&#34;text-align: right;&#34;&gt;
       &lt;th&gt;state&lt;/th&gt;
       &lt;th&gt;year&lt;/th&gt;
-      &lt;th&gt;AK&lt;/th&gt;
-      &lt;th&gt;AL&lt;/th&gt;
-      &lt;th&gt;AR&lt;/th&gt;
-      &lt;th&gt;AZ&lt;/th&gt;
-      &lt;th&gt;CA&lt;/th&gt;
-      &lt;th&gt;CO&lt;/th&gt;
-      &lt;th&gt;CT&lt;/th&gt;
-      &lt;th&gt;DC&lt;/th&gt;
-      &lt;th&gt;DE&lt;/th&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;th&gt;10&lt;/th&gt;
+      &lt;th&gt;11&lt;/th&gt;
+      &lt;th&gt;12&lt;/th&gt;
+      &lt;th&gt;13&lt;/th&gt;
+      &lt;th&gt;14&lt;/th&gt;
+      &lt;th&gt;15&lt;/th&gt;
+      &lt;th&gt;16&lt;/th&gt;
+      &lt;th&gt;17&lt;/th&gt;
       &lt;th&gt;...&lt;/th&gt;
-      &lt;th&gt;SD&lt;/th&gt;
-      &lt;th&gt;TN&lt;/th&gt;
-      &lt;th&gt;TX&lt;/th&gt;
-      &lt;th&gt;UT&lt;/th&gt;
-      &lt;th&gt;VA&lt;/th&gt;
-      &lt;th&gt;VT&lt;/th&gt;
-      &lt;th&gt;WA&lt;/th&gt;
-      &lt;th&gt;WI&lt;/th&gt;
-      &lt;th&gt;WV&lt;/th&gt;
-      &lt;th&gt;WY&lt;/th&gt;
+      &lt;th&gt;37&lt;/th&gt;
+      &lt;th&gt;38&lt;/th&gt;
+      &lt;th&gt;39&lt;/th&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;th&gt;California&lt;/th&gt;
     &lt;/tr&gt;
   &lt;/thead&gt;
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
       &lt;td&gt;1970&lt;/td&gt;
-      &lt;td&gt;121.3&lt;/td&gt;
-      &lt;td&gt;89.8&lt;/td&gt;
-      &lt;td&gt;100.3&lt;/td&gt;
-      &lt;td&gt;115.2&lt;/td&gt;
-      &lt;td&gt;123.0&lt;/td&gt;
-      &lt;td&gt;124.8&lt;/td&gt;
-      &lt;td&gt;120.0&lt;/td&gt;
-      &lt;td&gt;200.4&lt;/td&gt;
-      &lt;td&gt;155.0&lt;/td&gt;
+      &lt;td&gt;89.800003&lt;/td&gt;
+      &lt;td&gt;134.600006&lt;/td&gt;
+      &lt;td&gt;108.500000&lt;/td&gt;
+      &lt;td&gt;114.000000&lt;/td&gt;
+      &lt;td&gt;155.800003&lt;/td&gt;
+      &lt;td&gt;115.900002&lt;/td&gt;
+      &lt;td&gt;128.500000&lt;/td&gt;
+      &lt;td&gt;104.300003&lt;/td&gt;
+      &lt;td&gt;93.400002&lt;/td&gt;
       &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;92.7&lt;/td&gt;
-      &lt;td&gt;99.8&lt;/td&gt;
-      &lt;td&gt;106.4&lt;/td&gt;
-      &lt;td&gt;65.5&lt;/td&gt;
-      &lt;td&gt;124.3&lt;/td&gt;
-      &lt;td&gt;122.6&lt;/td&gt;
-      &lt;td&gt;96.7&lt;/td&gt;
-      &lt;td&gt;106.4&lt;/td&gt;
-      &lt;td&gt;114.5&lt;/td&gt;
-      &lt;td&gt;132.2&lt;/td&gt;
+      &lt;td&gt;114.500000&lt;/td&gt;
+      &lt;td&gt;106.400002&lt;/td&gt;
+      &lt;td&gt;132.199997&lt;/td&gt;
+      &lt;td&gt;124.800003&lt;/td&gt;
+      &lt;td&gt;120.000000&lt;/td&gt;
+      &lt;td&gt;155.000000&lt;/td&gt;
+      &lt;td&gt;109.900002&lt;/td&gt;
+      &lt;td&gt;102.400002&lt;/td&gt;
+      &lt;td&gt;124.800003&lt;/td&gt;
+      &lt;td&gt;123.000000&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;1971&lt;/td&gt;
-      &lt;td&gt;123.0&lt;/td&gt;
-      &lt;td&gt;95.4&lt;/td&gt;
-      &lt;td&gt;104.1&lt;/td&gt;
-      &lt;td&gt;109.6&lt;/td&gt;
-      &lt;td&gt;121.0&lt;/td&gt;
-      &lt;td&gt;125.5&lt;/td&gt;
-      &lt;td&gt;117.6&lt;/td&gt;
-      &lt;td&gt;213.0&lt;/td&gt;
-      &lt;td&gt;161.1&lt;/td&gt;
+      &lt;td&gt;95.400002&lt;/td&gt;
+      &lt;td&gt;139.300003&lt;/td&gt;
+      &lt;td&gt;108.400002&lt;/td&gt;
+      &lt;td&gt;102.800003&lt;/td&gt;
+      &lt;td&gt;163.500000&lt;/td&gt;
+      &lt;td&gt;119.800003&lt;/td&gt;
+      &lt;td&gt;133.199997&lt;/td&gt;
+      &lt;td&gt;116.400002&lt;/td&gt;
+      &lt;td&gt;105.400002&lt;/td&gt;
       &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;96.7&lt;/td&gt;
-      &lt;td&gt;106.3&lt;/td&gt;
-      &lt;td&gt;108.9&lt;/td&gt;
-      &lt;td&gt;67.7&lt;/td&gt;
-      &lt;td&gt;128.4&lt;/td&gt;
-      &lt;td&gt;124.4&lt;/td&gt;
-      &lt;td&gt;97.0&lt;/td&gt;
-      &lt;td&gt;105.4&lt;/td&gt;
-      &lt;td&gt;111.5&lt;/td&gt;
-      &lt;td&gt;131.7&lt;/td&gt;
+      &lt;td&gt;111.500000&lt;/td&gt;
+      &lt;td&gt;105.400002&lt;/td&gt;
+      &lt;td&gt;131.699997&lt;/td&gt;
+      &lt;td&gt;125.500000&lt;/td&gt;
+      &lt;td&gt;117.599998&lt;/td&gt;
+      &lt;td&gt;161.100006&lt;/td&gt;
+      &lt;td&gt;115.699997&lt;/td&gt;
+      &lt;td&gt;108.500000&lt;/td&gt;
+      &lt;td&gt;125.599998&lt;/td&gt;
+      &lt;td&gt;121.000000&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;1972&lt;/td&gt;
-      &lt;td&gt;130.0&lt;/td&gt;
-      &lt;td&gt;101.1&lt;/td&gt;
-      &lt;td&gt;103.9&lt;/td&gt;
-      &lt;td&gt;125.0&lt;/td&gt;
-      &lt;td&gt;123.5&lt;/td&gt;
-      &lt;td&gt;134.3&lt;/td&gt;
-      &lt;td&gt;110.8&lt;/td&gt;
-      &lt;td&gt;220.6&lt;/td&gt;
-      &lt;td&gt;156.3&lt;/td&gt;
+      &lt;td&gt;101.099998&lt;/td&gt;
+      &lt;td&gt;149.199997&lt;/td&gt;
+      &lt;td&gt;109.400002&lt;/td&gt;
+      &lt;td&gt;111.000000&lt;/td&gt;
+      &lt;td&gt;179.399994&lt;/td&gt;
+      &lt;td&gt;125.300003&lt;/td&gt;
+      &lt;td&gt;136.500000&lt;/td&gt;
+      &lt;td&gt;96.800003&lt;/td&gt;
+      &lt;td&gt;112.099998&lt;/td&gt;
       &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;103.0&lt;/td&gt;
-      &lt;td&gt;111.5&lt;/td&gt;
-      &lt;td&gt;108.6&lt;/td&gt;
-      &lt;td&gt;71.3&lt;/td&gt;
-      &lt;td&gt;137.0&lt;/td&gt;
-      &lt;td&gt;138.0&lt;/td&gt;
-      &lt;td&gt;88.5&lt;/td&gt;
-      &lt;td&gt;108.8&lt;/td&gt;
-      &lt;td&gt;117.5&lt;/td&gt;
-      &lt;td&gt;140.0&lt;/td&gt;
+      &lt;td&gt;117.500000&lt;/td&gt;
+      &lt;td&gt;108.800003&lt;/td&gt;
+      &lt;td&gt;140.000000&lt;/td&gt;
+      &lt;td&gt;134.300003&lt;/td&gt;
+      &lt;td&gt;110.800003&lt;/td&gt;
+      &lt;td&gt;156.300003&lt;/td&gt;
+      &lt;td&gt;117.000000&lt;/td&gt;
+      &lt;td&gt;126.099998&lt;/td&gt;
+      &lt;td&gt;126.599998&lt;/td&gt;
+      &lt;td&gt;123.500000&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;1973&lt;/td&gt;
-      &lt;td&gt;125.8&lt;/td&gt;
-      &lt;td&gt;102.9&lt;/td&gt;
-      &lt;td&gt;108.0&lt;/td&gt;
-      &lt;td&gt;128.3&lt;/td&gt;
-      &lt;td&gt;124.4&lt;/td&gt;
-      &lt;td&gt;137.9&lt;/td&gt;
-      &lt;td&gt;109.3&lt;/td&gt;
-      &lt;td&gt;209.4&lt;/td&gt;
-      &lt;td&gt;154.7&lt;/td&gt;
+      &lt;td&gt;102.900002&lt;/td&gt;
+      &lt;td&gt;156.000000&lt;/td&gt;
+      &lt;td&gt;110.599998&lt;/td&gt;
+      &lt;td&gt;115.199997&lt;/td&gt;
+      &lt;td&gt;201.899994&lt;/td&gt;
+      &lt;td&gt;126.699997&lt;/td&gt;
+      &lt;td&gt;138.000000&lt;/td&gt;
+      &lt;td&gt;106.800003&lt;/td&gt;
+      &lt;td&gt;115.000000&lt;/td&gt;
       &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;103.5&lt;/td&gt;
-      &lt;td&gt;109.7&lt;/td&gt;
-      &lt;td&gt;110.4&lt;/td&gt;
-      &lt;td&gt;72.7&lt;/td&gt;
-      &lt;td&gt;143.1&lt;/td&gt;
-      &lt;td&gt;146.8&lt;/td&gt;
-      &lt;td&gt;91.0&lt;/td&gt;
-      &lt;td&gt;109.5&lt;/td&gt;
-      &lt;td&gt;116.6&lt;/td&gt;
-      &lt;td&gt;141.2&lt;/td&gt;
+      &lt;td&gt;116.599998&lt;/td&gt;
+      &lt;td&gt;109.500000&lt;/td&gt;
+      &lt;td&gt;141.199997&lt;/td&gt;
+      &lt;td&gt;137.899994&lt;/td&gt;
+      &lt;td&gt;109.300003&lt;/td&gt;
+      &lt;td&gt;154.699997&lt;/td&gt;
+      &lt;td&gt;119.800003&lt;/td&gt;
+      &lt;td&gt;121.800003&lt;/td&gt;
+      &lt;td&gt;124.400002&lt;/td&gt;
+      &lt;td&gt;124.400002&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;1974&lt;/td&gt;
-      &lt;td&gt;130.4&lt;/td&gt;
-      &lt;td&gt;108.2&lt;/td&gt;
-      &lt;td&gt;109.7&lt;/td&gt;
-      &lt;td&gt;133.1&lt;/td&gt;
-      &lt;td&gt;126.7&lt;/td&gt;
-      &lt;td&gt;132.8&lt;/td&gt;
-      &lt;td&gt;112.4&lt;/td&gt;
-      &lt;td&gt;182.7&lt;/td&gt;
-      &lt;td&gt;151.3&lt;/td&gt;
+      &lt;td&gt;108.199997&lt;/td&gt;
+      &lt;td&gt;159.600006&lt;/td&gt;
+      &lt;td&gt;116.099998&lt;/td&gt;
+      &lt;td&gt;118.599998&lt;/td&gt;
+      &lt;td&gt;212.399994&lt;/td&gt;
+      &lt;td&gt;129.899994&lt;/td&gt;
+      &lt;td&gt;142.100006&lt;/td&gt;
+      &lt;td&gt;110.599998&lt;/td&gt;
+      &lt;td&gt;117.099998&lt;/td&gt;
       &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;108.4&lt;/td&gt;
-      &lt;td&gt;114.8&lt;/td&gt;
-      &lt;td&gt;114.7&lt;/td&gt;
-      &lt;td&gt;75.6&lt;/td&gt;
-      &lt;td&gt;149.6&lt;/td&gt;
-      &lt;td&gt;151.8&lt;/td&gt;
-      &lt;td&gt;98.6&lt;/td&gt;
-      &lt;td&gt;111.8&lt;/td&gt;
-      &lt;td&gt;119.9&lt;/td&gt;
-      &lt;td&gt;145.8&lt;/td&gt;
+      &lt;td&gt;119.900002&lt;/td&gt;
+      &lt;td&gt;111.800003&lt;/td&gt;
+      &lt;td&gt;145.800003&lt;/td&gt;
+      &lt;td&gt;132.800003&lt;/td&gt;
+      &lt;td&gt;112.400002&lt;/td&gt;
+      &lt;td&gt;151.300003&lt;/td&gt;
+      &lt;td&gt;123.699997&lt;/td&gt;
+      &lt;td&gt;125.599998&lt;/td&gt;
+      &lt;td&gt;131.899994&lt;/td&gt;
+      &lt;td&gt;126.699997&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;5 rows × 52 columns&lt;/p&gt;
+&lt;p&gt;5 rows × 40 columns&lt;/p&gt;
 &lt;/div&gt;
 &lt;p&gt;In an ideal world, one could use the average of all the other states in the United States as a control. Let&amp;rsquo;s plot what that would look like.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;states = [c for c in df.columns if c not in [&#39;year&#39;]]
-df[&#39;not CA&#39;] = df[[s for s in states if s != &#39;CA&#39;]].mean(axis=1)
+df[&#39;Other States&#39;] = df[[s for s in states if s != &#39;California&#39;]].mean(axis=1)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.lineplot(x=df[&#39;year&#39;], y=df[&#39;CA&#39;].values, label=&#39;California&#39;)
-sns.lineplot(x=df[&#39;year&#39;], y=df[&#39;not CA&#39;].values, label=&#39;Other States&#39;)
-plt.vlines(x=1988, ymin=plt.ylim()[0], ymax=plt.ylim()[1], linestyle=&amp;quot;:&amp;quot;, color=&#39;C2&#39;)
-plt.title(&amp;quot;Per-capita cigarette sales (in packs)&amp;quot;);
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_lines(df, line1, line2, hline=True):
+    sns.lineplot(x=df[&#39;year&#39;], y=df[line1].values, label=line1)
+    sns.lineplot(x=df[&#39;year&#39;], y=df[line2].values, label=line2)
+    plt.axvline(x=1988, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;, label=&#39;Proposition 99&#39;, zorder=1)
+    plt.legend();
+    plt.title(&amp;quot;Per-capita cigarette sales (in packs)&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_15_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_lines(df, &#39;California&#39;, &#39;Other States&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_20_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;It looks like the trends are slightly diverging after 1989, the year of Proposition 99. However, it also looks like the trends are sensibly different before 1989. Therefore, it feels quite a stretch to attribute the differences in cigarette sales post 1989 to Proposition 99 alone.&lt;/p&gt;
 &lt;p&gt;The idea is to &lt;strong&gt;build a synthetic control&lt;/strong&gt; state for California. Maybe no single state is a good control, but a combination of them could actually provide a good approximation to California. Intuitively, one could think that better approximations are states that are&lt;/p&gt;
 &lt;ul&gt;
@@ -4489,57 +4601,78 @@ def synth_predict(df, state, model):
     y = df.loc[df[&#39;year&#39;] &amp;lt;= 1988, state]
     other_states = [c for c in states if c not in [&#39;year&#39;, state]]
     X = df.loc[df[&#39;year&#39;] &amp;lt;= 1988, other_states]
-    df[f&#39;s_{state}&#39;] = model.fit(X, y).predict(df[other_states])
-    return model
+    df[f&#39;Synthetic {state}&#39;] = model.fit(X, y).predict(df[other_states])
+    return model.coef_
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model = synth_predict(df, &#39;CA&#39;, LinearRegression())
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;coef = synth_predict(df, &#39;California&#39;, LinearRegression())
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Let&amp;rsquo;s now plot the predicted against the forea&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.lineplot(x=df[&#39;year&#39;], y=df[&#39;CA&#39;].values, label=&amp;quot;California&amp;quot;)
-sns.lineplot(x=df[&#39;year&#39;], y=df[f&#39;s_CA&#39;].values, label=&#39;Synthetic California&#39;)
-plt.vlines(x=1988, ymin=plt.ylim()[0], ymax=plt.ylim()[1], ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;, label=&#39;Proposition 99&#39;, zorder=-1)
-plt.legend();
-plt.title(&amp;quot;Per-capita cigarette sales (in packs)&amp;quot;);
+&lt;p&gt;Let&amp;rsquo;s now plot the predicted against the actual time series.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_lines(df, &#39;California&#39;, &#39;Synthetic California&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_20_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_normalized(df, state, vline=True, hline=True, **kwargs):
-    sns.lineplot(x=df[&#39;year&#39;], y=df[state] - df[f&#39;s_{state}&#39;], **kwargs)
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It looks like the policy had a sensible &lt;strong&gt;negative effect&lt;/strong&gt; on cigarette sales.&lt;/p&gt;
+&lt;p&gt;We can also observe that we are clearly &lt;strong&gt;overfitting&lt;/strong&gt;: the pre-policy predicted cigarette consumption line is exactly flat. One way to avoid overfitting is to use a penalized estimator.&lt;/p&gt;
+&lt;p&gt;Another problem concerns the &lt;strong&gt;weights&lt;/strong&gt;. We have not set any constraint on the weights. Let&amp;rsquo;s see what they look like.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(coef, bins=30).set(title=&#39;Coefficients&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_27_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We have many &lt;strong&gt;negative weights&lt;/strong&gt;, which do not make much sense from a causal inference perspective. In principle all weights should be between zero and one.&lt;/p&gt;
+&lt;p&gt;To address both concerns, we are going to build a new estimator called &lt;code&gt;SyntheticControl()&lt;/code&gt; which constrains weights to sum to 1 and to be positive.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from typing import List
+from operator import add
+from toolz import reduce, partial
+from scipy.optimize import fmin_slsqp
+
+class SyntheticControl():
+    
+    # Loss function
+    def loss(self, W, X, y) -&amp;gt; float:
+        return np.sqrt(np.mean((y - X.dot(W))**2))
+
+    # Fit model
+    def fit(self, X, y):
+        w_start = [1/X.shape[1]]*X.shape[1]
+        self.coef_ = fmin_slsqp(partial(self.loss, X=X, y=y),
+                         np.array(w_start),
+                         f_eqcons=lambda x: np.sum(x) - 1,
+                         bounds=[(0.0, 1.0)]*len(w_start),
+                         disp=False)
+        return self
+    
+    # Predict 
+    def predict(self, X):
+        return X.dot(self.coef_)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;synth_predict(df, &#39;California&#39;, SyntheticControl())
+plot_lines(df, &#39;California&#39;, &#39;Synthetic California&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_30_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s plot the &lt;strong&gt;difference&lt;/strong&gt; between the two lines to better visualize the magnitude of the effect.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_difference(df, state, vline=True, hline=True, **kwargs):
+    sns.lineplot(x=df[&#39;year&#39;], y=df[state] - df[f&#39;Synthetic {state}&#39;], **kwargs)
     if vline: 
-        plt.vlines(x=1988, ymin=0.9*plt.ylim()[0], ymax=0.9*plt.ylim()[1], ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;, label=&#39;Proposition 99&#39;, zorder=-3);
+        plt.axvline(x=1988, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;, label=&#39;Proposition 99&#39;, zorder=1)
         plt.legend()
     if hline: sns.lineplot(x=df[&#39;year&#39;], y=0, lw=1, color=&#39;black&#39;, zorder=1)
     plt.title(&amp;quot;Normalized per-capita cigarette sales (in packs)&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_normalized(df, &#39;CA&#39;, label=&amp;quot;California&amp;quot;)
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Now we can clearly see the negative effect of the policy and how it rebounds back over time.&lt;/p&gt;
-&lt;p&gt;We can also observe that we are clearly &lt;strong&gt;overfitting&lt;/strong&gt;: the pre-policy predicted cigarette consumption line is exactly flat. One way to avoid overfitting is to use a penalized estimator.&lt;/p&gt;
-&lt;p&gt;Another problem concerns the &lt;strong&gt;weights&lt;/strong&gt;. We have not set any constraint on the weights. Let&amp;rsquo;s see what they look like.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(model.coef_, bins=30).set(title=&#39;Coefficients&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;We have many &lt;strong&gt;negative weights&lt;/strong&gt;, which do not make much sense from a causal inference perspective. In principle all weights should be between zero and one.&lt;/p&gt;
-&lt;p&gt;To adress both concerns, we are going to use the &lt;code&gt;Lasso&lt;/code&gt; estimator, which uses a norm-1 penalty for parameters in linear regression. Moreover, we will constrain it to have only positive weights.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import Lasso
-
-synth_predict(df, &#39;CA&#39;, Lasso(positive=True, alpha=5))
-plot_normalized(df, &#39;CA&#39;, label=&#39;California&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_27_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The normalized estimator gives a very similar prediction, however it does not blatantly overfit the pre-period.&lt;/p&gt;
 &lt;p&gt;Is the estimate significant? The question we are trying to answer is &amp;ldquo;&lt;em&gt;how unusual is this estimate under the null hypothesis of no policy effect&lt;/em&gt;?&amp;rdquo;. We are going to perform a randomization/permutation test in order to answer this question. The &lt;strong&gt;idea&lt;/strong&gt; is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.&lt;/p&gt;
 &lt;p&gt;Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;for state in states:
-    synth_predict(df, state, Lasso(positive=True, alpha=5))
-    plot_normalized(df, state, vline=False, alpha=0.2, color=&#39;grey&#39;)
-plot_normalized(df, &#39;CA&#39;, vline=True, label=&#39;California&#39;)
+    synth_predict(df, state, SyntheticControl())
+    plot_difference(df, state, vline=False, alpha=0.2, color=&#39;grey&#39;)
+plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_35_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;It looks like the effect for California is quite extreme, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales). We get more extreme only for a couple of states, especially in the first 10 years. Therefore, we conclude that the effect of the Proposition 99 policy is statistically different from zero.&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=BsRqy7juMus&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Synthetic Control&lt;/a&gt; video lecture by Paul Goldsmith-Pinkham (Yale)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mixtape.scunning.com/synthetic-control.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Synthetic Control&lt;/a&gt; chapter of the Causal Inference Mixtape by Scott Cunningham&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
