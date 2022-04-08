@@ -30,11 +30,10 @@
   
     
   
-  <meta name="description" content="If you search &ldquo;permutation test&rdquo; on Wikipedia, you get the following definition:
- A permutation test (also called re-randomization test) is an exact statistical hypothesis test making use of the proof by contradiction in which the distribution of the test statistic under the null hypothesis is obtained by calculating all possible values of the test statistic under possible rearrangements of the observed data." />
+  <meta name="description" content="In this tutorial, we are going to see how to estimate causal effects when we do not have access to a control group. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak." />
 
   
-  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/permutation_test/" />
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/synthetic_control/" />
 
   
 
@@ -316,7 +315,7 @@
   <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
   <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
 
-  <link rel="canonical" href="https://matteocourthoud.github.io/post/permutation_test/" />
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/synthetic_control/" />
 
   
   
@@ -332,11 +331,10 @@
   <meta property="twitter:card" content="summary_large_image" />
   
   <meta property="og:site_name" content="Matteo Courthoud" />
-  <meta property="og:url" content="https://matteocourthoud.github.io/post/permutation_test/" />
-  <meta property="og:title" content="Permutation Tests for Dummies | Matteo Courthoud" />
-  <meta property="og:description" content="If you search &ldquo;permutation test&rdquo; on Wikipedia, you get the following definition:
- A permutation test (also called re-randomization test) is an exact statistical hypothesis test making use of the proof by contradiction in which the distribution of the test statistic under the null hypothesis is obtained by calculating all possible values of the test statistic under possible rearrangements of the observed data." /><meta property="og:image" content="https://matteocourthoud.github.io/post/permutation_test/featured.png" />
-    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/permutation_test/featured.png" /><meta property="og:locale" content="en-us" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/synthetic_control/" />
+  <meta property="og:title" content="Synthetic Control | Matteo Courthoud" />
+  <meta property="og:description" content="In this tutorial, we are going to see how to estimate causal effects when we do not have access to a control group. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak." /><meta property="og:image" content="https://matteocourthoud.github.io/post/synthetic_control/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/synthetic_control/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
@@ -368,12 +366,12 @@
   "@type": "BlogPosting",
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https://matteocourthoud.github.io/post/permutation_test/"
+    "@id": "https://matteocourthoud.github.io/post/synthetic_control/"
   },
-  "headline": "Permutation Tests for Dummies",
+  "headline": "Synthetic Control",
   
   "image": [
-    "https://matteocourthoud.github.io/post/permutation_test/featured.png"
+    "https://matteocourthoud.github.io/post/synthetic_control/featured.png"
   ],
   
   "datePublished": "2022-04-08T00:00:00Z",
@@ -387,7 +385,7 @@
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "If you search \u0026ldquo;permutation test\u0026rdquo; on Wikipedia, you get the following definition:\n A permutation test (also called re-randomization test) is an exact statistical hypothesis test making use of the proof by contradiction in which the distribution of the test statistic under the null hypothesis is obtained by calculating all possible values of the test statistic under possible rearrangements of the observed data."
+  "description": "In this tutorial, we are going to see how to estimate causal effects when we do not have access to a control group. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak."
 }
 </script>
 
@@ -433,11 +431,11 @@
 
 
 
-  <title>Permutation Tests for Dummies | Matteo Courthoud</title>
+  <title>Synthetic Control | Matteo Courthoud</title>
 </head>
 
 
-<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="a5a6a7d39cdee5c66211055b0347a2c5" >
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="b5d7c5d08438854e3a113705c275ed8c" >
 
   
   
@@ -769,12 +767,13 @@
       </ul>
       <nav id="TableOfContents">
   <ul>
-    <li><a href="#example-1-is-a-coin-fair">Example 1: is a coin fair?</a></li>
-    <li><a href="#hypothesis-testing">Hypothesis Testing</a></li>
-    <li><a href="#example-2-are-women-smarter">Example 2: are women smarter?</a></li>
-    <li><a href="#permutation-tests-vs-t-tests">Permutation tests vs t-tests</a></li>
-    <li><a href="#example-3-is-university-worth">Example 3: is university worth?</a></li>
-    <li><a href="#conclusion">Conclusion</a></li>
+    <li><a href="#setting">Setting</a></li>
+    <li><a href="#synthetic-control">Synthetic Control</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#academic-application">Academic Application</a></li>
+    <li><a href="#references">References</a></li>
   </ul>
 </nav>
     </div>
@@ -809,7 +808,7 @@
 
 
 <div class="article-container pt-3">
-  <h1>Permutation Tests for Dummies</h1>
+  <h1>Synthetic Control</h1>
 
   
 
@@ -836,7 +835,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    9 min read
+    7 min read
   </span>
   
 
@@ -861,9 +860,9 @@
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 474px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 493px;">
   <div style="position: relative">
-    <img src="/post/permutation_test/featured_hud133acbcbb807d51adb439529f4ee745_29932_720x0_resize_lanczos_3.png" alt="" class="featured-image">
+    <img src="/post/synthetic_control/featured_hu04e60b5bcfdb1e3c65c475d2650d0285_202978_720x0_resize_lanczos_3.png" alt="" class="featured-image">
     
   </div>
 </div>
@@ -871,234 +870,69 @@
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>If you search &ldquo;permutation test&rdquo; on Wikipedia, you get the following definition:</p>
-<blockquote>
-<p>A permutation test (also called re-randomization test) is an exact statistical hypothesis test making use of the proof by contradiction in which the distribution of the test statistic under the null hypothesis is obtained by calculating all possible values of the test statistic under possible rearrangements of the observed data.</p>
-</blockquote>
-<p>What does it mean? In this tutorial we are going to see in detail what this definition means, how to implement permutation tests, and their pitfalls.</p>
-<h2 id="example-1-is-a-coin-fair">Example 1: is a coin fair?</h2>
-<p>Let&rsquo;s start with an example: suppose you wanted to test whether a coin is fair. You throw the coin 10 times and you count the number of times you get heads. Let&rsquo;s simulate the outcome.</p>
-<pre><code class="language-python">import numpy as np
-
-np.random.seed(1)
-np.random.binomial(1, 0.5, 10)
-</code></pre>
-<pre><code>array([0, 1, 0, 0, 0, 0, 0, 0, 0, 1])
-</code></pre>
-<p>Out of 10 coin throws, we got only 2 heads. Does it mean that the coin is not fair?</p>
-<p>The <strong>question</strong> that permutation testing is trying to answer is &ldquo;<em>how unlikely is the observed outcome under the null hypothesis that the coin is fair?</em>&rdquo;.</p>
-<p>In this case we can directly compute this answer since we have a very little number of throws. The total number of outcomes is $2^{10}$. The number of as or more extreme outcomes, under the assumption that the coin is fair (50-50) is</p>
+            <p>In this tutorial, we are going to see how to estimate causal effects when we do not have access to a control group. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak. However, there still exist methods to make causal claims, under certain assumptions.</p>
+<p><strong>Requisites</strong></p>
+<p>For this tutorial, I assume you are familiar with the following concepts:</p>
 <ul>
-<li>0 heads: ${10 \choose 0} = 1$</li>
-<li>1 head: ${10 \choose 1} = 10$</li>
-<li>2 heads: ${10 \choose 2} = 45$</li>
+<li>Rubin&rsquo;s potential outcome framework</li>
+<li>Ordinary least squares regression</li>
+<li><a href="https://matteocourthoud.github.io/post/permutation_test/" target="_blank" rel="noopener">Randomization/permutation inference</a></li>
 </ul>
-<p>So that the probability of getting the same or a more extreme outcome is</p>
-<pre><code class="language-python">from scipy.special import comb
-
-(comb(10, 0) + comb(10, 1) + comb(10, 2)) / 2**10
-</code></pre>
-<pre><code>0.0546875
-</code></pre>
-<p>This probability seems low but not too low.</p>
-<p>However, we have forgot one thing. We want to test whether the coin is fair in <strong>either</strong> direction. We would suspect that the coin is unfair if we were getting few heads (as we did), but also if we were getting many heads. Therefore, we should account for both extremes.</p>
-<pre><code class="language-python">sum([comb(10, i) for i in [0, 1, 2, 8, 9, 10]]) / 2**10
-</code></pre>
-<pre><code>0.109375
-</code></pre>
-<p>This number should not be surprising since it&rsquo;s exactly double the previous one.</p>
-<p>It is common in statistics to say that an event is unusual if its probability is less than 1 in 20, i.e. $5%$. If we were adopting that threshold, we would not conclude that getting 2 heads in 10 trows is so unusual. However, getting just one, would be.</p>
-<pre><code class="language-python">sum([comb(10, i) for i in [0, 1, 9, 10]]) / 2**10
-</code></pre>
-<pre><code>0.021484375
-</code></pre>
-<h2 id="hypothesis-testing">Hypothesis Testing</h2>
-<p>The process we just went through is called <strong>hypothesis testing</strong>. The components of an hypothesis test are:</p>
-<ol>
-<li>
-<p>A null hypothesis $H_0$</p>
+<p><strong>Academic Application</strong></p>
+<p>As an academic application, we are going to replicate <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program</a> (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California onsmoking habits.</p>
+<p><strong>Business Case</strong></p>
+<p>TBD</p>
+<h2 id="setting">Setting</h2>
+<p>We assume that for a panel of i.i.d. subjects $i = 1, &hellip;, n$ over time $t=1, &hellip;,$ we observed a tuple $(X_{i,t}, Y_{i,t})$ comprised of</p>
 <ul>
-<li>in our case, that the coin war fair</li>
+<li>a feature vector $X_{i,t} \in \mathbb R^p$</li>
+<li>a response $Y_{i,t} \in \mathbb R$</li>
 </ul>
-</li>
-<li>
-<p>A test statistic $t$</p>
+<p>Moreover, one unit is treated at time $\tau$. We distinguish time periods in pre-treatment periods and post-treatment periods.</p>
+<p>Crucially, treatment is not randomly assignment, therefore a difference in means between the treated unit and the control group is not an unbiased estimator of the average treatment effect.</p>
+<h2 id="synthetic-control">Synthetic Control</h2>
+<p>The problem is that, as usual, we do not observe the counterfactual outcome for treated units, i.e. we do not know what would have happened to them, if they had not been treated. This is known as the <strong>fundamental problem of causal inference</strong>.</p>
+<p>The simplest approach, would be just to compare pre and post periods. This is called the <strong>event study</strong> approach.</p>
+<p>However, we can do better than this. In fact, even though treatment was not randomly assigned, we still have access to some units that were not treated.</p>
+<p>For the outcome variable we have the following setup</p>
+<h1 id="endarray-right">$$
+Y =
+\left[ \begin{array}{l}
+Y_{t, post} \ &amp; Y_{c, post}
+\newline
+Y_{t, pre} \ &amp; Y_{c, pre}
+\end{array} \right]</h1>
+<p>\left[ \begin{array}{l}
+Y^{(1)}<em>{t, post} \ &amp; Y^{(0)}</em>{c, post}
+\newline
+Y^{(0)}<em>{t, pre} \ &amp; Y^{(0)}</em>{c, pre}
+\end{array} \right]
+$$</p>
+<p>We basically have a <strong>missing data problem</strong> since we do not observe $Y^{(0)}_{t, post}$.</p>
+<p>Following Doudchenko and Inbens (2018), we can formulate an estimate of the counterfactual outcome for the treated unit as a linear combination of the observed outcomes for the control units.</p>
+<p>$$
+\hat Y^{(0)}<em>{t, post} = \alpha + \sum</em>{i \in c} \beta_i Y^{(0)}_{i, post}
+$$</p>
+<p>where</p>
 <ul>
-<li>in our case, the number of zeros</li>
+<li>the constant $\alpha$ allows for different averages between the two groups</li>
+<li>the weights $\beta_i$ are allowed to vary across control units $i$
+<ul>
+<li>otherwise it would be a diff-in-diff</li>
 </ul>
 </li>
-<li>
-<p>A level of significance $\alpha$</p>
-<ul>
-<li>it is common to choose 5%</li>
 </ul>
-</li>
-</ol>
-<p>The <strong>idea</strong> behind <strong>permutation testing</strong> is the following: in a setting in which we are checking whether one variable has an effect on another variable, the two variables should not be correlated, under the null hypothesis . Therefore, we could re-shuffle the treatment variable and re-compute the test statistic. Lastly, we can compute the p-value as the fraction of as or more extremes outcomes under re-shuffling of the data.</p>
-<h2 id="example-2-are-women-smarter">Example 2: are women smarter?</h2>
-<p>Suppose now we were interested in knowing whether females perform better in a test than men. Let&rsquo;s start by writing the data generating process under the assumption of no difference in scores. However, only 30% of the sample will be female.</p>
-<pre><code class="language-python">import pandas as pd
-
-# Data generating process
-def generate_data_gender(N=100, seed=1):
-    np.random.seed(seed) # Set seed for replicability
-    data = pd.DataFrame({&quot;female&quot;: np.random.binomial(1, 0.3, N),
-                         &quot;test_score&quot;: np.random.exponential(3, N)})
-    return data
-</code></pre>
-<p>Let&rsquo;s now generate a sample of size 100.</p>
-<pre><code class="language-python"># Generate data
-data_gender = generate_data_gender()
-data_gender.head()
-</code></pre>
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-<pre><code>.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-</code></pre>
-<p></style></p>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>female</th>
-      <th>test_score</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0</td>
-      <td>1.186447</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1</td>
-      <td>2.246348</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>0</td>
-      <td>6.513147</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>0</td>
-      <td>1.326091</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>0</td>
-      <td>7.175402</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-<p>We can compute the treatment effect by computing the difference in mean outcomes between male and females.</p>
-<pre><code class="language-python">def compute_score_diff(data):
-    T = np.mean(data.loc[data['female']==1, 'test_score']) - np.mean(data.loc[data['female']==0, 'test_score'])
-    return T
-</code></pre>
-<pre><code class="language-python">T = compute_score_diff(data_gender)
-print(f&quot;The estimated treatment effect is {T}&quot;)
-</code></pre>
-<pre><code>The estimated treatment effect is -1.3612262580563321
-</code></pre>
-<p>It looks that females actually did worse than males. But is the difference statistically significant? We can perform a randomization test and compute the probability of observing a more extreme outcome.</p>
-<p>First, let&rsquo;s write the permutation routine that takes a variable in the data and permutes it.</p>
-<pre><code class="language-python">def permute(data, var, r):
-    temp_data = data.copy()
-    temp_data[var] = np.random.choice(data[var], size=len(data), replace=r)
-    return temp_data
-</code></pre>
-<p>We can now write the permutation test. It spits out a vector of statistics and prints the implied p-value.</p>
-<pre><code class="language-python">def permutation_test(data, permute, var, compute_stat, K=1000, r=False):
-    T = compute_stat(data)
-    T_perm = []
-    for k in range(K):
-        temp_data = permute(data, var, r)
-        T_perm += [compute_stat(temp_data)]
-    print(f&quot;The p-value is {sum(np.abs(T_perm) &gt;= np.abs(T))/K}&quot;)
-    return T_perm
-</code></pre>
-<pre><code class="language-python">Ts = permutation_test(data_gender, permute, 'test_score', compute_score_diff)
-</code></pre>
-<pre><code>The p-value is 0.063
-</code></pre>
-<p>Apparently the result we have observed was quite unusual, but not at the 5% level. We can plot the distribution of statistics to visualize this result.</p>
+<h2 id="academic-application">Academic Application</h2>
+<p>As an academic application, we are going to replicate <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program</a> (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.</p>
+<p>In particular, in 1989, California passes a tobacco control program that significantly reduces the sales of cigarettes. Was this program effective? Unfortunately, there is neither a counterfactual scenario, nor a randomized experiment.</p>
+<p>Let&rsquo;s start by loading the data.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
-from src.utils import *
 </code></pre>
-<pre><code class="language-python">def plot_test(T, Ts, title):
-    plt.hist(Ts, density=True, bins=30, alpha=0.7, color='C0')
-    plt.vlines([-T, T], ymin=plt.ylim()[0], ymax=plt.ylim()[1], color='C2')
-    plt.title(title);
+<pre><code class="language-python">from src.utils import *
 </code></pre>
-<pre><code class="language-python">plot_test(T, Ts, 'Distribution of score differences under permutation')
-</code></pre>
-<p><img src="img/permutation_test_29_0.png" alt="png"></p>
-<p>As we can see, the observed difference in scores is quite extreme with respect the distribution generate by the permutation.</p>
-<p>One <strong>issue</strong> with the permutation test we just ran is that it is computationally expensive to draw without replacement. The standard and much faster procedure is to draw without replacement.</p>
-<pre><code class="language-python">Ts_repl = permutation_test(data_gender, permute, 'test_score', compute_score_diff, r=True)
-</code></pre>
-<pre><code>The p-value is 0.052
-</code></pre>
-<p>The p-value is virtually the same.</p>
-<p>How <strong>accurate</strong> is the test? Since we have access to the data generating process, we can compute the true p-value via simulation. We draw many samples from the true data generating process and, for each, compute the difference in scores. The simulated p-value is going to be the frequency of more extreme statistics.</p>
-<pre><code class="language-python"># Function to simulate data and compute pvalue
-def simulate_stat(dgp, compute_stat, K=1000):
-    T = compute_stat(dgp())
-    T_sim = []
-    for k in range(K):
-        data = dgp(seed=k)
-        T_sim += [compute_stat(data)]
-    print(f&quot;The p-value is {sum(np.abs(T_sim) &gt;= np.abs(T))/K}&quot;)
-    return np.array(T_sim)
-</code></pre>
-<pre><code class="language-python">T_sim = simulate_stat(generate_data_gender, compute_score_diff)
-</code></pre>
-<pre><code>The p-value is 0.038
-</code></pre>
-<p>Again, we can plot the distribution of simulated statistics to understand the computed p-value.</p>
-<pre><code class="language-python">plot_test(T, T_sim, 'Distribution of score differences under simulation')
-</code></pre>
-<p><img src="img/permutation_test_36_0.png" alt="png"></p>
-<p>As expected, most of the mass lies within the interval, indicating a relatively extreme result. We have just been &ldquo;unlucky&rdquo; with the draw, but the permutation test was accurate.</p>
-<h2 id="permutation-tests-vs-t-tests">Permutation tests vs t-tests</h2>
-<p>What is the difference between a t-test and a permutation test?</p>
-<p>Permutation test <strong>advantages</strong>:</p>
-<ul>
-<li>does not make distributional assumptions</li>
-<li>not sensible to outliers</li>
-<li>can be computed also for statistics whose distribution is not known</li>
-</ul>
-<p>Permutation test <strong>disadvantages</strong>:</p>
-<ul>
-<li>computationally intense</li>
-<li>very sample-dependent</li>
-</ul>
-<h2 id="example-3-is-university-worth">Example 3: is university worth?</h2>
-<p>Let&rsquo;s now switch to a new example to compare t-tests and permutation tests.</p>
-<p>Assume we want to check whether university is a worthy investment. We have information about whether individuals attended university and their future salary. The problem here is that income is a particularly <strong>skewed</strong> variable.</p>
-<pre><code class="language-python"># Data generating process
-def generate_data_income(N=1000, seed=1):
-    np.random.seed(seed) # Set seed for replicability
-    university = np.random.binomial(1, 0.5, N) # Treatment
-    data = pd.DataFrame({&quot;university&quot;: university,
-                         &quot;income&quot;: np.random.lognormal(university, 2.3, N)})
-    return data
-</code></pre>
-<pre><code class="language-python">data_income = generate_data_income()
-data_income.head()
+<pre><code class="language-python">df = pd.read_csv('data/adh10.csv')
+df.head()
 </code></pre>
 <div>
 <style scoped>
@@ -1118,102 +952,316 @@ data_income.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>university</th>
-      <th>income</th>
+      <th>state</th>
+      <th>year</th>
+      <th>cost_per_pack</th>
+      <th>cig_sales</th>
+      <th>tax</th>
+      <th>tax_revenue</th>
+      <th>california</th>
+      <th>post</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>5.305618</td>
+      <td>AK</td>
+      <td>1970</td>
+      <td>0.418</td>
+      <td>121.3</td>
+      <td>0.16</td>
+      <td>38.3</td>
+      <td>False</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>1</td>
-      <td>1.289598</td>
+      <td>AK</td>
+      <td>1971</td>
+      <td>0.421</td>
+      <td>123.0</td>
+      <td>0.16</td>
+      <td>38.0</td>
+      <td>False</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>0</td>
-      <td>6.507720</td>
+      <td>AK</td>
+      <td>1972</td>
+      <td>0.420</td>
+      <td>130.0</td>
+      <td>0.16</td>
+      <td>38.1</td>
+      <td>False</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>0</td>
-      <td>6.019961</td>
+      <td>AK</td>
+      <td>1973</td>
+      <td>0.438</td>
+      <td>125.8</td>
+      <td>0.16</td>
+      <td>36.5</td>
+      <td>False</td>
+      <td>False</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>0</td>
-      <td>0.034482</td>
+      <td>AK</td>
+      <td>1974</td>
+      <td>0.449</td>
+      <td>130.4</td>
+      <td>0.16</td>
+      <td>35.6</td>
+      <td>False</td>
+      <td>False</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>The distribution of income is very heavy tailed. Let&rsquo;s plot its density across the two groups.</p>
-<pre><code class="language-python">sns.kdeplot(data=data_income, x=&quot;income&quot;, hue=&quot;university&quot;)\
-.set(title='Income density by group');
+<p>We have information on cigarette costs, sales, tax rate and revenues for all US states for years from 1970 to 2014.</p>
+<p>We are interested in the sales of cigarettes <code>cig_sales</code> over time. Let&rsquo;s start by reshaping the dataset so that each state is a time series.</p>
+<pre><code class="language-python">df = df.pivot(index='year', columns='state', values='cig_sales').reset_index()
+df.head()
 </code></pre>
-<p><img src="img/permutation_test_45_0.png" alt="png"></p>
-<p>The distribution is so skewed that we cannot actually visually perceive differences between the two groups. Let&rsquo;s compute the expected difference.</p>
-<pre><code class="language-python">def compute_income_diff(data):
-    T = np.mean(data.loc[data['university']==1, 'income']) - np.mean(data.loc[data['university']==0, 'income'])
-    return T
-</code></pre>
-<pre><code class="language-python">T = compute_income_diff(data_income)
-T
-</code></pre>
-<pre><code>23.546974435985444
-</code></pre>
-<p>It looks like university graduates have higher income. Is this difference statistically different from zero? Let&rsquo;s perform a permutation test.</p>
-<pre><code class="language-python">T_perm = permutation_test(data_income, permute, 'university', compute_income_diff)
-</code></pre>
-<pre><code>The p-value is 0.011
-</code></pre>
-<p>The permutation test is telling us that the difference is extremely unusual under the null hypothesis. In other words, it is very unlikely that university graduates earn the same income of non-university graduates.</p>
-<p>What would be the outcome of a standard t-test?</p>
-<pre><code class="language-python">from scipy.stats import ttest_ind
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
 
-ttest_ind(data_income.query('university==1')['income'], data_income.query('university==0')['income'])
+.dataframe thead th {
+    text-align: right;
+}
 </code></pre>
-<pre><code>Ttest_indResult(statistic=1.5589492598056494, pvalue=0.1193254252009701)
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>state</th>
+      <th>year</th>
+      <th>AK</th>
+      <th>AL</th>
+      <th>AR</th>
+      <th>AZ</th>
+      <th>CA</th>
+      <th>CO</th>
+      <th>CT</th>
+      <th>DC</th>
+      <th>DE</th>
+      <th>...</th>
+      <th>SD</th>
+      <th>TN</th>
+      <th>TX</th>
+      <th>UT</th>
+      <th>VA</th>
+      <th>VT</th>
+      <th>WA</th>
+      <th>WI</th>
+      <th>WV</th>
+      <th>WY</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1970</td>
+      <td>121.3</td>
+      <td>89.8</td>
+      <td>100.3</td>
+      <td>115.2</td>
+      <td>123.0</td>
+      <td>124.8</td>
+      <td>120.0</td>
+      <td>200.4</td>
+      <td>155.0</td>
+      <td>...</td>
+      <td>92.7</td>
+      <td>99.8</td>
+      <td>106.4</td>
+      <td>65.5</td>
+      <td>124.3</td>
+      <td>122.6</td>
+      <td>96.7</td>
+      <td>106.4</td>
+      <td>114.5</td>
+      <td>132.2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1971</td>
+      <td>123.0</td>
+      <td>95.4</td>
+      <td>104.1</td>
+      <td>109.6</td>
+      <td>121.0</td>
+      <td>125.5</td>
+      <td>117.6</td>
+      <td>213.0</td>
+      <td>161.1</td>
+      <td>...</td>
+      <td>96.7</td>
+      <td>106.3</td>
+      <td>108.9</td>
+      <td>67.7</td>
+      <td>128.4</td>
+      <td>124.4</td>
+      <td>97.0</td>
+      <td>105.4</td>
+      <td>111.5</td>
+      <td>131.7</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1972</td>
+      <td>130.0</td>
+      <td>101.1</td>
+      <td>103.9</td>
+      <td>125.0</td>
+      <td>123.5</td>
+      <td>134.3</td>
+      <td>110.8</td>
+      <td>220.6</td>
+      <td>156.3</td>
+      <td>...</td>
+      <td>103.0</td>
+      <td>111.5</td>
+      <td>108.6</td>
+      <td>71.3</td>
+      <td>137.0</td>
+      <td>138.0</td>
+      <td>88.5</td>
+      <td>108.8</td>
+      <td>117.5</td>
+      <td>140.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1973</td>
+      <td>125.8</td>
+      <td>102.9</td>
+      <td>108.0</td>
+      <td>128.3</td>
+      <td>124.4</td>
+      <td>137.9</td>
+      <td>109.3</td>
+      <td>209.4</td>
+      <td>154.7</td>
+      <td>...</td>
+      <td>103.5</td>
+      <td>109.7</td>
+      <td>110.4</td>
+      <td>72.7</td>
+      <td>143.1</td>
+      <td>146.8</td>
+      <td>91.0</td>
+      <td>109.5</td>
+      <td>116.6</td>
+      <td>141.2</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1974</td>
+      <td>130.4</td>
+      <td>108.2</td>
+      <td>109.7</td>
+      <td>133.1</td>
+      <td>126.7</td>
+      <td>132.8</td>
+      <td>112.4</td>
+      <td>182.7</td>
+      <td>151.3</td>
+      <td>...</td>
+      <td>108.4</td>
+      <td>114.8</td>
+      <td>114.7</td>
+      <td>75.6</td>
+      <td>149.6</td>
+      <td>151.8</td>
+      <td>98.6</td>
+      <td>111.8</td>
+      <td>119.9</td>
+      <td>145.8</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 52 columns</p>
+</div>
+<p>In an ideal world, one could use the average of all the other states in the United States as a control. Let&rsquo;s plot what that would look like.</p>
+<pre><code class="language-python">states = [c for c in df.columns if c not in ['year']]
+df['not CA'] = df[[s for s in states if s != 'CA']].mean(axis=1)
 </code></pre>
-<p>As we can see, the two tests provide extremely different results. The t-test is much more conservative, telling us that the unlikeliness of the data is just $12%$ compared to the $1.1%$ of the permutation test.</p>
-<p>The <strong>reason</strong> is that we have extremely skewed data. The t-test is very sensible to extreme observation and will therefore compute a very high variance because of very few data points.</p>
-<p>The permutation test can further address the problem of a skewed outcome distribution by using a test statistic that is more <strong>sensible to outliers</strong>. Let&rsquo;s perform the permutation test using the <strong>trimmed mean</strong> instead of the mean.</p>
-<pre><code class="language-python">from scipy.stats import trim_mean
+<pre><code class="language-python">sns.lineplot(x=df['year'], y=df['CA'].values, label='California')
+sns.lineplot(x=df['year'], y=df['not CA'].values, label='Other States')
+plt.vlines(x=1988, ymin=plt.ylim()[0], ymax=plt.ylim()[1], linestyle=&quot;:&quot;, color='C2')
+plt.title(&quot;Per-capita cigarette sales (in packs)&quot;);
+</code></pre>
+<p><img src="img/synthetic_control_15_0.png" alt="png"></p>
+<p>It looks like the trends are slightly diverging after 1989, the year of Proposition 99. However, it also looks like the trends are sensibly different before 1989. Therefore, it feels quite a stretch to attribute the differences in cigarette sales post 1989 to Proposition 99 alone.</p>
+<p>The idea is to <strong>build a synthetic control</strong> state for California. Maybe no single state is a good control, but a combination of them could actually provide a good approximation to California. Intuitively, one could think that better approximations are states that are</p>
+<ul>
+<li>larger</li>
+<li>more democratic</li>
+</ul>
+<p>In practice, we are going to try to build the synthetic control state such as it approximates pre-trend, the sales of cigarettes pre 1989. Let&rsquo;s start by using <code>LinearRegression</code>.</p>
+<pre><code class="language-python">from sklearn.linear_model import LinearRegression
 
-def compute_income_mediandiff(data):
-    T = np.median(data.loc[data['university']==1, 'income']) - np.median(data.loc[data['university']==0, 'income'])
-    return T
+def synth_predict(df, state, model):
+    y = df.loc[df['year'] &lt;= 1988, state]
+    other_states = [c for c in states if c not in ['year', state]]
+    X = df.loc[df['year'] &lt;= 1988, other_states]
+    df[f's_{state}'] = model.fit(X, y).predict(df[other_states])
+    return model
 </code></pre>
-<pre><code class="language-python">T_perm = permutation_test(data_income, permute, 'university', compute_income_mediandiff)
+<pre><code class="language-python">model = synth_predict(df, 'CA', LinearRegression())
 </code></pre>
-<pre><code>The p-value is 0.0
+<p>Let&rsquo;s now plot the predicted against the forea</p>
+<pre><code class="language-python">sns.lineplot(x=df['year'], y=df['CA'].values, label=&quot;California&quot;)
+sns.lineplot(x=df['year'], y=df[f's_CA'].values, label='Synthetic California')
+plt.vlines(x=1988, ymin=plt.ylim()[0], ymax=plt.ylim()[1], ls=&quot;:&quot;, color='C2')
+plt.title(&quot;Per-capita cigarette sales (in packs)&quot;);
 </code></pre>
-<p>In this case, the permutation test is extremely confident that the trimmed mean of the two groups is different.</p>
-<p>However, an advantage of the t-test is <strong>speed</strong>. Let&rsquo;s compare the two tests by computing their execution time. Note that this is just a rough approximation since the permutation test could be sensible optimized.</p>
-<pre><code class="language-python">import time
+<p><img src="img/synthetic_control_20_0.png" alt="png"></p>
+<pre><code class="language-python">def plot_normalized(df, state, vline=True, hline=True, **kwargs):
+    sns.lineplot(x=df['year'], y=df[state] - df[f's_{state}'], **kwargs)
+    if vline: plt.vlines(x=1988, ymin=0.9*plt.ylim()[0], ymax=0.9*plt.ylim()[1], ls=&quot;:&quot;, color='C2');
+    if hline: sns.lineplot(x=df['year'], y=0, lw=1, color='black')
+    plt.title(&quot;Normalized per-capita cigarette sales (in packs)&quot;);
+</code></pre>
+<pre><code class="language-python">plot_normalized(df, 'CA', label=&quot;California&quot;)
+</code></pre>
+<p><img src="img/synthetic_control_23_0.png" alt="png"></p>
+<p>Now we can clearly see the negative effect of the policy and how it rebounds back over time.</p>
+<p>We can also observe that we are clearly overfitting: the pre-policy predicted cigarette consumption line is exactly flat.</p>
+<pre><code class="language-python">sns.histplot(model.coef_, bins=30).set(title='Coefficients');
+</code></pre>
+<p><img src="img/synthetic_control_25_0.png" alt="png"></p>
+<p>One way to avoid overfitting is to use a penalized estimator. We are going to use <code>Lasso</code>, which uses a norm-1 penalty for parameters in linear regression. Moreover, we will constrain it to have only positive weights.</p>
+<pre><code class="language-python">from sklearn.linear_model import Lasso
 
-# No replacement
-start = time.time()
-permutation_test(data_income, permute, 'university', compute_income_diff)
-print(f&quot;Elapsed time without replacement: {time.time() - start}&quot;)
-
-# Replacement
-start = time.time()
-ttest_ind(data_income.query('university==1')['income'], data_income.query('university==0')['income'])
-print(f&quot;Elapsed time with replacement: {time.time() - start}&quot;)
+synth_predict(df, 'CA', Lasso(positive=True))
+plot_normalized(df, 'CA')
 </code></pre>
-<pre><code>The p-value is 0.016
-Elapsed time without replacement: 0.28911614418029785
-Elapsed time with replacement: 0.00125885009765625
+<p><img src="img/synthetic_control_27_0.png" alt="png"></p>
+<p>The normalized estimator gives a very similar prediction, however it does not blatantly overfit the pre-period.</p>
+<p>Is the estimate significant? The question we are trying to answer is &ldquo;<em>how unusual is this estimate under the null hypothesis of no policy effect</em>?&rdquo;. We are going to perform a randomization/permutation test in order to answer this question. The <strong>idea</strong> is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.</p>
+<p>Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.</p>
+<pre><code class="language-python">for state in states:
+    synth_predict(df, state, Lasso(positive=True))
+    plot_normalized(df, state, vline=False, alpha=0.2, color='grey')
+plot_normalized(df, 'CA', vline=True, label='California')
 </code></pre>
-<p>The permutation test is 300 times slower. This can be a particularly relevant difference for larger sample sizes.</p>
-<h2 id="conclusion">Conclusion</h2>
-<p>In this tutorial, we have seen how to perform permutation tests across different data generating processes.</p>
-<p>The underlying principle is the same: permute an variable that is assumed to be random under the null hypothesis and re-compute the test statistic. Then check how unusual was the test statistic in the original dataset.</p>
+<p><img src="img/synthetic_control_29_0.png" alt="png"></p>
+<p>It looks like the effect for California is not so extreme. We get more extreme results for many states. Therefore, we conclude that the effect of the Proposition 99 policy is not statistically different from zero.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=BsRqy7juMus" target="_blank" rel="noopener">Synthetic Control</a> video lecture by Paul Goldsmith-Pinkham (Yale)</li>
+</ul>
 
           </div>
           
@@ -1236,7 +1284,7 @@ Elapsed time with replacement: 0.00125885009765625
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/permutation_test/&amp;text=Permutation%20Tests%20for%20Dummies" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/synthetic_control/&amp;text=Synthetic%20Control" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -1249,7 +1297,7 @@ Elapsed time with replacement: 0.00125885009765625
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/permutation_test/&amp;t=Permutation%20Tests%20for%20Dummies" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/synthetic_control/&amp;t=Synthetic%20Control" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook"></i>
         </a>
       </li>
@@ -1262,7 +1310,7 @@ Elapsed time with replacement: 0.00125885009765625
       
       
       <li>
-        <a href="mailto:?subject=Permutation%20Tests%20for%20Dummies&amp;body=https://matteocourthoud.github.io/post/permutation_test/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=Synthetic%20Control&amp;body=https://matteocourthoud.github.io/post/synthetic_control/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -1275,7 +1323,7 @@ Elapsed time with replacement: 0.00125885009765625
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/permutation_test/&amp;title=Permutation%20Tests%20for%20Dummies" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/synthetic_control/&amp;title=Synthetic%20Control" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -1288,7 +1336,7 @@ Elapsed time with replacement: 0.00125885009765625
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=Permutation%20Tests%20for%20Dummies%20https://matteocourthoud.github.io/post/permutation_test/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=Synthetic%20Control%20https://matteocourthoud.github.io/post/synthetic_control/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>
@@ -1301,7 +1349,7 @@ Elapsed time with replacement: 0.00125885009765625
       
       
       <li>
-        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/permutation_test/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/synthetic_control/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
           <i class="fab fa-telegram"></i>
         </a>
       </li>
