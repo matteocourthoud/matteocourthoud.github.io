@@ -4497,41 +4497,46 @@ def synth_predict(df, state, model):
 &lt;p&gt;Let&amp;rsquo;s now plot the predicted against the forea&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.lineplot(x=df[&#39;year&#39;], y=df[&#39;CA&#39;].values, label=&amp;quot;California&amp;quot;)
 sns.lineplot(x=df[&#39;year&#39;], y=df[f&#39;s_CA&#39;].values, label=&#39;Synthetic California&#39;)
-plt.vlines(x=1988, ymin=plt.ylim()[0], ymax=plt.ylim()[1], ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;)
+plt.vlines(x=1988, ymin=plt.ylim()[0], ymax=plt.ylim()[1], ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;, label=&#39;Proposition 99&#39;, zorder=-1)
+plt.legend();
 plt.title(&amp;quot;Per-capita cigarette sales (in packs)&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synthetic_control_20_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_normalized(df, state, vline=True, hline=True, **kwargs):
     sns.lineplot(x=df[&#39;year&#39;], y=df[state] - df[f&#39;s_{state}&#39;], **kwargs)
-    if vline: plt.vlines(x=1988, ymin=0.9*plt.ylim()[0], ymax=0.9*plt.ylim()[1], ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;);
-    if hline: sns.lineplot(x=df[&#39;year&#39;], y=0, lw=1, color=&#39;black&#39;)
+    if vline: 
+        plt.vlines(x=1988, ymin=0.9*plt.ylim()[0], ymax=0.9*plt.ylim()[1], ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;, label=&#39;Proposition 99&#39;, zorder=-3);
+        plt.legend()
+    if hline: sns.lineplot(x=df[&#39;year&#39;], y=0, lw=1, color=&#39;black&#39;, zorder=1)
     plt.title(&amp;quot;Normalized per-capita cigarette sales (in packs)&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_normalized(df, &#39;CA&#39;, label=&amp;quot;California&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synthetic_control_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Now we can clearly see the negative effect of the policy and how it rebounds back over time.&lt;/p&gt;
-&lt;p&gt;We can also observe that we are clearly overfitting: the pre-policy predicted cigarette consumption line is exactly flat.&lt;/p&gt;
+&lt;p&gt;We can also observe that we are clearly &lt;strong&gt;overfitting&lt;/strong&gt;: the pre-policy predicted cigarette consumption line is exactly flat. One way to avoid overfitting is to use a penalized estimator.&lt;/p&gt;
+&lt;p&gt;Another problem concerns the &lt;strong&gt;weights&lt;/strong&gt;. We have not set any constraint on the weights. Let&amp;rsquo;s see what they look like.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(model.coef_, bins=30).set(title=&#39;Coefficients&#39;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synthetic_control_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;One way to avoid overfitting is to use a penalized estimator. We are going to use &lt;code&gt;Lasso&lt;/code&gt;, which uses a norm-1 penalty for parameters in linear regression. Moreover, we will constrain it to have only positive weights.&lt;/p&gt;
+&lt;p&gt;We have many &lt;strong&gt;negative weights&lt;/strong&gt;, which do not make much sense from a causal inference perspective. In principle all weights should be between zero and one.&lt;/p&gt;
+&lt;p&gt;To adress both concerns, we are going to use the &lt;code&gt;Lasso&lt;/code&gt; estimator, which uses a norm-1 penalty for parameters in linear regression. Moreover, we will constrain it to have only positive weights.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import Lasso
 
-synth_predict(df, &#39;CA&#39;, Lasso(positive=True))
-plot_normalized(df, &#39;CA&#39;)
+synth_predict(df, &#39;CA&#39;, Lasso(positive=True, alpha=5))
+plot_normalized(df, &#39;CA&#39;, label=&#39;California&#39;)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synthetic_control_27_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The normalized estimator gives a very similar prediction, however it does not blatantly overfit the pre-period.&lt;/p&gt;
 &lt;p&gt;Is the estimate significant? The question we are trying to answer is &amp;ldquo;&lt;em&gt;how unusual is this estimate under the null hypothesis of no policy effect&lt;/em&gt;?&amp;rdquo;. We are going to perform a randomization/permutation test in order to answer this question. The &lt;strong&gt;idea&lt;/strong&gt; is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.&lt;/p&gt;
 &lt;p&gt;Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;for state in states:
-    synth_predict(df, state, Lasso(positive=True))
+    synth_predict(df, state, Lasso(positive=True, alpha=5))
     plot_normalized(df, state, vline=False, alpha=0.2, color=&#39;grey&#39;)
 plot_normalized(df, &#39;CA&#39;, vline=True, label=&#39;California&#39;)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synthetic_control_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;It looks like the effect for California is not so extreme. We get more extreme results for many states. Therefore, we conclude that the effect of the Proposition 99 policy is not statistically different from zero.&lt;/p&gt;
+&lt;p&gt;It looks like the effect for California is quite extreme, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales). We get more extreme only for a couple of states, especially in the first 10 years. Therefore, we conclude that the effect of the Proposition 99 policy is statistically different from zero.&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=BsRqy7juMus&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Synthetic Control&lt;/a&gt; video lecture by Paul Goldsmith-Pinkham (Yale)&lt;/li&gt;

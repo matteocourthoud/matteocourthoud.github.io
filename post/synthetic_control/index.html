@@ -802,9 +802,6 @@
 
 
   
-  
-    
-  
 
 
 <div class="article-container pt-3">
@@ -860,9 +857,9 @@
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 720px; max-height: 493px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1192px; max-height: 817px;">
   <div style="position: relative">
-    <img src="/post/synthetic_control/featured_hu04e60b5bcfdb1e3c65c475d2650d0285_202978_720x0_resize_lanczos_3.png" alt="" class="featured-image">
+    <img src="/post/synthetic_control/featured.png" alt="" class="featured-image">
     
   </div>
 </div>
@@ -1223,41 +1220,46 @@ def synth_predict(df, state, model):
 <p>Let&rsquo;s now plot the predicted against the forea</p>
 <pre><code class="language-python">sns.lineplot(x=df['year'], y=df['CA'].values, label=&quot;California&quot;)
 sns.lineplot(x=df['year'], y=df[f's_CA'].values, label='Synthetic California')
-plt.vlines(x=1988, ymin=plt.ylim()[0], ymax=plt.ylim()[1], ls=&quot;:&quot;, color='C2')
+plt.vlines(x=1988, ymin=plt.ylim()[0], ymax=plt.ylim()[1], ls=&quot;:&quot;, color='C2', label='Proposition 99', zorder=-1)
+plt.legend();
 plt.title(&quot;Per-capita cigarette sales (in packs)&quot;);
 </code></pre>
 <p><img src="img/synthetic_control_20_0.png" alt="png"></p>
 <pre><code class="language-python">def plot_normalized(df, state, vline=True, hline=True, **kwargs):
     sns.lineplot(x=df['year'], y=df[state] - df[f's_{state}'], **kwargs)
-    if vline: plt.vlines(x=1988, ymin=0.9*plt.ylim()[0], ymax=0.9*plt.ylim()[1], ls=&quot;:&quot;, color='C2');
-    if hline: sns.lineplot(x=df['year'], y=0, lw=1, color='black')
+    if vline: 
+        plt.vlines(x=1988, ymin=0.9*plt.ylim()[0], ymax=0.9*plt.ylim()[1], ls=&quot;:&quot;, color='C2', label='Proposition 99', zorder=-3);
+        plt.legend()
+    if hline: sns.lineplot(x=df['year'], y=0, lw=1, color='black', zorder=1)
     plt.title(&quot;Normalized per-capita cigarette sales (in packs)&quot;);
 </code></pre>
 <pre><code class="language-python">plot_normalized(df, 'CA', label=&quot;California&quot;)
 </code></pre>
 <p><img src="img/synthetic_control_23_0.png" alt="png"></p>
 <p>Now we can clearly see the negative effect of the policy and how it rebounds back over time.</p>
-<p>We can also observe that we are clearly overfitting: the pre-policy predicted cigarette consumption line is exactly flat.</p>
+<p>We can also observe that we are clearly <strong>overfitting</strong>: the pre-policy predicted cigarette consumption line is exactly flat. One way to avoid overfitting is to use a penalized estimator.</p>
+<p>Another problem concerns the <strong>weights</strong>. We have not set any constraint on the weights. Let&rsquo;s see what they look like.</p>
 <pre><code class="language-python">sns.histplot(model.coef_, bins=30).set(title='Coefficients');
 </code></pre>
 <p><img src="img/synthetic_control_25_0.png" alt="png"></p>
-<p>One way to avoid overfitting is to use a penalized estimator. We are going to use <code>Lasso</code>, which uses a norm-1 penalty for parameters in linear regression. Moreover, we will constrain it to have only positive weights.</p>
+<p>We have many <strong>negative weights</strong>, which do not make much sense from a causal inference perspective. In principle all weights should be between zero and one.</p>
+<p>To adress both concerns, we are going to use the <code>Lasso</code> estimator, which uses a norm-1 penalty for parameters in linear regression. Moreover, we will constrain it to have only positive weights.</p>
 <pre><code class="language-python">from sklearn.linear_model import Lasso
 
-synth_predict(df, 'CA', Lasso(positive=True))
-plot_normalized(df, 'CA')
+synth_predict(df, 'CA', Lasso(positive=True, alpha=5))
+plot_normalized(df, 'CA', label='California')
 </code></pre>
 <p><img src="img/synthetic_control_27_0.png" alt="png"></p>
 <p>The normalized estimator gives a very similar prediction, however it does not blatantly overfit the pre-period.</p>
 <p>Is the estimate significant? The question we are trying to answer is &ldquo;<em>how unusual is this estimate under the null hypothesis of no policy effect</em>?&rdquo;. We are going to perform a randomization/permutation test in order to answer this question. The <strong>idea</strong> is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.</p>
 <p>Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.</p>
 <pre><code class="language-python">for state in states:
-    synth_predict(df, state, Lasso(positive=True))
+    synth_predict(df, state, Lasso(positive=True, alpha=5))
     plot_normalized(df, state, vline=False, alpha=0.2, color='grey')
 plot_normalized(df, 'CA', vline=True, label='California')
 </code></pre>
 <p><img src="img/synthetic_control_29_0.png" alt="png"></p>
-<p>It looks like the effect for California is not so extreme. We get more extreme results for many states. Therefore, we conclude that the effect of the Proposition 99 policy is not statistically different from zero.</p>
+<p>It looks like the effect for California is quite extreme, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales). We get more extreme only for a couple of states, especially in the first 10 years. Therefore, we conclude that the effect of the Proposition 99 policy is statistically different from zero.</p>
 <h2 id="references">References</h2>
 <ul>
 <li><a href="https://www.youtube.com/watch?v=BsRqy7juMus" target="_blank" rel="noopener">Synthetic Control</a> video lecture by Paul Goldsmith-Pinkham (Yale)</li>
