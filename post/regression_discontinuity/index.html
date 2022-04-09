@@ -30,11 +30,10 @@
   
     
   
-  <meta name="description" content="In this tutorial, we are going to explore and compare different methods that leverage machine learning to estimate heterogeneous treatment effects.
-For this tutorial, I assume you are familiar with the following concepts:" />
+  <meta name="description" content="In this tutorial, we are going to see how to estimate causal effects when treatment assignment is not random, but determined by a forcing variable such as a test or a requirement." />
 
   
-  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/meta_learners/" />
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/regression_discontinuity/" />
 
   
 
@@ -316,7 +315,7 @@ For this tutorial, I assume you are familiar with the following concepts:" />
   <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
   <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
 
-  <link rel="canonical" href="https://matteocourthoud.github.io/post/meta_learners/" />
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/regression_discontinuity/" />
 
   
   
@@ -332,11 +331,10 @@ For this tutorial, I assume you are familiar with the following concepts:" />
   <meta property="twitter:card" content="summary_large_image" />
   
   <meta property="og:site_name" content="Matteo Courthoud" />
-  <meta property="og:url" content="https://matteocourthoud.github.io/post/meta_learners/" />
-  <meta property="og:title" content="Meta Learners | Matteo Courthoud" />
-  <meta property="og:description" content="In this tutorial, we are going to explore and compare different methods that leverage machine learning to estimate heterogeneous treatment effects.
-For this tutorial, I assume you are familiar with the following concepts:" /><meta property="og:image" content="https://matteocourthoud.github.io/post/meta_learners/featured.png" />
-    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/meta_learners/featured.png" /><meta property="og:locale" content="en-us" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/regression_discontinuity/" />
+  <meta property="og:title" content="Regression Discontinuity | Matteo Courthoud" />
+  <meta property="og:description" content="In this tutorial, we are going to see how to estimate causal effects when treatment assignment is not random, but determined by a forcing variable such as a test or a requirement." /><meta property="og:image" content="https://matteocourthoud.github.io/post/regression_discontinuity/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/regression_discontinuity/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
@@ -368,12 +366,12 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
   "@type": "BlogPosting",
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https://matteocourthoud.github.io/post/meta_learners/"
+    "@id": "https://matteocourthoud.github.io/post/regression_discontinuity/"
   },
-  "headline": "Meta Learners",
+  "headline": "Regression Discontinuity",
   
   "image": [
-    "https://matteocourthoud.github.io/post/meta_learners/featured.png"
+    "https://matteocourthoud.github.io/post/regression_discontinuity/featured.png"
   ],
   
   "datePublished": "2022-04-09T00:00:00Z",
@@ -387,7 +385,7 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "In this tutorial, we are going to explore and compare different methods that leverage machine learning to estimate heterogeneous treatment effects.\nFor this tutorial, I assume you are familiar with the following concepts:"
+  "description": "In this tutorial, we are going to see how to estimate causal effects when treatment assignment is not random, but determined by a forcing variable such as a test or a requirement."
 }
 </script>
 
@@ -433,11 +431,11 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 
 
 
-  <title>Meta Learners | Matteo Courthoud</title>
+  <title>Regression Discontinuity | Matteo Courthoud</title>
 </head>
 
 
-<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="23b98ec03768fc1a97168ce2e40c689a" >
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="f64bf2b2655c6c47ee0de6f4b449652a" >
 
   
   
@@ -770,14 +768,14 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
       <nav id="TableOfContents">
   <ul>
     <li><a href="#setting">Setting</a></li>
-    <li><a href="#meta-learners">Meta Learners</a>
+    <li><a href="#regression-discontinuity">Regression Discontinuity</a>
       <ul>
-        <li><a href="#s-learner">S-Learner</a></li>
-        <li><a href="#t-learner">T-learner</a></li>
-        <li><a href="#x-learner">X-learner</a></li>
+        <li><a href="#data-challenge">Data Challenge</a></li>
+        <li><a href="#mccrary-test">McCrary Test</a></li>
+        <li><a href="#regression-kink-design">Regression Kink Design</a></li>
       </ul>
     </li>
-    <li><a href="#example">Example</a></li>
+    <li><a href="#academic-application">Academic Application</a></li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
@@ -810,7 +808,7 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 
 
 <div class="article-container pt-3">
-  <h1>Meta Learners</h1>
+  <h1>Regression Discontinuity</h1>
 
   
 
@@ -837,7 +835,7 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    6 min read
+    7 min read
   </span>
   
 
@@ -862,9 +860,9 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 2325px; max-height: 817px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1223px; max-height: 817px;">
   <div style="position: relative">
-    <img src="/post/meta_learners/featured.png" alt="" class="featured-image">
+    <img src="/post/regression_discontinuity/featured.png" alt="" class="featured-image">
     
   </div>
 </div>
@@ -872,124 +870,80 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>In this tutorial, we are going to explore and compare different methods that leverage machine learning to estimate heterogeneous treatment effects.</p>
+            <p>In this tutorial, we are going to see how to estimate causal effects when treatment assignment is not random, but determined by a <em>forcing variable</em> such as a test or a requirement. In this case, we can get a local estimate of the treatment effect by comparing units just above and just below the threshold by assuming that there is no sorting/gaming around it.</p>
+<p><strong>Requisites</strong></p>
 <p>For this tutorial, I assume you are familiar with the following concepts:</p>
 <ul>
 <li>Rubin&rsquo;s potential outcome framework</li>
-<li>Propensity score weighting</li>
-<li>Basic machine learning models</li>
+<li>Ordinary least squares regression</li>
+<li>Non-parametric regression</li>
+<li><a href="https://matteocourthoud.github.io/post/iv/" target="_blank" rel="noopener">Instrumental variables</a></li>
 </ul>
+<p><strong>Academic Application</strong></p>
+<p>As an academic application, we are going to replicate <a href="https://academic.oup.com/qje/article/119/3/807/1938834" target="_blank" rel="noopener">Do voters affect or elect policies? Evidence from the US House</a> (2004) by Lee, Moretti, Butler. The authors study whether electoral strength has an effect on policies. To identify the effect, they the advantage that is given by incumbency status, and the quasi-exogeneity given by close elections.</p>
+<p><strong>Business Case</strong></p>
+<p>TBD</p>
 <h2 id="setting">Setting</h2>
-<p>We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of</p>
+<p>We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, D_i, Y_i, Z_i)$ comprised of</p>
 <ul>
 <li>a feature vector $X_i \in \mathbb R^n$</li>
-<li>a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$</li>
-<li>a response $Y_i \in \mathbb R$</li>
+<li>a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$</li>
+<li>a response $Y_i \in \mathbb R$
+<ul>
+<li>outcome of interest that depends on both $X_i$ and $D_i$</li>
 </ul>
-<p><strong>Assumption 1 : unconfoundedness</strong> (or ignorability, or selection on observables)</p>
-<p>$$
-\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ X_i
-$$</p>
-<p>i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random.</p>
-<p><strong>Assumption 2: overlap</strong> (or bounded support)</p>
-<p>$$
-\exists \eta &gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
-$$</p>
-<p>i.e. no observation is deterministically assigned to the treatment or control group.</p>
-<h2 id="meta-learners">Meta Learners</h2>
-<h3 id="s-learner">S-Learner</h3>
-<p>The simplest meta-algorithm is the single learner or <strong>S-learner</strong>. To build the S-learner estimator, we fit a single model for all observations.</p>
-<p>$$
-\mu(z) = \mathbb E \left[ Y_i \ \big | \ (X_i, T_i) = z \right]
-$$</p>
-<p>the estimator is given by the difference between the predicted values evaluated at $t=1$ and $t=0$.</p>
-<p>$$
-\hat \tau_{S} (x) = \hat \mu(x,1) - \hat \mu(x,0)
-$$</p>
-<p><strong>Problems</strong></p>
+</li>
+<li>a <strong>forcing variable</strong> $Z_i \in \mathbb R$
 <ul>
-<li>We are learning a single model so we hope that the model uncovers heterogeneity in $T$ but it might not be the case</li>
-<li>If the model is heavily regularized because of the high dimensionality of $X$, it might not recover any treatment effect
-<ul>
-<li>e.g. with trees, it might not split on $T$</li>
+<li>variable that determines treatment assignment $D_i$</li>
 </ul>
 </li>
 </ul>
-<h3 id="t-learner">T-learner</h3>
-<p>To build the two-learner or <strong>T-learner</strong> estimator, we fit two different models, one for treated units and one for control units.</p>
-<p>$$
-\mu^{(1)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = 1 \right] \qquad ; \qquad \mu^{(0)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = 0 \right]
-$$</p>
-<p>the estimator is given by the difference between the predicted values of the two algorithms.</p>
-<p>$$
-\hat \tau_{T} (x) = \hat \mu^{(1)}(x) - \hat \mu^{(0)}(x)
-$$</p>
-<p><strong>Problems</strong></p>
-<ul>
-<li>We are using just a fraction of the data for each prediction problem
-<ul>
-<li>S-learner was using all the data</li>
-</ul>
-</li>
-<li>We might get heterogeneity where there is none, just because we are forcing different models
-<ul>
-<li>E.g. if trees split differently, to compute the two potential outcomes we use different populations</li>
-</ul>
-</li>
-</ul>
-<h3 id="x-learner">X-learner</h3>
-<p>The cross-learner or <strong>X-learner</strong> estimator is an extension of the T-learner estimator. It is built in the following way:</p>
+<p>We normalize the forcing variable $Z_i$ such that $Z_i=0$ corresponds to the cutoff for treatment assignment. We will distinguish two cases for the effect of $Z_i$ on $D_i$:</p>
 <ol>
 <li>
-<p>As for the T-learner, compute separate models for $\mu^{(1)}(x)$ and $\mu^{(0)}(x)$ using the treated and control units, respectively</p>
-</li>
-<li>
-<p>Compute the estimated treatment effects as</p>
-</li>
-</ol>
-<p>$$
-\Delta_i (x) =
-\begin{cases}
-Y_i - \hat \mu^{(0)}(x) &amp;\quad \text{ if } T_i = 1
-\newline
-\hat \mu^{(1)}(x) - Y_i &amp;\quad \text{ if } T_i = 0
-\end{cases}
-$$</p>
-<ol start="3">
-<li>
-<p>Predicting $\Delta$ from $X$, compute $\hat \tau^{(0)}(x)$ from treated units and  $\hat \tau^{(1)}(x)$ from control units</p>
-</li>
-<li>
-<p>Estimate $e(x) = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]$</p>
-</li>
-<li>
-<p>Compute</p>
-</li>
-</ol>
-<p>$$
-\hat \tau_X(x) = \hat \tau^{(0)}(x) \hat e(x) + \hat \tau^{(1)}(x) (1 - \hat e(x))
-$$</p>
-<h2 id="example">Example</h2>
-<p>In this example, we are going to use the following <strong>data generating process</strong></p>
+<p><strong>Sharp RD</strong>: $D_i = (Z_i \geq 0)$</p>
 <ul>
-<li>$N = 4000$</li>
-<li>$p = 10$</li>
-<li>$X_i \sim N(0, I_p)$</li>
-<li>$e(x) = 0.3$</li>
-<li>$\varepsilon_i \sim N(0, 1)$</li>
-<li>$\mu^{(0)}(x) = (x_1 + x_2)_{+} + \varepsilon$</li>
-<li>$\mu^{(1)}(x) = (x_1 + x_2)_{+} + \frac{1}{1 + e^{-x_3}} + \varepsilon$</li>
+<li>treatment is exactly determined by the cutoff</li>
 </ul>
-<p>So that the propensity score is constant $e(x) = 0.3$, the treatment effect is $\frac{1}{1 + e^{-x_3}}$ and the average treatment effect is $0.5$.</p>
+</li>
+<li>
+<p><strong>Fuzzy RD</strong>: $\lim_{z \to 0_{-}} \mathbb E[D_i | Z_i=z] \neq \lim_{z \to 0_{+}} \mathbb E[D_i | Z_i=z]$</p>
+<ul>
+<li>treatment probability changes at the cutoff</li>
+</ul>
+</li>
+</ol>
+<p><strong>Assumption 1 : CE smoothness</strong></p>
+<p><strong>Assumption 2: no sorting</strong></p>
+<h2 id="regression-discontinuity">Regression Discontinuity</h2>
+<p>The key behind regression discontinuity is what is called a <strong>forcing</strong> variable that determines treatment assignment. Common examples include test scores for university enrollment (you need a certain test score to get access university) or income for some policy eligibility (you need to be below a certain income threshold to be eligible for a subsidy).</p>
+<p>Clearly, in this setting, treatment is not exogenous. However, the <strong>idea</strong> behind regression discontinuity is that units <em>sufficiently</em> close to the discontinuity $Z_i=0$ are <em>sufficiently</em> similar so that we can attribute differences in the outcome $Y_i$ to the treatment $T_i$.</p>
+<p>What does <em>sufficiently</em> exactly mean?</p>
+<p>In practice, we are assuming a certain degree of <strong>smoothness</strong> of the conditional expectation function $\mathbb E[D_i | Z_i=z]$. If this assumption holds, we can estimate the <strong>local average treatment effect</strong></p>
+<p>$$
+\tau^{LATE} = \lim_{z \to 0_{+}} \mathbb E[Y_i | Z_i=z] - \lim_{z \to 0_{-}} \mathbb E[Y_i | Z_i=z] = \mathbb E \big[ Y_{i}^{(1)} - Y_{i}^{(0)} | Z_i=0 \big]
+$$</p>
+<p>Note that this is the average treatment effect for a very narrow set of individuals: those that are extremely close to the cutoff.</p>
+<h3 id="data-challenge">Data Challenge</h3>
+<p>Regression discontinuity design is a particularly <strong>data hungry</strong> procedure. In fact, we need to</p>
+<ol>
+<li>have a very good flexible approximation of the conditional expectation of the outcome $Y_i$ at the cutoff $Z_i=0$</li>
+<li>while also accounting for the effect of the forcing variable $Z$ on the outcome $Y$</li>
+</ol>
+<p>If we knew the functional form of $\mathbb E[Y_i | Z_i]$, it would be easy.</p>
+<h3 id="mccrary-test">McCrary Test</h3>
+<h3 id="regression-kink-design">Regression Kink Design</h3>
+<h2 id="academic-application">Academic Application</h2>
+<p>As an academic application, we are going to replicate <a href="https://academic.oup.com/qje/article/119/3/807/1938834" target="_blank" rel="noopener">Do voters affect or elect policies? Evidence from the US House</a> (2004) by Lee, Moretti, Butler. The authors study whether electoral strength has an effect on policies. To identify the effect, they the advantage that is given by incumbency status, and the quasi-exogeneity given by close elections.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
 </code></pre>
 <pre><code class="language-python">from src.utils import *
-from src.dgp import dgp4
 </code></pre>
-<p>We generate a dataset out of our DGP.</p>
-<pre><code class="language-python">dgp = dgp4()
-df = dgp.generate_data()
+<pre><code class="language-python">df = sm.datasets.get_rdataset('close_elections_lmb', package='causaldata').data
+</code></pre>
+<pre><code class="language-python">df = pd.read_csv('data/l08.csv')
 df.head()
 </code></pre>
 <div>
@@ -1010,198 +964,171 @@ df.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>x1</th>
-      <th>x2</th>
-      <th>x3</th>
-      <th>x4</th>
-      <th>x5</th>
-      <th>x6</th>
-      <th>x7</th>
-      <th>x8</th>
-      <th>x9</th>
-      <th>x10</th>
-      <th>e</th>
-      <th>T</th>
-      <th>tau</th>
-      <th>Y</th>
+      <th>state</th>
+      <th>district</th>
+      <th>id</th>
+      <th>score</th>
+      <th>year</th>
+      <th>demvoteshare</th>
+      <th>democrat</th>
+      <th>lagdemocrat</th>
+      <th>lagdemvoteshare</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>1.624345</td>
-      <td>-0.611756</td>
-      <td>-0.528172</td>
-      <td>-1.072969</td>
-      <td>0.865408</td>
-      <td>-2.301539</td>
-      <td>1.744812</td>
-      <td>-0.761207</td>
-      <td>0.319039</td>
-      <td>-0.249370</td>
-      <td>0.3</td>
+      <td>1</td>
+      <td>1</td>
+      <td>3</td>
+      <td>64.339996</td>
+      <td>1948</td>
+      <td>0.553026</td>
+      <td>1</td>
       <td>0</td>
-      <td>0.370943</td>
-      <td>1.116502</td>
+      <td>0.469256</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>1.462108</td>
-      <td>-2.060141</td>
-      <td>-0.322417</td>
-      <td>-0.384054</td>
-      <td>1.133769</td>
-      <td>-1.099891</td>
-      <td>-0.172428</td>
-      <td>-0.877858</td>
-      <td>0.042214</td>
-      <td>0.582815</td>
-      <td>0.3</td>
+      <td>1</td>
+      <td>1</td>
+      <td>4</td>
+      <td>60.279999</td>
+      <td>1948</td>
+      <td>0.553026</td>
+      <td>1</td>
       <td>0</td>
-      <td>0.420087</td>
-      <td>-0.248671</td>
+      <td>0.469256</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>-1.100619</td>
-      <td>1.144724</td>
-      <td>0.901591</td>
-      <td>0.502494</td>
-      <td>0.900856</td>
-      <td>-0.683728</td>
-      <td>-0.122890</td>
-      <td>-0.935769</td>
-      <td>-0.267888</td>
-      <td>0.530355</td>
-      <td>0.3</td>
-      <td>0</td>
-      <td>0.711276</td>
-      <td>0.651441</td>
+      <td>1</td>
+      <td>1</td>
+      <td>5</td>
+      <td>57.060001</td>
+      <td>1950</td>
+      <td>0.582441</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0.553026</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>-0.691661</td>
-      <td>-0.396754</td>
-      <td>-0.687173</td>
-      <td>-0.845206</td>
-      <td>-0.671246</td>
-      <td>-0.012665</td>
-      <td>-1.117310</td>
-      <td>0.234416</td>
-      <td>1.659802</td>
-      <td>0.742044</td>
-      <td>0.3</td>
-      <td>0</td>
-      <td>0.334662</td>
-      <td>-0.913644</td>
+      <td>1</td>
+      <td>1</td>
+      <td>6</td>
+      <td>73.830002</td>
+      <td>1950</td>
+      <td>0.582441</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0.553026</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>-0.191836</td>
-      <td>-0.887629</td>
-      <td>-0.747158</td>
-      <td>1.692455</td>
-      <td>0.050808</td>
-      <td>-0.636996</td>
-      <td>0.190915</td>
-      <td>2.100255</td>
-      <td>0.120159</td>
-      <td>0.617203</td>
-      <td>0.3</td>
-      <td>0</td>
-      <td>0.321441</td>
-      <td>0.121779</td>
+      <td>1</td>
+      <td>1</td>
+      <td>7</td>
+      <td>42.959999</td>
+      <td>1954</td>
+      <td>0.569626</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0.539680</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>First, we implement the simplest machine learning method for learning heterogeneous treatment effects: the <strong>S-learner</strong>.</p>
-<p>We fit a single <code>RandomForestRegressor</code> method to all the data.</p>
-<pre><code class="language-python">from sklearn.ensemble import RandomForestRegressor as rfr
+<p>The first thing we would like to inspect, is the distribution of democratic vote shares <code>demvoteshare</code>, against their lagged values <code>lagdemvoteshare</code>.</p>
+<pre><code class="language-python">sns.scatterplot(df['lagdemvoteshare'], df['demvoteshare'])\
+.set(title='Vote share and incumbency status', xlabel='Dem Vote Share (t-1)', ylabel='Dem Vote Share (t)');
+</code></pre>
+<p><img src="img/regression_discontinuity_19_0.png" alt="png"></p>
+<p>The plot is extremely messy. However we can already see some discontinuity at the threshold: it seems that incumbents do not get vote shares below 0.35.</p>
+<p>To have a more transparent representation of the data, we can use a binscatterplot. Binscatterplots are very similar to histograms with a main difference: instead of having a fixed width, they have a fixed number of observations per bin.</p>
+<pre><code class="language-python">from scipy.stats import binned_statistic
 
-mu_S = rfr(min_samples_leaf=30)
-mu_S.fit(df[dgp.X + ['T']], df['Y']);
+def binscatter(x, y, bins=30, area=True, **kwargs):
+    y_bins, x_edges, _ = binned_statistic(x, y, statistic='mean', bins=bins)
+    x_bins = (x_edges[:-1] + x_edges[1:]) / 2
+    p = sns.scatterplot(x_bins, y_bins, **kwargs)
+    if area:
+        y_std, _, _ = binned_statistic(x, y, statistic='std', bins=bins)
+        plt.fill_between(x_bins, y_bins-y_std, y_bins+y_std, alpha=0.2, color='C0')
+    return p
 </code></pre>
-<p>Then, we use it to predict $\mu^{(1)}(x)$ and $\mu^{(0)}(x)$.</p>
-<pre><code class="language-python">df['hat_mu0_S'] = mu_S.predict(df[dgp.X + ['T']].assign(T=0))
-df['hat_mu1_S'] = mu_S.predict(df[dgp.X + ['T']].assign(T=1))
+<p>We can now plot the average vote share by previous vote share. The shades represent one standard deviation, at the bin level.</p>
+<pre><code class="language-python">binscatter(df['lagdemvoteshare'], df['demvoteshare'], bins=100)\
+.set(title='Vote share and incumbency status', xlabel='Dem Vote Share (t-1)', ylabel='Dem Vote Share (t)');
+plt.axvline(x=0.5, ls=&quot;:&quot;, color='C2');
+plt.title('Vote share and incumbency status');
 </code></pre>
-<p>We estimate the average treatment effect as the difference between the two predictions.</p>
-<pre><code class="language-python">df['hat_tau_S'] = df['hat_mu1_S'] - df['hat_mu0_S']
-print(f&quot;S-learner estimate : {np.mean(df['hat_tau_S']):.4}&quot;)
+<p><img src="img/regression_discontinuity_23_0.png" alt="png"></p>
+<p>Now it seems quite clear that there exist a discontinuity at $0.5$. We can get a first estimate of the local average treatment effect by assuming a linear model and running a linear regression.</p>
+<pre><code class="language-python">smf.ols('demvoteshare ~ lagdemvoteshare + (lagdemvoteshare&gt;0.5)', df).fit().summary().tables[1]
 </code></pre>
-<pre><code>S-learner estimate : 0.3657
+<table class="simpletable">
+<tr>
+                <td></td>                   <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>                     <td>    0.2173</td> <td>    0.005</td> <td>   46.829</td> <td> 0.000</td> <td>    0.208</td> <td>    0.226</td>
+</tr>
+<tr>
+  <th>lagdemvoteshare > 0.5[T.True]</th> <td>    0.0956</td> <td>    0.003</td> <td>   33.131</td> <td> 0.000</td> <td>    0.090</td> <td>    0.101</td>
+</tr>
+<tr>
+  <th>lagdemvoteshare</th>               <td>    0.4865</td> <td>    0.011</td> <td>   42.539</td> <td> 0.000</td> <td>    0.464</td> <td>    0.509</td>
+</tr>
+</table>
+<p>The effect is positive and statistically significant. We can also allow the slope of the line to differ on the two sides of the discontinuity.</p>
+<pre><code class="language-python">df = df.sort_values('lagdemvoteshare')
+model = smf.ols('demvoteshare ~ lagdemvoteshare * (lagdemvoteshare&gt;0.5)', df).fit()
+model.summary().tables[1]
 </code></pre>
-<p>How close are we to the true treatment effect?</p>
-<pre><code class="language-python">sns.scatterplot(data=df, x='x3', y='hat_tau_S', alpha=0.3);
-sns.scatterplot(data=df, x='x3', y='tau', color='C2');
+<table class="simpletable">
+<tr>
+                        <td></td>                           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>                                     <td>    0.2256</td> <td>    0.007</td> <td>   34.588</td> <td> 0.000</td> <td>    0.213</td> <td>    0.238</td>
+</tr>
+<tr>
+  <th>lagdemvoteshare > 0.5[T.True]</th>                 <td>    0.0747</td> <td>    0.012</td> <td>    6.334</td> <td> 0.000</td> <td>    0.052</td> <td>    0.098</td>
+</tr>
+<tr>
+  <th>lagdemvoteshare</th>                               <td>    0.4653</td> <td>    0.016</td> <td>   28.547</td> <td> 0.000</td> <td>    0.433</td> <td>    0.497</td>
+</tr>
+<tr>
+  <th>lagdemvoteshare:lagdemvoteshare > 0.5[T.True]</th> <td>    0.0418</td> <td>    0.023</td> <td>    1.827</td> <td> 0.068</td> <td>   -0.003</td> <td>    0.087</td>
+</tr>
+</table>
+<p>Let&rsquo;s plot the predicted vote share over the previous graph.</p>
+<pre><code class="language-python">binscatter(df['lagdemvoteshare'], df['demvoteshare'], bins=100, alpha=0.5)\
+.set(title='Vote share and incumbency status', xlabel='Dem Vote Share (t-1)', ylabel='Dem Vote Share (t)');
+plt.plot(df['lagdemvoteshare'], model.fittedvalues, color='C1')
+plt.axvline(x=0.5, ls=&quot;:&quot;, color='C2');
 </code></pre>
-<p><img src="img/meta_learners_24_0.png" alt="png"></p>
-<p>The <strong>T-learner</strong> method instead fits different model for treated and control units. The advantage is that it can</p>
-<pre><code class="language-python">mu0_T = rfr(min_samples_leaf=30)
-mu0_T.fit(df.loc[df['T']==0, dgp.X + ['T']], df.loc[df['T']==0, 'Y'])
-mu1_T = rfr(min_samples_leaf=30)
-mu1_T.fit(df.loc[df['T']==1, dgp.X + ['T']], df.loc[df['T']==1, 'Y']);
+<p><img src="img/regression_discontinuity_29_0.png" alt="png"></p>
+<p>Now that we have established a discontinuity at the cutoff, we need to check the RD <strong>assumptions</strong>.</p>
+<p>First, is there <strong>sorting</strong> across the cutoff? In this case, are democratic politicians more or less likely to lose close elections than republicans? We can plot the distribution of (lagged) vote shares and inspect its shape at the cutoff.</p>
+<pre><code class="language-python">sns.histplot(df['lagdemvoteshare'], bins=100)\
+.set(title='Distribution of lagged dem vote share', xlabel='')
+plt.axvline(x=0.5, ls=&quot;:&quot;, color='C2');
 </code></pre>
-<p>Then, we use it to predict $\mu^{(1)}(x)$ and $\mu^{(0)}(x)$.</p>
-<pre><code class="language-python">df['hat_mu0_T'] = mu0_T.predict(df[dgp.X + ['T']])
-df['hat_mu1_T'] = mu1_T.predict(df[dgp.X + ['T']])
+<p><img src="img/regression_discontinuity_31_0.png" alt="png"></p>
+<p>If looks pretty smooth. If anything, there is a loss of density at the cutoff, plausibly indicating stronger competition when the competition is close. However, if does not seem particularly asymmetric.</p>
+<p>A <strong>placebo</strong> test that we can run is to check if the forcing variable has an effect on variables on which we do not expect to have an effect. In this setting, the most intuitive placebo outcome is previous elections: we do not expect that being on either side of the cutoff today is related to any past outcome.</p>
+<p>In our case, we can simply swap the two variables to run the test.</p>
+<pre><code class="language-python">binscatter(df['demvoteshare'], df['lagdemvoteshare'], bins=100)\
+.set(title='Vote share and incumbency status', xlabel='Dem Vote Share (t)', ylabel='Dem Vote Share (t-1)');
+plt.axvline(x=0.5, ls=&quot;:&quot;, color='C2');
 </code></pre>
-<p>We estimate the average treatment effect as the difference between the two predictions.</p>
-<pre><code class="language-python">df['hat_tau_T'] = df['hat_mu1_T'] - df['hat_mu0_T']
-print(f&quot;S-learner estimate : {np.mean(df['hat_tau_T']):.4}&quot;)
-</code></pre>
-<pre><code>S-learner estimate : 0.5231
-</code></pre>
-<p>We can plot the distribution of treatment effect estimates against the true values.</p>
-<pre><code class="language-python">sns.scatterplot(data=df, x='x3', y='hat_tau_T', alpha=0.3);
-sns.scatterplot(data=df, x='x3', y='tau', color='C2');
-</code></pre>
-<p><img src="img/meta_learners_32_0.png" alt="png"></p>
-<p>Let&rsquo;s now estimate the <strong>X-learner</strong>. The first step is exactly the same as for the T-learner: estimate $\hat \mu^{(1)}(x)$ and $\hat \mu^{(0)}(x)$ using the treated and control group, respectively.</p>
-<p>Afterwards, we compute the estimated treatment effect on the treated using the the estimated counterfactual outcome estimated on the control group $\hat \mu^{(0)}(x)$, and viceversa.</p>
-<pre><code class="language-python">df['Delta'] = 0
-df.loc[df['T']==0, 'Delta'] = (df['hat_mu1_T'] - df['Y'])[df['T']==0]
-df.loc[df['T']==1, 'Delta'] = (df['Y'] - df['hat_mu0_T'])[df['T']==1]
-</code></pre>
-<p>Then, we basically repeat the process for the T-learner, but using Delta as outcome variable.</p>
-<pre><code class="language-python">tau0_X = rfr(min_samples_leaf=30)
-tau0_X.fit(df.loc[df['T']==0, dgp.X + ['T']], df.loc[df['T']==0, 'Delta'])
-tau1_X = rfr(min_samples_leaf=30)
-tau1_X.fit(df.loc[df['T']==1, dgp.X + ['T']], df.loc[df['T']==1, 'Delta']);
-</code></pre>
-<pre><code class="language-python">df['hat_tau0_X'] = tau0_X.predict(df[dgp.X + ['T']])
-df['hat_tau1_X'] = tau1_X.predict(df[dgp.X + ['T']])
-</code></pre>
-<p>Finally, we estimate the propensity score.</p>
-<pre><code class="language-python">from sklearn.linear_model import LogisticRegression as lr
-
-df['hat_e'] = lr().fit(df[dgp.X], df['T']).predict_proba(df[dgp.X])[:,1]
-</code></pre>
-<p>Now we can compute the <strong>X-learner estimate</strong> as</p>
-<pre><code class="language-python">df['hat_tau_X'] = df['hat_e'] * df['hat_tau0_X'] + (1-df['hat_e']) * df['hat_tau1_X']
-print(f&quot;X-learner estimate : {np.mean(df['hat_tau_X']):.4}&quot;)
-</code></pre>
-<pre><code>X-learner estimate : 0.5253
-</code></pre>
-<p>We can plot the distribution of treatment effect estimates against the true values.</p>
-<pre><code class="language-python">X_plot = sns.scatterplot(data=df, x='x3', y='hat_tau_X', alpha=0.3);
-sns.scatterplot(data=df, x='x3', y='tau', color='C2');
-</code></pre>
-<p><img src="img/meta_learners_43_0.png" alt="png"></p>
-<p>The X-learner estimator is heavily superior to both the S-learner and the T-learner. This is particularly evident if we combine all the plots.</p>
-<pre><code class="language-python">fig, axs = plt.subplots(1,3, sharex=True, sharey=True, figsize=(20,6))
-for i, l in enumerate(['S', 'T', 'X']):
-    sns.scatterplot(data=df, x='x3', y=f&quot;hat_tau_{l}&quot;, alpha=0.3, ax=axs[i]);
-    sns.scatterplot(data=df, x='x3', y='tau', color='C2', ax=axs[i]).\
-    set(title=f&quot;{l}-learner&quot;, ylabel='');
-</code></pre>
-<p><img src="img/meta_learners_45_0.png" alt="png"></p>
+<p><img src="img/regression_discontinuity_33_0.png" alt="png"></p>
+<p>The distribution of vote shares in the past period does not seem to be discontinuous in the incumbency status today, as expected.</p>
 <h2 id="references">References</h2>
 <ul>
-<li>Meta learners: <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1804597116" target="_blank" rel="noopener">Metalearners for estimating heterogeneous treatment effects using machine learning</a> (2019) by Künzel, Sekhon, Bickel, and Yu</li>
-<li>Taxonomy of methods: <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1510489113" target="_blank" rel="noopener">Recursive partitioning for heterogeneous causal effects</a> (2016) by Athey and Imbens</li>
-<li><a href="https://www.youtube.com/watch?v=N9ThAs7NS0g" target="_blank" rel="noopener">Video lecture</a> by Stefan Wager (Stanford)</li>
+<li><a href="https://www.youtube.com/watch?v=72KFY8beH0w" target="_blank" rel="noopener">Regression discontinuity video lecture by Paul Goldsmith-Pinkham (Yale)</a></li>
 </ul>
 
           </div>
@@ -1225,7 +1152,7 @@ for i, l in enumerate(['S', 'T', 'X']):
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/meta_learners/&amp;text=Meta%20Learners" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/regression_discontinuity/&amp;text=Regression%20Discontinuity" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -1238,7 +1165,7 @@ for i, l in enumerate(['S', 'T', 'X']):
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/meta_learners/&amp;t=Meta%20Learners" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/regression_discontinuity/&amp;t=Regression%20Discontinuity" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook"></i>
         </a>
       </li>
@@ -1251,7 +1178,7 @@ for i, l in enumerate(['S', 'T', 'X']):
       
       
       <li>
-        <a href="mailto:?subject=Meta%20Learners&amp;body=https://matteocourthoud.github.io/post/meta_learners/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=Regression%20Discontinuity&amp;body=https://matteocourthoud.github.io/post/regression_discontinuity/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -1264,7 +1191,7 @@ for i, l in enumerate(['S', 'T', 'X']):
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/meta_learners/&amp;title=Meta%20Learners" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/regression_discontinuity/&amp;title=Regression%20Discontinuity" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -1277,7 +1204,7 @@ for i, l in enumerate(['S', 'T', 'X']):
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=Meta%20Learners%20https://matteocourthoud.github.io/post/meta_learners/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=Regression%20Discontinuity%20https://matteocourthoud.github.io/post/regression_discontinuity/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>
@@ -1290,7 +1217,7 @@ for i, l in enumerate(['S', 'T', 'X']):
       
       
       <li>
-        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/meta_learners/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/regression_discontinuity/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
           <i class="fab fa-telegram"></i>
         </a>
       </li>
