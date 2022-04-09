@@ -30,7 +30,7 @@
   
     
   
-  <meta name="description" content="In this tutorial, we are going to see how to estimate causal effects when we do not have access to a control group. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak." />
+  <meta name="description" content="In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/synthetic_control/" />
@@ -333,7 +333,7 @@
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/synthetic_control/" />
   <meta property="og:title" content="Synthetic Control | Matteo Courthoud" />
-  <meta property="og:description" content="In this tutorial, we are going to see how to estimate causal effects when we do not have access to a control group. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak." /><meta property="og:image" content="https://matteocourthoud.github.io/post/synthetic_control/featured.png" />
+  <meta property="og:description" content="In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods." /><meta property="og:image" content="https://matteocourthoud.github.io/post/synthetic_control/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/synthetic_control/featured.png" /><meta property="og:locale" content="en-us" />
   
     
@@ -385,7 +385,7 @@
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "In this tutorial, we are going to see how to estimate causal effects when we do not have access to a control group. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak."
+  "description": "In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods."
 }
 </script>
 
@@ -834,7 +834,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    9 min read
+    12 min read
   </span>
   
 
@@ -869,7 +869,7 @@
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>In this tutorial, we are going to see how to estimate causal effects when we do not have access to a control group. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak. However, there still exist methods to make causal claims, under certain assumptions.</p>
+            <p>In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak. However, there still exist methods for causal inference, under certain assumptions.</p>
 <p><strong>Requisites</strong></p>
 <p>For this tutorial, I assume you are familiar with the following concepts:</p>
 <ul>
@@ -878,17 +878,18 @@
 <li><a href="https://matteocourthoud.github.io/post/permutation_test/" target="_blank" rel="noopener">Randomization/permutation inference</a></li>
 </ul>
 <p><strong>Academic Application</strong></p>
-<p>As an academic application, we are going to replicate <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program</a> (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California onsmoking habits.</p>
+<p>As an academic application, we are going to replicate <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program</a> (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.</p>
 <p><strong>Business Case</strong></p>
 <p>TBD</p>
 <h2 id="setting">Setting</h2>
-<p>We assume that for a panel of i.i.d. subjects $i = 1, &hellip;, n$ over time $t=1, &hellip;,$ we observed a tuple $(X_{i,t}, Y_{i,t})$ comprised of</p>
+<p>We assume that for a panel of i.i.d. subjects $i = 1, &hellip;, n$ over time $t=1, &hellip;,T$ we observed a tuple $(X_{i,t}, Y_{i,t})$ comprised of</p>
 <ul>
 <li>a feature vector $X_{i,t} \in \mathbb R^p$</li>
+<li>a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$</li>
 <li>a response $Y_{i,t} \in \mathbb R$</li>
 </ul>
-<p>Moreover, one unit is treated at time $\tau$. We distinguish time periods in pre-treatment periods and post-treatment periods.</p>
-<p>Crucially, treatment is not randomly assignment, therefore a difference in means between the treated unit and the control group is not an unbiased estimator of the average treatment effect.</p>
+<p>Moreover, one unit is treated at time $t^*$. We distinguish time periods before treatment and time periods after treatment.</p>
+<p>Crucially, treatment $D_i$ is not randomly assignment, therefore a difference in means between the treated unit(s) and the control group is not an unbiased estimator of the average treatment effect.</p>
 <h2 id="synthetic-control">Synthetic Control</h2>
 <p>The problem is that, as usual, we do not observe the counterfactual outcome for treated units, i.e. we do not know what would have happened to them, if they had not been treated. This is known as the <strong>fundamental problem of causal inference</strong>.</p>
 <p>The simplest approach, would be just to compare pre and post periods. This is called the <strong>event study</strong> approach.</p>
@@ -941,12 +942,12 @@ $$</p>
 </ul>
 </li>
 </ol>
-<p>To solve this problem, Abadie et al (2010) propose the following weights:</p>
+<p>To solve this problem, Abadie et al. (2010) propose the following weights:</p>
 <p>$$
 \hat \beta = \arg \min_{\beta} || \boldsymbol X_t - \boldsymbol \beta \boldsymbol X_c || = \sqrt{ \sum_{p} \left( X_{t, p}  - \sum_{i \in c} \beta_{p} X_{c, p} \right)^2 }
 \quad \text{s.t.} \quad \sum_{p} \beta_p = 1 \quad \text{and} \quad \beta_p \geq 0 \ \forall p
 $$</p>
-<p>With this approach we get an interpretable counterfactual.</p>
+<p>With this approach we get an interpretable counterfactual as a weighted avarage of untreated units.</p>
 <h3 id="synthetic-control-vs-ols">Synthetic Control vs OLS</h3>
 <p>What are the advantages and disadvantages of synthetic control methods with respect to a simple regression?</p>
 <ol>
@@ -977,8 +978,11 @@ $$</p>
 </ol>
 <h2 id="academic-application">Academic Application</h2>
 <p>As an academic application, we are going to replicate <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program</a> (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.</p>
-<p>In particular, in 1989, California passes a tobacco control program that significantly reduces the sales of cigarettes. Was this program effective? Unfortunately, there is neither a counterfactual scenario, nor a randomized experiment.</p>
-<p>Let&rsquo;s start by loading the data.</p>
+<p>This is how the authors describe the policy:</p>
+<blockquote>
+<p>Its primary effect is to impose a 25-cent per pack state excise tax on the sale of tobacco cigarettes within California, with approximately equivalent excise taxes similarly imposed on the retail sale of other commercial tobacco products, such as cigars and chewing tobacco. Additional restrictions placed on the sale of tobacco include a ban on cigarette vending machines in public areas accessible by juveniles, and a ban on the individual sale of single cigarettes. Revenue generated by the act was earmarked for various environmental and health care programs, and anti-tobacco advertisements.</p>
+</blockquote>
+<p>Let&rsquo;s start by loading the data. We have information on cigarette costs, sales, tax rate and revenues for all US states for years from 1970 to 2014.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
 </code></pre>
@@ -1080,7 +1084,7 @@ df.head()
   </tbody>
 </table>
 </div>
-<p>We have information on cigarette costs, sales, tax rate and revenues for all US states for years from 1970 to 2014.</p>
+<p>Is the sample balanced? Let&rsquo;s check the distribution of covariates, by treatment assignment.</p>
 <pre><code class="language-python">from causalml.match import create_table_one
 
 create_table_one(df, 'california', ['cig_sales', 'lnincome', 'beer', 'age15to24', 'retprice'])
@@ -1154,6 +1158,7 @@ create_table_one(df, 'california', ['cig_sales', 'lnincome', 'beer', 'age15to24'
   </tbody>
 </table>
 </div>
+<p>The sample is quite unbalanced. In particular, California is a richer state with a higher income, <code>lnincome</code>.</p>
 <p>We are interested in the sales of cigarettes <code>cig_sales</code> over time. Let&rsquo;s start by reshaping the dataset so that each state is a time series.</p>
 <pre><code class="language-python">df = df.pivot(index='year', columns='state', values='cig_sales').reset_index()
 df.head()
@@ -1324,7 +1329,7 @@ df.head()
 </table>
 <p>5 rows × 40 columns</p>
 </div>
-<p>In an ideal world, one could use the average of all the other states in the United States as a control. Let&rsquo;s plot what that would look like.</p>
+<p>In an ideal world, one could use the average of all the other states in the United States as a control group for California. Let&rsquo;s plot the average cigarette consumption over time.</p>
 <pre><code class="language-python">states = [c for c in df.columns if c not in ['year']]
 df['Other States'] = df[[s for s in states if s != 'California']].mean(axis=1)
 </code></pre>
@@ -1338,13 +1343,15 @@ df['Other States'] = df[[s for s in states if s != 'California']].mean(axis=1)
 <pre><code class="language-python">plot_lines(df, 'California', 'Other States')
 </code></pre>
 <p><img src="img/synthetic_control_22_0.png" alt="png"></p>
-<p>It looks like the trends are slightly diverging after 1989, the year of Proposition 99. However, it also looks like the trends are sensibly different before 1989. Therefore, it feels quite a stretch to attribute the differences in cigarette sales post 1989 to Proposition 99 alone.</p>
-<p>The idea is to <strong>build a synthetic control</strong> state for California. Maybe no single state is a good control, but a combination of them could actually provide a good approximation to California. Intuitively, one could think that better approximations are states that are</p>
+<p>People in California on average smoke less than in other states. This would not be a problem in a diff-in-diff setting if</p>
 <ul>
-<li>larger</li>
-<li>more democratic</li>
+<li>we had enough observations in each group</li>
+<li>trends were parallel</li>
+<li>other diff-in-diff assumptions were holding</li>
 </ul>
-<p>In practice, we are going to try to build the synthetic control state such as it approximates pre-trend, the sales of cigarettes pre 1989. Let&rsquo;s start by using <code>LinearRegression</code>.</p>
+<p>However, we have just one treated unit and very few control units. Morover, the trends were definitely not parallel before treatment. Therefore, it feels quite a stretch to attribute the differences in cigarette sales post 1989 to Proposition 99 alone.</p>
+<p>The idea is to exploit the time dimension and <strong>build a synthetic control</strong> state for California. Maybe no single state is a good control, but a combination of them could actually provide a good approximation to California. Moreover, we can exploit the time dimension to compensate for the fact that we have few observations. We are going to try to match the sales of cigarettes in california for all the pre-treatment years, from 1970 to 1988.</p>
+<p>Let&rsquo;s start by using <code>LinearRegression</code> of <code>cigsales</code> in California onto <code>cigsales</code> of all the other states, pre 1989.</p>
 <pre><code class="language-python">from sklearn.linear_model import LinearRegression
 
 def synth_predict(df, state, model):
@@ -1352,22 +1359,23 @@ def synth_predict(df, state, model):
     other_states = [c for c in states if c not in ['year', state]]
     X = df.loc[df['year'] &lt;= 1988, other_states]
     df[f'Synthetic {state}'] = model.fit(X, y).predict(df[other_states])
-    return model.coef_
+    return model
 </code></pre>
-<pre><code class="language-python">coef = synth_predict(df, 'California', LinearRegression())
+<pre><code class="language-python">coef = synth_predict(df, 'California', LinearRegression()).coef_
 </code></pre>
-<p>Let&rsquo;s now plot the predicted against the actual time series.</p>
+<p>How well did we predict pre-1989 sales of cigarettes in California? If we believe that that&rsquo;s a sensible control, what is the treatment effect?</p>
+<p>We can visually answe both questions by plotting the actual sales of cigarettes in California against the predicted ones.</p>
 <pre><code class="language-python">plot_lines(df, 'California', 'Synthetic California')
 </code></pre>
 <p><img src="img/synthetic_control_27_0.png" alt="png"></p>
-<p>It looks like the policy had a sensible <strong>negative effect</strong> on cigarette sales.</p>
-<p>We can also observe that we are clearly <strong>overfitting</strong>: the pre-policy predicted cigarette consumption line is exactly flat. One way to avoid overfitting is to use a penalized estimator.</p>
-<p>Another problem concerns the <strong>weights</strong>. We have not set any constraint on the weights. Let&rsquo;s see what they look like.</p>
+<p>It looks like the policy had a sensible <strong>negative effect</strong> on cigarette sales: the predicted trend is higher than the actual sales and diverges right after the approval of Proposition 99.</p>
+<p>We can also observe that we are clearly <strong>overfitting</strong>: the pre-policy predicted cigarette sales line is perfectly overlapping with the actual data.</p>
+<p>Another problem concerns the <strong>weights</strong>. We have not set any constraint on the weights.</p>
 <pre><code class="language-python">sns.histplot(coef, bins=30).set(title='Coefficients');
 </code></pre>
-<p><img src="img/synthetic_control_30_0.png" alt="png"></p>
-<p>We have many <strong>negative weights</strong>, which do not make much sense from a causal inference perspective. In principle all weights should be between zero and one.</p>
-<p>To address both concerns, we are going to build a new estimator called <code>SyntheticControl()</code> which constrains weights to sum to 1 and to be positive.</p>
+<p><img src="img/synthetic_control_29_0.png" alt="png"></p>
+<p>We have many <strong>negative weights</strong>, which do not make much sense from a causal inference perspective. Since we would like to interpret our synthetic control as a <strong>weighted average</strong> of untreated states, all weights should be positive  and they should sum to one.</p>
+<p>To address both concerns, we are going to build a new estimator called <code>SyntheticControl()</code> which constrains the weights to be positive and to sum to one.</p>
 <pre><code class="language-python">from typing import List
 from operator import add
 from toolz import reduce, partial
@@ -1387,17 +1395,19 @@ class SyntheticControl():
                          f_eqcons=lambda x: np.sum(x) - 1,
                          bounds=[(0.0, 1.0)]*len(w_start),
                          disp=False)
+        self.mse = self.loss(W=self.coef_, X=X, y=y)
         return self
     
     # Predict 
     def predict(self, X):
         return X.dot(self.coef_)
 </code></pre>
+<p>We can now plot the actual and predicted cigarette sales in California using the <code>SyntheticControl</code> method.</p>
 <pre><code class="language-python">synth_predict(df, 'California', SyntheticControl())
 plot_lines(df, 'California', 'Synthetic California')
 </code></pre>
 <p><img src="img/synthetic_control_33_0.png" alt="png"></p>
-<p>Let&rsquo;s plot the <strong>difference</strong> between the two lines to better visualize the magnitude of the effect.</p>
+<p>It looks like the effect is again negative. However, let&rsquo;s plot the <strong>difference</strong> between the two lines to better visualize the magnitude.</p>
 <pre><code class="language-python">def plot_difference(df, state, vline=True, hline=True, **kwargs):
     sns.lineplot(x=df['year'], y=df[state] - df[f'Synthetic {state}'], **kwargs)
     if vline: 
@@ -1409,8 +1419,9 @@ plot_lines(df, 'California', 'Synthetic California')
 <pre><code class="language-python">plot_difference(df, 'California', label='California')
 </code></pre>
 <p><img src="img/synthetic_control_36_0.png" alt="png"></p>
-<p>The normalized estimator gives a very similar prediction, however it does not blatantly overfit the pre-period.</p>
-<p>Is the estimate significant? The question we are trying to answer is &ldquo;<em>how unusual is this estimate under the null hypothesis of no policy effect</em>?&rdquo;. We are going to perform a randomization/permutation test in order to answer this question. The <strong>idea</strong> is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.</p>
+<p>The difference is clearly negative and decreasing over time. Moreover, now we see that the estimator is not overfitting the pre-period anymore.</p>
+<p>Wha about <strong>inference</strong>? Is the estimate significantly different from zero? Or, more practically, &ldquo;<em>how unusual is this estimate under the null hypothesis of no policy effect</em>?&rdquo;.</p>
+<p>We are going to perform a <strong>randomization/permutation test</strong> in order to answer this question. The <strong>idea</strong> is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.</p>
 <p>Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.</p>
 <pre><code class="language-python">for state in states:
     synth_predict(df, state, SyntheticControl())
@@ -1418,11 +1429,47 @@ plot_lines(df, 'California', 'Synthetic California')
 plot_difference(df, 'California', label='California')
 </code></pre>
 <p><img src="img/synthetic_control_38_0.png" alt="png"></p>
-<p>It looks like the effect for California is quite extreme, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales). We get more extreme only for a couple of states, especially in the first 10 years. Therefore, we conclude that the effect of the Proposition 99 policy is statistically different from zero.</p>
+<p>From the graph we notice two things. First, the effect for California is quite extreme and therefore likely not to be driven by random noise.</p>
+<p>Second, we also notice that there are a couple of states for which we cannot fit the pre-trend very well. This is expected since, for each state, we are building the counterfactual trend as a <strong>convex combination</strong> of all other states. States that are quite extreme in terms of cigarette consumpion are very useful to build the counterfactuals of other states, but it&rsquo;s hard to build a counterfactual for them. Not to bias the analysis, let&rsquo;s exclude states for which we cannot build a &ldquo;good enough&rdquo; counterfectual, in terms of pre-treatment MSE.</p>
+<p>$$
+MSE_{pre} = \frac{1}{n} \sum_{t \in \text{pre}} \left( Y_t - \hat Y_t \right)^2
+$$</p>
+<pre><code class="language-python">for state in states:
+    mse = synth_predict(df, state, SyntheticControl()).mse
+    if mse &lt; 15:
+        plot_difference(df, state, vline=False, alpha=0.2, color='grey')
+plot_difference(df, 'California', label='California')
+</code></pre>
+<p><img src="img/synthetic_control_40_0.png" alt="png"></p>
+<p>After exluding extreme observations, it looks like the effect for California is very unusual, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales).</p>
+<p>One <strong>statistic</strong> that the authors suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.</p>
+<p>$$
+\lambda = \frac{MSE_{post}}{MSE_{pre}} = \frac{\frac{1}{n} \sum_{t \in \text{post}} \left( Y_t - \hat Y_t \right)^2 }{\frac{1}{n} \sum_{t \in \text{pre}} \left( Y_t - \hat Y_t \right)^2 }
+$$</p>
+<p>We can compute a p-value as the number of observations with higher ratio.</p>
+<pre><code class="language-python">lambdas = {}
+for state in states:
+    mse_pre = synth_predict(df, state, SyntheticControl()).mse
+    mse_tot = np.mean((df[f'Synthetic {state}'] - df[state])**2)
+    lambdas[state] = (mse_tot - mse_pre) / mse_pre
+    
+print(f&quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype='float') &gt; lambdas['California']):.4}&quot;)
+</code></pre>
+<pre><code>p-value: 0.02564
+</code></pre>
+<p>It seems that only $2.5%$ of the states had a larger MSE ratio. We can visualize the distribution of the statistic under permutation with a histogram.</p>
+<pre><code class="language-python">_, bins, _ = plt.hist(lambdas.values(), bins=20);
+plt.hist([lambdas['California']], bins=bins, color=&quot;C2&quot;, label=&quot;California&quot;)
+plt.legend();
+plt.title('Ratio of $MSE_{post}$ and $MSE_{pre}$ across states');
+</code></pre>
+<p><img src="img/synthetic_control_44_0.png" alt="png"></p>
+<p>Indeed, the California statistic is quite extreme.</p>
 <h2 id="references">References</h2>
 <ul>
-<li><a href="https://www.youtube.com/watch?v=BsRqy7juMus" target="_blank" rel="noopener">Synthetic Control</a> video lecture by Paul Goldsmith-Pinkham (Yale)</li>
-<li><a href="https://mixtape.scunning.com/synthetic-control.html" target="_blank" rel="noopener">Synthetic Control</a> chapter of the Causal Inference Mixtape by Scott Cunningham</li>
+<li><a href="https://www.youtube.com/watch?v=BsRqy7juMus" target="_blank" rel="noopener">Video lecture</a> by Paul Goldsmith-Pinkham (Yale)</li>
+<li><a href="https://matheusfacure.github.io/python-causality-handbook/15-Synthetic-Control.html" target="_blank" rel="noopener">Chapter 10</a> of Causal Inference for the Brave and True by matheus Facure</li>
+<li><a href="https://mixtape.scunning.com/synthetic-control.html" target="_blank" rel="noopener">Chapter 15</a> of Causal Inference: The Mixtape by Scott Cunningham</li>
 </ul>
 
           </div>
