@@ -339,10 +339,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-04-09T00:00:00&#43;00:00"
+        content="2022-04-12T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-09T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-04-12T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/propensity_score/featured.png"
   ],
   
-  "datePublished": "2022-04-09T00:00:00Z",
-  "dateModified": "2022-04-09T00:00:00Z",
+  "datePublished": "2022-04-12T00:00:00Z",
+  "dateModified": "2022-04-12T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -775,7 +775,13 @@
         <li><a href="#comments">Comments</a></li>
       </ul>
     </li>
-    <li><a href="#academic-application">Academic Application</a></li>
+    <li><a href="#academic-application">Academic Application</a>
+      <ul>
+        <li><a href="#experimental-data">Experimental Data</a></li>
+        <li><a href="#observational-data">Observational Data</a></li>
+        <li><a href="#inverse-propensity-score-weighting">Inverse propensity score weighting</a></li>
+      </ul>
+    </li>
     <li><a href="#references">References</a></li>
   </ul>
 </nav>
@@ -826,7 +832,7 @@
     
       
     
-    Apr 9, 2022
+    Apr 12, 2022
   </span>
   
 
@@ -835,7 +841,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    10 min read
+    11 min read
   </span>
   
 
@@ -882,40 +888,50 @@
 <p><strong>Business Case</strong></p>
 <p>TBD</p>
 <h2 id="setting">Setting</h2>
-<p>We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, T_i, Y_i)$ comprised of</p>
+<p>We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of</p>
 <ul>
 <li>a feature vector $X_i \in \mathbb R^n$</li>
-<li>a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$</li>
+<li>a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$</li>
 <li>a response $Y_i \in \mathbb R$</li>
 </ul>
 <p><strong>Assumption 1 : unconfoundedness</strong> (or ignorability, or selection on observables, or conditional independence)</p>
 <p>$$
-\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ X_i
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i
 $$</p>
-<p>i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random.</p>
-<p><strong>Assumption 2: overlap</strong> (or bounded support)</p>
+<p>i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random. What this assumption rules out is <em>selection on unobservables</em>. Moreover, it&rsquo;s <em>untestable</em>.</p>
+<p><strong>Assumption 2: overlap</strong> (or common support)</p>
 <p>$$
-\exists \eta &gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
+\exists \eta &gt; 0 \ : \ \eta \leq \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
 $$</p>
-<p>i.e. no observation is deterministically assigned to the treatment or control group.</p>
+<p>i.e. no observation is deterministically assigned to the treatment or control group. We need this assumption for counterfactual statements to make sense. If some observations had zero probability of (not) being treated, it would make no sense to try to estimate their counterfactual outcome in case they would have (not) being treated. Also this assumption is <em>untestable</em>.</p>
+<p><strong>Assumption 3: stable unit treatment value (SUTVA)</strong></p>
+<p>$$
+Y_i^{(D_i)} \perp D_j \quad \forall j \neq i
+$$</p>
+<p>i.e. the potential outcome of one individual is independent from the treatment status of any other individual. Common <em>violations</em> of this assumption include</p>
+<ul>
+<li>general equilibrium effects</li>
+<li>spillover effects</li>
+</ul>
+<p>This assumption is <em>untestable</em>.</p>
 <h2 id="propensity-scores">Propensity Scores</h2>
 <h3 id="exogenous-treatment">Exogenous Treatment</h3>
 <p>The <strong>fundamental problem of causal inference</strong> is that we do not observe counterfactual outcomes, i.e. we do not observe what would have happened to treated units if they had not received the treatment and viceversa.</p>
 <p>If treatment is exogenous, we know that the difference in means identifies the average treatment effect $\mathbb E[\tau]$.</p>
 <p>$$
-\mathbb E[\tau] = \mathbb E \big[ Y_i \ \big| \ T_i = 1 \big] - \mathbb E \big[ Y_i \ \big| \ T_i = 0 \big] = \mathbb E \big[ Y_{i}^{(1)} - Y_{i}^{(0)} \big]
+\mathbb E[\tau] = \mathbb E \big[ Y_i \ \big| \ D_i = 1 \big] - \mathbb E \big[ Y_i \ \big| \ D_i = 0 \big] = \mathbb E \big[ Y_{i}^{(1)} - Y_{i}^{(0)} \big]
 $$</p>
 <p>Therefore, we can build an unbiased estimator of the average treatment effect as the empirical counterpart of the expression above</p>
 <p>$$
-\hat \tau(Y, T) = \frac{1}{n} \sum_{i=1}^{n} \big( T_i Y_i - (1-T_i) Y_i \big)
+\hat \tau(Y, D) = \frac{1}{n} \sum_{i=1}^{n} \big( D_i Y_i - (1-D_i) Y_i \big)
 $$</p>
 <p>In case treatment is not randomly assigned, we use the Thompson Horowitz (1952) estimator</p>
 <p>$$
-\hat \tau(Y, T) = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i Y_i}{\pi_{i}} - \frac{(1-T_i) Y_i}{1 - \pi_{i}} \right)
+\hat \tau(Y, D) = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{D_i Y_i}{\pi_{i}} - \frac{(1-D_i) Y_i}{1 - \pi_{i}} \right)
 $$</p>
-<p>where $\pi_{i} = \Pr(T_i=1)$ is the probability of being treated, also known as <strong>propensity score</strong>. Sometimes the propensity score is known, for example when treatment is stratified. However, in general, it is not.</p>
+<p>where $\pi_{i} = \Pr(D_i=1)$ is the probability of being treated, also known as <strong>propensity score</strong>. Sometimes the propensity score is known, for example when treatment is stratified. However, in general, it is not.</p>
 <h3 id="conditionally-exogenous-treatment">Conditionally Exogenous Treatment</h3>
-<p>In many cases and especially in observational studies, treatment is not unconditionally exogenous, but it&rsquo;s exogenous only after we condition on some characteristic $X$. If these characteristics are observables, we have the <strong>unconfoundedness</strong> assumption.</p>
+<p>In many cases and especially in observational studies, treatment $D$ is not unconditionally exogenous, but it&rsquo;s exogenous only after we condition on some characteristic $X$. If these characteristics are observables, we have the <strong>unconfoundedness</strong> assumption.</p>
 <p>Under unconfoundedness, we can still identify the average treatment effect, as a <em>conditional</em> difference in means:</p>
 <p>$$
 \mathbb E[\tau] = \mathbb E \big[ Y_{i}^{(1)} - Y_{i}^{(0)} \ \big| \ X_i \big]
@@ -927,7 +943,7 @@ $$</p>
 </ol>
 <p>The main contribution of Rosenbaum and Rubin (1983) is to show that if <strong>unconfoundedness</strong> holds, then</p>
 <p>$$
-\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ \pi(X_i)
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ \pi(X_i)
 $$</p>
 <p>i.e. you only need to condition on $\pi(X)$ in order to recover the average treatment effect.</p>
 <p>$$
@@ -935,7 +951,7 @@ $$</p>
 $$</p>
 <p>This implies the following <strong>inverse propensity-weighted</strong> estimator:</p>
 <p>$$
-\hat \tau^{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i Y_i}{\hat \pi(X_i)} - \frac{(1-T_i) Y_i}{1 - \hat \pi(X_i)} \right)
+\hat \tau^{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{D_i Y_i}{\hat \pi(X_i)} - \frac{(1-D_i) Y_i}{1 - \hat \pi(X_i)} \right)
 $$</p>
 <p>which, under <em>unconfoundedness</em> is an <strong>unbiased</strong> estimator of the average treatment effect, $\mathbb E \left[\hat \tau^{IPW} \right] = \tau$.</p>
 <p>This is a very practically relevant result since it tells us that we need to condition on a single variable instead of a potentially infinite dimensional array. The only thing we need to do is to estimate $\pi(X_i)$.</p>
@@ -953,6 +969,7 @@ $$</p>
 <p>As an academic application, we are going to replicate <a href="https://www.tandfonline.com/doi/abs/10.1080/01621459.1999.10473858" target="_blank" rel="noopener">Causal Effects in Non-Experimental Studies: Reevaluating the Evaluation of Training Programs</a> (1999) by Dahejia and Wahba.</p>
 <p>This study builds on a previous study: <a href="https://www.jstor.org/stable/2937954" target="_blank" rel="noopener">Evaluating the Econometric Evaluations of Training Programs with Experimental Data</a> (1986) by Lalonde. In this study, the author compares observational and experimental methods. In particular, he studies an experimental intervention called the NSW (National Supported Work demonstration). The NSW is a temporary training program to give work experience to unemployed people.</p>
 <p>The exogenous variation allows us to estimate the treatment effect as a difference in means. The author then asks: what if we didn&rsquo;t have access to an experiment? In particular, what if we did not have information on the control group? He takes a sample of untreated people from the PSID panel and use them as a control group.</p>
+<h3 id="experimental-data">Experimental Data</h3>
 <p>Let&rsquo;s start by loading the NSW data.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
@@ -982,10 +999,10 @@ df_nsw.head()
       <th></th>
       <th>treat</th>
       <th>age</th>
-      <th>education</th>
+      <th>educ</th>
       <th>black</th>
-      <th>hispanic</th>
-      <th>married</th>
+      <th>hisp</th>
+      <th>marr</th>
       <th>nodegree</th>
       <th>re74</th>
       <th>re75</th>
@@ -1004,7 +1021,7 @@ df_nsw.head()
       <td>1</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>9930.0460</td>
+      <td>9930.045898</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1017,7 +1034,7 @@ df_nsw.head()
       <td>1</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>3595.8940</td>
+      <td>3595.894043</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1030,7 +1047,7 @@ df_nsw.head()
       <td>0</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>24909.4500</td>
+      <td>24909.449219</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1043,7 +1060,7 @@ df_nsw.head()
       <td>1</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>7506.1460</td>
+      <td>7506.145996</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1056,7 +1073,7 @@ df_nsw.head()
       <td>1</td>
       <td>0.0</td>
       <td>0.0</td>
-      <td>289.7899</td>
+      <td>289.789886</td>
     </tr>
   </tbody>
 </table>
@@ -1064,7 +1081,7 @@ df_nsw.head()
 <p>The treatment variable is <code>treat</code> and the outcome of interest is <code>re78</code>, the income in 1978. We also have access to a bunch of covariates.</p>
 <pre><code class="language-python">y = 're78'
 T = 'treat'
-X = ['age', 'education', 'black', 'hispanic', 'married', 'nodegree', 're74', 're75']
+X = df_nsw.columns[2:9]
 </code></pre>
 <p>Was there selection on observables? Let&rsquo;s summarize the data, according to treatment status.</p>
 <pre><code class="language-python">df_nsw.groupby('treat').agg(['mean', 'std']).T.unstack(1)
@@ -1107,7 +1124,7 @@ X = ['age', 'education', 'black', 'hispanic', 'married', 'nodegree', 're74', 're
       <td>7.155019</td>
     </tr>
     <tr>
-      <th>education</th>
+      <th>educ</th>
       <td>10.088462</td>
       <td>1.614325</td>
       <td>10.345946</td>
@@ -1121,14 +1138,14 @@ X = ['age', 'education', 'black', 'hispanic', 'married', 'nodegree', 're74', 're
       <td>0.364558</td>
     </tr>
     <tr>
-      <th>hispanic</th>
+      <th>hisp</th>
       <td>0.107692</td>
       <td>0.310589</td>
       <td>0.059459</td>
       <td>0.237124</td>
     </tr>
     <tr>
-      <th>married</th>
+      <th>marr</th>
       <td>0.153846</td>
       <td>0.361497</td>
       <td>0.189189</td>
@@ -1143,24 +1160,24 @@ X = ['age', 'education', 'black', 'hispanic', 'married', 'nodegree', 're74', 're
     </tr>
     <tr>
       <th>re74</th>
-      <td>2107.026658</td>
-      <td>5687.905694</td>
-      <td>2095.573689</td>
-      <td>4886.620353</td>
+      <td>2107.026651</td>
+      <td>5687.905639</td>
+      <td>2095.573693</td>
+      <td>4886.620354</td>
     </tr>
     <tr>
       <th>re75</th>
-      <td>1266.909002</td>
-      <td>3102.982044</td>
-      <td>1532.055314</td>
-      <td>3219.250870</td>
+      <td>1266.909015</td>
+      <td>3102.982088</td>
+      <td>1532.055313</td>
+      <td>3219.250879</td>
     </tr>
     <tr>
       <th>re78</th>
-      <td>4554.801126</td>
-      <td>5483.835991</td>
-      <td>6349.143530</td>
-      <td>7867.402218</td>
+      <td>4554.801120</td>
+      <td>5483.836001</td>
+      <td>6349.143502</td>
+      <td>7867.402183</td>
     </tr>
   </tbody>
 </table>
@@ -1168,7 +1185,7 @@ X = ['age', 'education', 'black', 'hispanic', 'married', 'nodegree', 're74', 're
 <p>It seems that covariates are balanced across treatment arms. Nothing seems to point towards selection on observables. Therefore, we can compute the average treatment effect as a simple difference in means</p>
 <pre><code class="language-python">df_nsw.loc[df_nsw[T]==1, y].mean() - df_nsw.loc[df_nsw[T]==0, y].mean()
 </code></pre>
-<pre><code>1794.342404270271
+<pre><code>1794.3423818501024
 </code></pre>
 <p>Or equivalently in a regression</p>
 <pre><code class="language-python">est = smf.ols('re78 ~ treat', df_nsw).fit()
@@ -1186,6 +1203,7 @@ est.summary().tables[1]
 </tr>
 </table>
 <p>It looks like the effect is positive and significant.</p>
+<h3 id="observational-data">Observational Data</h3>
 <p>Let&rsquo;s now load a different dataset in which we have replaced the true control units with observations from the PSID sample.</p>
 <pre><code class="language-python">df_psid = pd.read_csv('data/l86_psid.csv')
 </code></pre>
@@ -1230,7 +1248,7 @@ est.summary().tables[1]
       <td>7.155019</td>
     </tr>
     <tr>
-      <th>education</th>
+      <th>educ</th>
       <td>10.766798</td>
       <td>3.176827</td>
       <td>10.345946</td>
@@ -1244,14 +1262,14 @@ est.summary().tables[1]
       <td>0.364558</td>
     </tr>
     <tr>
-      <th>hispanic</th>
+      <th>hisp</th>
       <td>0.067194</td>
       <td>0.250853</td>
       <td>0.059459</td>
       <td>0.237124</td>
     </tr>
     <tr>
-      <th>married</th>
+      <th>marr</th>
       <td>0.735178</td>
       <td>0.442113</td>
       <td>0.189189</td>
@@ -1268,22 +1286,22 @@ est.summary().tables[1]
       <th>re74</th>
       <td>11027.303390</td>
       <td>10814.670751</td>
-      <td>2095.573689</td>
-      <td>4886.620353</td>
+      <td>2095.573693</td>
+      <td>4886.620354</td>
     </tr>
     <tr>
       <th>re75</th>
       <td>7569.222058</td>
       <td>9041.944403</td>
-      <td>1532.055314</td>
-      <td>3219.250870</td>
+      <td>1532.055313</td>
+      <td>3219.250879</td>
     </tr>
     <tr>
       <th>re78</th>
       <td>9995.949977</td>
       <td>11184.450050</td>
-      <td>6349.143530</td>
-      <td>7867.402218</td>
+      <td>6349.143502</td>
+      <td>7867.402183</td>
     </tr>
   </tbody>
 </table>
@@ -1301,7 +1319,7 @@ est.summary().tables[1]
   <th>Intercept</th> <td> 9995.9500</td> <td>  623.715</td> <td>   16.026</td> <td> 0.000</td> <td> 8770.089</td> <td> 1.12e+04</td>
 </tr>
 <tr>
-  <th>treat</th>     <td>-3646.8064</td> <td>  959.704</td> <td>   -3.800</td> <td> 0.000</td> <td>-5533.027</td> <td>-1760.586</td>
+  <th>treat</th>     <td>-3646.8065</td> <td>  959.704</td> <td>   -3.800</td> <td> 0.000</td> <td>-5533.027</td> <td>-1760.586</td>
 </tr>
 </table>
 <p>The estimated coefficient is negative and significant. The conclusion from Lalonde (1986) is</p>
@@ -1317,38 +1335,36 @@ est.summary().tables[1]
       <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td> 5576.0002</td> <td> 3627.428</td> <td>    1.537</td> <td> 0.125</td> <td>-1553.789</td> <td> 1.27e+04</td>
+  <th>Intercept</th> <td>-1089.9263</td> <td> 2913.224</td> <td>   -0.374</td> <td> 0.708</td> <td>-6815.894</td> <td> 4636.042</td>
 </tr>
 <tr>
-  <th>treat</th>     <td> 1873.7655</td> <td> 1060.564</td> <td>    1.767</td> <td> 0.078</td> <td> -210.797</td> <td> 3958.328</td>
+  <th>treat</th>     <td> 2642.1456</td> <td> 1039.655</td> <td>    2.541</td> <td> 0.011</td> <td>  598.694</td> <td> 4685.597</td>
 </tr>
 <tr>
-  <th>age</th>       <td> -127.8870</td> <td>   42.166</td> <td>   -3.033</td> <td> 0.003</td> <td> -210.765</td> <td>  -45.009</td>
+  <th>educ</th>      <td>  521.5869</td> <td>  208.751</td> <td>    2.499</td> <td> 0.013</td> <td>  111.284</td> <td>  931.890</td>
 </tr>
 <tr>
-  <th>education</th> <td>  309.8708</td> <td>  218.249</td> <td>    1.420</td> <td> 0.156</td> <td> -119.103</td> <td>  738.845</td>
+  <th>black</th>     <td>-1026.6762</td> <td> 1006.433</td> <td>   -1.020</td> <td> 0.308</td> <td>-3004.830</td> <td>  951.478</td>
 </tr>
 <tr>
-  <th>black</th>     <td>-1432.1626</td> <td> 1005.876</td> <td>   -1.424</td> <td> 0.155</td> <td>-3409.235</td> <td>  544.910</td>
+  <th>hisp</th>      <td> -903.1023</td> <td> 1726.419</td> <td>   -0.523</td> <td> 0.601</td> <td>-4296.394</td> <td> 2490.189</td>
 </tr>
 <tr>
-  <th>hispanic</th>  <td>-1107.9730</td> <td> 1711.488</td> <td>   -0.647</td> <td> 0.518</td> <td>-4471.940</td> <td> 2255.994</td>
+  <th>marr</th>      <td> 1026.6143</td> <td>  943.788</td> <td>    1.088</td> <td> 0.277</td> <td> -828.410</td> <td> 2881.639</td>
 </tr>
 <tr>
-  <th>married</th>   <td> 1776.1337</td> <td>  967.008</td> <td>    1.837</td> <td> 0.067</td> <td> -124.542</td> <td> 3676.809</td>
+  <th>nodegree</th>  <td>-1469.3712</td> <td> 1166.114</td> <td>   -1.260</td> <td> 0.208</td> <td>-3761.379</td> <td>  822.637</td>
 </tr>
 <tr>
-  <th>nodegree</th>  <td>-1733.3380</td> <td> 1158.403</td> <td>   -1.496</td> <td> 0.135</td> <td>-4010.204</td> <td>  543.528</td>
+  <th>re74</th>      <td>    0.1928</td> <td>    0.058</td> <td>    3.329</td> <td> 0.001</td> <td>    0.079</td> <td>    0.307</td>
 </tr>
 <tr>
-  <th>re74</th>      <td>    0.2088</td> <td>    0.058</td> <td>    3.625</td> <td> 0.000</td> <td>    0.096</td> <td>    0.322</td>
-</tr>
-<tr>
-  <th>re75</th>      <td>    0.4715</td> <td>    0.070</td> <td>    6.710</td> <td> 0.000</td> <td>    0.333</td> <td>    0.610</td>
+  <th>re75</th>      <td>    0.4976</td> <td>    0.070</td> <td>    7.068</td> <td> 0.000</td> <td>    0.359</td> <td>    0.636</td>
 </tr>
 </table>
-<p>The treatment effect is now positive, borderline significant, and close to the experimental estimate of 1794$. Moreover, it&rsquo;s hard to tell whether this is the correct functional form for the control variables.</p>
-<p>Another option is to use <strong>propensity score matching</strong>. First, we need to estimate the treatment probability. Let&rsquo;s start with a very simple standard model to predict binary outcomes.</p>
+<p>The treatment effect is now positive, borderline significant, and close to the experimental estimate of $1794$$. Moreover, it&rsquo;s hard to tell whether this is the correct functional form for the control variables.</p>
+<h3 id="inverse-propensity-score-weighting">Inverse propensity score weighting</h3>
+<p>Another option is to use <strong>inverse propensity score weighting</strong>. First, we need to estimate the treatment probability. Let&rsquo;s start with a very simple standard model to predict binary outcomes.</p>
 <pre><code class="language-python">from sklearn.linear_model import LogisticRegressionCV
 
 pi = LogisticRegressionCV().fit(y=df_psid[T], X=df_psid[X])
@@ -1358,10 +1374,16 @@ df_psid['pscore'] = pi.predict_proba(df_psid[X])[:,1]
 <pre><code class="language-python">sns.histplot(data=df_psid, x='pscore', hue=T, bins=20)\
 .set(title='Distribution of propensity scores, PSID data', xlabel='');
 </code></pre>
-<p><img src="img/propensity_score_35_0.png" alt="png"></p>
+<p><img src="img/propensity_score_41_0.png" alt="png"></p>
 <p>It seems that indeed we predict higher propensity scores for treated people, and viceversa, indicating a strong selection on observable. However, there is also a considerable amount of overlap.</p>
-<p>We can now estimate the treatment effect controlling for the propensity score.</p>
-<pre><code class="language-python">est = smf.ols('re78 ~ treat + pscore', df_psid).fit()
+<p>We can now estimate the treatment effect by weighting by the inverse of the propensity score. First, let&rsquo;s exclude observations with a very extreme predicted score.</p>
+<pre><code class="language-python">df_psid1 = df_psid[(df_psid['pscore']&lt;0.9) &amp; (df_psid['pscore']&gt;0.1)]
+</code></pre>
+<p>Now we can need to construct the weights.</p>
+<pre><code class="language-python">df_psid1['weight'] = df_psid1['treat'] / df_psid1['pscore'] + (1-df_psid1['treat']) / (1-df_psid1['pscore'])
+</code></pre>
+<p>Finally, we run a weighted regression of income on the treatment program.</p>
+<pre><code class="language-python">est = smf.wls('re78 ~ treat', df_psid1, weights=df_psid1['weight']).fit()
 est.summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -1369,24 +1391,21 @@ est.summary().tables[1]
       <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td> 1.209e+04</td> <td>  723.351</td> <td>   16.719</td> <td> 0.000</td> <td> 1.07e+04</td> <td> 1.35e+04</td>
+  <th>Intercept</th> <td> 4038.1507</td> <td>  512.268</td> <td>    7.883</td> <td> 0.000</td> <td> 3030.227</td> <td> 5046.074</td>
 </tr>
 <tr>
-  <th>treat</th>     <td> 1570.5620</td> <td> 1355.839</td> <td>    1.158</td> <td> 0.247</td> <td>-1094.249</td> <td> 4235.372</td>
-</tr>
-<tr>
-  <th>pscore</th>    <td>-1.016e+04</td> <td> 1918.498</td> <td>   -5.295</td> <td> 0.000</td> <td>-1.39e+04</td> <td>-6386.994</td>
+  <th>treat</th>     <td> 2166.8750</td> <td>  730.660</td> <td>    2.966</td> <td> 0.003</td> <td>  729.250</td> <td> 3604.500</td>
 </tr>
 </table>
-<p>The effect is positive but not significant.</p>
-<p>What would have been the propensity scores if we had used the NSW experimental sample? If it&rsquo;s a well done experiment with a sufficiently large sample, we would expect the propensity scores to concentrate around the percentage of people treated, 0.42 in our data.</p>
+<p>The effect is positive, statistically significant and very close to the experimental estimate of $1794$$.</p>
+<p>What would have been the propensity scores if we had used the NSW experimental sample? If it&rsquo;s a well done experiment with a sufficiently large sample, we would expect the propensity scores to concentrate around the percentage of people treated, $0.41$ in our data.</p>
 <pre><code class="language-python">pi = LogisticRegressionCV().fit(y=df_nsw[T], X=df_nsw[X])
 df_nsw['pscore'] = pi.predict_proba(df_nsw[X])[:,1]
 </code></pre>
 <pre><code class="language-python">sns.histplot(data=df_nsw, x='pscore', hue=T, bins=20)\
 .set(title='Distribution of propensity scores, NSW data', xlabel='');
 </code></pre>
-<p><img src="img/propensity_score_41_0.png" alt="png"></p>
+<p><img src="img/propensity_score_50_0.png" alt="png"></p>
 <p>Indeed, now the distribution of the p-scores is concentrated around the treatment frequency in the data. Remarkably, the standard deviation is extremely tight.</p>
 <h2 id="references">References</h2>
 <ul>

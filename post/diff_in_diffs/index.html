@@ -30,12 +30,10 @@
   
     
   
-  <meta name="description" content="In this tutorial, we are going to see how to design the most welfare-improving policy in presence of treatment effect heterogeneity and treatment costs or budget constraints.
-Requisites
-For this tutorial, I assume you are familiar with the following concepts:" />
+  <meta name="description" content="In this tutorial, we are going to see how to estimate the causal effect of a treatment on an outcome when treatment assignment is not random, but we observe both treated and untreated units before and after treatment." />
 
   
-  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/policy_learning/" />
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/diff_in_diffs/" />
 
   
 
@@ -317,7 +315,7 @@ For this tutorial, I assume you are familiar with the following concepts:" />
   <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
   <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
 
-  <link rel="canonical" href="https://matteocourthoud.github.io/post/policy_learning/" />
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/diff_in_diffs/" />
 
   
   
@@ -333,12 +331,10 @@ For this tutorial, I assume you are familiar with the following concepts:" />
   <meta property="twitter:card" content="summary_large_image" />
   
   <meta property="og:site_name" content="Matteo Courthoud" />
-  <meta property="og:url" content="https://matteocourthoud.github.io/post/policy_learning/" />
-  <meta property="og:title" content="Policy Learning | Matteo Courthoud" />
-  <meta property="og:description" content="In this tutorial, we are going to see how to design the most welfare-improving policy in presence of treatment effect heterogeneity and treatment costs or budget constraints.
-Requisites
-For this tutorial, I assume you are familiar with the following concepts:" /><meta property="og:image" content="https://matteocourthoud.github.io/post/policy_learning/featured.png" />
-    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/policy_learning/featured.png" /><meta property="og:locale" content="en-us" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/diff_in_diffs/" />
+  <meta property="og:title" content="Difference in Differences | Matteo Courthoud" />
+  <meta property="og:description" content="In this tutorial, we are going to see how to estimate the causal effect of a treatment on an outcome when treatment assignment is not random, but we observe both treated and untreated units before and after treatment." /><meta property="og:image" content="https://matteocourthoud.github.io/post/diff_in_diffs/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/diff_in_diffs/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
@@ -370,12 +366,12 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
   "@type": "BlogPosting",
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "https://matteocourthoud.github.io/post/policy_learning/"
+    "@id": "https://matteocourthoud.github.io/post/diff_in_diffs/"
   },
-  "headline": "Policy Learning",
+  "headline": "Difference in Differences",
   
   "image": [
-    "https://matteocourthoud.github.io/post/policy_learning/featured.png"
+    "https://matteocourthoud.github.io/post/diff_in_diffs/featured.png"
   ],
   
   "datePublished": "2022-04-12T00:00:00Z",
@@ -389,7 +385,7 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "In this tutorial, we are going to see how to design the most welfare-improving policy in presence of treatment effect heterogeneity and treatment costs or budget constraints.\nRequisites\nFor this tutorial, I assume you are familiar with the following concepts:"
+  "description": "In this tutorial, we are going to see how to estimate the causal effect of a treatment on an outcome when treatment assignment is not random, but we observe both treated and untreated units before and after treatment."
 }
 </script>
 
@@ -435,11 +431,11 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 
 
 
-  <title>Policy Learning | Matteo Courthoud</title>
+  <title>Difference in Differences | Matteo Courthoud</title>
 </head>
 
 
-<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="7ba4e24eb8ae8d8c72aa72dc308152d7" >
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="46a37fe1c4822f8dc30b06a61cf083c7" >
 
   
   
@@ -772,10 +768,11 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
       <nav id="TableOfContents">
   <ul>
     <li><a href="#setting">Setting</a></li>
-    <li><a href="#policy-learning">Policy Learning</a>
+    <li><a href="#diff-in-diffs">Diff-in-diffs</a>
       <ul>
-        <li><a href="#ipw-loss">IPW Loss</a></li>
-        <li><a href="#aipw-loss">AIPW Loss</a></li>
+        <li><a href="#did-model">DiD Model</a></li>
+        <li><a href="#multiple-time-periods">Multiple Time Periods</a></li>
+        <li><a href="#comments">Comments</a></li>
       </ul>
     </li>
     <li><a href="#academic-application">Academic Application</a></li>
@@ -812,7 +809,7 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 
 
 <div class="article-container pt-3">
-  <h1>Policy Learning</h1>
+  <h1>Difference in Differences</h1>
 
   
 
@@ -839,7 +836,7 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    10 min read
+    9 min read
   </span>
   
 
@@ -864,9 +861,9 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 848px; max-height: 469px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 612px; max-height: 409px;">
   <div style="position: relative">
-    <img src="/post/policy_learning/featured.png" alt="" class="featured-image">
+    <img src="/post/diff_in_diffs/featured.png" alt="" class="featured-image">
     
   </div>
 </div>
@@ -874,115 +871,115 @@ For this tutorial, I assume you are familiar with the following concepts:" /><me
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>In this tutorial, we are going to see how to design the most welfare-improving policy in presence of treatment effect heterogeneity and treatment costs or budget constraints.</p>
+            <p>In this tutorial, we are going to see how to estimate the causal effect of a treatment on an outcome when treatment assignment is not random, but we observe both treated and untreated units before and after treatment. Under certain structural assumptions, especially parallel outcome trends in the absence of treatment, we can recover the average treatment effect.</p>
 <p><strong>Requisites</strong></p>
 <p>For this tutorial, I assume you are familiar with the following concepts:</p>
 <ul>
 <li>Rubin&rsquo;s potential outcome framework</li>
-<li>Propensity weighting or uplifting</li>
-<li><a href="https://matteocourthoud.github.io/post/aipw/" target="_blank" rel="noopener">AIPW or Double Robust Estimators</a></li>
-<li><a href="https://matteocourthoud.github.io/post/causal_trees/" target="_blank" rel="noopener">Causal Trees</a></li>
+<li>Ordinary least squares regression</li>
 </ul>
-<p><strong>Academic Replication</strong></p>
-<p>We are going to replicate the paper by <a href="https://www.aeaweb.org/articles?id=10.1257/jep.32.4.201" target="_blank" rel="noopener">Hanna and Olken (2018)</a> in which the authors study the optimal allocation of a cash transfer to households in Peru. We slightly twist the original paper by actually assigning the transfer and assuming 100% consumption.</p>
+<p><strong>Academic Application</strong></p>
+<p>As an academic application, we are going to replicate <a href="http://sims.princeton.edu/yftp/emet04/ck/CardKruegerMinWage.pdf" target="_blank" rel="noopener">Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania</a> (1994) by Card and Krueger. The authors study the effect of a minimum wage policy in New Jersey on emplyment, by using Pennsylvania as a control state.</p>
 <p><strong>Business Case</strong></p>
-<p>We are going to study a company that has to decide which consumers to target with ads.</p>
+<p>As a business case, we are going to study a firm that has run a TV ad campaign. The firm would like to understand the impact of the campaign on revenue and has randomized the campaign over municipalities.</p>
 <h2 id="setting">Setting</h2>
-<p>We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, T_i, Y_i)$ comprised of</p>
+<p>We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ over $T$ time periods $t = 1 ,  &hellip; , T$, we observed a tuple $(X_{it}, D_{it}, Y_{it})$ comprised of</p>
 <ul>
-<li>a feature vector $X_i \in \mathbb R^n$</li>
-<li>a treatment variable $T_i \in \lbrace 0, 1 \rbrace$</li>
-<li>a response $Y_i \in \mathbb R$</li>
+<li>a feature vector $X_{it} \in \mathbb R^{p}$</li>
+<li>a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$</li>
+<li>a response $Y_{it} \in \mathbb R$</li>
 </ul>
-<p><strong>Assumption 1 : unconfoundedness</strong> (or ignorability, or selection on observables)</p>
+<p>We assume that treatment occurs between time $t=0$ and time $t=1$.</p>
+<p><strong>Assumption 1: parallel trends</strong></p>
+<p>In the absence of treatment, the outcome $Y_{it}$ <strong>evolve in parallel</strong> across units, i.e. and their $\gamma_{t}$ are the same.</p>
 <p>$$
-\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ X_i
+Y_{it}^{(0)} - Y_{j,t}^{(0)} = \alpha \quad \forall \ t
 $$</p>
-<p>i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random.</p>
-<p><strong>Assumption 2: overlap</strong> (or bounded support)</p>
+<h2 id="diff-in-diffs">Diff-in-diffs</h2>
+<p>In this setting, we cannot estimate any causal parameter with any other <strong>further assumption</strong>. What is the minimal number of assumptions that we could make in order to estimate a causal parameter?</p>
+<p>If we were to assume that treatment was randomly assigned, we could retrieve the average treatment effect as a difference in means.</p>
 <p>$$
-\exists \eta &gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
+\mathbb E[\tau_t] = \mathbb E \big[ Y_{it} \ \big| \ D_i = 1 \big] - \mathbb E \big[ Y_{it} \big| \ D_i = 0 \big]
 $$</p>
-<p>i.e. no observation is deterministically assigned to the treatment or control group.</p>
-<h2 id="policy-learning">Policy Learning</h2>
-<p>The objective of policy learning is to decide which people to treat. More explicitly, we want to learn a map from observable characteristics to a (usually binary) policy space.</p>
+<p>However, it would be a very strong assumption, and it would ignore some information that we possess: the time dimension (pre-post).</p>
+<p>If we were to assume instead that no other shocks affected the treated units between period $t=0$ and $t=1$, we could retrieve the average treatment effect on the treated as a pre-post difference.</p>
 <p>$$
-\pi : \mathcal X \to \lbrace 0, 1 \rbrace
+\mathbb E[\tau | D_i=1] = \mathbb E \big[ Y_{i1} \ \big| \ D_i = 1 \big] - \mathbb E \big[ Y_{i0} \ \big| \ D_i = 1 \big]
 $$</p>
-<p>Policy learning is closely related to the <strong>estimation of heterogeneous treatment effects</strong>. In fact, in both settings, we want to investigate how the treatment affects different individuals in different ways.</p>
-<p>The main <strong>difference</strong> between policy learning and the estimation of heterogeneous treatment effects is the objective function. In policy learning, we are acting in a limited resources setting where providing treatment is costly and the cost could depend on individual characteristics. For example, it might be more costly to vaccinate individuals that live in remote areas. Therefore, one might not just want to treat individuals with the largest expected treatment effect, but the ones for whom treatment is most cost-effective.</p>
-<p>The utilitarian <strong>value</strong> of a policy $\pi$</p>
+<p>However, it also this would be a very strong assumption, and it would ignore the fact that we have control units.</p>
+<p>Can we make less stringent assumption and still recover a causal parameter using both the availability of a (non-random) control group and the time dimension?</p>
+<h3 id="did-model">DiD Model</h3>
+<p>The model that is commonly assumed in diff-ind-diff settings, is the following</p>
 <p>$$
-V(\pi) = \mathbb E \Big[ Y_i(\pi(X_i)) \Big] = \mathbb E \big[ Y^{(0)}_i \big] + \mathbb E \big[ \tau(X_i) \pi(X_i) \big]
+Y_{it} (D_{it}) = \alpha_{i} + \gamma_{t} + \tau_{i} D_{it}
 $$</p>
-<p>measures the expectation of the potential outcome $Y$ if we were to <strong>assign</strong> treatment $T$ according to policy $\pi$. This expectation can be split into <strong>two parts</strong>:</p>
+<p>First, let&rsquo;s summarize the potential outcome values $Y^{(d)}_{it}$ in the simple $2 \times 2$ setting.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>$t=0$</th>
+<th>$t=1$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$D=0$</td>
+<td>$\gamma_0 + \alpha_i$</td>
+<td>$\gamma_1 + \alpha_i$</td>
+</tr>
+<tr>
+<td>$D=1$</td>
+<td>$\gamma_0 + \alpha_i + \tau_i$</td>
+<td>$\gamma_1 + \alpha_i + \tau_i$</td>
+</tr>
+</tbody>
+</table>
+<p>For a single unit, $i$, the pre-post outcome difference is given by</p>
+<p>$$
+Y_{i1} - Y_{i0} = (\gamma_1 - \gamma_0) + \tau_i (D_{i1} - D_{i0})
+$$</p>
+<p>If we take the difference of the expression above between treated and untreated units, we get</p>
+<p>$$
+\mathbb E \Big[ Y_{i1} - Y_{i0} \ \Big| \ D_{i1} - D_{i0} = 1 \Big] - \mathbb E \Big[ Y_{i1} - Y_{i0} \ \Big| \ D_{i1} - D_{i0} = 0 \Big] = \mathbb E \Big[ \tau_i \ \Big| \ D_{i1} - D_{i0} = 1 \Big] = ATT
+$$</p>
+<p>which is the average treatment effect on the treated (ATT).</p>
+<p>We can get this double difference with the folowing regressio model</p>
+<p>$$
+Y_{it} (D_{it}) = \alpha_{i} + \gamma_{t} + \beta D_{it} + \varepsilon_{it}
+$$</p>
+<p>where the OLS estimator $\hat \beta$ will be unbiased for the ATT.</p>
+<h3 id="multiple-time-periods">Multiple Time Periods</h3>
+<p>What if we didn&rsquo;t just have one pre-treatment period and one post-treatment period? Great! We can actually do more things.</p>
 <ol>
-<li>The baseline expected potential outcome $\mathbb E \big[ Y^{(0)}_i \big]$</li>
-<li>The expected effect of the policy $\mathbb E \big[ \tau(X_i) \pi(X_i) \big]$</li>
+<li>We can partially test assumptions</li>
+<li>We can estimate dynamic effects</li>
+<li>We can run placebo tests</li>
 </ol>
-<p>The <strong>objective</strong> of policy learning is to learn a policy with high value $V(\pi)$. As part (2) of the formula makes clear, you get a higher value if you treat the people with a high treatment effect $\tau(x)$.</p>
-<p>A <strong>simple approach</strong> could be to assign treatment according to a <strong>thresholding rule</strong> $\tau(x) &gt; c$, where $c$ is some cost below which is not worth treating individuals (or there is not enough budget).</p>
-<p>However, estimating the conditional average treatment effect (CATE) function $\tau(x)$ and learning a good policy $\pi(x)$ are different <strong>problems</strong>.</p>
-<ul>
-<li>the correct loss function for policy learning is not the mean squared error (MSE) on $\tau(x)$
-<ul>
-<li>we want to <strong>maximize welfare</strong>!</li>
-</ul>
-</li>
-<li>the CATE function $\tau(x)$ might not use some features for targeting
-<ul>
-<li>e.g. <strong>cannot discriminate</strong> based on race or gender</li>
-</ul>
-</li>
-<li>you don&rsquo;t want to have feature that people can influence
-<ul>
-<li>e.g. use a self-reported measure that people can distort</li>
-</ul>
-</li>
-</ul>
-<p>We would like to find a <strong>loss function</strong> $L(\pi ; Y_i, X_i, T_i)$ such that</p>
+<p>How do we implement it? Run a regression with multiple interactions</p>
 <p>$$
-\mathbb E \big[ L(\pi ; Y_i, X_i, T_i) \big] = - V(\pi)
+Y_{it} (D_{it}) = \alpha_{i} + \gamma_{t} + \sum_{t=1}^{T} \beta_t D_{it} + \varepsilon_{it}
 $$</p>
-<h3 id="ipw-loss">IPW Loss</h3>
-<p><a href="https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA13288" target="_blank" rel="noopener">Kitagawa and Tenenov (2018)</a> propose to learn an empirical estimate of the value function using inverse propensity weighting (IPW).</p>
-<p>$$
-\hat \pi = \arg \max_{\pi} \Big\lbrace \hat V(\pi) : \pi \in \Pi \Big\rbrace
-$$</p>
-<p>where</p>
-<p>$$
-\hat V(\pi) = \frac{ \mathbb I \big(\lbrace T_i = \pi(X_i) \rbrace \big) }{ \mathbb P \big[ \lbrace T_i = \pi(X_i) \rbrace \ \big| \ X_i \big] } Y_i
-$$</p>
-<p>The authors show that under <strong>unconfoundedness</strong>, if the propensity score $e(x)$ is known and $\Pi$ is not too complex, the value of the estimated policy converges to the optimal value.</p>
-<p>Note that this is a <strong>very different problem</strong> from the normal optimization problem with a MSE loss. In fact, we now have a binary argument in the loss function which makes the problem similar to a classification problem, in which we want to classify people into <em>high gain</em> and <em>low gain</em> categories.</p>
-<h3 id="aipw-loss">AIPW Loss</h3>
-<p>If propensity score $e(x)$ is not known, we can use a <strong>doubly robust estimator</strong>, exactly as for the average treatment effect.</p>
-<p>$$
-\hat V = \frac{1}{n} \sum_{i=1}^{n}
-\begin{cases}
-\hat \Gamma_i \quad &amp;\text{if} \quad \pi(X_i) = 1
-\newline</p>
-<ul>
-<li>\hat \Gamma_i \quad &amp;\text{if} \quad \pi(X_i) = 0
-\end{cases}
-$$</li>
-</ul>
-<p>where</p>
-<p>$$
-\hat \Gamma_i = \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-T_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right)
-$$</p>
-<p>The relationship with AIPW is that $\hat \tau_{AIPW} = \frac{1}{n} \sum_{i=1}^{n} \hat \Gamma_i$. Therefore, the objective function $V(\pi)$ is build so that when we assign treatment to a unit we &ldquo;gain&rdquo; the double-robust score $\hat \tau_{AIPW}$, while, if we do not assign treatment, we &ldquo;pay&rdquo; the double-robust score $\hat \tau_{AIPW}$.</p>
+<h3 id="comments">Comments</h3>
+<p><strong>Parametric Assumption</strong></p>
+<p>The diff-in-diffs method makes a lot of parametric assumptions that are is easy to forget.</p>
+<p><strong>Inference</strong></p>
+<p>Bertrand, Duflo, and Mullainathan (2004) point out that conventional robust standard errors usually overestimate the actual standard deviation of the estimator. The authors recommend <strong>clustering</strong> the standard errors at the level of randomization (e.g. classes, counties, villages, &hellip;).</p>
+<p><strong>Testing pre-trends</strong></p>
+<p>Having multiple pre-treatment time periods is helpful for testing the parallel trends assumption. However, this practice can lead to pre-testing bias. In particular, if one selects results based on a pre-treatment parallel trend test, inference on the ATT gets distorderd.</p>
 <h2 id="academic-application">Academic Application</h2>
-<p>For the academic applicaiton, we are going to replicate the paper by <a href="https://www.aeaweb.org/articles?id=10.1257/jep.32.4.201" target="_blank" rel="noopener">Hanna and Olken (2018)</a> in which the authors study the optimal allocation of a cash transfer to households in Peru. We slightly twist the original paper by actually assigning the transfer and assuming 100% consumption.</p>
-<p>First, let&rsquo;s load the modified dataset.</p>
+<p>As an academic application, we are going to replicate <a href="http://sims.princeton.edu/yftp/emet04/ck/CardKruegerMinWage.pdf" target="_blank" rel="noopener">Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania</a> (1994) by Card and Krueger. The authors study the effect of a minimum wage policy in New Jersey on emplyment, by using Pennsylvania as a control state.</p>
+<p>The authors describe the setting as follows</p>
+<blockquote>
+<p>On April 1, 1992, New Jersey&rsquo;s minimum wage rose from $4.25 to $5.05 per hour. To evaluate the impact of the law, the authors surveyed 410 fast-food restaurants in New Jersey and eastern Pennsylvania before and after the rise. Comparisons of employment growth at stores in New Jersey and Pennsylvania (where the minimum wage was constant) provide simple estimates of the effect of the higher minimum wage.</p>
+</blockquote>
+<p>Let&rsquo;s start by loading and inspecting the data.</p>
+<pre><code class="language-python">from src.data import import_ck94
+import_ck94()
+</code></pre>
 <pre><code class="language-python">from src.utils import *
-from src.dgp import dgp_ao18
 </code></pre>
-<pre><code class="language-python">%matplotlib inline
-%config InlineBackend.figure_format = 'retina'
-</code></pre>
-<pre><code class="language-python">dgp = dgp_ao18()
-df = dgp.import_data()
+<pre><code class="language-python">df = pd.read_csv('data/ck94.csv')
 df.head()
 </code></pre>
 <div>
@@ -1003,228 +1000,155 @@ df.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Unnamed: 0</th>
-      <th>d_fuel_other</th>
-      <th>d_fuel_wood</th>
-      <th>d_fuel_coal</th>
-      <th>d_fuel_kerosene</th>
-      <th>d_fuel_gas</th>
-      <th>d_fuel_electric</th>
-      <th>d_fuel_none</th>
-      <th>d_water_other</th>
-      <th>d_water_river</th>
-      <th>...</th>
-      <th>d_lux_1</th>
-      <th>d_lux_2</th>
-      <th>d_lux_3</th>
-      <th>d_lux_4</th>
-      <th>d_lux_5</th>
-      <th>training</th>
-      <th>h_hhsize</th>
-      <th>cash_transfer</th>
-      <th>consumption</th>
-      <th>welfare</th>
+      <th>id</th>
+      <th>after</th>
+      <th>new_jersey</th>
+      <th>chain</th>
+      <th>employment</th>
+      <th>hrsopen</th>
+      <th>wage</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
+      <td>3</td>
       <td>0</td>
       <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>211.0000</td>
-      <td>5.351858</td>
+      <td>wendys</td>
+      <td>34.0</td>
+      <td>12.0</td>
+      <td>5.00</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>1</td>
+      <td>4</td>
       <td>0</td>
       <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>3</td>
-      <td>1</td>
-      <td>420.1389</td>
-      <td>6.040585</td>
+      <td>wendys</td>
+      <td>24.0</td>
+      <td>12.0</td>
+      <td>5.50</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>2</td>
+      <td>6</td>
       <td>0</td>
       <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>4</td>
-      <td>0</td>
-      <td>390.8318</td>
-      <td>5.968277</td>
+      <td>burgerking</td>
+      <td>70.5</td>
+      <td>18.0</td>
+      <td>5.00</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>3</td>
+      <td>7</td>
       <td>0</td>
       <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>9</td>
-      <td>0</td>
-      <td>285.6018</td>
-      <td>5.654599</td>
+      <td>burgerking</td>
+      <td>23.5</td>
+      <td>24.0</td>
+      <td>5.00</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>4</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>...</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
       <td>8</td>
       <td>0</td>
-      <td>118.0713</td>
-      <td>4.771289</td>
+      <td>0</td>
+      <td>kfc</td>
+      <td>11.0</td>
+      <td>10.0</td>
+      <td>5.25</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 78 columns</p>
 </div>
-<p>As we can see, we have a lot of information about individuals in Peru. Crucially for the research question, we observe</p>
-<ul>
-<li>whether the household received a cash transfer, <code>cash_transfer</code></li>
-<li>the household&rsquo;s welfare afterwards, <code>welfare_post</code>
-<ul>
-<li>assuming
-$$
-\text{welfare} = \log (\text{consumption})
-$$</li>
-</ul>
-</li>
-</ul>
-<p>We would like to understand which individuals should be given a transfer, given that the transfer is costly. Let&rsquo;s assume the transfer costs $0.3$ units of welfare.</p>
-<pre><code class="language-python">from econml.policy import DRPolicyForest
+<p>We have information on fast food restaurants, indexed by <code>i</code>, at time <code>t</code>. We distinguish between before and faster treatment and between New Jersey <code>nj</code> and Pennsylvania restaurants. We also know the <code>chain</code> of the restaurant, the <code>employment</code>, the hours open <code>hrsopen</code> and the <code>wage</code>. We are interested on the effect on the policy on wages.</p>
+<p>Let&rsquo;s start by producing the $2 \times 2$ table of treatment-control before-after average outcomes.</p>
+<pre><code class="language-python">df.pivot_table(index='new_jersey', columns='after', values='employment', aggfunc='mean')
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
 
-cost = 0.3
-policy = DRPolicyForest(random_state=1).fit(Y=df[dgp.Y] - cost*df[dgp.T], T=df[dgp.T], X=df[dgp.X])
+.dataframe thead th {
+    text-align: right;
+}
 </code></pre>
-<p>We can partially visualize the policy by plotting a regression tree for the most important features.</p>
-<pre><code class="language-python">%matplotlib inline
-policy.plot(tree_id=1, max_depth=2, feature_names=dgp.X, fontsize=8)
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>after</th>
+      <th>0</th>
+      <th>1</th>
+    </tr>
+    <tr>
+      <th>new_jersey</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>23.704545</td>
+      <td>21.825758</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>20.657746</td>
+      <td>21.048415</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>From the table we can see that a simple <strong>before-after comparison</strong> would give a small posive effect of $21.05 - 20.66 = 0.39$.</p>
+<p>On the other hand, if one was doing an ex-post <strong>treated-control comparison</strong>, would get a negative effect of $21.05 - 21.83 = - 0.78$.</p>
+<p>The difference-in-differences estimator takes into account the fact that</p>
+<ol>
+<li>There is a pre-treatment level difference between New Jersey and Pennsylvania</li>
+<li>Employment was falling in Pennsylvania even without treatment</li>
+</ol>
+<p>The <strong>double difference</strong> in means gives a positive effect, significantly larger than any of the two previous estimates.</p>
+<p>$$
+\hat \tau_{DiD} = \Big( 21.05 - 20.66 \Big) - \Big( 21.83 - 23.70 \Big) = 0.39 + 1.87 = 2.26
+$$</p>
+<p>We can replicate the result with a linear regression.</p>
+<pre><code class="language-python">smf.ols('employment ~ new_jersey * after', df).fit().summary().tables[1]
 </code></pre>
-<p><img src="img/policy_learning_18_0.png" alt="png"></p>
-<p>To understand if the estimated policy was effective, we can load the oracle dataset, with the potential outcomes.</p>
-<pre><code class="language-python">df_oracle = dgp.import_data(oracle=True)
-</code></pre>
-<p>From the oracle dataset, we can compute the actual value of the policy.</p>
-<pre><code class="language-python">T_hat = policy.predict(df[dgp.X])
-V_policy = (df_oracle['welfare_1'].values - cost - df_oracle['welfare_0'].values) * T_hat
-print(f'Estimated policy value (N_T={sum(T_hat)}): {np.mean(V_policy) :.4}')
-</code></pre>
-<pre><code>Estimated policy value (N_T=21401): 0.05897
-</code></pre>
-<p>The value is positive, indicating that the treatment was effective. But how well did we do? We can compare the estimated policy with the oracle policy that assign treatment to each cost-effective unit.</p>
-<pre><code class="language-python">T_oracle = (df_oracle['welfare_1'] - df_oracle['welfare_0']) &gt; cost
-V_oracle = (df_oracle['welfare_1'] - cost - df_oracle['welfare_0'] ) * T_oracle
-print(f'Oracle policy value (N_T={sum(T_oracle)}): {np.mean(V_oracle) :.4}')
-</code></pre>
-<pre><code>Oracle policy value (N_T=17630): 0.07494
-</code></pre>
-<p>We actually achieved 79% of the potential policy gains! Also note that our policy is too generous, treating more units than optimal. But how well would we have done if the same amount of cash transfers were given at random?</p>
-<pre><code class="language-python">T_rand = np.random.binomial(1, sum(T_hat)/len(df), len(df))
-V_rand = (df_oracle['welfare_1'] - cost - df_oracle['welfare_0'] ) * T_rand
-print(f'Random policy value (N_T={sum(T_rand)}): {np.mean(V_rand) :.4}')
-</code></pre>
-<pre><code>Random policy value (N_T=21359): 0.0002698
-</code></pre>
-<p>A random assignment of the same amount of cash transfers would not achieve any effect. However, this assumes that we already know the optimal amount of funds to distribute. What if instead we had treated everyone?</p>
-<pre><code class="language-python">V_all = (df_oracle['welfare_1'] - cost - df_oracle['welfare_0'] )
-print(f'All-treated policy value (N_T={len(df)}): {np.mean(V_all) :.4}')
-</code></pre>
-<pre><code>All-treated policy value (N_T=45378): 0.0004019
-</code></pre>
-<p>Indiscriminate treatment would again not achieve any effect. Lastly, what if we had just estimated the treatment effect using AIPW and used it as a threshold?</p>
-<pre><code class="language-python">from econml.dr import LinearDRLearner
-
-model = LinearDRLearner(random_state=1).fit(Y=df[dgp.Y], T=df[dgp.T], X=df[dgp.X])
-T_ipw = model.effect(X=df[dgp.X], T0=0, T1=1) &gt; cost
-V_ipw = (df_oracle['welfare_1'] - cost - df_oracle['welfare_0'] ) * T_ipw
-print(f'IPW policy value (N_T={sum(T_ipw)}): {np.mean(V_ipw) :.4}')
-</code></pre>
-<pre><code>IPW policy value (N_T=21003): 0.06293
-</code></pre>
-<p>We are actually doing better! Weird&hellip;</p>
+<table class="simpletable">
+<tr>
+          <td></td>            <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>        <td>   23.7045</td> <td>    1.149</td> <td>   20.627</td> <td> 0.000</td> <td>   21.448</td> <td>   25.961</td>
+</tr>
+<tr>
+  <th>new_jersey</th>       <td>   -3.0468</td> <td>    1.276</td> <td>   -2.388</td> <td> 0.017</td> <td>   -5.552</td> <td>   -0.542</td>
+</tr>
+<tr>
+  <th>after</th>            <td>   -1.8788</td> <td>    1.625</td> <td>   -1.156</td> <td> 0.248</td> <td>   -5.070</td> <td>    1.312</td>
+</tr>
+<tr>
+  <th>new_jersey:after</th> <td>    2.2695</td> <td>    1.804</td> <td>    1.258</td> <td> 0.209</td> <td>   -1.273</td> <td>    5.812</td>
+</tr>
+</table>
+<p>The effect is $2.26$, but it is not significantly different from zero.</p>
 <h2 id="business-case">Business Case</h2>
 <p>We are given the following problem:</p>
 <blockquote>
-<p>A firm would like to understand which customers to show an ad, in order to increase revenue. The firm ran a A/B test showing a random sample of customers an ad. First, try to understand if there is heterogeneity in treatment. Then, decide which customers to show the ad, given that ads are costly (1$ each). Further suppose that you cannot discriminate on gender. How do the results change?</p>
+<p>A firm wants to test the impact of a TV advertisement campaign on revenue. The firm releases the ad on a random sample of municipalities and track the revenue over time, before and after the ad campaign.</p>
 </blockquote>
 <p>We start by drawing a sample from the data generating process.</p>
-<pre><code class="language-python">from src.utils import *
-from src.dgp import dgp_ad
-</code></pre>
-<pre><code class="language-python">dgp = dgp_ad()
+<pre><code class="language-python">from src.dgp import dgp_did
+
+dgp = dgp_did()
 df = dgp.generate_data()
 df.head()
 </code></pre>
@@ -1246,102 +1170,125 @@ df.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>male</th>
-      <th>black</th>
-      <th>age</th>
-      <th>educ</th>
-      <th>ad</th>
+      <th>day</th>
+      <th>id</th>
+      <th>treated</th>
+      <th>post</th>
       <th>revenue</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>0</td>
-      <td>55.0</td>
       <td>1</td>
+      <td>1</td>
+      <td>0</td>
       <td>False</td>
-      <td>-0.327221</td>
+      <td>3.599341</td>
     </tr>
     <tr>
       <th>1</th>
       <td>1</td>
-      <td>1</td>
-      <td>47.0</td>
       <td>2</td>
+      <td>0</td>
       <td>False</td>
-      <td>0.659393</td>
+      <td>-0.146912</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>0</td>
       <td>1</td>
-      <td>31.0</td>
-      <td>2</td>
-      <td>True</td>
-      <td>2.805178</td>
+      <td>3</td>
+      <td>0</td>
+      <td>False</td>
+      <td>0.696527</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>0</td>
       <td>1</td>
-      <td>51.0</td>
-      <td>2</td>
+      <td>4</td>
+      <td>0</td>
       <td>False</td>
-      <td>-0.508548</td>
+      <td>1.445169</td>
     </tr>
     <tr>
       <th>4</th>
+      <td>1</td>
+      <td>5</td>
       <td>0</td>
-      <td>0</td>
-      <td>48.0</td>
-      <td>0</td>
-      <td>True</td>
-      <td>0.762280</td>
+      <td>False</td>
+      <td>1.659696</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>We have information on the number of pages visited in the previous month, whether the user is located in the US, whether it connects by mobile and the revenue pre-intervention.</p>
-<p>We are going to use the <a href="https://econml.azurewebsites.net" target="_blank" rel="noopener"><code>econml</code></a> library to estimate the treatment effects. First, we use the <code>DRLearner</code> library to estimate heterogeneous treatment effects using a double robust estimator. We can specify both the <code>model_propensity</code> for $e(x)$ and the <code>model_regression</code> for $\mu(x)$.</p>
-<pre><code class="language-python">from econml.dr import DRLearner
-
-model = DRLearner(random_state=1).fit(Y=df[dgp.Y], T=df[dgp.T], X=df[dgp.X]);
+<p>We have <code>revenue</code> data on a set of customers over time. We also know to which <code>group</code> they were assigned and whether the time is before or after the intervention.</p>
+<p>Since we do not have any control variable, we can directly visualize the revenue dynamics, distinguishing between treatment and control group.</p>
+<pre><code class="language-python">sns.lineplot(x=df['day'], y=df['revenue'], hue=df['treated']);
+plt.axvline(x=10, ls=&quot;:&quot;, color='C2');
+plt.title('Revenue over time');
 </code></pre>
-<p>We can plot a visual representation of the treatment effect heterogeneity using the <code>SingleTreePolicyInterpreter</code> function, which infers a tree representation of the treatment effects learned from another model.</p>
-<pre><code class="language-python">from econml.cate_interpreter import SingleTreeCateInterpreter
-
-SingleTreeCateInterpreter(max_depth=2, random_state=1).interpret(model, X=df[dgp.X]).plot(feature_names=dgp.X)
+<p><img src="img/diff_in_diffs_26_0.png" alt="png"></p>
+<p>It seems like the treatment group was producing higher revenues before treatment and the gap has increased with treatment but it is closing over time.</p>
+<p>To assess the magnitude of the effect and perform inference, we can regress revenue on a post-treatment dummy, a treatment dummy and their interaction.</p>
+<pre><code class="language-python">smf.ols('revenue ~ post * treated', df).fit().summary().tables[1]
 </code></pre>
-<p><img src="img/policy_learning_39_0.png" alt="png"></p>
-<p>It seems that the most relevant dimension of treatment heterogeneity is <code>education</code>.</p>
-<p>We can now use policy learning to estimate a treatment policy. We use the <code>DRPolicyTree</code> from the <code>econml</code> package.</p>
-<pre><code class="language-python">from econml.policy import DRPolicyTree
-
-policy = DRPolicyTree(random_state=1, max_depth=2).fit(Y=df[dgp.Y], T=df[dgp.T], X=df[dgp.X])
-policy.plot(feature_names=dgp.X)
+<table class="simpletable">
+<tr>
+            <td></td>              <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>            <td>    4.6357</td> <td>    0.078</td> <td>   59.428</td> <td> 0.000</td> <td>    4.483</td> <td>    4.789</td>
+</tr>
+<tr>
+  <th>post[T.True]</th>         <td>    0.8928</td> <td>    0.110</td> <td>    8.093</td> <td> 0.000</td> <td>    0.676</td> <td>    1.109</td>
+</tr>
+<tr>
+  <th>treated</th>              <td>    1.0558</td> <td>    0.110</td> <td>    9.571</td> <td> 0.000</td> <td>    0.839</td> <td>    1.272</td>
+</tr>
+<tr>
+  <th>post[T.True]:treated</th> <td>    0.1095</td> <td>    0.156</td> <td>    0.702</td> <td> 0.483</td> <td>   -0.196</td> <td>    0.415</td>
+</tr>
+</table>
+<p>While the coefficient for the interaction term is positive, it does not seem to be statistically significant. However, this might be due to the fact that the treatment effect is fading away over time.</p>
+<p>Let&rsquo;s fit the same regression, with a linear time trend.</p>
+<pre><code class="language-python">smf.ols('revenue ~ post * treated * day', df).fit().summary().tables[1]
 </code></pre>
-<p><img src="img/policy_learning_41_0.png" alt="png"></p>
-<p>We will now assume that the treatment is costly.</p>
-<pre><code class="language-python">cost = 1
-policy = DRPolicyTree(random_state=1, max_depth=2).fit(Y=df[dgp.Y]-cost*df[dgp.T], T=df[dgp.T], X=df[dgp.X])
-policy.plot(feature_names=dgp.X)
-</code></pre>
-<p><img src="img/policy_learning_43_0.png" alt="png"></p>
-<p>As we can see, the model decides to use race to discriminate treatment. However, let&rsquo;s now suppose we cannot discriminate on race and gender.</p>
-<pre><code class="language-python">X_short = ['age', 'educ']
-policy = DRPolicyTree(random_state=1, max_depth=2).fit(Y=df[dgp.Y]-cost*df[dgp.T], T=df[dgp.T], X=df[X_short])
-policy.plot(feature_names=X_short)
-</code></pre>
-<p><img src="img/policy_learning_45_0.png" alt="png"></p>
-<p>In this case, the model uses education instead of race in order to assign treatment.</p>
+<table class="simpletable">
+<tr>
+              <td></td>                <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>                <td>    4.1144</td> <td>    0.168</td> <td>   24.501</td> <td> 0.000</td> <td>    3.785</td> <td>    4.444</td>
+</tr>
+<tr>
+  <th>post[T.True]</th>             <td>    0.2871</td> <td>    0.458</td> <td>    0.626</td> <td> 0.531</td> <td>   -0.612</td> <td>    1.186</td>
+</tr>
+<tr>
+  <th>treated</th>                  <td>    1.0788</td> <td>    0.237</td> <td>    4.543</td> <td> 0.000</td> <td>    0.613</td> <td>    1.544</td>
+</tr>
+<tr>
+  <th>post[T.True]:treated</th>     <td>    1.5910</td> <td>    0.648</td> <td>    2.454</td> <td> 0.014</td> <td>    0.320</td> <td>    2.862</td>
+</tr>
+<tr>
+  <th>day</th>                      <td>    0.0948</td> <td>    0.027</td> <td>    3.502</td> <td> 0.000</td> <td>    0.042</td> <td>    0.148</td>
+</tr>
+<tr>
+  <th>post[T.True]:day</th>         <td>   -0.0221</td> <td>    0.038</td> <td>   -0.576</td> <td> 0.564</td> <td>   -0.097</td> <td>    0.053</td>
+</tr>
+<tr>
+  <th>treated:day</th>              <td>   -0.0042</td> <td>    0.038</td> <td>   -0.109</td> <td> 0.913</td> <td>   -0.079</td> <td>    0.071</td>
+</tr>
+<tr>
+  <th>post[T.True]:treated:day</th> <td>   -0.0929</td> <td>    0.054</td> <td>   -1.716</td> <td> 0.086</td> <td>   -0.199</td> <td>    0.013</td>
+</tr>
+</table>
+<p>Now the treatment effect is positive and significant at the 5% level. And indeed, we estimate a decreasing trend, post treatment, for the treated. However, it is not statistically significant.</p>
 <h2 id="references">References</h2>
 <ul>
-<li><a href="https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA13288" target="_blank" rel="noopener">Who Should Be Treated? Empirical Welfare Maximization Methods for Treatment Choice</a> (2018) by Kitagawa and Tetenov</li>
-<li><a href="https://ideas.repec.org/p/ecl/stabus/3506.html" target="_blank" rel="noopener">Efficient Policy Learning</a> (2017) by Athey and Wager</li>
-<li><a href="https://www.youtube.com/watch?v=YQXRwvFQOPk" target="_blank" rel="noopener">Policy Learning</a> video lecture by Stefan Wager (Stanford)</li>
-<li><a href="https://github.com/microsoft/EconML/blob/main/notebooks/CustomerScenarios/Case%20Study%20-%20Customer%20Segmentation%20at%20An%20Online%20Media%20Company.ipynb" target="_blank" rel="noopener">Customer Segmentation</a> case study by EconML</li>
+<li><a href="https://www.youtube.com/watch?v=mbYTZ0w-QTw" target="_blank" rel="noopener">Video lecture on Difference-in-Differences</a> by Paul Goldsmith-Pinkham (Yale)</li>
+<li><a href="https://matheusfacure.github.io/python-causality-handbook/13-Difference-in-Differences.html" target="_blank" rel="noopener">Chapter 13</a> of Causal Inference for The Brave and The True by Matheus Facure</li>
+<li><a href="https://mixtape.scunning.com/difference-in-differences.html" target="_blank" rel="noopener">Chapter 9</a> of The Causal Inference Mixtape by Scott Cunningham</li>
+<li>Chapter 5 of <a href="https://www.mostlyharmlesseconometrics.com/" target="_blank" rel="noopener">Mostly Harmless Econometrics</a> by Agrist and Pischke</li>
 </ul>
 
           </div>
@@ -1365,7 +1312,7 @@ policy.plot(feature_names=X_short)
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/policy_learning/&amp;text=Policy%20Learning" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/diff_in_diffs/&amp;text=Difference%20in%20Differences" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -1378,7 +1325,7 @@ policy.plot(feature_names=X_short)
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/policy_learning/&amp;t=Policy%20Learning" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/diff_in_diffs/&amp;t=Difference%20in%20Differences" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook"></i>
         </a>
       </li>
@@ -1391,7 +1338,7 @@ policy.plot(feature_names=X_short)
       
       
       <li>
-        <a href="mailto:?subject=Policy%20Learning&amp;body=https://matteocourthoud.github.io/post/policy_learning/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=Difference%20in%20Differences&amp;body=https://matteocourthoud.github.io/post/diff_in_diffs/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -1404,7 +1351,7 @@ policy.plot(feature_names=X_short)
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/policy_learning/&amp;title=Policy%20Learning" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/diff_in_diffs/&amp;title=Difference%20in%20Differences" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -1417,7 +1364,7 @@ policy.plot(feature_names=X_short)
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=Policy%20Learning%20https://matteocourthoud.github.io/post/policy_learning/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=Difference%20in%20Differences%20https://matteocourthoud.github.io/post/diff_in_diffs/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>
@@ -1430,7 +1377,7 @@ policy.plot(feature_names=X_short)
       
       
       <li>
-        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/policy_learning/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/diff_in_diffs/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
           <i class="fab fa-telegram"></i>
         </a>
       </li>

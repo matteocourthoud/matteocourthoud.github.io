@@ -339,10 +339,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-04-09T00:00:00&#43;00:00"
+        content="2022-04-12T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-09T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-04-12T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/synthetic_control/featured.png"
   ],
   
-  "datePublished": "2022-04-09T00:00:00Z",
-  "dateModified": "2022-04-09T00:00:00Z",
+  "datePublished": "2022-04-12T00:00:00Z",
+  "dateModified": "2022-04-12T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -825,7 +825,7 @@
     
       
     
-    Apr 9, 2022
+    Apr 12, 2022
   </span>
   
 
@@ -876,13 +876,14 @@
 <li>Rubin&rsquo;s potential outcome framework</li>
 <li>Ordinary least squares regression</li>
 <li><a href="https://matteocourthoud.github.io/post/permutation_test/" target="_blank" rel="noopener">Randomization/permutation inference</a></li>
+<li><a href="https://matteocourthoud.github.io/post/diff_in_diffs/" target="_blank" rel="noopener">Difference in differences</a></li>
 </ul>
 <p><strong>Academic Application</strong></p>
 <p>As an academic application, we are going to replicate <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program</a> (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.</p>
 <p><strong>Business Case</strong></p>
 <p>TBD</p>
 <h2 id="setting">Setting</h2>
-<p>We assume that for a panel of i.i.d. subjects $i = 1, &hellip;, n$ over time $t=1, &hellip;,T$ we observed a tuple $(X_{i,t}, Y_{i,t})$ comprised of</p>
+<p>We assume that for a panel of i.i.d. subjects $i = 1, &hellip;, n$ over time $t=1, &hellip;,T$ we observed a tuple $(X_{it}, Y_{it})$ comprised of</p>
 <ul>
 <li>a feature vector $X_{i,t} \in \mathbb R^p$</li>
 <li>a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$</li>
@@ -1371,7 +1372,7 @@ def synth_predict(df, state, model):
 <p>It looks like the policy had a sensible <strong>negative effect</strong> on cigarette sales: the predicted trend is higher than the actual sales and diverges right after the approval of Proposition 99.</p>
 <p>We can also observe that we are clearly <strong>overfitting</strong>: the pre-policy predicted cigarette sales line is perfectly overlapping with the actual data.</p>
 <p>Another problem concerns the <strong>weights</strong>. We have not set any constraint on the weights.</p>
-<pre><code class="language-python">sns.histplot(coef, bins=30).set(title='Coefficients');
+<pre><code class="language-python">sns.histplot(coef, bins=30).set(title='Linear Regression Coefficients');
 </code></pre>
 <p><img src="img/synthetic_control_29_0.png" alt="png"></p>
 <p>We have many <strong>negative weights</strong>, which do not make much sense from a causal inference perspective. Since we would like to interpret our synthetic control as a <strong>weighted average</strong> of untreated states, all weights should be positive  and they should sum to one.</p>
@@ -1403,7 +1404,7 @@ class SyntheticControl():
         return X.dot(self.coef_)
 </code></pre>
 <p>We can now plot the actual and predicted cigarette sales in California using the <code>SyntheticControl</code> method.</p>
-<pre><code class="language-python">synth_predict(df, 'California', SyntheticControl())
+<pre><code class="language-python">coef_new = synth_predict(df, 'California', SyntheticControl()).coef_
 plot_lines(df, 'California', 'Synthetic California')
 </code></pre>
 <p><img src="img/synthetic_control_33_0.png" alt="png"></p>
@@ -1419,8 +1420,12 @@ plot_lines(df, 'California', 'Synthetic California')
 <pre><code class="language-python">plot_difference(df, 'California', label='California')
 </code></pre>
 <p><img src="img/synthetic_control_36_0.png" alt="png"></p>
-<p>The difference is clearly negative and decreasing over time. Moreover, now we see that the estimator is not overfitting the pre-period anymore.</p>
-<p>Wha about <strong>inference</strong>? Is the estimate significantly different from zero? Or, more practically, &ldquo;<em>how unusual is this estimate under the null hypothesis of no policy effect</em>?&rdquo;.</p>
+<p>The difference is clearly negative and decreasing over time. Moreover, now we see that the estimator is not overfitting the pre-period anymore. The reason is that the non-negativity constraint is constraining most coefficients to be zero (as <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html" target="_blank" rel="noopener">Lasso</a> does).</p>
+<p>We can visualize it by plotting the distribution of coefficients.</p>
+<pre><code class="language-python">sns.histplot(coef_new, bins=30).set(title='Synthetic Control Coefficients');
+</code></pre>
+<p><img src="img/synthetic_control_38_0.png" alt="png"></p>
+<p>What about <strong>inference</strong>? Is the estimate significantly different from zero? Or, more practically, &ldquo;<em>how unusual is this estimate under the null hypothesis of no policy effect</em>?&rdquo;.</p>
 <p>We are going to perform a <strong>randomization/permutation test</strong> in order to answer this question. The <strong>idea</strong> is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.</p>
 <p>Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.</p>
 <pre><code class="language-python">for state in states:
@@ -1428,7 +1433,7 @@ plot_lines(df, 'California', 'Synthetic California')
     plot_difference(df, state, vline=False, alpha=0.2, color='grey')
 plot_difference(df, 'California', label='California')
 </code></pre>
-<p><img src="img/synthetic_control_38_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_40_0.png" alt="png"></p>
 <p>From the graph we notice two things. First, the effect for California is quite extreme and therefore likely not to be driven by random noise.</p>
 <p>Second, we also notice that there are a couple of states for which we cannot fit the pre-trend very well. This is expected since, for each state, we are building the counterfactual trend as a <strong>convex combination</strong> of all other states. States that are quite extreme in terms of cigarette consumpion are very useful to build the counterfactuals of other states, but it&rsquo;s hard to build a counterfactual for them. Not to bias the analysis, let&rsquo;s exclude states for which we cannot build a &ldquo;good enough&rdquo; counterfectual, in terms of pre-treatment MSE.</p>
 <p>$$
@@ -1440,7 +1445,7 @@ $$</p>
         plot_difference(df, state, vline=False, alpha=0.2, color='grey')
 plot_difference(df, 'California', label='California')
 </code></pre>
-<p><img src="img/synthetic_control_40_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_42_0.png" alt="png"></p>
 <p>After exluding extreme observations, it looks like the effect for California is very unusual, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales).</p>
 <p>One <strong>statistic</strong> that the authors suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.</p>
 <p>$$
@@ -1463,12 +1468,12 @@ plt.hist([lambdas['California']], bins=bins, color=&quot;C2&quot;, label=&quot;C
 plt.legend();
 plt.title('Ratio of $MSE_{post}$ and $MSE_{pre}$ across states');
 </code></pre>
-<p><img src="img/synthetic_control_44_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_46_0.png" alt="png"></p>
 <p>Indeed, the California statistic is quite extreme.</p>
 <h2 id="references">References</h2>
 <ul>
-<li><a href="https://www.youtube.com/watch?v=BsRqy7juMus" target="_blank" rel="noopener">Video lecture</a> by Paul Goldsmith-Pinkham (Yale)</li>
-<li><a href="https://matheusfacure.github.io/python-causality-handbook/15-Synthetic-Control.html" target="_blank" rel="noopener">Chapter 10</a> of Causal Inference for the Brave and True by matheus Facure</li>
+<li><a href="https://www.youtube.com/watch?v=BsRqy7juMus" target="_blank" rel="noopener">Video lecture on Synthetic Controls</a> by Paul Goldsmith-Pinkham (Yale)</li>
+<li><a href="https://matheusfacure.github.io/python-causality-handbook/15-Synthetic-Control.html" target="_blank" rel="noopener">Chapter 10</a> of Causal Inference for the Brave and True by Matheus Facure</li>
 <li><a href="https://mixtape.scunning.com/synthetic-control.html" target="_blank" rel="noopener">Chapter 15</a> of Causal Inference: The Mixtape by Scott Cunningham</li>
 </ul>
 

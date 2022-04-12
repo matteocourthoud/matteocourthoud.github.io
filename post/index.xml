@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sat, 09 Apr 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 12 Apr 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
@@ -15,7 +15,7 @@
     <item>
       <title>AIPW</title>
       <link>https://matteocourthoud.github.io/post/aipw/</link>
-      <pubDate>Sat, 09 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/aipw/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to robustly estimate treatment effects when treatment is conditionally randomly assigned, using the &lt;strong&gt;Augmented Inverse Propensity Weighted&lt;/strong&gt; estimator, also known as &lt;strong&gt;doubly-robust&lt;/strong&gt; estimator.&lt;/p&gt;
 &lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
@@ -565,7 +565,7 @@ model.fit(Y=df[dgp.Y], X=df[dgp.X], T=df[dgp.T])
     <item>
       <title>Causal Trees</title>
       <link>https://matteocourthoud.github.io/post/causal_trees/</link>
-      <pubDate>Sat, 09 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/causal_trees/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate heterogeneous treatment effects using regression trees.&lt;/p&gt;
 &lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
@@ -1209,7 +1209,7 @@ intrp.plot(feature_names=X, fontsize=10)
     <item>
       <title>Chi-Squared Test for Dummies</title>
       <link>https://matteocourthoud.github.io/post/chisquared/</link>
-      <pubDate>Sat, 09 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/chisquared/</guid>
       <description>&lt;p&gt;If you search the Wikipedia definition of Chi-Squared test, you get the following definition:&lt;/p&gt;
 &lt;blockquote&gt;
@@ -1742,9 +1742,436 @@ plot_test(x, chi2_stat, df=3)
     </item>
     
     <item>
+      <title>Difference in Differences</title>
+      <link>https://matteocourthoud.github.io/post/diff_in_diffs/</link>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/diff_in_diffs/</guid>
+      <description>&lt;p&gt;In this tutorial, we are going to see how to estimate the causal effect of a treatment on an outcome when treatment assignment is not random, but we observe both treated and untreated units before and after treatment. Under certain structural assumptions, especially parallel outcome trends in the absence of treatment, we can recover the average treatment effect.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Rubin&amp;rsquo;s potential outcome framework&lt;/li&gt;
+&lt;li&gt;Ordinary least squares regression&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Academic Application&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;As an academic application, we are going to replicate &lt;a href=&#34;http://sims.princeton.edu/yftp/emet04/ck/CardKruegerMinWage.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania&lt;/a&gt; (1994) by Card and Krueger. The authors study the effect of a minimum wage policy in New Jersey on emplyment, by using Pennsylvania as a control state.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Business Case&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;As a business case, we are going to study a firm that has run a TV ad campaign. The firm would like to understand the impact of the campaign on revenue and has randomized the campaign over municipalities.&lt;/p&gt;
+&lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
+&lt;p&gt;We assume that for a set of i.i.d. subjects $i = 1, &amp;hellip;, n$ over $T$ time periods $t = 1 ,  &amp;hellip; , T$, we observed a tuple $(X_{it}, D_{it}, Y_{it})$ comprised of&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a feature vector $X_{it} \in \mathbb R^{p}$&lt;/li&gt;
+&lt;li&gt;a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
+&lt;li&gt;a response $Y_{it} \in \mathbb R$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We assume that treatment occurs between time $t=0$ and time $t=1$.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 1: parallel trends&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;In the absence of treatment, the outcome $Y_{it}$ &lt;strong&gt;evolve in parallel&lt;/strong&gt; across units, i.e. and their $\gamma_{t}$ are the same.&lt;/p&gt;
+&lt;p&gt;$$
+Y_{it}^{(0)} - Y_{j,t}^{(0)} = \alpha \quad \forall \ t
+$$&lt;/p&gt;
+&lt;h2 id=&#34;diff-in-diffs&#34;&gt;Diff-in-diffs&lt;/h2&gt;
+&lt;p&gt;In this setting, we cannot estimate any causal parameter with any other &lt;strong&gt;further assumption&lt;/strong&gt;. What is the minimal number of assumptions that we could make in order to estimate a causal parameter?&lt;/p&gt;
+&lt;p&gt;If we were to assume that treatment was randomly assigned, we could retrieve the average treatment effect as a difference in means.&lt;/p&gt;
+&lt;p&gt;$$
+\mathbb E[\tau_t] = \mathbb E \big[ Y_{it} \ \big| \ D_i = 1 \big] - \mathbb E \big[ Y_{it} \big| \ D_i = 0 \big]
+$$&lt;/p&gt;
+&lt;p&gt;However, it would be a very strong assumption, and it would ignore some information that we possess: the time dimension (pre-post).&lt;/p&gt;
+&lt;p&gt;If we were to assume instead that no other shocks affected the treated units between period $t=0$ and $t=1$, we could retrieve the average treatment effect on the treated as a pre-post difference.&lt;/p&gt;
+&lt;p&gt;$$
+\mathbb E[\tau | D_i=1] = \mathbb E \big[ Y_{i1} \ \big| \ D_i = 1 \big] - \mathbb E \big[ Y_{i0} \ \big| \ D_i = 1 \big]
+$$&lt;/p&gt;
+&lt;p&gt;However, it also this would be a very strong assumption, and it would ignore the fact that we have control units.&lt;/p&gt;
+&lt;p&gt;Can we make less stringent assumption and still recover a causal parameter using both the availability of a (non-random) control group and the time dimension?&lt;/p&gt;
+&lt;h3 id=&#34;did-model&#34;&gt;DiD Model&lt;/h3&gt;
+&lt;p&gt;The model that is commonly assumed in diff-ind-diff settings, is the following&lt;/p&gt;
+&lt;p&gt;$$
+Y_{it} (D_{it}) = \alpha_{i} + \gamma_{t} + \tau_{i} D_{it}
+$$&lt;/p&gt;
+&lt;p&gt;First, let&amp;rsquo;s summarize the potential outcome values $Y^{(d)}_{it}$ in the simple $2 \times 2$ setting.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;$t=0$&lt;/th&gt;
+&lt;th&gt;$t=1$&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;$D=0$&lt;/td&gt;
+&lt;td&gt;$\gamma_0 + \alpha_i$&lt;/td&gt;
+&lt;td&gt;$\gamma_1 + \alpha_i$&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;$D=1$&lt;/td&gt;
+&lt;td&gt;$\gamma_0 + \alpha_i + \tau_i$&lt;/td&gt;
+&lt;td&gt;$\gamma_1 + \alpha_i + \tau_i$&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;For a single unit, $i$, the pre-post outcome difference is given by&lt;/p&gt;
+&lt;p&gt;$$
+Y_{i1} - Y_{i0} = (\gamma_1 - \gamma_0) + \tau_i (D_{i1} - D_{i0})
+$$&lt;/p&gt;
+&lt;p&gt;If we take the difference of the expression above between treated and untreated units, we get&lt;/p&gt;
+&lt;p&gt;$$
+\mathbb E \Big[ Y_{i1} - Y_{i0} \ \Big| \ D_{i1} - D_{i0} = 1 \Big] - \mathbb E \Big[ Y_{i1} - Y_{i0} \ \Big| \ D_{i1} - D_{i0} = 0 \Big] = \mathbb E \Big[ \tau_i \ \Big| \ D_{i1} - D_{i0} = 1 \Big] = ATT
+$$&lt;/p&gt;
+&lt;p&gt;which is the average treatment effect on the treated (ATT).&lt;/p&gt;
+&lt;p&gt;We can get this double difference with the folowing regressio model&lt;/p&gt;
+&lt;p&gt;$$
+Y_{it} (D_{it}) = \alpha_{i} + \gamma_{t} + \beta D_{it} + \varepsilon_{it}
+$$&lt;/p&gt;
+&lt;p&gt;where the OLS estimator $\hat \beta$ will be unbiased for the ATT.&lt;/p&gt;
+&lt;h3 id=&#34;multiple-time-periods&#34;&gt;Multiple Time Periods&lt;/h3&gt;
+&lt;p&gt;What if we didn&amp;rsquo;t just have one pre-treatment period and one post-treatment period? Great! We can actually do more things.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;We can partially test assumptions&lt;/li&gt;
+&lt;li&gt;We can estimate dynamic effects&lt;/li&gt;
+&lt;li&gt;We can run placebo tests&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;How do we implement it? Run a regression with multiple interactions&lt;/p&gt;
+&lt;p&gt;$$
+Y_{it} (D_{it}) = \alpha_{i} + \gamma_{t} + \sum_{t=1}^{T} \beta_t D_{it} + \varepsilon_{it}
+$$&lt;/p&gt;
+&lt;h3 id=&#34;comments&#34;&gt;Comments&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;Parametric Assumption&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The diff-in-diffs method makes a lot of parametric assumptions that are is easy to forget.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Inference&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Bertrand, Duflo, and Mullainathan (2004) point out that conventional robust standard errors usually overestimate the actual standard deviation of the estimator. The authors recommend &lt;strong&gt;clustering&lt;/strong&gt; the standard errors at the level of randomization (e.g. classes, counties, villages, &amp;hellip;).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Testing pre-trends&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Having multiple pre-treatment time periods is helpful for testing the parallel trends assumption. However, this practice can lead to pre-testing bias. In particular, if one selects results based on a pre-treatment parallel trend test, inference on the ATT gets distorderd.&lt;/p&gt;
+&lt;h2 id=&#34;academic-application&#34;&gt;Academic Application&lt;/h2&gt;
+&lt;p&gt;As an academic application, we are going to replicate &lt;a href=&#34;http://sims.princeton.edu/yftp/emet04/ck/CardKruegerMinWage.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania&lt;/a&gt; (1994) by Card and Krueger. The authors study the effect of a minimum wage policy in New Jersey on emplyment, by using Pennsylvania as a control state.&lt;/p&gt;
+&lt;p&gt;The authors describe the setting as follows&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;On April 1, 1992, New Jersey&amp;rsquo;s minimum wage rose from $4.25 to $5.05 per hour. To evaluate the impact of the law, the authors surveyed 410 fast-food restaurants in New Jersey and eastern Pennsylvania before and after the rise. Comparisons of employment growth at stores in New Jersey and Pennsylvania (where the minimum wage was constant) provide simple estimates of the effect of the higher minimum wage.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Let&amp;rsquo;s start by loading and inspecting the data.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.data import import_ck94
+import_ck94()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = pd.read_csv(&#39;data/ck94.csv&#39;)
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;id&lt;/th&gt;
+      &lt;th&gt;after&lt;/th&gt;
+      &lt;th&gt;new_jersey&lt;/th&gt;
+      &lt;th&gt;chain&lt;/th&gt;
+      &lt;th&gt;employment&lt;/th&gt;
+      &lt;th&gt;hrsopen&lt;/th&gt;
+      &lt;th&gt;wage&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;wendys&lt;/td&gt;
+      &lt;td&gt;34.0&lt;/td&gt;
+      &lt;td&gt;12.0&lt;/td&gt;
+      &lt;td&gt;5.00&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;wendys&lt;/td&gt;
+      &lt;td&gt;24.0&lt;/td&gt;
+      &lt;td&gt;12.0&lt;/td&gt;
+      &lt;td&gt;5.50&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;6&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;burgerking&lt;/td&gt;
+      &lt;td&gt;70.5&lt;/td&gt;
+      &lt;td&gt;18.0&lt;/td&gt;
+      &lt;td&gt;5.00&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;7&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;burgerking&lt;/td&gt;
+      &lt;td&gt;23.5&lt;/td&gt;
+      &lt;td&gt;24.0&lt;/td&gt;
+      &lt;td&gt;5.00&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;8&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;kfc&lt;/td&gt;
+      &lt;td&gt;11.0&lt;/td&gt;
+      &lt;td&gt;10.0&lt;/td&gt;
+      &lt;td&gt;5.25&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on fast food restaurants, indexed by &lt;code&gt;i&lt;/code&gt;, at time &lt;code&gt;t&lt;/code&gt;. We distinguish between before and faster treatment and between New Jersey &lt;code&gt;nj&lt;/code&gt; and Pennsylvania restaurants. We also know the &lt;code&gt;chain&lt;/code&gt; of the restaurant, the &lt;code&gt;employment&lt;/code&gt;, the hours open &lt;code&gt;hrsopen&lt;/code&gt; and the &lt;code&gt;wage&lt;/code&gt;. We are interested on the effect on the policy on wages.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s start by producing the $2 \times 2$ table of treatment-control before-after average outcomes.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.pivot_table(index=&#39;new_jersey&#39;, columns=&#39;after&#39;, values=&#39;employment&#39;, aggfunc=&#39;mean&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;after&lt;/th&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;th&gt;1&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;new_jersey&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;23.704545&lt;/td&gt;
+      &lt;td&gt;21.825758&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;20.657746&lt;/td&gt;
+      &lt;td&gt;21.048415&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;From the table we can see that a simple &lt;strong&gt;before-after comparison&lt;/strong&gt; would give a small posive effect of $21.05 - 20.66 = 0.39$.&lt;/p&gt;
+&lt;p&gt;On the other hand, if one was doing an ex-post &lt;strong&gt;treated-control comparison&lt;/strong&gt;, would get a negative effect of $21.05 - 21.83 = - 0.78$.&lt;/p&gt;
+&lt;p&gt;The difference-in-differences estimator takes into account the fact that&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;There is a pre-treatment level difference between New Jersey and Pennsylvania&lt;/li&gt;
+&lt;li&gt;Employment was falling in Pennsylvania even without treatment&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The &lt;strong&gt;double difference&lt;/strong&gt; in means gives a positive effect, significantly larger than any of the two previous estimates.&lt;/p&gt;
+&lt;p&gt;$$
+\hat \tau_{DiD} = \Big( 21.05 - 20.66 \Big) - \Big( 21.83 - 23.70 \Big) = 0.39 + 1.87 = 2.26
+$$&lt;/p&gt;
+&lt;p&gt;We can replicate the result with a linear regression.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;employment ~ new_jersey * after&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+          &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;        &lt;td&gt;   23.7045&lt;/td&gt; &lt;td&gt;    1.149&lt;/td&gt; &lt;td&gt;   20.627&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   21.448&lt;/td&gt; &lt;td&gt;   25.961&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;new_jersey&lt;/th&gt;       &lt;td&gt;   -3.0468&lt;/td&gt; &lt;td&gt;    1.276&lt;/td&gt; &lt;td&gt;   -2.388&lt;/td&gt; &lt;td&gt; 0.017&lt;/td&gt; &lt;td&gt;   -5.552&lt;/td&gt; &lt;td&gt;   -0.542&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;after&lt;/th&gt;            &lt;td&gt;   -1.8788&lt;/td&gt; &lt;td&gt;    1.625&lt;/td&gt; &lt;td&gt;   -1.156&lt;/td&gt; &lt;td&gt; 0.248&lt;/td&gt; &lt;td&gt;   -5.070&lt;/td&gt; &lt;td&gt;    1.312&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;new_jersey:after&lt;/th&gt; &lt;td&gt;    2.2695&lt;/td&gt; &lt;td&gt;    1.804&lt;/td&gt; &lt;td&gt;    1.258&lt;/td&gt; &lt;td&gt; 0.209&lt;/td&gt; &lt;td&gt;   -1.273&lt;/td&gt; &lt;td&gt;    5.812&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The effect is $2.26$, but it is not significantly different from zero.&lt;/p&gt;
+&lt;h2 id=&#34;business-case&#34;&gt;Business Case&lt;/h2&gt;
+&lt;p&gt;We are given the following problem:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A firm wants to test the impact of a TV advertisement campaign on revenue. The firm releases the ad on a random sample of municipalities and track the revenue over time, before and after the ad campaign.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;We start by drawing a sample from the data generating process.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import dgp_did
+
+dgp = dgp_did()
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;day&lt;/th&gt;
+      &lt;th&gt;id&lt;/th&gt;
+      &lt;th&gt;treated&lt;/th&gt;
+      &lt;th&gt;post&lt;/th&gt;
+      &lt;th&gt;revenue&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;3.599341&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;-0.146912&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;0.696527&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;1.445169&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;1.659696&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have &lt;code&gt;revenue&lt;/code&gt; data on a set of customers over time. We also know to which &lt;code&gt;group&lt;/code&gt; they were assigned and whether the time is before or after the intervention.&lt;/p&gt;
+&lt;p&gt;Since we do not have any control variable, we can directly visualize the revenue dynamics, distinguishing between treatment and control group.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.lineplot(x=df[&#39;day&#39;], y=df[&#39;revenue&#39;], hue=df[&#39;treated&#39;]);
+plt.axvline(x=10, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;);
+plt.title(&#39;Revenue over time&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/diff_in_diffs_26_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It seems like the treatment group was producing higher revenues before treatment and the gap has increased with treatment but it is closing over time.&lt;/p&gt;
+&lt;p&gt;To assess the magnitude of the effect and perform inference, we can regress revenue on a post-treatment dummy, a treatment dummy and their interaction.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ post * treated&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+            &lt;td&gt;&lt;/td&gt;              &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;            &lt;td&gt;    4.6357&lt;/td&gt; &lt;td&gt;    0.078&lt;/td&gt; &lt;td&gt;   59.428&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.483&lt;/td&gt; &lt;td&gt;    4.789&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;post[T.True]&lt;/th&gt;         &lt;td&gt;    0.8928&lt;/td&gt; &lt;td&gt;    0.110&lt;/td&gt; &lt;td&gt;    8.093&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.676&lt;/td&gt; &lt;td&gt;    1.109&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;treated&lt;/th&gt;              &lt;td&gt;    1.0558&lt;/td&gt; &lt;td&gt;    0.110&lt;/td&gt; &lt;td&gt;    9.571&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.839&lt;/td&gt; &lt;td&gt;    1.272&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;post[T.True]:treated&lt;/th&gt; &lt;td&gt;    0.1095&lt;/td&gt; &lt;td&gt;    0.156&lt;/td&gt; &lt;td&gt;    0.702&lt;/td&gt; &lt;td&gt; 0.483&lt;/td&gt; &lt;td&gt;   -0.196&lt;/td&gt; &lt;td&gt;    0.415&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;While the coefficient for the interaction term is positive, it does not seem to be statistically significant. However, this might be due to the fact that the treatment effect is fading away over time.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s fit the same regression, with a linear time trend.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ post * treated * day&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+              &lt;td&gt;&lt;/td&gt;                &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;                &lt;td&gt;    4.1144&lt;/td&gt; &lt;td&gt;    0.168&lt;/td&gt; &lt;td&gt;   24.501&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    3.785&lt;/td&gt; &lt;td&gt;    4.444&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;post[T.True]&lt;/th&gt;             &lt;td&gt;    0.2871&lt;/td&gt; &lt;td&gt;    0.458&lt;/td&gt; &lt;td&gt;    0.626&lt;/td&gt; &lt;td&gt; 0.531&lt;/td&gt; &lt;td&gt;   -0.612&lt;/td&gt; &lt;td&gt;    1.186&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;treated&lt;/th&gt;                  &lt;td&gt;    1.0788&lt;/td&gt; &lt;td&gt;    0.237&lt;/td&gt; &lt;td&gt;    4.543&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.613&lt;/td&gt; &lt;td&gt;    1.544&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;post[T.True]:treated&lt;/th&gt;     &lt;td&gt;    1.5910&lt;/td&gt; &lt;td&gt;    0.648&lt;/td&gt; &lt;td&gt;    2.454&lt;/td&gt; &lt;td&gt; 0.014&lt;/td&gt; &lt;td&gt;    0.320&lt;/td&gt; &lt;td&gt;    2.862&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;day&lt;/th&gt;                      &lt;td&gt;    0.0948&lt;/td&gt; &lt;td&gt;    0.027&lt;/td&gt; &lt;td&gt;    3.502&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.042&lt;/td&gt; &lt;td&gt;    0.148&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;post[T.True]:day&lt;/th&gt;         &lt;td&gt;   -0.0221&lt;/td&gt; &lt;td&gt;    0.038&lt;/td&gt; &lt;td&gt;   -0.576&lt;/td&gt; &lt;td&gt; 0.564&lt;/td&gt; &lt;td&gt;   -0.097&lt;/td&gt; &lt;td&gt;    0.053&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;treated:day&lt;/th&gt;              &lt;td&gt;   -0.0042&lt;/td&gt; &lt;td&gt;    0.038&lt;/td&gt; &lt;td&gt;   -0.109&lt;/td&gt; &lt;td&gt; 0.913&lt;/td&gt; &lt;td&gt;   -0.079&lt;/td&gt; &lt;td&gt;    0.071&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;post[T.True]:treated:day&lt;/th&gt; &lt;td&gt;   -0.0929&lt;/td&gt; &lt;td&gt;    0.054&lt;/td&gt; &lt;td&gt;   -1.716&lt;/td&gt; &lt;td&gt; 0.086&lt;/td&gt; &lt;td&gt;   -0.199&lt;/td&gt; &lt;td&gt;    0.013&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Now the treatment effect is positive and significant at the 5% level. And indeed, we estimate a decreasing trend, post treatment, for the treated. However, it is not statistically significant.&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=mbYTZ0w-QTw&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Video lecture on Difference-in-Differences&lt;/a&gt; by Paul Goldsmith-Pinkham (Yale)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://matheusfacure.github.io/python-causality-handbook/13-Difference-in-Differences.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 13&lt;/a&gt; of Causal Inference for The Brave and The True by Matheus Facure&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mixtape.scunning.com/difference-in-differences.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 9&lt;/a&gt; of The Causal Inference Mixtape by Scott Cunningham&lt;/li&gt;
+&lt;li&gt;Chapter 5 of &lt;a href=&#34;https://www.mostlyharmlesseconometrics.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Mostly Harmless Econometrics&lt;/a&gt; by Agrist and Pischke&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Instrumental Variables</title>
       <link>https://matteocourthoud.github.io/post/iv/</link>
-      <pubDate>Sat, 09 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/iv/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, but we have access to a third variable that is as good as randomly assigned and is correlated (only) with the treatment. These variables are called instrumental variables and are a powerful tool for causal inference, especially in observational studies.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -2443,7 +2870,7 @@ df.head()
     <item>
       <title>Meta Learners</title>
       <link>https://matteocourthoud.github.io/post/meta_learners/</link>
-      <pubDate>Sat, 09 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/meta_learners/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to explore and compare different methods that leverage machine learning to estimate heterogeneous treatment effects.&lt;/p&gt;
 &lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
@@ -2782,7 +3209,7 @@ for i, l in enumerate([&#39;S&#39;, &#39;T&#39;, &#39;X&#39;]):
     <item>
       <title>Permutation Tests for Dummies</title>
       <link>https://matteocourthoud.github.io/post/permutation_test/</link>
-      <pubDate>Sat, 09 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/permutation_test/</guid>
       <description>&lt;p&gt;If you search &amp;ldquo;permutation test&amp;rdquo; on Wikipedia, you get the following definition:&lt;/p&gt;
 &lt;blockquote&gt;
@@ -3133,7 +3560,7 @@ Elapsed time with replacement: 0.00125885009765625
     <item>
       <title>Policy Learning</title>
       <link>https://matteocourthoud.github.io/post/policy_learning/</link>
-      <pubDate>Sat, 09 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/policy_learning/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to design the most welfare-improving policy in presence of treatment effect heterogeneity and treatment costs or budget constraints.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -3610,7 +4037,7 @@ policy.plot(feature_names=X_short)
     <item>
       <title>Propensity Score Matching</title>
       <link>https://matteocourthoud.github.io/post/propensity_score/</link>
-      <pubDate>Sat, 09 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/propensity_score/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when the treatment is not &lt;em&gt;unconditionally&lt;/em&gt; randomly assigned, but we need to condition on observable features in order to assume treatment exogeneity. This might happen either when an experiment is stratified or in observational studies.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -3624,40 +4051,50 @@ policy.plot(feature_names=X_short)
 &lt;p&gt;&lt;strong&gt;Business Case&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;TBD&lt;/p&gt;
 &lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
-&lt;p&gt;We assume that for a set of i.i.d. subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(X_i, T_i, Y_i)$ comprised of&lt;/p&gt;
+&lt;p&gt;We assume that for a set of i.i.d. subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;a feature vector $X_i \in \mathbb R^n$&lt;/li&gt;
-&lt;li&gt;a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
+&lt;li&gt;a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
 &lt;li&gt;a response $Y_i \in \mathbb R$&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;Assumption 1 : unconfoundedness&lt;/strong&gt; (or ignorability, or selection on observables, or conditional independence)&lt;/p&gt;
 &lt;p&gt;$$
-\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ X_i
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i
 $$&lt;/p&gt;
-&lt;p&gt;i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Assumption 2: overlap&lt;/strong&gt; (or bounded support)&lt;/p&gt;
+&lt;p&gt;i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random. What this assumption rules out is &lt;em&gt;selection on unobservables&lt;/em&gt;. Moreover, it&amp;rsquo;s &lt;em&gt;untestable&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 2: overlap&lt;/strong&gt; (or common support)&lt;/p&gt;
 &lt;p&gt;$$
-\exists \eta &amp;gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
+\exists \eta &amp;gt; 0 \ : \ \eta \leq \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
 $$&lt;/p&gt;
-&lt;p&gt;i.e. no observation is deterministically assigned to the treatment or control group.&lt;/p&gt;
+&lt;p&gt;i.e. no observation is deterministically assigned to the treatment or control group. We need this assumption for counterfactual statements to make sense. If some observations had zero probability of (not) being treated, it would make no sense to try to estimate their counterfactual outcome in case they would have (not) being treated. Also this assumption is &lt;em&gt;untestable&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 3: stable unit treatment value (SUTVA)&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$$
+Y_i^{(D_i)} \perp D_j \quad \forall j \neq i
+$$&lt;/p&gt;
+&lt;p&gt;i.e. the potential outcome of one individual is independent from the treatment status of any other individual. Common &lt;em&gt;violations&lt;/em&gt; of this assumption include&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;general equilibrium effects&lt;/li&gt;
+&lt;li&gt;spillover effects&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This assumption is &lt;em&gt;untestable&lt;/em&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;propensity-scores&#34;&gt;Propensity Scores&lt;/h2&gt;
 &lt;h3 id=&#34;exogenous-treatment&#34;&gt;Exogenous Treatment&lt;/h3&gt;
 &lt;p&gt;The &lt;strong&gt;fundamental problem of causal inference&lt;/strong&gt; is that we do not observe counterfactual outcomes, i.e. we do not observe what would have happened to treated units if they had not received the treatment and viceversa.&lt;/p&gt;
 &lt;p&gt;If treatment is exogenous, we know that the difference in means identifies the average treatment effect $\mathbb E[\tau]$.&lt;/p&gt;
 &lt;p&gt;$$
-\mathbb E[\tau] = \mathbb E \big[ Y_i \ \big| \ T_i = 1 \big] - \mathbb E \big[ Y_i \ \big| \ T_i = 0 \big] = \mathbb E \big[ Y_{i}^{(1)} - Y_{i}^{(0)} \big]
+\mathbb E[\tau] = \mathbb E \big[ Y_i \ \big| \ D_i = 1 \big] - \mathbb E \big[ Y_i \ \big| \ D_i = 0 \big] = \mathbb E \big[ Y_{i}^{(1)} - Y_{i}^{(0)} \big]
 $$&lt;/p&gt;
 &lt;p&gt;Therefore, we can build an unbiased estimator of the average treatment effect as the empirical counterpart of the expression above&lt;/p&gt;
 &lt;p&gt;$$
-\hat \tau(Y, T) = \frac{1}{n} \sum_{i=1}^{n} \big( T_i Y_i - (1-T_i) Y_i \big)
+\hat \tau(Y, D) = \frac{1}{n} \sum_{i=1}^{n} \big( D_i Y_i - (1-D_i) Y_i \big)
 $$&lt;/p&gt;
 &lt;p&gt;In case treatment is not randomly assigned, we use the Thompson Horowitz (1952) estimator&lt;/p&gt;
 &lt;p&gt;$$
-\hat \tau(Y, T) = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i Y_i}{\pi_{i}} - \frac{(1-T_i) Y_i}{1 - \pi_{i}} \right)
+\hat \tau(Y, D) = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{D_i Y_i}{\pi_{i}} - \frac{(1-D_i) Y_i}{1 - \pi_{i}} \right)
 $$&lt;/p&gt;
-&lt;p&gt;where $\pi_{i} = \Pr(T_i=1)$ is the probability of being treated, also known as &lt;strong&gt;propensity score&lt;/strong&gt;. Sometimes the propensity score is known, for example when treatment is stratified. However, in general, it is not.&lt;/p&gt;
+&lt;p&gt;where $\pi_{i} = \Pr(D_i=1)$ is the probability of being treated, also known as &lt;strong&gt;propensity score&lt;/strong&gt;. Sometimes the propensity score is known, for example when treatment is stratified. However, in general, it is not.&lt;/p&gt;
 &lt;h3 id=&#34;conditionally-exogenous-treatment&#34;&gt;Conditionally Exogenous Treatment&lt;/h3&gt;
-&lt;p&gt;In many cases and especially in observational studies, treatment is not unconditionally exogenous, but it&amp;rsquo;s exogenous only after we condition on some characteristic $X$. If these characteristics are observables, we have the &lt;strong&gt;unconfoundedness&lt;/strong&gt; assumption.&lt;/p&gt;
+&lt;p&gt;In many cases and especially in observational studies, treatment $D$ is not unconditionally exogenous, but it&amp;rsquo;s exogenous only after we condition on some characteristic $X$. If these characteristics are observables, we have the &lt;strong&gt;unconfoundedness&lt;/strong&gt; assumption.&lt;/p&gt;
 &lt;p&gt;Under unconfoundedness, we can still identify the average treatment effect, as a &lt;em&gt;conditional&lt;/em&gt; difference in means:&lt;/p&gt;
 &lt;p&gt;$$
 \mathbb E[\tau] = \mathbb E \big[ Y_{i}^{(1)} - Y_{i}^{(0)} \ \big| \ X_i \big]
@@ -3669,7 +4106,7 @@ $$&lt;/p&gt;
 &lt;/ol&gt;
 &lt;p&gt;The main contribution of Rosenbaum and Rubin (1983) is to show that if &lt;strong&gt;unconfoundedness&lt;/strong&gt; holds, then&lt;/p&gt;
 &lt;p&gt;$$
-\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ \pi(X_i)
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ \pi(X_i)
 $$&lt;/p&gt;
 &lt;p&gt;i.e. you only need to condition on $\pi(X)$ in order to recover the average treatment effect.&lt;/p&gt;
 &lt;p&gt;$$
@@ -3677,7 +4114,7 @@ $$&lt;/p&gt;
 $$&lt;/p&gt;
 &lt;p&gt;This implies the following &lt;strong&gt;inverse propensity-weighted&lt;/strong&gt; estimator:&lt;/p&gt;
 &lt;p&gt;$$
-\hat \tau^{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i Y_i}{\hat \pi(X_i)} - \frac{(1-T_i) Y_i}{1 - \hat \pi(X_i)} \right)
+\hat \tau^{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{D_i Y_i}{\hat \pi(X_i)} - \frac{(1-D_i) Y_i}{1 - \hat \pi(X_i)} \right)
 $$&lt;/p&gt;
 &lt;p&gt;which, under &lt;em&gt;unconfoundedness&lt;/em&gt; is an &lt;strong&gt;unbiased&lt;/strong&gt; estimator of the average treatment effect, $\mathbb E \left[\hat \tau^{IPW} \right] = \tau$.&lt;/p&gt;
 &lt;p&gt;This is a very practically relevant result since it tells us that we need to condition on a single variable instead of a potentially infinite dimensional array. The only thing we need to do is to estimate $\pi(X_i)$.&lt;/p&gt;
@@ -3695,6 +4132,7 @@ $$&lt;/p&gt;
 &lt;p&gt;As an academic application, we are going to replicate &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1080/01621459.1999.10473858&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Causal Effects in Non-Experimental Studies: Reevaluating the Evaluation of Training Programs&lt;/a&gt; (1999) by Dahejia and Wahba.&lt;/p&gt;
 &lt;p&gt;This study builds on a previous study: &lt;a href=&#34;https://www.jstor.org/stable/2937954&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Evaluating the Econometric Evaluations of Training Programs with Experimental Data&lt;/a&gt; (1986) by Lalonde. In this study, the author compares observational and experimental methods. In particular, he studies an experimental intervention called the NSW (National Supported Work demonstration). The NSW is a temporary training program to give work experience to unemployed people.&lt;/p&gt;
 &lt;p&gt;The exogenous variation allows us to estimate the treatment effect as a difference in means. The author then asks: what if we didn&amp;rsquo;t have access to an experiment? In particular, what if we did not have information on the control group? He takes a sample of untreated people from the PSID panel and use them as a control group.&lt;/p&gt;
+&lt;h3 id=&#34;experimental-data&#34;&gt;Experimental Data&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s start by loading the NSW data.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
@@ -3724,10 +4162,10 @@ df_nsw.head()
       &lt;th&gt;&lt;/th&gt;
       &lt;th&gt;treat&lt;/th&gt;
       &lt;th&gt;age&lt;/th&gt;
-      &lt;th&gt;education&lt;/th&gt;
+      &lt;th&gt;educ&lt;/th&gt;
       &lt;th&gt;black&lt;/th&gt;
-      &lt;th&gt;hispanic&lt;/th&gt;
-      &lt;th&gt;married&lt;/th&gt;
+      &lt;th&gt;hisp&lt;/th&gt;
+      &lt;th&gt;marr&lt;/th&gt;
       &lt;th&gt;nodegree&lt;/th&gt;
       &lt;th&gt;re74&lt;/th&gt;
       &lt;th&gt;re75&lt;/th&gt;
@@ -3746,7 +4184,7 @@ df_nsw.head()
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;9930.0460&lt;/td&gt;
+      &lt;td&gt;9930.045898&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
@@ -3759,7 +4197,7 @@ df_nsw.head()
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;3595.8940&lt;/td&gt;
+      &lt;td&gt;3595.894043&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
@@ -3772,7 +4210,7 @@ df_nsw.head()
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;24909.4500&lt;/td&gt;
+      &lt;td&gt;24909.449219&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
@@ -3785,7 +4223,7 @@ df_nsw.head()
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;7506.1460&lt;/td&gt;
+      &lt;td&gt;7506.145996&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
@@ -3798,7 +4236,7 @@ df_nsw.head()
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;289.7899&lt;/td&gt;
+      &lt;td&gt;289.789886&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -3806,7 +4244,7 @@ df_nsw.head()
 &lt;p&gt;The treatment variable is &lt;code&gt;treat&lt;/code&gt; and the outcome of interest is &lt;code&gt;re78&lt;/code&gt;, the income in 1978. We also have access to a bunch of covariates.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;y = &#39;re78&#39;
 T = &#39;treat&#39;
-X = [&#39;age&#39;, &#39;education&#39;, &#39;black&#39;, &#39;hispanic&#39;, &#39;married&#39;, &#39;nodegree&#39;, &#39;re74&#39;, &#39;re75&#39;]
+X = df_nsw.columns[2:9]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Was there selection on observables? Let&amp;rsquo;s summarize the data, according to treatment status.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_nsw.groupby(&#39;treat&#39;).agg([&#39;mean&#39;, &#39;std&#39;]).T.unstack(1)
@@ -3849,7 +4287,7 @@ X = [&#39;age&#39;, &#39;education&#39;, &#39;black&#39;, &#39;hispanic&#39;, &#
       &lt;td&gt;7.155019&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;education&lt;/th&gt;
+      &lt;th&gt;educ&lt;/th&gt;
       &lt;td&gt;10.088462&lt;/td&gt;
       &lt;td&gt;1.614325&lt;/td&gt;
       &lt;td&gt;10.345946&lt;/td&gt;
@@ -3863,14 +4301,14 @@ X = [&#39;age&#39;, &#39;education&#39;, &#39;black&#39;, &#39;hispanic&#39;, &#
       &lt;td&gt;0.364558&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;hispanic&lt;/th&gt;
+      &lt;th&gt;hisp&lt;/th&gt;
       &lt;td&gt;0.107692&lt;/td&gt;
       &lt;td&gt;0.310589&lt;/td&gt;
       &lt;td&gt;0.059459&lt;/td&gt;
       &lt;td&gt;0.237124&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;married&lt;/th&gt;
+      &lt;th&gt;marr&lt;/th&gt;
       &lt;td&gt;0.153846&lt;/td&gt;
       &lt;td&gt;0.361497&lt;/td&gt;
       &lt;td&gt;0.189189&lt;/td&gt;
@@ -3885,24 +4323,24 @@ X = [&#39;age&#39;, &#39;education&#39;, &#39;black&#39;, &#39;hispanic&#39;, &#
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;re74&lt;/th&gt;
-      &lt;td&gt;2107.026658&lt;/td&gt;
-      &lt;td&gt;5687.905694&lt;/td&gt;
-      &lt;td&gt;2095.573689&lt;/td&gt;
-      &lt;td&gt;4886.620353&lt;/td&gt;
+      &lt;td&gt;2107.026651&lt;/td&gt;
+      &lt;td&gt;5687.905639&lt;/td&gt;
+      &lt;td&gt;2095.573693&lt;/td&gt;
+      &lt;td&gt;4886.620354&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;re75&lt;/th&gt;
-      &lt;td&gt;1266.909002&lt;/td&gt;
-      &lt;td&gt;3102.982044&lt;/td&gt;
-      &lt;td&gt;1532.055314&lt;/td&gt;
-      &lt;td&gt;3219.250870&lt;/td&gt;
+      &lt;td&gt;1266.909015&lt;/td&gt;
+      &lt;td&gt;3102.982088&lt;/td&gt;
+      &lt;td&gt;1532.055313&lt;/td&gt;
+      &lt;td&gt;3219.250879&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;re78&lt;/th&gt;
-      &lt;td&gt;4554.801126&lt;/td&gt;
-      &lt;td&gt;5483.835991&lt;/td&gt;
-      &lt;td&gt;6349.143530&lt;/td&gt;
-      &lt;td&gt;7867.402218&lt;/td&gt;
+      &lt;td&gt;4554.801120&lt;/td&gt;
+      &lt;td&gt;5483.836001&lt;/td&gt;
+      &lt;td&gt;6349.143502&lt;/td&gt;
+      &lt;td&gt;7867.402183&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -3910,7 +4348,7 @@ X = [&#39;age&#39;, &#39;education&#39;, &#39;black&#39;, &#39;hispanic&#39;, &#
 &lt;p&gt;It seems that covariates are balanced across treatment arms. Nothing seems to point towards selection on observables. Therefore, we can compute the average treatment effect as a simple difference in means&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_nsw.loc[df_nsw[T]==1, y].mean() - df_nsw.loc[df_nsw[T]==0, y].mean()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;1794.342404270271
+&lt;pre&gt;&lt;code&gt;1794.3423818501024
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Or equivalently in a regression&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;re78 ~ treat&#39;, df_nsw).fit()
@@ -3928,6 +4366,7 @@ est.summary().tables[1]
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;It looks like the effect is positive and significant.&lt;/p&gt;
+&lt;h3 id=&#34;observational-data&#34;&gt;Observational Data&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s now load a different dataset in which we have replaced the true control units with observations from the PSID sample.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_psid = pd.read_csv(&#39;data/l86_psid.csv&#39;)
 &lt;/code&gt;&lt;/pre&gt;
@@ -3972,7 +4411,7 @@ est.summary().tables[1]
       &lt;td&gt;7.155019&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;education&lt;/th&gt;
+      &lt;th&gt;educ&lt;/th&gt;
       &lt;td&gt;10.766798&lt;/td&gt;
       &lt;td&gt;3.176827&lt;/td&gt;
       &lt;td&gt;10.345946&lt;/td&gt;
@@ -3986,14 +4425,14 @@ est.summary().tables[1]
       &lt;td&gt;0.364558&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;hispanic&lt;/th&gt;
+      &lt;th&gt;hisp&lt;/th&gt;
       &lt;td&gt;0.067194&lt;/td&gt;
       &lt;td&gt;0.250853&lt;/td&gt;
       &lt;td&gt;0.059459&lt;/td&gt;
       &lt;td&gt;0.237124&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;married&lt;/th&gt;
+      &lt;th&gt;marr&lt;/th&gt;
       &lt;td&gt;0.735178&lt;/td&gt;
       &lt;td&gt;0.442113&lt;/td&gt;
       &lt;td&gt;0.189189&lt;/td&gt;
@@ -4010,22 +4449,22 @@ est.summary().tables[1]
       &lt;th&gt;re74&lt;/th&gt;
       &lt;td&gt;11027.303390&lt;/td&gt;
       &lt;td&gt;10814.670751&lt;/td&gt;
-      &lt;td&gt;2095.573689&lt;/td&gt;
-      &lt;td&gt;4886.620353&lt;/td&gt;
+      &lt;td&gt;2095.573693&lt;/td&gt;
+      &lt;td&gt;4886.620354&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;re75&lt;/th&gt;
       &lt;td&gt;7569.222058&lt;/td&gt;
       &lt;td&gt;9041.944403&lt;/td&gt;
-      &lt;td&gt;1532.055314&lt;/td&gt;
-      &lt;td&gt;3219.250870&lt;/td&gt;
+      &lt;td&gt;1532.055313&lt;/td&gt;
+      &lt;td&gt;3219.250879&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;re78&lt;/th&gt;
       &lt;td&gt;9995.949977&lt;/td&gt;
       &lt;td&gt;11184.450050&lt;/td&gt;
-      &lt;td&gt;6349.143530&lt;/td&gt;
-      &lt;td&gt;7867.402218&lt;/td&gt;
+      &lt;td&gt;6349.143502&lt;/td&gt;
+      &lt;td&gt;7867.402183&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -4043,7 +4482,7 @@ est.summary().tables[1]
   &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt; 9995.9500&lt;/td&gt; &lt;td&gt;  623.715&lt;/td&gt; &lt;td&gt;   16.026&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt; 8770.089&lt;/td&gt; &lt;td&gt; 1.12e+04&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt;-3646.8064&lt;/td&gt; &lt;td&gt;  959.704&lt;/td&gt; &lt;td&gt;   -3.800&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;-5533.027&lt;/td&gt; &lt;td&gt;-1760.586&lt;/td&gt;
+  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt;-3646.8065&lt;/td&gt; &lt;td&gt;  959.704&lt;/td&gt; &lt;td&gt;   -3.800&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;-5533.027&lt;/td&gt; &lt;td&gt;-1760.586&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;The estimated coefficient is negative and significant. The conclusion from Lalonde (1986) is&lt;/p&gt;
@@ -4059,38 +4498,36 @@ est.summary().tables[1]
       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt; 5576.0002&lt;/td&gt; &lt;td&gt; 3627.428&lt;/td&gt; &lt;td&gt;    1.537&lt;/td&gt; &lt;td&gt; 0.125&lt;/td&gt; &lt;td&gt;-1553.789&lt;/td&gt; &lt;td&gt; 1.27e+04&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;-1089.9263&lt;/td&gt; &lt;td&gt; 2913.224&lt;/td&gt; &lt;td&gt;   -0.374&lt;/td&gt; &lt;td&gt; 0.708&lt;/td&gt; &lt;td&gt;-6815.894&lt;/td&gt; &lt;td&gt; 4636.042&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt; 1873.7655&lt;/td&gt; &lt;td&gt; 1060.564&lt;/td&gt; &lt;td&gt;    1.767&lt;/td&gt; &lt;td&gt; 0.078&lt;/td&gt; &lt;td&gt; -210.797&lt;/td&gt; &lt;td&gt; 3958.328&lt;/td&gt;
+  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt; 2642.1456&lt;/td&gt; &lt;td&gt; 1039.655&lt;/td&gt; &lt;td&gt;    2.541&lt;/td&gt; &lt;td&gt; 0.011&lt;/td&gt; &lt;td&gt;  598.694&lt;/td&gt; &lt;td&gt; 4685.597&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;age&lt;/th&gt;       &lt;td&gt; -127.8870&lt;/td&gt; &lt;td&gt;   42.166&lt;/td&gt; &lt;td&gt;   -3.033&lt;/td&gt; &lt;td&gt; 0.003&lt;/td&gt; &lt;td&gt; -210.765&lt;/td&gt; &lt;td&gt;  -45.009&lt;/td&gt;
+  &lt;th&gt;educ&lt;/th&gt;      &lt;td&gt;  521.5869&lt;/td&gt; &lt;td&gt;  208.751&lt;/td&gt; &lt;td&gt;    2.499&lt;/td&gt; &lt;td&gt; 0.013&lt;/td&gt; &lt;td&gt;  111.284&lt;/td&gt; &lt;td&gt;  931.890&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;education&lt;/th&gt; &lt;td&gt;  309.8708&lt;/td&gt; &lt;td&gt;  218.249&lt;/td&gt; &lt;td&gt;    1.420&lt;/td&gt; &lt;td&gt; 0.156&lt;/td&gt; &lt;td&gt; -119.103&lt;/td&gt; &lt;td&gt;  738.845&lt;/td&gt;
+  &lt;th&gt;black&lt;/th&gt;     &lt;td&gt;-1026.6762&lt;/td&gt; &lt;td&gt; 1006.433&lt;/td&gt; &lt;td&gt;   -1.020&lt;/td&gt; &lt;td&gt; 0.308&lt;/td&gt; &lt;td&gt;-3004.830&lt;/td&gt; &lt;td&gt;  951.478&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;black&lt;/th&gt;     &lt;td&gt;-1432.1626&lt;/td&gt; &lt;td&gt; 1005.876&lt;/td&gt; &lt;td&gt;   -1.424&lt;/td&gt; &lt;td&gt; 0.155&lt;/td&gt; &lt;td&gt;-3409.235&lt;/td&gt; &lt;td&gt;  544.910&lt;/td&gt;
+  &lt;th&gt;hisp&lt;/th&gt;      &lt;td&gt; -903.1023&lt;/td&gt; &lt;td&gt; 1726.419&lt;/td&gt; &lt;td&gt;   -0.523&lt;/td&gt; &lt;td&gt; 0.601&lt;/td&gt; &lt;td&gt;-4296.394&lt;/td&gt; &lt;td&gt; 2490.189&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;hispanic&lt;/th&gt;  &lt;td&gt;-1107.9730&lt;/td&gt; &lt;td&gt; 1711.488&lt;/td&gt; &lt;td&gt;   -0.647&lt;/td&gt; &lt;td&gt; 0.518&lt;/td&gt; &lt;td&gt;-4471.940&lt;/td&gt; &lt;td&gt; 2255.994&lt;/td&gt;
+  &lt;th&gt;marr&lt;/th&gt;      &lt;td&gt; 1026.6143&lt;/td&gt; &lt;td&gt;  943.788&lt;/td&gt; &lt;td&gt;    1.088&lt;/td&gt; &lt;td&gt; 0.277&lt;/td&gt; &lt;td&gt; -828.410&lt;/td&gt; &lt;td&gt; 2881.639&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;married&lt;/th&gt;   &lt;td&gt; 1776.1337&lt;/td&gt; &lt;td&gt;  967.008&lt;/td&gt; &lt;td&gt;    1.837&lt;/td&gt; &lt;td&gt; 0.067&lt;/td&gt; &lt;td&gt; -124.542&lt;/td&gt; &lt;td&gt; 3676.809&lt;/td&gt;
+  &lt;th&gt;nodegree&lt;/th&gt;  &lt;td&gt;-1469.3712&lt;/td&gt; &lt;td&gt; 1166.114&lt;/td&gt; &lt;td&gt;   -1.260&lt;/td&gt; &lt;td&gt; 0.208&lt;/td&gt; &lt;td&gt;-3761.379&lt;/td&gt; &lt;td&gt;  822.637&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;nodegree&lt;/th&gt;  &lt;td&gt;-1733.3380&lt;/td&gt; &lt;td&gt; 1158.403&lt;/td&gt; &lt;td&gt;   -1.496&lt;/td&gt; &lt;td&gt; 0.135&lt;/td&gt; &lt;td&gt;-4010.204&lt;/td&gt; &lt;td&gt;  543.528&lt;/td&gt;
+  &lt;th&gt;re74&lt;/th&gt;      &lt;td&gt;    0.1928&lt;/td&gt; &lt;td&gt;    0.058&lt;/td&gt; &lt;td&gt;    3.329&lt;/td&gt; &lt;td&gt; 0.001&lt;/td&gt; &lt;td&gt;    0.079&lt;/td&gt; &lt;td&gt;    0.307&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;re74&lt;/th&gt;      &lt;td&gt;    0.2088&lt;/td&gt; &lt;td&gt;    0.058&lt;/td&gt; &lt;td&gt;    3.625&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.096&lt;/td&gt; &lt;td&gt;    0.322&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;re75&lt;/th&gt;      &lt;td&gt;    0.4715&lt;/td&gt; &lt;td&gt;    0.070&lt;/td&gt; &lt;td&gt;    6.710&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.333&lt;/td&gt; &lt;td&gt;    0.610&lt;/td&gt;
+  &lt;th&gt;re75&lt;/th&gt;      &lt;td&gt;    0.4976&lt;/td&gt; &lt;td&gt;    0.070&lt;/td&gt; &lt;td&gt;    7.068&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.359&lt;/td&gt; &lt;td&gt;    0.636&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
-&lt;p&gt;The treatment effect is now positive, borderline significant, and close to the experimental estimate of 1794$. Moreover, it&amp;rsquo;s hard to tell whether this is the correct functional form for the control variables.&lt;/p&gt;
-&lt;p&gt;Another option is to use &lt;strong&gt;propensity score matching&lt;/strong&gt;. First, we need to estimate the treatment probability. Let&amp;rsquo;s start with a very simple standard model to predict binary outcomes.&lt;/p&gt;
+&lt;p&gt;The treatment effect is now positive, borderline significant, and close to the experimental estimate of $1794$$. Moreover, it&amp;rsquo;s hard to tell whether this is the correct functional form for the control variables.&lt;/p&gt;
+&lt;h3 id=&#34;inverse-propensity-score-weighting&#34;&gt;Inverse propensity score weighting&lt;/h3&gt;
+&lt;p&gt;Another option is to use &lt;strong&gt;inverse propensity score weighting&lt;/strong&gt;. First, we need to estimate the treatment probability. Let&amp;rsquo;s start with a very simple standard model to predict binary outcomes.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import LogisticRegressionCV
 
 pi = LogisticRegressionCV().fit(y=df_psid[T], X=df_psid[X])
@@ -4100,10 +4537,16 @@ df_psid[&#39;pscore&#39;] = pi.predict_proba(df_psid[X])[:,1]
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(data=df_psid, x=&#39;pscore&#39;, hue=T, bins=20)\
 .set(title=&#39;Distribution of propensity scores, PSID data&#39;, xlabel=&#39;&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/propensity_score_35_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/propensity_score_41_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;It seems that indeed we predict higher propensity scores for treated people, and viceversa, indicating a strong selection on observable. However, there is also a considerable amount of overlap.&lt;/p&gt;
-&lt;p&gt;We can now estimate the treatment effect controlling for the propensity score.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;re78 ~ treat + pscore&#39;, df_psid).fit()
+&lt;p&gt;We can now estimate the treatment effect by weighting by the inverse of the propensity score. First, let&amp;rsquo;s exclude observations with a very extreme predicted score.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_psid1 = df_psid[(df_psid[&#39;pscore&#39;]&amp;lt;0.9) &amp;amp; (df_psid[&#39;pscore&#39;]&amp;gt;0.1)]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we can need to construct the weights.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_psid1[&#39;weight&#39;] = df_psid1[&#39;treat&#39;] / df_psid1[&#39;pscore&#39;] + (1-df_psid1[&#39;treat&#39;]) / (1-df_psid1[&#39;pscore&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Finally, we run a weighted regression of income on the treatment program.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.wls(&#39;re78 ~ treat&#39;, df_psid1, weights=df_psid1[&#39;weight&#39;]).fit()
 est.summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -4111,24 +4554,21 @@ est.summary().tables[1]
       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt; 1.209e+04&lt;/td&gt; &lt;td&gt;  723.351&lt;/td&gt; &lt;td&gt;   16.719&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt; 1.07e+04&lt;/td&gt; &lt;td&gt; 1.35e+04&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt; 4038.1507&lt;/td&gt; &lt;td&gt;  512.268&lt;/td&gt; &lt;td&gt;    7.883&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt; 3030.227&lt;/td&gt; &lt;td&gt; 5046.074&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt; 1570.5620&lt;/td&gt; &lt;td&gt; 1355.839&lt;/td&gt; &lt;td&gt;    1.158&lt;/td&gt; &lt;td&gt; 0.247&lt;/td&gt; &lt;td&gt;-1094.249&lt;/td&gt; &lt;td&gt; 4235.372&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;pscore&lt;/th&gt;    &lt;td&gt;-1.016e+04&lt;/td&gt; &lt;td&gt; 1918.498&lt;/td&gt; &lt;td&gt;   -5.295&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;-1.39e+04&lt;/td&gt; &lt;td&gt;-6386.994&lt;/td&gt;
+  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt; 2166.8750&lt;/td&gt; &lt;td&gt;  730.660&lt;/td&gt; &lt;td&gt;    2.966&lt;/td&gt; &lt;td&gt; 0.003&lt;/td&gt; &lt;td&gt;  729.250&lt;/td&gt; &lt;td&gt; 3604.500&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
-&lt;p&gt;The effect is positive but not significant.&lt;/p&gt;
-&lt;p&gt;What would have been the propensity scores if we had used the NSW experimental sample? If it&amp;rsquo;s a well done experiment with a sufficiently large sample, we would expect the propensity scores to concentrate around the percentage of people treated, 0.42 in our data.&lt;/p&gt;
+&lt;p&gt;The effect is positive, statistically significant and very close to the experimental estimate of $1794$$.&lt;/p&gt;
+&lt;p&gt;What would have been the propensity scores if we had used the NSW experimental sample? If it&amp;rsquo;s a well done experiment with a sufficiently large sample, we would expect the propensity scores to concentrate around the percentage of people treated, $0.41$ in our data.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pi = LogisticRegressionCV().fit(y=df_nsw[T], X=df_nsw[X])
 df_nsw[&#39;pscore&#39;] = pi.predict_proba(df_nsw[X])[:,1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(data=df_nsw, x=&#39;pscore&#39;, hue=T, bins=20)\
 .set(title=&#39;Distribution of propensity scores, NSW data&#39;, xlabel=&#39;&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/propensity_score_41_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/propensity_score_50_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Indeed, now the distribution of the p-scores is concentrated around the treatment frequency in the data. Remarkably, the standard deviation is extremely tight.&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;ul&gt;
@@ -4142,7 +4582,7 @@ df_nsw[&#39;pscore&#39;] = pi.predict_proba(df_nsw[X])[:,1]
     <item>
       <title>Regression Discontinuity</title>
       <link>https://matteocourthoud.github.io/post/regression_discontinuity/</link>
-      <pubDate>Sat, 09 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/regression_discontinuity/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when treatment assignment is not random, but determined by a &lt;em&gt;forcing variable&lt;/em&gt; such as a test or a requirement. In this case, we can get a local estimate of the treatment effect by comparing units just above and just below the threshold by assuming that there is no sorting/gaming around it.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -4410,7 +4850,7 @@ plt.axvline(x=0.5, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;);
     <item>
       <title>Synthetic Control</title>
       <link>https://matteocourthoud.github.io/post/synthetic_control/</link>
-      <pubDate>Sat, 09 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 12 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/synthetic_control/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak. However, there still exist methods for causal inference, under certain assumptions.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -4419,13 +4859,14 @@ plt.axvline(x=0.5, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;);
 &lt;li&gt;Rubin&amp;rsquo;s potential outcome framework&lt;/li&gt;
 &lt;li&gt;Ordinary least squares regression&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://matteocourthoud.github.io/post/permutation_test/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Randomization/permutation inference&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://matteocourthoud.github.io/post/diff_in_diffs/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Difference in differences&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;Academic Application&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;As an academic application, we are going to replicate &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program&lt;/a&gt; (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Business Case&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;TBD&lt;/p&gt;
 &lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
-&lt;p&gt;We assume that for a panel of i.i.d. subjects $i = 1, &amp;hellip;, n$ over time $t=1, &amp;hellip;,T$ we observed a tuple $(X_{i,t}, Y_{i,t})$ comprised of&lt;/p&gt;
+&lt;p&gt;We assume that for a panel of i.i.d. subjects $i = 1, &amp;hellip;, n$ over time $t=1, &amp;hellip;,T$ we observed a tuple $(X_{it}, Y_{it})$ comprised of&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;a feature vector $X_{i,t} \in \mathbb R^p$&lt;/li&gt;
 &lt;li&gt;a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
@@ -4914,7 +5355,7 @@ def synth_predict(df, state, model):
 &lt;p&gt;It looks like the policy had a sensible &lt;strong&gt;negative effect&lt;/strong&gt; on cigarette sales: the predicted trend is higher than the actual sales and diverges right after the approval of Proposition 99.&lt;/p&gt;
 &lt;p&gt;We can also observe that we are clearly &lt;strong&gt;overfitting&lt;/strong&gt;: the pre-policy predicted cigarette sales line is perfectly overlapping with the actual data.&lt;/p&gt;
 &lt;p&gt;Another problem concerns the &lt;strong&gt;weights&lt;/strong&gt;. We have not set any constraint on the weights.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(coef, bins=30).set(title=&#39;Coefficients&#39;);
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(coef, bins=30).set(title=&#39;Linear Regression Coefficients&#39;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synthetic_control_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We have many &lt;strong&gt;negative weights&lt;/strong&gt;, which do not make much sense from a causal inference perspective. Since we would like to interpret our synthetic control as a &lt;strong&gt;weighted average&lt;/strong&gt; of untreated states, all weights should be positive  and they should sum to one.&lt;/p&gt;
@@ -4946,7 +5387,7 @@ class SyntheticControl():
         return X.dot(self.coef_)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can now plot the actual and predicted cigarette sales in California using the &lt;code&gt;SyntheticControl&lt;/code&gt; method.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;synth_predict(df, &#39;California&#39;, SyntheticControl())
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;coef_new = synth_predict(df, &#39;California&#39;, SyntheticControl()).coef_
 plot_lines(df, &#39;California&#39;, &#39;Synthetic California&#39;)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synthetic_control_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
@@ -4962,8 +5403,12 @@ plot_lines(df, &#39;California&#39;, &#39;Synthetic California&#39;)
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synthetic_control_36_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;The difference is clearly negative and decreasing over time. Moreover, now we see that the estimator is not overfitting the pre-period anymore.&lt;/p&gt;
-&lt;p&gt;Wha about &lt;strong&gt;inference&lt;/strong&gt;? Is the estimate significantly different from zero? Or, more practically, &amp;ldquo;&lt;em&gt;how unusual is this estimate under the null hypothesis of no policy effect&lt;/em&gt;?&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;The difference is clearly negative and decreasing over time. Moreover, now we see that the estimator is not overfitting the pre-period anymore. The reason is that the non-negativity constraint is constraining most coefficients to be zero (as &lt;a href=&#34;https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Lasso&lt;/a&gt; does).&lt;/p&gt;
+&lt;p&gt;We can visualize it by plotting the distribution of coefficients.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(coef_new, bins=30).set(title=&#39;Synthetic Control Coefficients&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;What about &lt;strong&gt;inference&lt;/strong&gt;? Is the estimate significantly different from zero? Or, more practically, &amp;ldquo;&lt;em&gt;how unusual is this estimate under the null hypothesis of no policy effect&lt;/em&gt;?&amp;rdquo;.&lt;/p&gt;
 &lt;p&gt;We are going to perform a &lt;strong&gt;randomization/permutation test&lt;/strong&gt; in order to answer this question. The &lt;strong&gt;idea&lt;/strong&gt; is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.&lt;/p&gt;
 &lt;p&gt;Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;for state in states:
@@ -4971,7 +5416,7 @@ plot_lines(df, &#39;California&#39;, &#39;Synthetic California&#39;)
     plot_difference(df, state, vline=False, alpha=0.2, color=&#39;grey&#39;)
 plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;From the graph we notice two things. First, the effect for California is quite extreme and therefore likely not to be driven by random noise.&lt;/p&gt;
 &lt;p&gt;Second, we also notice that there are a couple of states for which we cannot fit the pre-trend very well. This is expected since, for each state, we are building the counterfactual trend as a &lt;strong&gt;convex combination&lt;/strong&gt; of all other states. States that are quite extreme in terms of cigarette consumpion are very useful to build the counterfactuals of other states, but it&amp;rsquo;s hard to build a counterfactual for them. Not to bias the analysis, let&amp;rsquo;s exclude states for which we cannot build a &amp;ldquo;good enough&amp;rdquo; counterfectual, in terms of pre-treatment MSE.&lt;/p&gt;
 &lt;p&gt;$$
@@ -4983,7 +5428,7 @@ $$&lt;/p&gt;
         plot_difference(df, state, vline=False, alpha=0.2, color=&#39;grey&#39;)
 plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_42_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;After exluding extreme observations, it looks like the effect for California is very unusual, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales).&lt;/p&gt;
 &lt;p&gt;One &lt;strong&gt;statistic&lt;/strong&gt; that the authors suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.&lt;/p&gt;
 &lt;p&gt;$$
@@ -5006,12 +5451,12 @@ plt.hist([lambdas[&#39;California&#39;]], bins=bins, color=&amp;quot;C2&amp;quot
 plt.legend();
 plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_44_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Indeed, the California statistic is quite extreme.&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=BsRqy7juMus&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Video lecture&lt;/a&gt; by Paul Goldsmith-Pinkham (Yale)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://matheusfacure.github.io/python-causality-handbook/15-Synthetic-Control.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 10&lt;/a&gt; of Causal Inference for the Brave and True by matheus Facure&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=BsRqy7juMus&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Video lecture on Synthetic Controls&lt;/a&gt; by Paul Goldsmith-Pinkham (Yale)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://matheusfacure.github.io/python-causality-handbook/15-Synthetic-Control.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 10&lt;/a&gt; of Causal Inference for the Brave and True by Matheus Facure&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://mixtape.scunning.com/synthetic-control.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 15&lt;/a&gt; of Causal Inference: The Mixtape by Scott Cunningham&lt;/li&gt;
 &lt;/ul&gt;
 </description>
