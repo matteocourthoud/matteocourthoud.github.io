@@ -248,7 +248,7 @@
   
   
   
-  <link rel="stylesheet" href="/css/wowchemy.56a07b12facc5b7d5da5dd4bbdb82eef.css" />
+  <link rel="stylesheet" href="/css/wowchemy.54afc4f4589fb91aec4b1cdd90ab2e05.css" />
 
   
 
@@ -339,10 +339,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-04-12T00:00:00&#43;00:00"
+        content="2022-04-14T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-12T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-04-14T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/aipw/featured.png"
   ],
   
-  "datePublished": "2022-04-12T00:00:00Z",
-  "dateModified": "2022-04-12T00:00:00Z",
+  "datePublished": "2022-04-14T00:00:00Z",
+  "dateModified": "2022-04-14T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -828,7 +828,7 @@
     
       
     
-    Apr 12, 2022
+    Apr 14, 2022
   </span>
   
 
@@ -1335,7 +1335,7 @@ print(f&quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&
 def distribution_AIPW(t):
     r = Parallel(n_jobs=8)(delayed(simulate_AIPW)(i) for i in range(100))
     sim_tau_AIPW = pd.DataFrame(r, columns=['Direct', 'Correction', '$τ_{AIPW}$'])
-    plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x='variable', y='value');
+    plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x='variable', y='value', linewidth=2);
     plot.set(title=t, xlabel='', ylabel='')
     plot.axhline(-0.05, c='r', ls=':');
 </code></pre>
@@ -1372,11 +1372,10 @@ def estimate_mu(df, X, model_mu):
 <pre><code class="language-python">from econml.drlearner import LinearDRLearner
 
 model = LinearDRLearner(model_propensity=logit(), model_regression=rfr())
-model.fit(Y=df[dgp.Y], X=df[dgp.X], T=df[dgp.T])
+model.fit(Y=df[dgp.Y], X=df[dgp.X], T=df[dgp.T]);
 </code></pre>
-<pre><code>&lt;econml.drlearner.LinearDRLearner at 0x14bdb2610&gt;
-</code></pre>
-<pre><code class="language-python">model.ate_inference(X=df[dgp.X].values, T0=0, T1=1)
+<p>The model directly gives us the average treatment effect.</p>
+<pre><code class="language-python">model.ate_inference(X=df[dgp.X].values, T0=0, T1=1).summary().tables[0]
 </code></pre>
 <table class="simpletable">
 <caption>Uncertainty of Mean Point Estimate</caption>
@@ -1384,27 +1383,10 @@ model.fit(Y=df[dgp.Y], X=df[dgp.X], T=df[dgp.T])
   <th>mean_point</th> <th>stderr_mean</th>  <th>zstat</th> <th>pvalue</th> <th>ci_mean_lower</th> <th>ci_mean_upper</th>
 </tr>
 <tr>
-    <td>-0.081</td>      <td>0.036</td>    <td>-2.236</td>  <td>0.025</td>    <td>-0.152</td>         <td>-0.01</td>    
+    <td>-0.087</td>      <td>0.036</td>    <td>-2.438</td>  <td>0.015</td>    <td>-0.157</td>        <td>-0.017</td>    
 </tr>
 </table>
-<table class="simpletable">
-<caption>Distribution of Point Estimate</caption>
-<tr>
-  <th>std_point</th> <th>pct_point_lower</th> <th>pct_point_upper</th>
-</tr>
-<tr>
-    <td>0.692</td>       <td>-1.531</td>           <td>1.205</td>     
-</tr>
-</table>
-<table class="simpletable">
-<caption>Total Variance of Point Estimate</caption>
-<tr>
-  <th>stderr_point</th> <th>ci_point_lower</th> <th>ci_point_upper</th>
-</tr>
-<tr>
-      <td>0.692</td>        <td>-1.543</td>          <td>1.278</td>    
-</tr>
-</table>
+<p>The estimate is statistically different from zero and the confidence interval includes the true value of $-0.05$.</p>
 <h2 id="research-paper-replication">Research Paper Replication</h2>
 <p>TBD</p>
 <h2 id="business-case">Business Case</h2>
