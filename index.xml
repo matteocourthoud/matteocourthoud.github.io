@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Thu, 14 Apr 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Fri, 15 Apr 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -26065,7 +26065,7 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     <item>
       <title>AIPW</title>
       <link>https://matteocourthoud.github.io/post/aipw/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/aipw/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to robustly estimate treatment effects when treatment is conditionally randomly assigned, using the &lt;strong&gt;Augmented Inverse Propensity Weighted&lt;/strong&gt; estimator, also known as &lt;strong&gt;doubly-robust&lt;/strong&gt; estimator.&lt;/p&gt;
 &lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
@@ -26597,7 +26597,7 @@ model.fit(Y=df[dgp.Y], X=df[dgp.X], T=df[dgp.T]);
     <item>
       <title>Causal Trees</title>
       <link>https://matteocourthoud.github.io/post/causal_trees/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/causal_trees/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate heterogeneous treatment effects using regression trees.&lt;/p&gt;
 &lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
@@ -27241,7 +27241,7 @@ intrp.plot(feature_names=X, fontsize=10)
     <item>
       <title>Chi-Squared Test for Dummies</title>
       <link>https://matteocourthoud.github.io/post/chisquared/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/chisquared/</guid>
       <description>&lt;p&gt;If you search the Wikipedia definition of Chi-Squared test, you get the following definition:&lt;/p&gt;
 &lt;blockquote&gt;
@@ -27774,9 +27774,429 @@ plot_test(x, chi2_stat, df=3)
     </item>
     
     <item>
+      <title>DAGs and Bad Controls</title>
+      <link>https://matteocourthoud.github.io/post/controls/</link>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/controls/</guid>
+      <description>&lt;p&gt;In this tutorial, we are going to have a brief overview of directed acyclic graphs (DAG), a very powerful visual tool to analyze causal relationships. The main goal is to use DAGs to assess which control variables to include or not in a regression.&lt;/p&gt;
+&lt;h2 id=&#34;directed-acyclic-graphs&#34;&gt;Directed Acyclic Graphs&lt;/h2&gt;
+&lt;h3 id=&#34;definitions&#34;&gt;Definitions&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;Directed acyclic graphs&lt;/strong&gt; (&lt;strong&gt;DAG&lt;/strong&gt;s) provide a visual representation of the data generating process. Random variables are represented with letters (e.g. $X$) and causal relationships are represented with arrows (e.g. $\to$). For example, we interpret&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef white fill:#FFFFFF,stroke:#000000,stroke-width:2px
+X((X)):::white --&amp;gt; Y((Y)):::white
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;as $X$ (possibly) causes $Y$. We call a &lt;strong&gt;path&lt;/strong&gt; between two variables $X$ and $Y$ any connection between $X$ and $Y$, &lt;em&gt;independently on the direction of the arrows&lt;/em&gt;. If all arrows point forward, we call it a &lt;strong&gt;causal path&lt;/strong&gt;, otherwise we call it a &lt;strong&gt;spurious path&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Z1
+Z1 --&amp;gt; Z2
+Z3 --&amp;gt; Z2
+Z3 --&amp;gt; Y
+
+class X,Y included;
+class Z1,Z2,Z3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this example, we have a path between $X$ and $Y$ passing through the variables $Z_1$, $Z_2$ and $Z_3$. Since not all arrows point forward, the path is &lt;em&gt;spurious&lt;/em&gt; and there is no causal relationship of $X$ on $Y$. In fact, variable $Z_2$ is caused by both $Z_1$ and $Z_3$ and therefore &lt;strong&gt;blocks&lt;/strong&gt; the path.&lt;/p&gt;
+&lt;p&gt;$Z_2$ is called a &lt;strong&gt;collider&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The purpose of our analysis is to assess the &lt;strong&gt;causal relationship&lt;/strong&gt; between two variables $X$ and $Y$. Directed acyclic graphs are useful because they provide us instructions on which other variables $Z$ we should include in our analysis and why. When we include a variable in the analysis, we say we &lt;strong&gt;condition&lt;/strong&gt; the analysis on it.&lt;/p&gt;
+&lt;h3 id=&#34;causality&#34;&gt;Causality&lt;/h3&gt;
+&lt;p&gt;In order to assess causality we want to &lt;strong&gt;close all spurious paths&lt;/strong&gt; between $X$ and $Y$. The &lt;strong&gt;questions&lt;/strong&gt; now are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;when is a path &lt;strong&gt;open&lt;/strong&gt;?
+&lt;ul&gt;
+&lt;li&gt;if it does not contain &lt;em&gt;colliders&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;when do you &lt;strong&gt;close an open path&lt;/strong&gt;?
+&lt;ul&gt;
+&lt;li&gt;if you condition on &lt;em&gt;at least one&lt;/em&gt; intermediate variable&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;when do you &lt;strong&gt;open a closed path&lt;/strong&gt;?
+&lt;ul&gt;
+&lt;li&gt;if you condition on &lt;em&gt;all&lt;/em&gt; colliders along the path&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Suppose we are again interested in the relationship between $X$ and $Y$. Let&amp;rsquo;s consider the following graph&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Y
+X --&amp;gt; Z2
+Z2 --&amp;gt; Y
+Z1 --&amp;gt; X
+Z1 --&amp;gt; Y
+X --&amp;gt; Z3
+Y --&amp;gt; Z3
+
+class X,Y included;
+class Z1,Z2,Z3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this case, there are &lt;strong&gt;three non-direct paths&lt;/strong&gt; between $X$ and $Y$ through the variables $Z_1$, $Z_2$ and $Z_3$.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s consider the case in which we analyze the relationship between $X$ and $Y$, ignoring all other variables.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The path through $Z_1$ is &lt;strong&gt;open&lt;/strong&gt; but it is &lt;strong&gt;spurious&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;The path through $Z_2$ is &lt;strong&gt;open&lt;/strong&gt; and &lt;strong&gt;causal&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;The path through $Z_3$ is &lt;strong&gt;closed&lt;/strong&gt; since $Z_3$ is a &lt;em&gt;collider&lt;/em&gt; and it is &lt;strong&gt;spurious&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Let&amp;rsquo;s draw the same graph indicating in gray variables that we are conditioning on, with dotted lines closed paths, with red lines spurious paths and with green lines causal paths.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Y
+X --&amp;gt; Z2
+Z2 --&amp;gt; Y
+Z1 --&amp;gt; X
+Z1 --&amp;gt; Y
+X -.-&amp;gt; Z3
+Y -.-&amp;gt; Z3
+
+linkStyle 0,1,2 stroke:#00ff00,stroke-width:4px;
+linkStyle 3,4 stroke:#ff0000,stroke-width:4px;
+class X,Y included;
+class Z1,Z2,Z3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this case, to assess the &lt;strong&gt;causal&lt;/strong&gt; relationship between $X$ and $Y$ we need to close the path that passes through $Z_1$. We can do that by conditioning the analysis on $Z_1$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Y
+X --&amp;gt; Z2
+Z2 --&amp;gt; Y
+Z1 -.-&amp;gt; X
+Z1 -.-&amp;gt; Y
+X -.-&amp;gt; Z3
+Y -.-&amp;gt; Z3
+
+linkStyle 0,1,2 stroke:#00ff00,stroke-width:4px;
+class X,Y,Z1 included;
+class Z2,Z3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we are able to recover the causal relationship between $X$ and $Y$ by conditioning on $Z_1$.&lt;/p&gt;
+&lt;p&gt;What would happen if we were also &lt;strong&gt;conditioning on $Z_2$&lt;/strong&gt;? In this case, we would &lt;strong&gt;close&lt;/strong&gt; the path passing through $Z_2$ leaving only the direct path between $X$ and $Y$ open. We would then recover only the &lt;strong&gt;direct effect&lt;/strong&gt; of $X$ on $Y$ and not the &lt;em&gt;indirect&lt;/em&gt; one.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Y
+X -.-&amp;gt; Z2
+Z2 -.-&amp;gt; Y
+Z1 -.-&amp;gt; X
+Z1 -.-&amp;gt; Y
+X -.-&amp;gt; Z3
+Y -.-&amp;gt; Z3
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+class X,Y,Z1,Z2 included;
+class Z3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What would happen if we were also &lt;strong&gt;conditioning on $Z_3$&lt;/strong&gt;? In this case, we would &lt;strong&gt;open&lt;/strong&gt; the path passing through $Z_3$ which is a &lt;strong&gt;spurious&lt;/strong&gt; path. We would then &lt;strong&gt;not&lt;/strong&gt; be able to recover the causal effect of $X$ on $Y$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Y
+X -.-&amp;gt; Z2
+Z2 -.-&amp;gt; Y
+Z1 -.-&amp;gt; X
+Z1 -.-&amp;gt; Y
+X --&amp;gt; Z3
+Y --&amp;gt; Z3
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+linkStyle 5,6 stroke:#ff0000,stroke-width:4px;
+class X,Y,Z1,Z2,Z3 included;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;cheat-sheet&#34;&gt;Cheat Sheet&lt;/h3&gt;
+&lt;p&gt;A path $p$ from $X$ to $Y$ is blocked conditioning on $Z$ if and only if&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$Z$ is a common cause&lt;/li&gt;
+&lt;li&gt;$Z$ is a mediator&lt;/li&gt;
+&lt;li&gt;the path $p$ contains a collider and $Z$ is not that collider or any of its descendants&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Therefore, if we are interested in the causal effect of $X$ on $Y$ we &lt;strong&gt;must&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Block all spurious paths between $X$ and $Y$&lt;/li&gt;
+&lt;li&gt;Not perturb any causal path between them&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;example-1-class-size-and-math-scores&#34;&gt;Example 1: class size and math scores&lt;/h2&gt;
+&lt;p&gt;Suppose you have&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+
+X((class size))
+Y((math score))
+Z1((class year))
+Z2((good school))
+Z3((math hours))
+Z4((hist score))
+U((ability))
+
+X --&amp;gt; Y
+Z1 --&amp;gt; X
+X --&amp;gt; Z4
+U --&amp;gt; Y
+U --&amp;gt; Z4
+Z2 --&amp;gt; X
+Z2 --&amp;gt; Y
+Z2 --&amp;gt; Z4
+Z3 --&amp;gt; Y
+
+class X,Y included;
+class Z1,Z2,Z3,Z4 excluded;
+class U unobserved;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+from src.utils import *
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import dgp_class
+
+dgp = dgp_class()
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;math_hours&lt;/th&gt;
+      &lt;th&gt;history_hours&lt;/th&gt;
+      &lt;th&gt;good_school&lt;/th&gt;
+      &lt;th&gt;class_year&lt;/th&gt;
+      &lt;th&gt;class_size&lt;/th&gt;
+      &lt;th&gt;math_score&lt;/th&gt;
+      &lt;th&gt;hist_score&lt;/th&gt;
+      &lt;th&gt;final_score&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;33&lt;/td&gt;
+      &lt;td&gt;16.747190&lt;/td&gt;
+      &lt;td&gt;16.797349&lt;/td&gt;
+      &lt;td&gt;16.772269&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;14&lt;/td&gt;
+      &lt;td&gt;13.994490&lt;/td&gt;
+      &lt;td&gt;12.870178&lt;/td&gt;
+      &lt;td&gt;13.432334&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;18&lt;/td&gt;
+      &lt;td&gt;15.547838&lt;/td&gt;
+      &lt;td&gt;15.649692&lt;/td&gt;
+      &lt;td&gt;15.598765&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;10&lt;/td&gt;
+      &lt;td&gt;11.342831&lt;/td&gt;
+      &lt;td&gt;11.780903&lt;/td&gt;
+      &lt;td&gt;11.561867&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;20&lt;/td&gt;
+      &lt;td&gt;9.801164&lt;/td&gt;
+      &lt;td&gt;7.429193&lt;/td&gt;
+      &lt;td&gt;8.615179&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;Syntax for regressing $y$ on $x1$ and $x2$ is &lt;code&gt;smf.ols(&#39;y ~ x1 + x2&#39;, df).fit()&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;  &lt;td&gt;   11.0603&lt;/td&gt; &lt;td&gt;    0.269&lt;/td&gt; &lt;td&gt;   41.142&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   10.533&lt;/td&gt; &lt;td&gt;   11.588&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_size&lt;/th&gt; &lt;td&gt;    0.0249&lt;/td&gt; &lt;td&gt;    0.015&lt;/td&gt; &lt;td&gt;    1.653&lt;/td&gt; &lt;td&gt; 0.099&lt;/td&gt; &lt;td&gt;   -0.005&lt;/td&gt; &lt;td&gt;    0.055&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    5.3494&lt;/td&gt; &lt;td&gt;    0.188&lt;/td&gt; &lt;td&gt;   28.439&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.980&lt;/td&gt; &lt;td&gt;    5.718&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_size&lt;/th&gt;  &lt;td&gt;    0.2056&lt;/td&gt; &lt;td&gt;    0.009&lt;/td&gt; &lt;td&gt;   22.751&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.188&lt;/td&gt; &lt;td&gt;    0.223&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    5.0336&lt;/td&gt; &lt;td&gt;    0.104&lt;/td&gt; &lt;td&gt;   48.516&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.830&lt;/td&gt; &lt;td&gt;    5.237&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school + math_hours&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    2.4483&lt;/td&gt; &lt;td&gt;    0.362&lt;/td&gt; &lt;td&gt;    6.757&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.737&lt;/td&gt; &lt;td&gt;    3.159&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_size&lt;/th&gt;  &lt;td&gt;    0.2042&lt;/td&gt; &lt;td&gt;    0.009&lt;/td&gt; &lt;td&gt;   23.534&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.187&lt;/td&gt; &lt;td&gt;    0.221&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    5.0502&lt;/td&gt; &lt;td&gt;    0.100&lt;/td&gt; &lt;td&gt;   50.684&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.855&lt;/td&gt; &lt;td&gt;    5.246&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;math_hours&lt;/th&gt;  &lt;td&gt;    0.8382&lt;/td&gt; &lt;td&gt;    0.091&lt;/td&gt; &lt;td&gt;    9.236&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.660&lt;/td&gt; &lt;td&gt;    1.016&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school + math_hours + class_year&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    2.3591&lt;/td&gt; &lt;td&gt;    0.401&lt;/td&gt; &lt;td&gt;    5.877&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.571&lt;/td&gt; &lt;td&gt;    3.147&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_size&lt;/th&gt;  &lt;td&gt;    0.2060&lt;/td&gt; &lt;td&gt;    0.009&lt;/td&gt; &lt;td&gt;   22.110&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.188&lt;/td&gt; &lt;td&gt;    0.224&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    5.0592&lt;/td&gt; &lt;td&gt;    0.101&lt;/td&gt; &lt;td&gt;   50.005&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.861&lt;/td&gt; &lt;td&gt;    5.258&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;math_hours&lt;/th&gt;  &lt;td&gt;    0.8373&lt;/td&gt; &lt;td&gt;    0.091&lt;/td&gt; &lt;td&gt;    9.220&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.659&lt;/td&gt; &lt;td&gt;    1.015&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_year&lt;/th&gt;  &lt;td&gt;    0.0227&lt;/td&gt; &lt;td&gt;    0.044&lt;/td&gt; &lt;td&gt;    0.517&lt;/td&gt; &lt;td&gt; 0.605&lt;/td&gt; &lt;td&gt;   -0.063&lt;/td&gt; &lt;td&gt;    0.109&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school + math_hours + class_year + hist_score&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;   -0.2056&lt;/td&gt; &lt;td&gt;    0.384&lt;/td&gt; &lt;td&gt;   -0.535&lt;/td&gt; &lt;td&gt; 0.593&lt;/td&gt; &lt;td&gt;   -0.960&lt;/td&gt; &lt;td&gt;    0.548&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_size&lt;/th&gt;  &lt;td&gt;    0.1135&lt;/td&gt; &lt;td&gt;    0.010&lt;/td&gt; &lt;td&gt;   11.535&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.094&lt;/td&gt; &lt;td&gt;    0.133&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    2.8049&lt;/td&gt; &lt;td&gt;    0.160&lt;/td&gt; &lt;td&gt;   17.571&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.492&lt;/td&gt; &lt;td&gt;    3.118&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;math_hours&lt;/th&gt;  &lt;td&gt;    0.8389&lt;/td&gt; &lt;td&gt;    0.080&lt;/td&gt; &lt;td&gt;   10.492&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.682&lt;/td&gt; &lt;td&gt;    0.996&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_year&lt;/th&gt;  &lt;td&gt;    0.0125&lt;/td&gt; &lt;td&gt;    0.039&lt;/td&gt; &lt;td&gt;    0.323&lt;/td&gt; &lt;td&gt; 0.746&lt;/td&gt; &lt;td&gt;   -0.063&lt;/td&gt; &lt;td&gt;    0.088&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;hist_score&lt;/th&gt;  &lt;td&gt;    0.4641&lt;/td&gt; &lt;td&gt;    0.027&lt;/td&gt; &lt;td&gt;   17.017&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.411&lt;/td&gt; &lt;td&gt;    0.518&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3689437&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;A Crash Course in Bad Controls&lt;/a&gt; by Carlos Cinelli, Andrew Forney and Judea Pearl&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mixtape.scunning.com/dag.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 3&lt;/a&gt; of The Causal Inference Mixtape by Scott Cunningham&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://microsoft.github.io/dowhy/example_notebooks/dowhy_simple_example.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Getting started with DoWhy&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Difference in Differences</title>
       <link>https://matteocourthoud.github.io/post/diff_in_diffs/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/diff_in_diffs/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate the causal effect of a treatment on an outcome when treatment assignment is not random, but we observe both treated and untreated units before and after treatment. Under certain structural assumptions, especially parallel outcome trends in the absence of treatment, we can recover the average treatment effect.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -28205,7 +28625,7 @@ plt.title(&#39;Revenue over time&#39;);
     <item>
       <title>Instrumental Variables</title>
       <link>https://matteocourthoud.github.io/post/iv/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/iv/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, but we have access to a third variable that is as good as randomly assigned and is correlated (only) with the treatment. These variables are called instrumental variables and are a powerful tool for causal inference, especially in observational studies.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -28772,8 +29192,8 @@ included exogenous variables)&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;We start by drawing a sample from the data generating process.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import dgp_newsletter
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_newsletter()
+
+dgp = dgp_newsletter()
 df = dgp.generate_data()
 df.head()
 &lt;/code&gt;&lt;/pre&gt;
@@ -28839,12 +29259,12 @@ df.head()
 &lt;p&gt;We can represent the model with a DAG.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dag_iv(Y=&amp;quot;revenue&amp;quot;, T=&amp;quot;subscribe&amp;quot;, Z=&amp;quot;reminder&amp;quot;, U=&amp;quot;income&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/iv_69_0.svg&#34; alt=&#34;svg&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/iv_68_0.svg&#34; alt=&#34;svg&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;ols-2&#34;&gt;OLS&lt;/h3&gt;
 &lt;p&gt;By directly inspecting the data, it seems that subscribed members actually generate less revenue than normal customers.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.barplot(x=&#39;subscribe&#39;, y=&#39;revenue&#39;, data=df);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/iv_72_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/iv_71_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;A linear regression confirms the graphical intuition.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ 1 + subscribe&#39;, df).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
@@ -28904,7 +29324,7 @@ df.head()
     <item>
       <title>Meta Learners</title>
       <link>https://matteocourthoud.github.io/post/meta_learners/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/meta_learners/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to explore and compare different methods that leverage machine learning to estimate heterogeneous treatment effects.&lt;/p&gt;
 &lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
@@ -29243,7 +29663,7 @@ for i, l in enumerate([&#39;S&#39;, &#39;T&#39;, &#39;X&#39;]):
     <item>
       <title>Optimal Test Stopping</title>
       <link>https://matteocourthoud.github.io/post/optimal_stopping/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/optimal_stopping/</guid>
       <description>&lt;h2 id=&#34;standard-setting&#34;&gt;Standard Setting&lt;/h2&gt;
 &lt;p&gt;When we design an A/B test or, more generally, an experiment, the standard steps are the following&lt;/p&gt;
@@ -29637,7 +30057,7 @@ print(f&#39;Average experiment duration: {duration:0}&#39;)
     <item>
       <title>Permutation Tests for Dummies</title>
       <link>https://matteocourthoud.github.io/post/permutation_test/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/permutation_test/</guid>
       <description>&lt;p&gt;If you search &amp;ldquo;permutation test&amp;rdquo; on Wikipedia, you get the following definition:&lt;/p&gt;
 &lt;blockquote&gt;
@@ -29988,7 +30408,7 @@ Elapsed time with replacement: 0.00125885009765625
     <item>
       <title>Policy Learning</title>
       <link>https://matteocourthoud.github.io/post/policy_learning/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/policy_learning/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to design the most welfare-improving policy in presence of treatment effect heterogeneity and treatment costs or budget constraints.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -30465,7 +30885,7 @@ policy.plot(feature_names=X_short)
     <item>
       <title>Propensity Score Matching</title>
       <link>https://matteocourthoud.github.io/post/propensity_score/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/propensity_score/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when the treatment is not &lt;em&gt;unconditionally&lt;/em&gt; randomly assigned, but we need to condition on observable features in order to assume treatment exogeneity. This might happen either when an experiment is stratified or in observational studies.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -31010,7 +31430,7 @@ df_nsw[&#39;pscore&#39;] = pi.predict_proba(df_nsw[X])[:,1]
     <item>
       <title>Regression Discontinuity</title>
       <link>https://matteocourthoud.github.io/post/regression_discontinuity/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/regression_discontinuity/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when treatment assignment is not random, but determined by a &lt;em&gt;forcing variable&lt;/em&gt; such as a test or a requirement. In this case, we can get a local estimate of the treatment effect by comparing units just above and just below the threshold by assuming that there is no sorting/gaming around it.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -31278,7 +31698,7 @@ plt.axvline(x=0.5, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;);
     <item>
       <title>Synthetic Control</title>
       <link>https://matteocourthoud.github.io/post/synthetic_control/</link>
-      <pubDate>Thu, 14 Apr 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/synthetic_control/</guid>
       <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak. However, there still exist methods for causal inference, under certain assumptions.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
@@ -31891,11 +32311,11 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
     </item>
     
     <item>
-      <title>Free PhD Courses in Economics and Data Science</title>
+      <title>Free Courses in Economics</title>
       <link>https://matteocourthoud.github.io/post/courses/</link>
       <pubDate>Thu, 10 Feb 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/courses/</guid>
-      <description>&lt;p&gt;In this page I will collect lectures and materials for graduate courses in Economics and Social Sciences.&lt;/p&gt;
+      <description>&lt;p&gt;In this page, I collect lectures and materials for graduate courses in Economics and Social Sciences.&lt;/p&gt;
 &lt;p&gt;I will only link to lectures and materials that are freely available. I will not link to courses hosted on MOOC websites or that require university credentials to access.&lt;/p&gt;
 &lt;p&gt;A special mention goes to the following:&lt;/p&gt;
 &lt;ul&gt;
@@ -32053,16 +32473,15 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;iframe src=&#34;https://docs.google.com/forms/d/e/1FAIpQLSf672Vwguhe9GAmFGqtPMeGWzTamwzU2VcMtEFgaJWnP3YtBw/viewform?embedded=true&#34; width=&#34;640&#34; height=&#34;439&#34; frameborder=&#34;0&#34; marginheight=&#34;0&#34; marginwidth=&#34;0&#34;&gt;Loading…&lt;/iframe&gt;
 </description>
     </item>
     
     <item>
-      <title>Conferences in Economics and Finance</title>
+      <title>Economics Conferences</title>
       <link>https://matteocourthoud.github.io/post/conferences/</link>
       <pubDate>Mon, 10 Jan 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/conferences/</guid>
-      <description>&lt;p&gt;I will use this page to collect information about conferences in Economics and Finance.&lt;/p&gt;
+      <description>&lt;p&gt;In this page, I collect information about conferences in Economics and Finance.&lt;/p&gt;
 &lt;p&gt;If you know about public conferences or meetings that are missing from this list, please either &lt;a href=&#34;mailto:matteo.courthoud@econ.uzh.ch&#34;&gt;contact me&lt;/a&gt; or &lt;a href=&#34;https://github.com/matteocourthoud/website/blob/master/content/post/conferences/index.md&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;edit the table on Github&lt;/a&gt;!&lt;/p&gt;
 &lt;p&gt;Note that conferences are ordered by deadline and not by conference date.&lt;/p&gt;
 &lt;h2 id=&#34;january&#34;&gt;January&lt;/h2&gt;
@@ -32088,7 +32507,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;february&#34;&gt;February&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32114,7 +32532,7 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://cepr.org/6754/cfp-mainconference&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CEPR/JIE Conference on Applied IO&lt;/a&gt;&lt;/td&gt;
 &lt;td&gt;CEPR&lt;/td&gt;
 &lt;td style=&#34;text-align:left&#34;&gt;IO&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;&#34;&gt;February 10&lt;/a&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://matteocourthoud.github.io/post/conferences/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;February 10&lt;/a&gt;&lt;/td&gt;
 &lt;td&gt;Junior&lt;/td&gt;
 &lt;td&gt;08/06/21&lt;/td&gt;
 &lt;/tr&gt;
@@ -32184,7 +32602,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;march&#34;&gt;March&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32264,7 +32681,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;april&#34;&gt;April&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32303,10 +32719,10 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;td&gt;07/01/22&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;files/swissIOday2021_CallForPapers.pdf&#34;&gt;Swiss IO Day&lt;/a&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://matteocourthoud.github.io/post/conferences/files/swissIOday2021_CallForPapers.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Swiss IO Day&lt;/a&gt;&lt;/td&gt;
 &lt;td&gt;University of Bern&lt;/td&gt;
 &lt;td style=&#34;text-align:left&#34;&gt;IO&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;files/swissIOday2021_CallForPapers.pdf&#34;&gt;April 16&lt;/a&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://matteocourthoud.github.io/post/conferences/files/swissIOday2021_CallForPapers.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;April 16&lt;/a&gt;&lt;/td&gt;
 &lt;td&gt;All&lt;/td&gt;
 &lt;td&gt;11/06/21&lt;/td&gt;
 &lt;/tr&gt;
@@ -32328,7 +32744,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;may&#34;&gt;May&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32384,7 +32799,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;june&#34;&gt;June&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32416,7 +32830,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;july&#34;&gt;July&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32440,7 +32853,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;august&#34;&gt;August&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32472,7 +32884,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;september&#34;&gt;September&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32512,7 +32923,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;october&#34;&gt;October&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32552,7 +32962,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;november&#34;&gt;November&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32608,7 +33017,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;december&#34;&gt;December&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32632,7 +33040,6 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;br&gt;
 &lt;h2 id=&#34;undefined&#34;&gt;Undefined&lt;/h2&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -32732,11 +33139,11 @@ plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
     </item>
     
     <item>
-      <title>How to Work on a Remote Machine</title>
-      <link>https://matteocourthoud.github.io/post/remote/</link>
+      <title>How to Work on a Remote Machine via SSH</title>
+      <link>https://matteocourthoud.github.io/post/ssh/</link>
       <pubDate>Mon, 06 Dec 2021 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/remote/</guid>
-      <description>&lt;p&gt;In this page I will share tips on how to set up a remote machine and deploy your code there. I will first analyze SSH and then look at two specific applications: coding in Python and Julia.&lt;/p&gt;
+      <guid>https://matteocourthoud.github.io/post/ssh/</guid>
+      <description>&lt;p&gt;Welcome to my tutorial on how to set up a remote machine and deploy your code there. I will first analyze SSH and then look at two specific applications: coding in Python and Julia.&lt;/p&gt;
 &lt;h2 id=&#34;setup&#34;&gt;Setup&lt;/h2&gt;
 &lt;p&gt;In order to start working on a remote server you need&lt;/p&gt;
 &lt;ul&gt;
@@ -32773,7 +33180,7 @@ sudo systemctl start ssh
 &lt;p&gt;If you have MacOS there’s a chance you don’t have ssh-copy-id installed, in that case you can install it using&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;brew install ssh-copy-id
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;If you haven&amp;rsquo;t installed &lt;code&gt;brew&lt;/code&gt;, you can install it by following &lt;a href=&#34;https://brew.sh/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;this guide&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you haven’t installed &lt;code&gt;brew&lt;/code&gt;, you can install it by following &lt;a href=&#34;https://brew.sh/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;this guide&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;connect&#34;&gt;Connect&lt;/h2&gt;
 &lt;p&gt;To permanently add the SSH key, you can use the follwing command&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh-add directory\key.pem
@@ -32819,41 +33226,41 @@ sudo systemctl start ssh
 &lt;p&gt;If you are coding in Python, &lt;a href=&#34;https://www.jetbrains.com/pycharm/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyCharm&lt;/a&gt; is one of the best IDEs. Among many features, it offers the possibility to set a remote compiler for your pthon console and to sync input and output files automatically.&lt;/p&gt;
 &lt;p&gt;First, you need to have setup a remote SSH connection following the steps above. Importantly, you need to have added the public key to your machine using the &lt;code&gt;ssh-add&lt;/code&gt; command, as explained above.&lt;/p&gt;
 &lt;p&gt;Then open Pytharm, go to the lower-right corner, where the current interpreter is listed (e.g. Pytohn 3.8), click it and select &lt;code&gt;interpreter settings&lt;/code&gt;.&lt;/p&gt;
-&lt;img src=&#34;files/interpreter_settings.png&#34; alt=&#34;interpreter_settings&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;p&gt;&lt;img src=&#34;img/interpreter_settings.png&#34; alt=&#34;interpreter_settings&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Click on the gear icon ⚙️ on the top-right corner and select &lt;code&gt;add&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;files/add.png&#34; alt=&#34;add&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/add.png&#34; alt=&#34;add&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Insert the server &lt;code&gt;host&lt;/code&gt; (IP address, e.g. 132.132.132.132) and &lt;code&gt;username&lt;/code&gt; (e.g. sergiop).&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;files/configuration.png&#34; alt=&#34;configuration&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/configuration.png&#34; alt=&#34;configuration&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Next, you have to insert your credentials. If you have a password, insert it, otherwise you have to insert the path to your SSH key file.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;files/password.png&#34; alt=&#34;configuration&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/password.png&#34; alt=&#34;configuration&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Lastly, select the remote interpreter. If you are using a python version that is not default, browse to the preferred python installation folder. Also, check the box for &lt;code&gt;execute code giving this interpreter with root privileges via sudo&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;You can also select which remote folder to sync with your local project. By default, you are given a &lt;code&gt;tmp/pycharm_project_XX&lt;/code&gt; folder. You can change it if you want. I recommend also to have the last option checked: &lt;code&gt;automatically sync project files to the server&lt;/code&gt;. This will automatically synch all remote changes with your local machine, in your local project folder.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;files/folder.png&#34; alt=&#34;configuration&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/folder.png&#34; alt=&#34;configuration&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;julia-and-juno&#34;&gt;Julia and Juno&lt;/h2&gt;
-&lt;p&gt;If you are coding in Julia, &lt;a href=&#34;https://junolab.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Juno&lt;/a&gt; is the best IDE around. It&amp;rsquo;s an integration with &lt;a href=&#34;https://atom.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Atom&lt;/a&gt; with a dedicated compiler, local variables, syntax highlight, autocompletion.&lt;/p&gt;
+&lt;p&gt;If you are coding in Julia, &lt;a href=&#34;https://junolab.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Juno&lt;/a&gt; is the best IDE around. It’s an integration with &lt;a href=&#34;https://atom.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Atom&lt;/a&gt; with a dedicated compiler, local variables, syntax highlight, autocompletion.&lt;/p&gt;
 &lt;p&gt;On Atom, you first need to install the &lt;a href=&#34;https://github.com/h3imdall/ftp-remote-edit&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;ftp-remote-edit&lt;/code&gt;&lt;/a&gt; package.&lt;/p&gt;
 &lt;p&gt;Then go to the menu item &lt;code&gt;Packages &amp;gt; Ftp-Remote-Edit &amp;gt; Toggle&lt;/code&gt;.&lt;/p&gt;
-&lt;img src=&#34;files/toggle.png&#34; alt=&#34;julia&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;img src=&#34;img/toggle.png&#34; alt=&#34;julia&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;A new &lt;code&gt;Remote&lt;/code&gt; panel will open with the default button to &lt;code&gt;Edit a new server&lt;/code&gt;.&lt;/p&gt;
-&lt;img src=&#34;files/edit.png&#34; alt=&#34;julia&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;img src=&#34;img/edit.png&#34; alt=&#34;julia&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;Click it and you will be able to set up your remote connection.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Press &lt;code&gt;New&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;Insert your username in &lt;code&gt;The name of the server&lt;/code&gt;, for example &lt;code&gt;sergiop&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;Insert your ip adress  in &lt;code&gt;The hostname or IP adress of the server&lt;/code&gt;, for example &lt;code&gt;123.123.123.123&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Insert your ip adress in &lt;code&gt;The hostname or IP adress of the server&lt;/code&gt;, for example &lt;code&gt;123.123.123.123&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;Select &lt;code&gt;SFTP - SSH File Transfer Protocol&lt;/code&gt; under &lt;code&gt;Protocol&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;Select your &lt;code&gt;Logon&lt;/code&gt; option. You can either insert your password every time, just once, or use a keyfile.&lt;/li&gt;
 &lt;li&gt;Insert again your username in &lt;code&gt;Username for autentication&lt;/code&gt;, again for example &lt;code&gt;sergiop&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;If you don&amp;rsquo;t want to start from the root folder, you can change the &lt;code&gt;Initial Directory&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;If you don’t want to start from the root folder, you can change the &lt;code&gt;Initial Directory&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;files/julia.png&#34; alt=&#34;julia&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/julia.png&#34; alt=&#34;julia&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Now you will be able to see your remote directory (named for example &lt;code&gt;sergiop&lt;/code&gt;) in the &lt;code&gt;Remote&lt;/code&gt; panel.&lt;/p&gt;
 &lt;p&gt;To start using Julia remotely, just start a new remote Julia process from the menu on the left.&lt;/p&gt;
-&lt;img src=&#34;files/remote.png&#34; alt=&#34;julia&#34; style=&#34;zoom:50%;&#34; /&gt;
+&lt;img src=&#34;img/remote.png&#34; alt=&#34;julia&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;Now you are ready to deploy your Julia code on your remote server!&lt;/p&gt;
 &lt;h2 id=&#34;jupyter-notebooks&#34;&gt;Jupyter Notebooks&lt;/h2&gt;
 &lt;p&gt;If you want to have a &lt;a href=&#34;https://jupyter.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Jupyter Notebook&lt;/a&gt; running remotely, the steps are the following. The main advantage of a Jupyter Notebook is that it allows you to mix text and code in a single file, similarly to &lt;a href=&#34;https://rmarkdown.rstudio.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;RMarkdown&lt;/a&gt;, with the advantage of not being contrained to use a R (or Python) kernel. For example, I often use Jupyter Notebook with Julia or Matlab Kernels. Moreover, you can also make nice slides out of it!&lt;/p&gt;
-&lt;p&gt;First, connect to the remote machine. Look at &lt;a href=&#34;#setup&#34;&gt;section 1&lt;/a&gt; to set up your SSH connection.&lt;/p&gt;
+&lt;p&gt;First, connect to the remote machine. Look at &lt;a href=&#34;https://matteocourthoud.github.io/post/remote/#setup&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;section 1&lt;/a&gt; to set up your SSH connection.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh username@ip
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Start a Jupyter Notebook in the remote machine.&lt;/p&gt;
@@ -32861,14 +33268,14 @@ sudo systemctl start ssh
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The command will open a jupyter notebook in the remote machine. To connect to it, we need to know which port it used. The default port is &lt;code&gt;8888&lt;/code&gt;. If that port is busy, it will look for another available one. We can see the port from the output in terminal.&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;Jupyter Notebook is running at:  http://localhost:XXXX/&amp;hellip;&lt;/p&gt;
+&lt;p&gt;Jupyter Notebook is running at: http://localhost:XXXX/…&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Where &lt;code&gt;XXXX&lt;/code&gt; is the repote port used.&lt;/p&gt;
 &lt;p&gt;Now we need to forward the remote port &lt;code&gt;XXXX&lt;/code&gt; to our local &lt;code&gt;YYYY&lt;/code&gt; port.&lt;/p&gt;
 &lt;p&gt;Open a new &lt;em&gt;local&lt;/em&gt; shell. Type&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh -L localhost:YYYY:localhost:XXXX username@ip
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Where &lt;code&gt;YYYY&lt;/code&gt; can be anything. I&amp;rsquo;d use the default port &lt;code&gt;8888&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Where &lt;code&gt;YYYY&lt;/code&gt; can be anything. I’d use the default port &lt;code&gt;8888&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;ssh -L localhost:8889:localhost:8888 username@ip
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Now go to your browser and type&lt;/p&gt;
@@ -33070,463 +33477,145 @@ I compare existing approximation methods to compute Markow Perfect Equilibrium i
     
     <item>
       <title>My Color Palette</title>
-      <link>https://matteocourthoud.github.io/post/colors/</link>
+      <link>https://matteocourthoud.github.io/post/palette/</link>
       <pubDate>Sun, 24 Oct 2021 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/colors/</guid>
-      <description>&lt;p&gt;Ok, this is a fun post. I am choosing&amp;hellip; &lt;strong&gt;my color palette&lt;/strong&gt;!&lt;/p&gt;
-&lt;p&gt;I have decided to unify all the color palettes I have on my website, slides, graphs, etc&amp;hellip; into a unique universal color palette.&lt;/p&gt;
+      <guid>https://matteocourthoud.github.io/post/palette/</guid>
+      <description>&lt;p&gt;Ok, this is a fun post. I am choosing… &lt;strong&gt;my color palette&lt;/strong&gt;!&lt;/p&gt;
+&lt;p&gt;I have decided to unify all the color palettes I have on my website, slides, graphs, etc… into a unique universal color palette.&lt;/p&gt;
 &lt;h2 id=&#34;main-color&#34;&gt;Main Color&lt;/h2&gt;
 &lt;p&gt;First of all, I have to choose my main color.&lt;/p&gt;
-&lt;!-- Coolors Palette Widget --&gt;   
-&lt;script src=&#34;https://coolors.co/palette-widget/widget.js&#34;&gt;&lt;/script&gt;     
-&lt;script data-id=&#34;038499353489456634&#34;&gt;new CoolorsPaletteWidget(&#34;038499353489456634&#34;, [&#34;003f5c&#34;]); &lt;/script&gt;
-&lt;br&gt;
-&lt;p&gt;Here are some shades of it.&lt;/p&gt;
-&lt;!-- Coolors Palette Widget --&gt;
 &lt;script src=&#34;https://coolors.co/palette-widget/widget.js&#34;&gt;&lt;/script&gt;
-&lt;script data-id=&#34;030474315233368743&#34;&gt;new CoolorsPaletteWidget(&#34;030474315233368743&#34;, [&#34;002637&#34;,&#34;00324a&#34;,&#34;003f5c&#34;,&#34;17506b&#34;,&#34;2c6078&#34;]); &lt;/script&gt;
-&lt;br&gt;
+&lt;script data-id=&#34;09673912029165208&#34;&gt;new CoolorsPaletteWidget(&#34;09673912029165208&#34;, [&#34;003f5c&#34;,&#34;003f5c&#34;]); &lt;/script&gt;
+&lt;p&gt;Here are some shades of it.&lt;/p&gt;
+&lt;script src=&#34;https://coolors.co/palette-widget/widget.js&#34;&gt;&lt;/script&gt;
+&lt;script data-id=&#34;0683428549461768&#34;&gt;new CoolorsPaletteWidget(&#34;0683428549461768&#34;, [&#34;002637&#34;,&#34;00324a&#34;,&#34;003f5c&#34;,&#34;17506b&#34;,&#34;2c6078&#34;]); &lt;/script&gt;
 &lt;h2 id=&#34;related-palettes&#34;&gt;Related Palettes&lt;/h2&gt;
 &lt;p&gt;Now I will build a couple of colors palettes based on it.&lt;/p&gt;
 &lt;p&gt;The first one, is red oriented.&lt;/p&gt;
-&lt;!-- Coolors Palette Widget --&gt;
 &lt;script src=&#34;https://coolors.co/palette-widget/widget.js&#34;&gt;&lt;/script&gt;
-&lt;script data-id=&#34;04738379522618503&#34;&gt;new CoolorsPaletteWidget(&#34;04738379522618503&#34;, [&#34;003f5c&#34;,&#34;444e86&#34;,&#34;955196&#34;,&#34;dd5182&#34;,&#34;ff6e54&#34;,&#34;ffa600&#34;]); &lt;/script&gt;
-&lt;br&gt;
+&lt;script data-id=&#34;06164154396260932&#34;&gt;new CoolorsPaletteWidget(&#34;06164154396260932&#34;, [&#34;003f5c&#34;,&#34;444e86&#34;,&#34;955196&#34;,&#34;dd5182&#34;,&#34;ff6e54&#34;,&#34;ffa600&#34;]); &lt;/script&gt;
 &lt;p&gt;Second one, is green oriented.&lt;/p&gt;
-&lt;!-- Coolors Palette Widget --&gt;
 &lt;script src=&#34;https://coolors.co/palette-widget/widget.js&#34;&gt;&lt;/script&gt;
-&lt;script data-id=&#34;041398899421411417&#34;&gt;new CoolorsPaletteWidget(&#34;041398899421411417&#34;, [&#34;003f5c&#34;,&#34;00677f&#34;,&#34;00908f&#34;,&#34;2db88b&#34;,&#34;94dc7b&#34;,&#34;f9f871&#34;]); &lt;/script&gt;
-&lt;br&gt;
+&lt;script data-id=&#34;033203286745601424&#34;&gt;new CoolorsPaletteWidget(&#34;033203286745601424&#34;, [&#34;003f5c&#34;,&#34;00677f&#34;,&#34;00908f&#34;,&#34;2db88b&#34;,&#34;94dc7b&#34;,&#34;f9f871&#34;]); &lt;/script&gt;
 &lt;h2 id=&#34;color-sequence&#34;&gt;Color Sequence&lt;/h2&gt;
 &lt;p&gt;Now I need a high contrast scheme for graphs. I add one color at the time to check that contrast is always maximized.&lt;/p&gt;
-&lt;!-- Coolors Palette Widget --&gt;
-&lt;script src=&#34;https://coolors.co/palette-widget/widget.js&#34;&gt;&lt;/script&gt;
-&lt;script data-id=&#34;09725467508229444&#34;&gt;new CoolorsPaletteWidget(&#34;09725467508229444&#34;, [&#34;003f5c&#34;,&#34;ff6e54&#34;,&#34;f9f871&#34;,&#34;2db88b&#34;,&#34;955196&#34;]); &lt;/script&gt;
-&lt;br&gt;
+&lt;script src=&#34;https://coolors.co/palette-widget/widget.js&#34;&gt;&lt;/script&gt;       &lt;script data-id=&#34;0605466695047113&#34;&gt;new CoolorsPaletteWidget(&#34;0605466695047113&#34;, [&#34;003f5c&#34;,&#34;ff6e54&#34;,&#34;f9f871&#34;,&#34;2db88b&#34;,&#34;955196&#34;]); &lt;/script&gt;https://coolors.co/003f5c-ff6e54-f9f871-2db88b-955196)
 &lt;p&gt;A milder version of the same palette is:&lt;/p&gt;
-&lt;!-- Coolors Palette Widget --&gt;
-&lt;script src=&#34;https://coolors.co/palette-widget/widget.js&#34;&gt;&lt;/script&gt;
-&lt;script data-id=&#34;09460303923704312&#34;&gt;new CoolorsPaletteWidget(&#34;09460303923704312&#34;, [&#34;00798c&#34;,&#34;d1495b&#34;,&#34;edae49&#34;,&#34;52a369&#34;,&#34;756ab2&#34;]); &lt;/script&gt;
-&lt;h2 id=&#34;resources&#34;&gt;Resources&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;To generate the palette: &lt;a href=&#34;https://learnui.design/tools/data-color-picker.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://learnui.design/tools/data-color-picker.html&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;To generate the palette (2): &lt;a href=&#34;https://mycolor.space/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://mycolor.space/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;To get different shades of the same color: &lt;a href=&#34;https://www.tutorialrepublic.com/html-reference/html-color-picker.php&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.tutorialrepublic.com&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;To build the palette: &lt;a href=&#34;https://htmlcolorcodes.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://htmlcolorcodes.com/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;To test the palette: &lt;a href=&#34;http://colormind.io/bootstrap/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;http://colormind.io/bootstrap/&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;To embed the palette in a HTML page: &lt;a href=&#34;https://coolors.co/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://coolors.co/&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
+&lt;script src=&#34;https://coolors.co/palette-widget/widget.js&#34;&gt;&lt;/script&gt;       &lt;script data-id=&#34;007538072748725222&#34;&gt;new CoolorsPaletteWidget(&#34;007538072748725222&#34;, [&#34;00798c&#34;,&#34;d1495b&#34;,&#34;edae49&#34;,&#34;52a369&#34;,&#34;756ab2&#34;]); &lt;/script&gt;https://coolors.co/00798c-d1495b-edae49-52a369-756ab2)</description>
+    </item>
+    
+    <item>
+      <title>Foreclosure Complementarities</title>
+      <link>https://matteocourthoud.github.io/project/foreclosure/</link>
+      <pubDate>Fri, 01 Oct 2021 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/project/foreclosure/</guid>
+      <description>&lt;p&gt;In recent merger cases across complementary markets, antitrust authorities have expressed foreclosure concerns. In particular, the presence of scale economies in one market might propagate to the complementary market, ultimately leading to the monopolization of both. In this paper, we investigate the interplay between two foreclosure practices: exclusionary bundling and predatory pricing in the setting of complementary markets with economies of scale. We show that the two practices are complementary when markets display economies of scale, exclusionary bundling is more likely and, when bundling is allowed, predatory pricing is more likely. We show that this outcome is due to exit-inducing behavior of dominant firms: shutting down predatory incentives restores competition in both markets. We investigate different policies: banning mergers between market leaders, allowing product bundling only when more than one firm is integrated and able to offer the bundle, and lastly knowledge sharing across firms in order to limit the economies of scale. All policies are effective, each for a different reason.&lt;/p&gt;
 </description>
     </item>
     
     <item>
-      <title>Online Seminars in Economics and Finance</title>
-      <link>https://matteocourthoud.github.io/post/seminars/</link>
-      <pubDate>Sat, 09 Oct 2021 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/seminars/</guid>
-      <description>&lt;p&gt;I will use this page to collect information about online seminars in Economics and Finance.&lt;/p&gt;
-&lt;p&gt;If you know about public seminars that are missing from this list, please either &lt;a href=&#34;mailto:matteo.courthoud@econ.uzh.ch&#34;&gt;contact me&lt;/a&gt; or &lt;a href=&#34;https://github.com/matteocourthoud/website/blob/master/content/post/seminars/index.md&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;edit the table on Github&lt;/a&gt;!&lt;/p&gt;
-&lt;h2 id=&#34;monday&#34;&gt;Monday&lt;/h2&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:left&#34;&gt;Seminar&lt;/th&gt;
-&lt;th&gt;Field&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Time (CET)&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Registration&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Recorded&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://gametheorynetwork.com/one-world-game-theory-seminar/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;One World Mathematical Game Theory Seminar&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Theory&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;15:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;http://virtual-md-seminar.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Virtual Market Design Seminar Series&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Theory&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;16:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;http://virtual-md-seminar.com/registration.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/site/berlinappliedmicroseminar/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Berlin Applied Micro Seminar (BAMS)&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Applied&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;16:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sites.google.com/site/berlinappliedmicroseminar/co_hosted_events&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/vibesecon/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Virtual Behavioral Economics Seminar (VIBES)&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Behavioral&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;17:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://forms.gle/nAE6VLEZQqeRkSuK6&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://vquantmarketing.substack.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Virtual Quantitative Marketing Seminar&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Marketing&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;17:30&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://vquantmarketing.substack.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sammf.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Search and Matching in Macro and Finance Virtual Seminar Series&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Macro&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;18:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sammf.com/sign-up/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h2 id=&#34;tuesday&#34;&gt;Tuesday&lt;/h2&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:left&#34;&gt;Seminar&lt;/th&gt;
-&lt;th&gt;Field&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Time (CET)&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Registration&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Recorded&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://www.tse-fr.eu/new-online-seminar-economics-platforms&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Online Economics of Platforms Seminar&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;IO&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;14:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;mailto:marie-helene.dufour@tse-fr.eu&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.youtube.com/channel/UCQLTomj3LkQ_8rKGfxxmYvw&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://persuasion.wp.st-andrews.ac.uk/seminars/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Seminar Series on Communication and Persuasion&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Theory&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;16:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://docs.google.com/forms/d/e/1FAIpQLSc3Sq3GGNDEIa5lcbda9a45sjVldHZrJlRKH-jyPobZ1oE2Aw/viewform?usp=sf_link&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/ocis/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Online Causal Inference Seminar&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Econometrics&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;16:30&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.google.com/url?q=https%3A%2F%2Fmailman.stanford.edu%2Fmailman%2Flistinfo%2Fonline-causal-inference-seminar&amp;amp;sa=D&amp;amp;sntz=1&amp;amp;usg=AFQjCNGgPMLB-5Iv0SRBiJHXlIhxo2ta2A&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/ocis/past-talks-and-recordings?authuser=0&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://vdevecon.wixsite.com/website&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Virtual Development Economics Seminar Series (VDEV)&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Development&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;17:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://us02web.zoom.us/webinar/register/WN_m4Ws1VxXRry_kwZoT8T5WA&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.youtube.com/channel/UC9NMehzZBlChKSiie1DFCaA/featured?view_as=public&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/virtualmacro/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Virtual Macro Seminar Series&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Macro&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;18:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.google.com/url?q=https%3A%2F%2Fstockholmuniversity.zoom.us%2Fwebinar%2Fregister%2F7815862675026%2FWN_yNkq5FpES9yJjpjdqYWFbA&amp;amp;sa=D&amp;amp;sntz=1&amp;amp;usg=AFQjCNHWMu_cBPhLdq_uqy1eugAzEy2bzg&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/virtualmacro/past-seminars&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/lfos&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Labor &amp;amp; Finance Online Seminar&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Labor&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;19:15&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/lfos/register&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://web.stanford.edu/~leinav/teaching/IOIOspring2020.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Interactive Online IO Seminar (IO^2)&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;IO&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;21:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://stanford.zoom.us/webinar/register/WN_A85qA0DSQmmJeHBimyw2MQ&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h2 id=&#34;wednesday&#34;&gt;Wednesday&lt;/h2&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:left&#34;&gt;Seminar&lt;/th&gt;
-&lt;th&gt;Field&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Time (CET)&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Registration&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Recorded&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/virtual-io-seminar/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CEPR Virtual IO Seminar (VIOS)&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;IO&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;16:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://drive.google.com/open?id=1-dtGhiM2EqtXnkTztoLzDO7cNB_ekOFfbuckSSIotxU&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://mailchi.mp/cepr/cepr-webinar-polecon-series-reminder&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CEPR Political Economy Seminar Series&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Political&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;16:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://zoom.us/webinar/register/WN_3MqzgQR2RQ-1nu8DD2LxeA&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://www.jku.at/en/department-of-economics/research/research-events/online-economics-research-seminar/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;ONLINE Economics Research Seminar (JKU)&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Applied&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;16:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;mailto:alexander.ahammer@jku.at&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.jku.at/en/department-of-economics/research/research-events/online-economics-research-seminar/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://economics.uchicago.edu/content/afe-seminar-series&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Virtual AFE Seminar Series&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Experimental&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;18:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://economics.uchicago.edu/content/afe-2020&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://drive.google.com/file/d/1FEnt42opuzpQiJtPUF1lHqN3Zdp9mdhZ/view&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Virtual Finance Theory Seminar&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Finance&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;18:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;mailto:[virtualfinancetheoryseminar.com]%28mailto:mail@virtualfinancetheoryseminar.com%29&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/site/plustcs/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;TCS+&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Computer Science&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;19:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sites.google.com/site/plustcs/livetalk/live-seat-reservation&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sites.google.com/site/plustcs/past-talks&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;http://tamuz.caltech.edu/cettc/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Caltech Economic Theory at the Time of Cholera&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Theory&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;21:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;http://tamuz.caltech.edu/cettc/#x1-50003&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h2 id=&#34;thursday&#34;&gt;Thursday&lt;/h2&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:left&#34;&gt;Seminar&lt;/th&gt;
-&lt;th&gt;Field&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Time (CET)&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Registration&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Recorded&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/euro-quant-marketing-seminar/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;European Quant Marketing Seminar&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Marketing&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;14:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/euro-quant-marketing-seminar/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/macci-epos-virtual-io-seminar&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;MaCCI EPoS Virtual IO Seminar&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;IO&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;15:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/macci-epos-virtual-io-seminar/program/registration&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://www.digitalecon.org/seminar&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Virtual Digital Economy Seminar (VIDE)&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Media&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;16:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.digitalecon.org/seminar&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.digitalecon.org/seminar/past-seminars&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;http://middexlab.weebly.com/virtual-seminar-series.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;MiddExLab Virtual Seminar Series&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Experimental&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;18:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;http://middexlab.weebly.com/virtual-seminar-series.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://www.tradedynamics.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Virtual International Trade and Macro Seminar&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Macro&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;20:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://forms.gle/uiNjSptWjvucDbHSA&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.tradedynamics.org/video-archive&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h2 id=&#34;friday&#34;&gt;Friday&lt;/h2&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th style=&#34;text-align:left&#34;&gt;Seminar&lt;/th&gt;
-&lt;th&gt;Field&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Time (CET)&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Registration&lt;/th&gt;
-&lt;th style=&#34;text-align:center&#34;&gt;Recorded&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/comsoc-seminar/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;International Seminar Series on Social Choice (COMSOC)&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Theory&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;15:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.google.com/url?q=https%3A%2F%2Flist.uva.nl%2Fmailman%2Flistinfo%2Fcomsoc-video-seminar&amp;amp;sa=D&amp;amp;sntz=1&amp;amp;usg=AFQjCNEAx47kVC25VUer3fp05Mw7vcZwuA&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/comsoc-seminar/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://web.stanford.edu/~leinav/teaching/IOIOspring2020.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Interactive Online IO Seminar (IO^2)&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;IO&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;16:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://stanford.zoom.us/webinar/register/WN_Tb_FyMJ1RCeNF1HmCVvjMQ&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/dcpec/events/webinar&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Political Economy Webinar Series&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Political&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;17:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://forms.gle/yohLo3pk898Yq9Sf9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://www.chamberlainseminar.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Gary Chamberlain Online Seminar&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Econometrics&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;18:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.google.com/url?q=https%3A%2F%2Fmailman.stanford.edu%2Fmailman%2Flistinfo%2Fchamberlainseminar&amp;amp;sa=D&amp;amp;sntz=1&amp;amp;usg=AFQjCNHJFMMiJMowt_vAtuBWbrK-4PA2IA&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://www.chamberlainseminar.org/past-seminars&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://www.virtualfinance.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Virtual Finance Workshop&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Finance&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;18:30&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;http://www.google.com/url?q=http%3A%2F%2Feepurl.com%2FgYBYvP&amp;amp;sa=D&amp;amp;sntz=1&amp;amp;usg=AFQjCNGNgL-zAqniptGfniTAeZ_cTkOyLg&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;http://www.rohitlamba.com/penntheon&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Penn State Theory Online&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Theory&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;20:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;mailto:l-micropenntheon-subscribe-request@lists.psu.edu&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;http://www.rohitlamba.com/penntheon&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/dstheory/home&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Foundations of Data Science Virtual Talk Series&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Computer Science&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;20:00&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;No&lt;/td&gt;
-&lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://sites.google.com/view/dstheory/past-talks&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Yes&lt;/a&gt;&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Frequently Asked Questions in a PhD</title>
-      <link>https://matteocourthoud.github.io/post/faq/</link>
-      <pubDate>Tue, 05 Oct 2021 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/faq/</guid>
-      <description>&lt;p&gt;In this page I will collect anquestions that I frequently asked myself during my PhD, possibly with answers.&lt;/p&gt;
+      <title>PhD Frequently Asked Questions</title>
+      <link>https://matteocourthoud.github.io/post/phd_faq/</link>
+      <pubDate>Fri, 01 Oct 2021 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/phd_faq/</guid>
+      <description>&lt;p&gt;In this page, I collect anquestions that I frequently asked myself during my PhD, possibly with answers.&lt;/p&gt;
 &lt;p&gt;Personally, the article for PhD students that helped me the most is &lt;a href=&#34;https://medium.com/@paul.niehaus/doing-research-18cb310529e0&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Doing research”&lt;/a&gt; by Paul Niehaus. But beware, it might not work for everyone.&lt;/p&gt;
 &lt;h2 id=&#34;starting-the-phd&#34;&gt;Starting the PhD&lt;/h2&gt;
 &lt;h3 id=&#34;information&#34;&gt;Information&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/d41586-019-03459-7?sf223557541=1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;PhDs: the tortuous truth&amp;rdquo;&lt;/a&gt;, Chris Woolston, 2019.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://medium.economist.com/why-doing-a-phd-is-often-a-waste-of-time-349206f9addb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Why doing a PhD is often a waste of time&amp;rdquo;&lt;/a&gt;, The Economist, 2016&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.theguardian.com/careers/phd-right-career-option&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Should you do a PhD?&amp;quot;&lt;/a&gt;, Daniel K. Sokol, 2012.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://tertilt.vwl.uni-mannheim.de/bachelor/GradSchoolGuide.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;So, you want to go to a grad school in economics?&amp;quot;&lt;/a&gt;, Ceyhun Elgin and Mario Solis-Garcia, 2007.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/d41586-019-03459-7?sf223557541=1&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“PhDs: the tortuous truth”&lt;/a&gt;, Chris Woolston, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.economist.com/why-doing-a-phd-is-often-a-waste-of-time-349206f9addb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Why doing a PhD is often a waste of time”&lt;/a&gt;, The Economist, 2016&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.theguardian.com/careers/phd-right-career-option&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Should you do a PhD?&amp;quot;&lt;/a&gt;, Daniel K. Sokol, 2012.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://tertilt.vwl.uni-mannheim.de/bachelor/GradSchoolGuide.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“So, you want to go to a grad school in economics?&amp;quot;&lt;/a&gt;, Ceyhun Elgin and Mario Solis-Garcia, 2007.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;applying&#34;&gt;Applying&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://james-tierney.medium.com/how-to-ask-your-professor-for-a-letter-of-recommendation-f06e8b2f2c64&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to Ask Your Professor for a Letter of Recommendation&amp;rdquo;&lt;/a&gt;, James Tierney, 2020.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://drive.google.com/file/d/16eUvtahziPyBTpX_ZeyXjPck2OyinfHH/view&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Pre-Doc Guide&amp;rdquo;&lt;/a&gt;, Alvin Christian, 2019.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://athey.people.stanford.edu/professional-advice&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Advice for Applying to Grad School in Economics&amp;rdquo;&lt;/a&gt;, Susan Athey, 2016.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://qz.com/116081/the-complete-guide-to-getting-into-an-economics-phd-program/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The complete guide to getting into an economics PhD program&amp;rdquo;&lt;/a&gt;, Miles Kimball, 2013.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.ericzwick.com/public_goods/twelve_steps.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The 12 Step Program for Grad School&amp;rdquo;&lt;/a&gt;, Erik Zwick.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://james-tierney.medium.com/how-to-ask-your-professor-for-a-letter-of-recommendation-f06e8b2f2c64&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How to Ask Your Professor for a Letter of Recommendation”&lt;/a&gt;, James Tierney, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://drive.google.com/file/d/16eUvtahziPyBTpX_ZeyXjPck2OyinfHH/view&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Pre-Doc Guide”&lt;/a&gt;, Alvin Christian, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://athey.people.stanford.edu/professional-advice&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Advice for Applying to Grad School in Economics”&lt;/a&gt;, Susan Athey, 2016.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://qz.com/116081/the-complete-guide-to-getting-into-an-economics-phd-program/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“The complete guide to getting into an economics PhD program”&lt;/a&gt;, Miles Kimball, 2013.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.ericzwick.com/public_goods/twelve_steps.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“The 12 Step Program for Grad School”&lt;/a&gt;, Erik Zwick.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;starting&#34;&gt;Starting&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/hagertynw/grad-school-reflections/blob/master/grad_school_reflections.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Reflections on Grad School in Economics&amp;rdquo;&lt;/a&gt;, Nick Hagerty, 2020.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://law.vanderbilt.edu/phd/How_to_Survive_1st_Year.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to survive your first year of graduate school in economics&amp;rdquo;&lt;/a&gt;, Matthew Pearson, 2005.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/hagertynw/grad-school-reflections/blob/master/grad_school_reflections.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Reflections on Grad School in Economics”&lt;/a&gt;, Nick Hagerty, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://law.vanderbilt.edu/phd/How_to_Survive_1st_Year.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How to survive your first year of graduate school in economics”&lt;/a&gt;, Matthew Pearson, 2005.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;during-the-phd&#34;&gt;During the PhD&lt;/h2&gt;
 &lt;h3 id=&#34;mental-health&#34;&gt;Mental Health&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://scholar.harvard.edu/files/bolotnyy/files/bbb_mentalhealth_paper.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Graduate Student Mental Health: Lessons from American Economics Departments&amp;rdquo;&lt;/a&gt;, Bolotnyy, Valentin, Matthew Basilico, and Paul Barreira, 2021.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.insidehighered.com/news/2019/11/14/phd-student-poll-finds-mental-health-bullying-and-career-uncertainty-are-top&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Mental Health, Bullying, Career Uncertainty&amp;rdquo;&lt;/a&gt;, Colleen Flahert, 2019.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.sciencemag.org/careers/2019/03/how-mindfulness-can-help-phd-students-deal-mental-health-challenges&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How mindfulness can help Ph.D. students deal with mental health challenges&amp;rdquo;&lt;/a&gt;, Katie Langin, 2019.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.phdstudies.com/article/managing-your-mental-health-as-a-phd-student/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Managing Your Mental Health as a PhD Student&amp;rdquo;&lt;/a&gt;, Joanna Hughes, 2019.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.psychologytoday.com/us/blog/emotional-mastery/201904/what-makes-it-so-hard-ask-help&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;What Makes It So Hard to Ask for Help?&amp;quot;&lt;/a&gt;, Joan Rosenberg, 2019.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.sciencemag.org/careers/2018/11/grad-school-depression-almost-took-me-end-road-i-found-new-start&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Grad school depression almost took me to the end of the road—but I found a new start&amp;rdquo;&lt;/a&gt;, Francis Aguisanda, 2018.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/nj7587-555a.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Faking it&amp;rdquo;&lt;/a&gt;, Chris Woolston, 2016.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://blogs.nature.com/naturejobs/2016/09/14/panic-and-a-phd/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Panic and a PhD&amp;rdquo;&lt;/a&gt;, Jack Leeming, 2016.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://qz.com/547641/theres-an-awful-cost-to-getting-a-phd-that-no-one-talks-about/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;There’s an awful cost to getting a PhD that no one talks about&amp;rdquo;&lt;/a&gt;, Jennifer Walker, 2015.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://scholar.harvard.edu/files/bolotnyy/files/bbb_mentalhealth_paper.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Graduate Student Mental Health: Lessons from American Economics Departments”&lt;/a&gt;, Bolotnyy, Valentin, Matthew Basilico, and Paul Barreira, 2021.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.insidehighered.com/news/2019/11/14/phd-student-poll-finds-mental-health-bullying-and-career-uncertainty-are-top&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Mental Health, Bullying, Career Uncertainty”&lt;/a&gt;, Colleen Flahert, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.sciencemag.org/careers/2019/03/how-mindfulness-can-help-phd-students-deal-mental-health-challenges&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How mindfulness can help Ph.D. students deal with mental health challenges”&lt;/a&gt;, Katie Langin, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.phdstudies.com/article/managing-your-mental-health-as-a-phd-student/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Managing Your Mental Health as a PhD Student”&lt;/a&gt;, Joanna Hughes, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.psychologytoday.com/us/blog/emotional-mastery/201904/what-makes-it-so-hard-ask-help&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“What Makes It So Hard to Ask for Help?&amp;quot;&lt;/a&gt;, Joan Rosenberg, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.sciencemag.org/careers/2018/11/grad-school-depression-almost-took-me-end-road-i-found-new-start&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Grad school depression almost took me to the end of the road—but I found a new start”&lt;/a&gt;, Francis Aguisanda, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/nj7587-555a.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Faking it”&lt;/a&gt;, Chris Woolston, 2016.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://blogs.nature.com/naturejobs/2016/09/14/panic-and-a-phd/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Panic and a PhD”&lt;/a&gt;, Jack Leeming, 2016.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://qz.com/547641/theres-an-awful-cost-to-getting-a-phd-that-no-one-talks-about/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“There’s an awful cost to getting a PhD that no one talks about”&lt;/a&gt;, Jennifer Walker, 2015.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;research-and-ideas&#34;&gt;Research and Ideas&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.ricardodahis.com/files/papers/Dahis_Advice_Research.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Advice for Academic Research&amp;rdquo;&lt;/a&gt;, Ricardo Dahis, 2021.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.20191573&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Sins of Omission and the Practice of Economics&amp;rdquo;&lt;/a&gt;, George A. Akerlof, 2020.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://medium.com/@paul.niehaus/doing-research-18cb310529e0&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Doing research&amp;rdquo;&lt;/a&gt;, Paul Niehaus, 2019.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://static1.squarespace.com/static/55c143d9e4b0cb07521c6d17/t/5b4f409f575d1ff83c2f12d8/1531920545061/PhDGuidebook.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;An unofficial guidebook for PhD students in economics and education&amp;rdquo;&lt;/a&gt;, Alex Eble, 2018.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/0ha9gcq0t22kyyy1rqv15mkmauw1py18&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Research Productivity of New PhDs in Economics: The Surprisingly High Non-Success of the Successful&amp;rdquo;&lt;/a&gt;, John P. Conley and Ali Sina Önder, 2014.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://econ.lse.ac.uk/staff/spischke/phds/How%20to%20start.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to get started on research in economics?&amp;quot;&lt;/a&gt;, Steve Pischke, 2009.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/km7cxhcxgfcdpk4cp38b47x7is7lum11&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Importance of Stupidity in Scientific Research&amp;rdquo;&lt;/a&gt;, Martin A. Schwartz, 2008.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://stevepavlina.com/blog/2007/01/7-rules-for-maximizing-your-creative-output/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;7 Rules for Maximizing Your Creative Output&amp;rdquo;&lt;/a&gt;, Steve Pavlina, 2007.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://people.ischool.berkeley.edu/~hal/Papers/how.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How To Build An Economic Model in Your Spare Time&amp;rdquo;&lt;/a&gt;, Hal. R. Varian, 1998.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.columbia.edu/~drd28/Thesis%20Research.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Ph.D. Thesis Research: Where do I Start?&amp;quot;&lt;/a&gt;, Don Davis.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.ricardodahis.com/files/papers/Dahis_Advice_Research.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Advice for Academic Research”&lt;/a&gt;, Ricardo Dahis, 2021.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.20191573&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Sins of Omission and the Practice of Economics”&lt;/a&gt;, George A. Akerlof, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/@paul.niehaus/doing-research-18cb310529e0&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Doing research”&lt;/a&gt;, Paul Niehaus, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://static1.squarespace.com/static/55c143d9e4b0cb07521c6d17/t/5b4f409f575d1ff83c2f12d8/1531920545061/PhDGuidebook.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“An unofficial guidebook for PhD students in economics and education”&lt;/a&gt;, Alex Eble, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/0ha9gcq0t22kyyy1rqv15mkmauw1py18&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“The Research Productivity of New PhDs in Economics: The Surprisingly High Non-Success of the Successful”&lt;/a&gt;, John P. Conley and Ali Sina Önder, 2014.&lt;/li&gt;
+&lt;li&gt;[“How to get started on research in economics?&amp;quot;](&lt;a href=&#34;http://econ.lse.ac.uk/staff/spischke/phds/How&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;http://econ.lse.ac.uk/staff/spischke/phds/How&lt;/a&gt; to start.pdf), Steve Pischke, 2009.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/km7cxhcxgfcdpk4cp38b47x7is7lum11&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“The Importance of Stupidity in Scientific Research”&lt;/a&gt;, Martin A. Schwartz, 2008.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://stevepavlina.com/blog/2007/01/7-rules-for-maximizing-your-creative-output/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“7 Rules for Maximizing Your Creative Output”&lt;/a&gt;, Steve Pavlina, 2007.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://people.ischool.berkeley.edu/~hal/Papers/how.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How To Build An Economic Model in Your Spare Time”&lt;/a&gt;, Hal. R. Varian, 1998.&lt;/li&gt;
+&lt;li&gt;[“Ph.D. Thesis Research: Where do I Start?&amp;quot;](&lt;a href=&#34;http://www.columbia.edu/~drd28/Thesis&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;http://www.columbia.edu/~drd28/Thesis&lt;/a&gt; Research.pdf), Don Davis.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;presenting&#34;&gt;Presenting&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;http://david-schindler.de/unfair-questions/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Unfair Questions&amp;rdquo;&lt;/a&gt;, David Schindler, 2021.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://github.com/paulgp/beamer-tips/blob/master/slides.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Beamer Tips for Presentations&amp;rdquo;&lt;/a&gt;, Paul Goldsmith-Pinkham, 2020.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.princeton.edu/~reddings/tradephd/public_speaking_for_academic_economists.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Public Speaking for Academic Economists&amp;rdquo;&lt;/a&gt;, Rachel Meager, 2017.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.europeanjobmarketofeconomists.org/uploads/HowToPresent_LaFerrara.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to present your job market paper&amp;rdquo;&lt;/a&gt;, Eliana La Ferrara, 2018.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://people.bu.edu/guren/Guren_HowToGiveALunchTalk.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How To Give a Lunch Talk&amp;rdquo;&lt;/a&gt;, Adam Guren, 2018.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://chrisblattman.com/2010/02/22/the-discussants-art/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Discussant&amp;rsquo;s Art&amp;rdquo;&lt;/a&gt;, Chris Blattman, 2010.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1332144&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to be a Great Conference Participants&amp;rdquo;&lt;/a&gt;, Art Carden, 2009.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://econ.lse.ac.uk/staff/spischke/phds/The%20Big%205.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The &amp;ldquo;Big 5&amp;rdquo; and Other Ideas For Presentations&amp;rdquo;&lt;/a&gt;, Cox, Donald,  2000.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/aw92d7kl7xh5s4zsub8jq3qnknq9zcsi&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to Give an Applied Micro Talk&amp;rdquo;&lt;/a&gt;, Jesse M. Shapiro.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/37j3eip7x9fdg30n4eeepu92228eb999&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Tips on How to Avoid Disaster in Presentations&amp;rdquo;&lt;/a&gt;, Monika Piazzesi.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.ssc.wisc.edu/~bhansen/placement/Seminar%20Slides.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Seminar Slides &amp;ldquo;&lt;/a&gt;, Bruce Hansen.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://david-schindler.de/unfair-questions/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Unfair Questions”&lt;/a&gt;, David Schindler, 2021.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://github.com/paulgp/beamer-tips/blob/master/slides.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Beamer Tips for Presentations”&lt;/a&gt;, Paul Goldsmith-Pinkham, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.princeton.edu/~reddings/tradephd/public_speaking_for_academic_economists.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Public Speaking for Academic Economists”&lt;/a&gt;, Rachel Meager, 2017.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.europeanjobmarketofeconomists.org/uploads/HowToPresent_LaFerrara.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How to present your job market paper”&lt;/a&gt;, Eliana La Ferrara, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://people.bu.edu/guren/Guren_HowToGiveALunchTalk.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How To Give a Lunch Talk”&lt;/a&gt;, Adam Guren, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://chrisblattman.com/2010/02/22/the-discussants-art/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“The Discussant’s Art”&lt;/a&gt;, Chris Blattman, 2010.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1332144&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How to be a Great Conference Participants”&lt;/a&gt;, Art Carden, 2009.&lt;/li&gt;
+&lt;li&gt;[“The “Big 5” and Other Ideas For Presentations”](&lt;a href=&#34;http://econ.lse.ac.uk/staff/spischke/phds/The&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;http://econ.lse.ac.uk/staff/spischke/phds/The&lt;/a&gt; Big 5.pdf), Cox, Donald, 2000.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/aw92d7kl7xh5s4zsub8jq3qnknq9zcsi&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How to Give an Applied Micro Talk”&lt;/a&gt;, Jesse M. Shapiro.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/37j3eip7x9fdg30n4eeepu92228eb999&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Tips on How to Avoid Disaster in Presentations”&lt;/a&gt;, Monika Piazzesi.&lt;/li&gt;
+&lt;li&gt;[“Seminar Slides “](&lt;a href=&#34;https://www.ssc.wisc.edu/~bhansen/placement/Seminar&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.ssc.wisc.edu/~bhansen/placement/Seminar&lt;/a&gt; Slides.pdf), Bruce Hansen.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;writing&#34;&gt;Writing&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.google.com/url?q=https%3A%2F%2Fwww.dropbox.com%2Fs%2Fq7wjaidl5w91srt%2FGuest%20lecture%20FS.pdf%3Fdl%3D0&amp;amp;sa=D&amp;amp;sntz=1&amp;amp;usg=AFQjCNG_nRs6QlkZzWBHAy0PjF4jfEYBAw&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;5 Steps Toward a Paper&amp;rdquo;&lt;/a&gt;, Frank Schilbach, 2019.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/d41586-019-02918-5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Novelist Cormac McCarthy’s tips on how to write a great science paper&amp;rdquo;&lt;/a&gt;, Van Savage and Pamela Yeh, 2019.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://marcfbellemare.com/wordpress/12797&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The “Middle Bits” Formula for Applied Papers&amp;rdquo;&lt;/a&gt;, Marc Bellamare, 2018.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://marcfbellemare.com/wordpress/12060&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Conclusion Formula&amp;rdquo;&lt;/a&gt;, Marc Bellamare, 2018.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.albany.edu/spatial/training/5-The%20Introduction%20Formula.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Introduction Formula&amp;rdquo;&lt;/a&gt;, Keith Head, 2015.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.people.fas.harvard.edu/~pnikolov/resources/writingtips.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Writing Tips For Economics Research Papers&amp;rdquo;&lt;/a&gt;, Plamen Nikolov, 2013.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://economics.harvard.edu/files/economics/files/tenruleswriting.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Ten Most Important Rules of Writing Your Job Market Paper&amp;rdquo;&lt;/a&gt;, Goldin, Claudia and Lawrence Katz, 2008.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://schwert.ssb.rochester.edu/aec510/phd_paper_writing.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Writing Tips for Ph.D. Students&amp;rdquo;&lt;/a&gt;, John Cochrane, 2005.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://qed.econ.queensu.ca/pub/faculty/sumon/mkremer_checklist_paper.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Writing Papers: A Checklist&amp;rdquo;&lt;/a&gt;, Michael Kremer.&lt;/li&gt;
+&lt;li&gt;[“5 Steps Toward a Paper”](&lt;a href=&#34;https://www.google.com/url?q=https%3A%2F%2Fwww.dropbox.com%2Fs%2Fq7wjaidl5w91srt%2FGuest&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.google.com/url?q=https%3A%2F%2Fwww.dropbox.com%2Fs%2Fq7wjaidl5w91srt%2FGuest&lt;/a&gt; lecture FS.pdf%3Fdl%3D0&amp;amp;sa=D&amp;amp;sntz=1&amp;amp;usg=AFQjCNG_nRs6QlkZzWBHAy0PjF4jfEYBAw), Frank Schilbach, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/d41586-019-02918-5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Novelist Cormac McCarthy’s tips on how to write a great science paper”&lt;/a&gt;, Van Savage and Pamela Yeh, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://marcfbellemare.com/wordpress/12797&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“The “Middle Bits” Formula for Applied Papers”&lt;/a&gt;, Marc Bellamare, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://marcfbellemare.com/wordpress/12060&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“The Conclusion Formula”&lt;/a&gt;, Marc Bellamare, 2018.&lt;/li&gt;
+&lt;li&gt;[“The Introduction Formula”](&lt;a href=&#34;https://www.albany.edu/spatial/training/5-The&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://www.albany.edu/spatial/training/5-The&lt;/a&gt; Introduction Formula.pdf), Keith Head, 2015.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.people.fas.harvard.edu/~pnikolov/resources/writingtips.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Writing Tips For Economics Research Papers”&lt;/a&gt;, Plamen Nikolov, 2013.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://economics.harvard.edu/files/economics/files/tenruleswriting.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“The Ten Most Important Rules of Writing Your Job Market Paper”&lt;/a&gt;, Goldin, Claudia and Lawrence Katz, 2008.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://schwert.ssb.rochester.edu/aec510/phd_paper_writing.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Writing Tips for Ph.D. Students”&lt;/a&gt;, John Cochrane, 2005.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://qed.econ.queensu.ca/pub/faculty/sumon/mkremer_checklist_paper.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Writing Papers: A Checklist”&lt;/a&gt;, Michael Kremer.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;referiing&#34;&gt;Referiing&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://blog.academicsequitur.com/2019/06/30/how-to-write-a-good-referee-report/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How To Write A Good Referee Report&amp;rdquo;&lt;/a&gt;, Tatyana Deryugina, 2019.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/lgmhqw5uxvrb7qdrhxxskzki9pcwx7o6&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How to Review Manuscripts&amp;rdquo;&lt;/a&gt;, Elsevier, 2015.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://marcfbellemare.com/wordpress/5542&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Contributing to Public Goods: My 20 Rules for Refereeing&amp;rdquo;&lt;/a&gt;, Marc F. Bellemare, 2012&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blog.academicsequitur.com/2019/06/30/how-to-write-a-good-referee-report/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How To Write A Good Referee Report”&lt;/a&gt;, Tatyana Deryugina, 2019.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://iu.box.com/s/lgmhqw5uxvrb7qdrhxxskzki9pcwx7o6&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How to Review Manuscripts”&lt;/a&gt;, Elsevier, 2015.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://marcfbellemare.com/wordpress/5542&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Contributing to Public Goods: My 20 Rules for Refereeing”&lt;/a&gt;, Marc F. Bellemare, 2012&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;finishing-the-phd&#34;&gt;Finishing the PhD&lt;/h2&gt;
 &lt;h3 id=&#34;the-job-market&#34;&gt;The Job Market&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.aeaweb.org/content/file?id=869&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;A Guide and Advice for Economists on the U.S. Junior Academic Job Market 2018-2019 Edition&amp;rdquo;&lt;/a&gt;, John Cawley, 2018.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://chrisblattman.com/job-market/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Academic job market advice for economics, political science, public policy, and other professional schools&amp;rdquo;&lt;/a&gt;, Blattman, Christopher,  2015.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;http://www.ericzwick.com/public_goods/love_the_market.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;How I Learned to Stop Worrying and Love the Job Market&amp;rdquo;&lt;/a&gt;, Erik Zwick, 2014.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.aeaweb.org/content/file?id=869&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“A Guide and Advice for Economists on the U.S. Junior Academic Job Market 2018-2019 Edition”&lt;/a&gt;, John Cawley, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://chrisblattman.com/job-market/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Academic job market advice for economics, political science, public policy, and other professional schools”&lt;/a&gt;, Blattman, Christopher, 2015.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;http://www.ericzwick.com/public_goods/love_the_market.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“How I Learned to Stop Worrying and Love the Job Market”&lt;/a&gt;, Erik Zwick, 2014.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;the-private-sector&#34;&gt;The Private Sector&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.linkedin.com/pulse/my-journey-from-economics-phd-data-scientist-tech-rose-tan&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;My Journey from Economics PhD to Data Scientist in Tech&amp;rdquo;&lt;/a&gt;, Rose Tan, 2021.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://scarlet-chen.medium.com/tech-industry-jobs-for-econ-phds-54a276dda80b&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Tech Industry Jobs for Econ PhDs&amp;rdquo;&lt;/a&gt;, Scarlet Chen, 2020.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://scarlet-chen.medium.com/my-journey-from-econ-phd-to-tech-part-1-interview-prep-networking-d256918410a2&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;My Journey from Econ PhD to Tech&amp;rdquo;&lt;/a&gt;, Scarlet Chen, 2020.&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/d41586-018-05838-y&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Why it is not a ‘failure’ to leave academia&amp;rdquo;&lt;/a&gt;, Philipp Kruger, 2018.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.linkedin.com/pulse/my-journey-from-economics-phd-data-scientist-tech-rose-tan&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“My Journey from Economics PhD to Data Scientist in Tech”&lt;/a&gt;, Rose Tan, 2021.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://scarlet-chen.medium.com/tech-industry-jobs-for-econ-phds-54a276dda80b&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Tech Industry Jobs for Econ PhDs”&lt;/a&gt;, Scarlet Chen, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://scarlet-chen.medium.com/my-journey-from-econ-phd-to-tech-part-1-interview-prep-networking-d256918410a2&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“My Journey from Econ PhD to Tech”&lt;/a&gt;, Scarlet Chen, 2020.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.nature.com/articles/d41586-018-05838-y&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“Why it is not a ‘failure’ to leave academia”&lt;/a&gt;, Philipp Kruger, 2018.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;the-tenure-track&#34;&gt;The Tenure Track&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://blogs.scientificamerican.com/guest-blog/the-awesomest-7-year-postdoc-or-how-i-learned-to-stop-worrying-and-love-the-tenure-track-faculty-life/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;The Awesomest 7-Year Postdoc or: How I Learned to Stop Worrying and Love the Tenure-Track Faculty Life&amp;rdquo;&lt;/a&gt;, Radhika Nagpal, 2013.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://blogs.scientificamerican.com/guest-blog/the-awesomest-7-year-postdoc-or-how-i-learned-to-stop-worrying-and-love-the-tenure-track-faculty-life/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;“The Awesomest 7-Year Postdoc or: How I Learned to Stop Worrying and Love the Tenure-Track Faculty Life”&lt;/a&gt;, Radhika Nagpal, 2013.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;more&#34;&gt;More&lt;/h2&gt;
 &lt;p&gt;You can find more resources here:&lt;/p&gt;
@@ -33544,21 +33633,23 @@ I compare existing approximation methods to compute Markow Perfect Equilibrium i
     </item>
     
     <item>
-      <title>Foreclosure Complementarities</title>
-      <link>https://matteocourthoud.github.io/project/foreclosure/</link>
-      <pubDate>Fri, 01 Oct 2021 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/project/foreclosure/</guid>
-      <description>&lt;p&gt;In recent merger cases across complementary markets, antitrust authorities have expressed foreclosure concerns. In particular, the presence of scale economies in one market might propagate to the complementary market, ultimately leading to the monopolization of both. In this paper, we investigate the interplay between two foreclosure practices: exclusionary bundling and predatory pricing in the setting of complementary markets with economies of scale. We show that the two practices are complementary when markets display economies of scale, exclusionary bundling is more likely and, when bundling is allowed, predatory pricing is more likely. We show that this outcome is due to exit-inducing behavior of dominant firms: shutting down predatory incentives restores competition in both markets. We investigate different policies: banning mergers between market leaders, allowing product bundling only when more than one firm is integrated and able to offer the bundle, and lastly knowledge sharing across firms in order to limit the economies of scale. All policies are effective, each for a different reason.&lt;/p&gt;
+      <title>Algorithmic Collusion Detection</title>
+      <link>https://matteocourthoud.github.io/project/alg_detection/</link>
+      <pubDate>Sun, 12 Sep 2021 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/project/alg_detection/</guid>
+      <description>&lt;p&gt;Reinforcement learning algorithms are gradually replacing humans in many decision-making processes, such as pricing in high-frequency markets. Recent studies on algorithmic pricing have shown that algorithms can learn sophisticated grim-trigger strategies with the intent of keeping supra-competitive prices. This paper focuses on algorithmic collusion detection. One frequent suggestion is to look at the inputs of the strategies, for example at whether the algorithms condition their prices on previous competitors&#39; prices. The first part of the paper shows that this approach might not be sufficient to detect collusion since the algorithms can learn reward-punishment schemes that are fully independent of the rival’s actions. The mechanism that ensures the stability of supra-competitive prices is self-punishment.&lt;/p&gt;
+&lt;p&gt;The second part of the paper explores a novel test for algorithmic collusion detection. The test builds on the intuition that as algorithms are able to learn to collude, they might be able to learn to exploit collusive strategies. In fact, since they are not designed to learn sub-game perfect equilibrium strategies, there is the possibility that their strategies could be exploited. When one algorithm is unilaterally retrained, keeping the collusive strategies of its competitor fixed, it learns more profitable strategies. Usually, these strategies are more competitive, but not always. Since this change in strategies happens only when algorithms are colluding, retraining can be used as a test to detect algorithmic collusion.&lt;/p&gt;
+&lt;p&gt;To make the test implementable, the last part of the paper studies whether one could get the same insights on collusive behavior using only observational data, from a single algorithm. The result is a unilateral empirical test for algorithmic collusion that does not require any assumptions neither on the algorithms themselves nor on the underlying environment. The key insight is that algorithms, during their learning phase, produce natural experiments that allow an observer to estimate their behavior in counterfactual scenarios. The simulations show that, at least in a controlled experimental setting, the test is extremely successful in detecting algorithmic collusion.&lt;/p&gt;
 </description>
     </item>
     
     <item>
       <title>How To Make A Personal Website with Hugo</title>
       <link>https://matteocourthoud.github.io/post/website/</link>
-      <pubDate>Thu, 23 Sep 2021 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 10 Sep 2021 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/website/</guid>
       <description>&lt;h2 id=&#34;introduction&#34;&gt;Introduction&lt;/h2&gt;
-&lt;p&gt;In this tutorial, I am going to explain how to build a personal website on &lt;a href=&#34;https://www.github.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt; using the &lt;strong&gt;&lt;a href=&#34;https://wowchemy.com/docs/getting-started/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Wowchemy&lt;/a&gt;&lt;/strong&gt; theme from &lt;a href=&#34;https://gohugo.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Hugo&lt;/a&gt;, also known as &lt;a href=&#34;https://themes.gohugo.io/academic/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Hugo Academic&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;In this tutorial, I am going to explain how to build a personal website on &lt;a href=&#34;https://www.github.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt; using the &lt;strong&gt;&lt;a href=&#34;https://wowchemy.com/docs/getting-started/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Wowchemy&lt;/a&gt;&lt;/strong&gt; theme from &lt;a href=&#34;https://gohugo.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Hugo&lt;/a&gt;, also known as &lt;a href=&#34;https://themes.gohugo.io/academic/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Hugo Academic&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Note that Hugo offers &lt;a href=&#34;https://themes.gohugo.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;many other website templates&lt;/a&gt;. I suggest checking them out. Some interesting alternatives are:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://themes.gohugo.io/theme/hugo-story/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://themes.gohugo.io/theme/hugo-story/&lt;/a&gt;&lt;/li&gt;
@@ -33566,22 +33657,22 @@ I compare existing approximation methods to compute Markow Perfect Equilibrium i
 &lt;li&gt;&lt;a href=&#34;https://themes.gohugo.io/theme/hugo-uilite/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://themes.gohugo.io/theme/hugo-uilite/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://themes.gohugo.io/theme/story/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://themes.gohugo.io/theme/story/&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;However, I will concentrate on the Hugo Academic theme, since it&amp;rsquo;s the one I used for this website and it&amp;rsquo;s the the best one for building academic profile pages. I also suggest checking out &lt;a href=&#34;https://sites.google.com/new&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google Sites&lt;/a&gt; as they are a valid alternative.&lt;/p&gt;
+&lt;p&gt;However, I will concentrate on the Hugo Academic theme, since it’s the one I used for this website and it’s the the best one for building academic profile pages. I also suggest checking out &lt;a href=&#34;https://sites.google.com/new&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google Sites&lt;/a&gt; as they are a valid alternative.&lt;/p&gt;
 &lt;p&gt;The first part of this guide is general and valid for any Hugo theme. The original guide can be found &lt;a href=&#34;https://wowchemy.com/docs/getting-started/install/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;create-website&#34;&gt;Create Website&lt;/h2&gt;
 &lt;h3 id=&#34;0-prerequisites&#34;&gt;0. Prerequisites&lt;/h3&gt;
 &lt;p&gt;Before we start, I will take for granted the following:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;that you have an account on &lt;a href=&#34;https://www.github.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;that you have an account on &lt;a href=&#34;https://www.github.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;that you have &lt;a href=&#34;https://www.r-project.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;R&lt;/a&gt; installed&lt;/li&gt;
-&lt;li&gt;that you have  &lt;a href=&#34;https://www.rstudio.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;RStudio&lt;/a&gt; installed&lt;/li&gt;
+&lt;li&gt;that you have &lt;a href=&#34;https://www.rstudio.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;RStudio&lt;/a&gt; installed&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;1-create-github-repository&#34;&gt;1. Create Github Repository&lt;/h3&gt;
-&lt;p&gt;First, go to your &lt;a href=&#34;https://www.github.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt; page and create a new repository (&lt;code&gt;+&lt;/code&gt; button in the top-right corner).&lt;/p&gt;
+&lt;p&gt;First, go to your &lt;a href=&#34;https://www.github.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Github&lt;/a&gt; page and create a new repository (&lt;code&gt;+&lt;/code&gt; button in the top-right corner).&lt;/p&gt;
 &lt;img src=&#34;img/new_repo.png&#34; alt=&#34;new_repo&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;Name the repository &lt;code&gt;username.github.io&lt;/code&gt; where &lt;code&gt;username&lt;/code&gt; is your Github username.&lt;/p&gt;
-&lt;img src=&#34;img/name_repo.png&#34; alt=&#34;name_repo&#34; style=&#34;zoom:40%;&#34; /&gt;
-&lt;p&gt;In my case, my github username is &lt;code&gt;matteocourthoud&lt;/code&gt;, therefore the repository is &lt;code&gt;matteocourthoud.github.io&lt;/code&gt; and my personal website is &lt;a href=&#34;https://matteocourthoud.github.io&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://matteocourthoud.github.io&lt;/a&gt;. Use the default settings when creating the repository.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/name_repo.png&#34; alt=&#34;name_repo&#34;&gt;&lt;/p&gt;
+&lt;p&gt;In my case, my github username is &lt;code&gt;matteocourthoud&lt;/code&gt;, therefore the repository is &lt;code&gt;matteocourthoud.github.io&lt;/code&gt; and my personal website is &lt;a href=&#34;https://matteocourthoud.github.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://matteocourthoud.github.io&lt;/a&gt;. Use the default settings when creating the repository.&lt;/p&gt;
 &lt;h3 id=&#34;2-install-blogdown-and-hugo&#34;&gt;2. Install Blogdown and Hugo&lt;/h3&gt;
 &lt;p&gt;Now you need to install Blogdown, which is the program what will allow you to build and deploy your website, and Hugo, which is the template generator.&lt;/p&gt;
 &lt;p&gt;Switch to RStudio and type the following commands&lt;/p&gt;
@@ -33596,16 +33687,16 @@ blogdown::install_hugo()
 &lt;p&gt;Open RStudio and select &lt;code&gt;New Project&lt;/code&gt;&lt;/p&gt;
 &lt;img src=&#34;img/new_project.png&#34; alt=&#34;new_project&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;Select &lt;code&gt;New Directory&lt;/code&gt; when asked where to create the project&lt;/p&gt;
-&lt;img src=&#34;img/new_project2.png&#34; alt=&#34;new_project2&#34; style=&#34;zoom:40%;&#34; /&gt;
+&lt;img src=&#34;img/new_project2.png&#34; alt=&#34;new_project2&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;Then select &lt;code&gt;Website using blogdown&lt;/code&gt; as project type&lt;/p&gt;
-&lt;img src=&#34;img/new_project3.png&#34; alt=&#34;new_project3&#34; style=&#34;zoom:40%;&#34; /&gt;
+&lt;img src=&#34;img/new_project3.png&#34; alt=&#34;new_project3&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;Now you have to select a couple of options&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;Directory name&lt;/code&gt;: here input the name of the folder which will contain all the website files. The name is irrelevant. I called mine &lt;code&gt;website&lt;/code&gt;.&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;Create project as a subdirectory of&lt;/code&gt;: select the directory in which you want to put the website folder.&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;Theme&lt;/code&gt;: input &lt;code&gt;wowchemy/starter-academic&lt;/code&gt; instead of the default theme.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;img src=&#34;img/new_project4.png&#34; alt=&#34;new_project4&#34; style=&#34;zoom:40%;&#34; /&gt;
+&lt;img src=&#34;img/new_project4.png&#34; alt=&#34;new_project4&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: if you want to install a different theme, just go on the corresponding Github page (for example &lt;a href=&#34;https://github.com/caressofsteel/hugo-story&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/caressofsteel/hugo-story&lt;/a&gt;) and instead of &lt;code&gt;gcushen/hugo-academic&lt;/code&gt;, insert the corresponding Github repository (for example &lt;code&gt;caressofsteel/hugo-story&lt;/code&gt;).&lt;/p&gt;
 &lt;p&gt;If you go into the website folder, it should look something like this.&lt;/p&gt;
 &lt;img src=&#34;img/folder.png&#34; alt=&#34;folder&#34; style=&#34;zoom:50%;&#34; /&gt;
@@ -33615,22 +33706,22 @@ blogdown::install_hugo()
 &lt;/code&gt;&lt;/pre&gt;
 &lt;img src=&#34;img/hugo_build.png&#34; alt=&#34;hugo_build&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;This command will generate a &lt;code&gt;public/&lt;/code&gt; subfolder in which the actual code of the website is stored.&lt;/p&gt;
-&lt;p&gt;Don&amp;rsquo;t ask me why, but the option &lt;code&gt;local=TRUE&lt;/code&gt; seems to make a difference. Updating without it sometimes does not change the content in the &lt;code&gt;\public&lt;/code&gt; subfolder.&lt;/p&gt;
+&lt;p&gt;Don’t ask me why, but the option &lt;code&gt;local=TRUE&lt;/code&gt; seems to make a difference. Updating without it sometimes does not change the content in the &lt;code&gt;\public&lt;/code&gt; subfolder.&lt;/p&gt;
 &lt;img src=&#34;img/folder2.png&#34; alt=&#34;folder2&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;To preview the website, type in RStudio&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;blogdown::serve_site()
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The following preview should automatically open in your browser.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;img/prevew.png&#34; alt=&#34;prevew&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/prevew.png&#34; alt=&#34;preview&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Previewing the website is very useful as it allows you to see live changes locally inside RStudio, before publishing them. This is the &lt;strong&gt;main advantage of working in RStudio&lt;/strong&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;5-publish-website&#34;&gt;5. Publish website&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;Importantly&lt;/strong&gt;, before pushing the code online, you need to open the file &lt;code&gt;config.yaml&lt;/code&gt; and change the &lt;code&gt;baseurl&lt;/code&gt; to your future website url, which will be &lt;code&gt;https://username.github.io/&lt;/code&gt;, where &lt;code&gt;username&lt;/code&gt; is our Github username.&lt;/p&gt;
 &lt;img src=&#34;img/username.png&#34; alt=&#34;username&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;Now that you have set the correct url, you have to push the changes from the &lt;code&gt;public/&lt;/code&gt; folder to your &lt;code&gt;username.github.io&lt;/code&gt; repository on Github.&lt;/p&gt;
-&lt;p&gt;To do that, you need to get to the website folder. Let&amp;rsquo;s assume that the path to your folder is &lt;code&gt;Documents/website&lt;/code&gt;. Open the Terminal and type&lt;/p&gt;
+&lt;p&gt;To do that, you need to get to the website folder. Let’s assume that the path to your folder is &lt;code&gt;Documents/website&lt;/code&gt;. Open the Terminal and type&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;cd Documents/website/public
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The following code will link the &lt;code&gt;public/&lt;/code&gt; folder, containing the actual code of the website, to your  &lt;code&gt;username.github.io&lt;/code&gt; repository.&lt;/p&gt;
+&lt;p&gt;The following code will link the &lt;code&gt;public/&lt;/code&gt; folder, containing the actual code of the website, to your &lt;code&gt;username.github.io&lt;/code&gt; repository.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-r&#34;&gt;# Init git in the /website/public/ folder
 git init
 
@@ -33657,7 +33748,7 @@ git push -u origin main
 &lt;li&gt;Did you change the &lt;code&gt;baseurl&lt;/code&gt; option in the file &lt;code&gt;config.yaml&lt;/code&gt; to &lt;code&gt;https://username.github.io/&lt;/code&gt;, where &lt;code&gt;username&lt;/code&gt; is your Github username?&lt;/li&gt;
 &lt;li&gt;You can check the list of websites deployments at &lt;code&gt;https://github.com/username/username.github.io/deployments&lt;/code&gt;. Control that they correspond with your commits.&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;If all the conditions are satisfied, but the website is still not online, maybe it&amp;rsquo;s just a matter of time. Have some patience.&lt;/p&gt;
+&lt;p&gt;If all the conditions are satisfied, but the website is still not online, maybe it’s just a matter of time. Have some patience.&lt;/p&gt;
 &lt;h2 id=&#34;basic-customization&#34;&gt;Basic Customization&lt;/h2&gt;
 &lt;p&gt;The basic files that you want to modify to customize your website are the following:&lt;/p&gt;
 &lt;ul&gt;
@@ -33726,7 +33817,7 @@ mono_font = &amp;quot;Roboto Mono&amp;quot;
 &lt;img src=&#34;img/custom_font.png&#34; alt=&#34;custom_font&#34; style=&#34;zoom:50%;&#34; /&gt;
 &lt;p&gt;You can get more information on how to personalize it &lt;a href=&#34;https://wowchemy.com/docs/getting-started/customization/#custom-font&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;. Importantly, by default the website supports only fonts of weight 400 and 700. If you want a lighter font, as the &lt;a href=&#34;https://fonts.google.com/specimen/Source&amp;#43;Sans&amp;#43;Pro&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Source Sans Pro&lt;/a&gt; I use for my website, you have to dig into the advanced customization (which requires HTML and CSS skills).&lt;/p&gt;
 &lt;h2 id=&#34;advanced-customization&#34;&gt;Advanced Customization&lt;/h2&gt;
-&lt;p&gt;Advanced customization is possible but &lt;strong&gt;it&amp;rsquo;s a pain&lt;/strong&gt;. You basically want to go inside &lt;code&gt;themes\github.com\wowchemy\wowchemy-hugo-modules\wowchemy&lt;/code&gt; and start digging. Tip: you want to start digging in the folowing places:&lt;/p&gt;
+&lt;p&gt;Advanced customization is possible but &lt;strong&gt;it’s a pain&lt;/strong&gt;. You basically want to go inside &lt;code&gt;themes\github.com\wowchemy\wowchemy-hugo-modules\wowchemy&lt;/code&gt; and start digging. Tip: you want to start digging in the folowing places:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;In &lt;code&gt;layouts\partials&lt;/code&gt; to edit the HTML files&lt;/li&gt;
 &lt;li&gt;In &lt;code&gt;assets\scss&lt;/code&gt; to edit the SCSS code&lt;/li&gt;
@@ -33766,7 +33857,7 @@ mono_font = &amp;quot;Roboto Mono&amp;quot;
   google_analytics: &#39;UA-xxxxxxxxx-1&#39;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The mobile application of &lt;a href=&#34;https://analytics.google.com/analytics/web/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google Analytics&lt;/a&gt; is particular intuitive and allows you to monitor your website traffic in detail. You just need to link the website from the &lt;a href=&#34;https://search.google.com/search-console&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google Sesarch Console&lt;/a&gt; and then you can motitor you website from this platform. There is also a very nice mobile app for both &lt;a href=&#34;https://play.google.com/store/apps/details?id=com.google.android.apps.giant&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Android&lt;/a&gt; and &lt;a href=&#34;https://apps.apple.com/us/app/google-analytics/id881599038&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;iOS&lt;/a&gt; to monitor your website from your smartphone.&lt;/p&gt;
-&lt;p&gt;Another good free tool to analyze the &amp;ldquo;quality&amp;rdquo; of your website is &lt;a href=&#34;https://www.seomechanic.com/seo-analyzer/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;SEO Mechanic&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Another good free tool to analyze the “quality” of your website is &lt;a href=&#34;https://www.seomechanic.com/seo-analyzer/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;SEO Mechanic&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;p&gt;Here are the main resources I used to write this guide:&lt;/p&gt;
 &lt;ul&gt;
@@ -33774,18 +33865,6 @@ mono_font = &amp;quot;Roboto Mono&amp;quot;
 &lt;li&gt;Old Academic website: &lt;a href=&#34;https://sourcethemes.com/academic/docs/install/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://sourcethemes.com/academic/docs/install/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Guide for the Terminal: &lt;a href=&#34;https://github.com/fliptanedo/FlipWebsite2017&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/fliptanedo/FlipWebsite2017&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;iframe src=&#34;https://docs.google.com/forms/d/e/1FAIpQLSdKqWZQAbHkcNLYvjxZ_fVrAZCJkNmsBtUBCCcfZxYzJCaqIQ/viewform?embedded=true&#34; width=&#34;640&#34; height=&#34;530&#34; frameborder=&#34;0&#34; marginheight=&#34;0&#34; marginwidth=&#34;0&#34;&gt;Loading…&lt;/iframe&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Algorithmic Collusion Detection</title>
-      <link>https://matteocourthoud.github.io/project/alg_detection/</link>
-      <pubDate>Sun, 12 Sep 2021 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/project/alg_detection/</guid>
-      <description>&lt;p&gt;Reinforcement learning algorithms are gradually replacing humans in many decision-making processes, such as pricing in high-frequency markets. Recent studies on algorithmic pricing have shown that algorithms can learn sophisticated grim-trigger strategies with the intent of keeping supra-competitive prices. This paper focuses on algorithmic collusion detection. One frequent suggestion is to look at the inputs of the strategies, for example at whether the algorithms condition their prices on previous competitors&#39; prices. The first part of the paper shows that this approach might not be sufficient to detect collusion since the algorithms can learn reward-punishment schemes that are fully independent of the rival’s actions. The mechanism that ensures the stability of supra-competitive prices is self-punishment.&lt;/p&gt;
-&lt;p&gt;The second part of the paper explores a novel test for algorithmic collusion detection. The test builds on the intuition that as algorithms are able to learn to collude, they might be able to learn to exploit collusive strategies. In fact, since they are not designed to learn sub-game perfect equilibrium strategies, there is the possibility that their strategies could be exploited. When one algorithm is unilaterally retrained, keeping the collusive strategies of its competitor fixed, it learns more profitable strategies. Usually, these strategies are more competitive, but not always. Since this change in strategies happens only when algorithms are colluding, retraining can be used as a test to detect algorithmic collusion.&lt;/p&gt;
-&lt;p&gt;To make the test implementable, the last part of the paper studies whether one could get the same insights on collusive behavior using only observational data, from a single algorithm. The result is a unilateral empirical test for algorithmic collusion that does not require any assumptions neither on the algorithms themselves nor on the underlying environment. The key insight is that algorithms, during their learning phase, produce natural experiments that allow an observer to estimate their behavior in counterfactual scenarios. The simulations show that, at least in a controlled experimental setting, the test is extremely successful in detecting algorithmic collusion.&lt;/p&gt;
 </description>
     </item>
     
@@ -33794,7 +33873,7 @@ mono_font = &amp;quot;Roboto Mono&amp;quot;
       <link>https://matteocourthoud.github.io/post/coding/</link>
       <pubDate>Tue, 24 Aug 2021 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/coding/</guid>
-      <description>&lt;p&gt;In this page I will collect useful resources for coding for researchers in social sciences. A mention goes to &lt;a href=&#34;https://maxkasy.github.io/home/computationlinks/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Maximilian Kasy&lt;/a&gt; that inspired me to build this page.&lt;/p&gt;
+      <description>&lt;p&gt;In this page, I collect useful resources for coding for researchers in social sciences. A mention goes to &lt;a href=&#34;https://maxkasy.github.io/home/computationlinks/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Maximilian Kasy&lt;/a&gt; that inspired me to build this page.&lt;/p&gt;
 &lt;p&gt;A quick legend:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;📗 book&lt;/li&gt;
@@ -33804,141 +33883,65 @@ mono_font = &amp;quot;Roboto Mono&amp;quot;
 &lt;/ul&gt;
 &lt;h2 id=&#34;econometrics-and-statistics&#34;&gt;Econometrics and Statistics&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;📗&lt;a href=&#34;https://www.ssc.wisc.edu/~bhansen/econometrics/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Bruce Hansen&amp;rsquo;s Econometrics&lt;/strong&gt;&lt;/a&gt;:
-By far the best freely available and regularly updated resource for Econometrics&lt;/li&gt;
+&lt;li&gt;📗&lt;a href=&#34;https://www.ssc.wisc.edu/~bhansen/econometrics/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Bruce Hansen’s Econometrics&lt;/strong&gt;&lt;/a&gt;: By far the best freely available and regularly updated resource for Econometrics&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;machine-learning&#34;&gt;Machine Learning&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;https://web.stanford.edu/~hastie/Papers/ESLII.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;The Elements of Statistical Learning&lt;/strong&gt;&lt;/a&gt;:
-General introduction to machine learning&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;http://www.gaussianprocess.org/gpml/chapters/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Gaussian Processes for Machine Learning&lt;/strong&gt;&lt;/a&gt;:
-Extremely useful tools for nonparametric Bayesian modeling&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;https://www.deeplearningbook.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Deep Learning&lt;/strong&gt;&lt;/a&gt;:
-The theory and implementation of neural nets&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;https://www.cs.huji.ac.il/~shais/UnderstandingMachineLearning/understanding-machine-learning-theory-algorithms.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Understanding Machine Learning: From Theory to Algorithms&lt;/strong&gt;&lt;/a&gt;:
-An introduction to statistical learning theory in the tradition of Vapnik&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;http://www.incompleteideas.net/book/RLbook2018.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Reinforcement Learning - An Introduction&lt;/strong&gt;&lt;/a&gt;:
-Adaptive learning for Markov decision problems&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;http://jeffe.cs.illinois.edu/teaching/algorithms/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Algorithms&lt;/strong&gt;&lt;/a&gt;:
-Introduction to the theory of algorithms&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://playground.tensorflow.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Tensorflow Playground&lt;/strong&gt;&lt;/a&gt;:
-Visualisation tool for neural networks&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://www.fast.ai/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Artificial Intelligence&lt;/strong&gt;&lt;/a&gt;:
-Online lectures on AI&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://global.oup.com/academic/product/the-ethical-algorithm-9780190948207&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;The Ethical Algorithm&lt;/strong&gt;&lt;/a&gt;:
-How to impose normative constraints on ML and other algorithms&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;📗&lt;a href=&#34;https://web.stanford.edu/~hastie/Papers/ESLII.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;The Elements of Statistical Learning&lt;/strong&gt;&lt;/a&gt;: General introduction to machine learning&lt;/li&gt;
+&lt;li&gt;📗&lt;a href=&#34;http://www.gaussianprocess.org/gpml/chapters/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Gaussian Processes for Machine Learning&lt;/strong&gt;&lt;/a&gt;: Extremely useful tools for nonparametric Bayesian modeling&lt;/li&gt;
+&lt;li&gt;📗&lt;a href=&#34;https://www.deeplearningbook.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Deep Learning&lt;/strong&gt;&lt;/a&gt;: The theory and implementation of neural nets&lt;/li&gt;
+&lt;li&gt;📗&lt;a href=&#34;https://www.cs.huji.ac.il/~shais/UnderstandingMachineLearning/understanding-machine-learning-theory-algorithms.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Understanding Machine Learning: From Theory to Algorithms&lt;/strong&gt;&lt;/a&gt;: An introduction to statistical learning theory in the tradition of Vapnik&lt;/li&gt;
+&lt;li&gt;📗&lt;a href=&#34;http://www.incompleteideas.net/book/RLbook2018.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Reinforcement Learning - An Introduction&lt;/strong&gt;&lt;/a&gt;: Adaptive learning for Markov decision problems&lt;/li&gt;
+&lt;li&gt;📗&lt;a href=&#34;http://jeffe.cs.illinois.edu/teaching/algorithms/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Algorithms&lt;/strong&gt;&lt;/a&gt;: Introduction to the theory of algorithms&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://playground.tensorflow.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Tensorflow Playground&lt;/strong&gt;&lt;/a&gt;: Visualisation tool for neural networks&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://www.fast.ai/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Artificial Intelligence&lt;/strong&gt;&lt;/a&gt;: Online lectures on AI&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://global.oup.com/academic/product/the-ethical-algorithm-9780190948207&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;The Ethical Algorithm&lt;/strong&gt;&lt;/a&gt;: How to impose normative constraints on ML and other algorithms&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;python&#34;&gt;Python&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://realpython.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;RealPython&lt;/strong&gt;&lt;/a&gt;:
-Collection of Python tutorials, from introductory to advanced. Also contains &lt;a href=&#34;https://realpython.com/learning-paths/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;learning paths&lt;/a&gt; for specific topics&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://python.quantecon.org/intro.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;QuantEcon Python&lt;/strong&gt;&lt;/a&gt;
-Tutorials and economic applications in Python, especially for macroeconomics&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://blog.finxter.com/python-cheat-sheets/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Cheat Sheets&lt;/strong&gt;&lt;/a&gt;:
-Collection of cheat sheets for python&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://docs.python-guide.org/writing/structure/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Structuring a Python project&lt;/strong&gt;&lt;/a&gt;:
-Advanced tutorial on how to structure a Python program&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://www.softwaretestinghelp.com/python-ide-code-editors/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;IDE Guide&lt;/strong&gt;&lt;/a&gt;:
-Comparison of IDEs for Python. Suggested: &lt;a href=&#34;https://www.jetbrains.com/pycharm/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyCharm&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://www.jetbrains.com/help/pycharm/configuring-remote-interpreters-via-ssh.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Configuring remote interpreters via SSH&lt;/strong&gt;&lt;/a&gt;:
-How to use Python remotely via SSH via PyCharm&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;📈&lt;a href=&#34;https://www.kaggle.com/maheshdadhich/strength-of-visualization-python-visuals-tutorial/notebook&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Visualization in Python&lt;/strong&gt;&lt;/a&gt;:
-How to make nice graphs in Python, with a dedicated jupyter notebook&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;📈&lt;a href=&#34;https://python-graph-gallery.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Python Graph Gallery&lt;/strong&gt;&lt;/a&gt;:
-Graph examples in Python&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://realpython.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;RealPython&lt;/strong&gt;&lt;/a&gt;: Collection of Python tutorials, from introductory to advanced. Also contains &lt;a href=&#34;https://realpython.com/learning-paths/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;learning paths&lt;/a&gt; for specific topics&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://python.quantecon.org/intro.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;QuantEcon Python&lt;/strong&gt;&lt;/a&gt; Tutorials and economic applications in Python, especially for macroeconomics&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://blog.finxter.com/python-cheat-sheets/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Cheat Sheets&lt;/strong&gt;&lt;/a&gt;: Collection of cheat sheets for python&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://docs.python-guide.org/writing/structure/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Structuring a Python project&lt;/strong&gt;&lt;/a&gt;: Advanced tutorial on how to structure a Python program&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://www.softwaretestinghelp.com/python-ide-code-editors/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;IDE Guide&lt;/strong&gt;&lt;/a&gt;: Comparison of IDEs for Python. Suggested: &lt;a href=&#34;https://www.jetbrains.com/pycharm/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyCharm&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://www.jetbrains.com/help/pycharm/configuring-remote-interpreters-via-ssh.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Configuring remote interpreters via SSH&lt;/strong&gt;&lt;/a&gt;: How to use Python remotely via SSH via PyCharm&lt;/li&gt;
+&lt;li&gt;📈&lt;a href=&#34;https://www.kaggle.com/maheshdadhich/strength-of-visualization-python-visuals-tutorial/notebook&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Visualization in Python&lt;/strong&gt;&lt;/a&gt;: How to make nice graphs in Python, with a dedicated jupyter notebook&lt;/li&gt;
+&lt;li&gt;📈&lt;a href=&#34;https://python-graph-gallery.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Python Graph Gallery&lt;/strong&gt;&lt;/a&gt;: Graph examples in Python&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;matlab&#34;&gt;Matlab&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://mathworks.com/help/matlab/matlab_oop/user-defined-classes.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;User defined classes in Matlab&lt;/strong&gt;&lt;/a&gt;:
-How to work with classes in Matlab&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://am111.readthedocs.io/en/latest/jmatlab_use.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Julyter Notebooks&lt;/strong&gt;&lt;/a&gt;:
-How to run a jupyter notebook with Matlab kernel&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;📈&lt;a href=&#34;https://www.bradleymonk.com/wp/how-to-make-professional-looking-plots-for-journal-publication-using-matlab-r2014a-and-r2014b/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Graph Tips in Matlab&lt;/strong&gt;&lt;/a&gt; and &lt;a href=&#34;https://mathworks.com/matlabcentral/answers/133372-how-to-make-nice-plots&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;link2&lt;/a&gt;:
-Suggestions on how to make pretty graphs in Matlab&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://mathworks.com/help/matlab/matlab_oop/user-defined-classes.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;User defined classes in Matlab&lt;/strong&gt;&lt;/a&gt;: How to work with classes in Matlab&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://am111.readthedocs.io/en/latest/jmatlab_use.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Julyter Notebooks&lt;/strong&gt;&lt;/a&gt;: How to run a jupyter notebook with Matlab kernel&lt;/li&gt;
+&lt;li&gt;📈&lt;a href=&#34;https://www.bradleymonk.com/wp/how-to-make-professional-looking-plots-for-journal-publication-using-matlab-r2014a-and-r2014b/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Graph Tips in Matlab&lt;/strong&gt;&lt;/a&gt; and &lt;a href=&#34;https://mathworks.com/matlabcentral/answers/133372-how-to-make-nice-plots&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;link2&lt;/a&gt;: Suggestions on how to make pretty graphs in Matlab&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;julia&#34;&gt;Julia&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://docs.julialang.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Julia Manual&lt;/strong&gt;&lt;/a&gt;:
-Julia unfortunately lacks a big community and tutorials, but it has a very good manual&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://julia.quantecon.org/index_toc.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;QuantEcon Julia&lt;/strong&gt;&lt;/a&gt;
-Tutorials and economic applications in Julia, especially for macroeconomics&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://medium.com/dev-genius/what-is-the-best-ide-for-developing-in-the-programming-language-julia-484c913f07bc&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;IDE Guide&lt;/strong&gt;&lt;/a&gt;:
-Guide for IDEs for Julia. Suggested: Juno for Atom.&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://docs.julialang.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Julia Manual&lt;/strong&gt;&lt;/a&gt;: Julia unfortunately lacks a big community and tutorials, but it has a very good manual&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://julia.quantecon.org/index_toc.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;QuantEcon Julia&lt;/strong&gt;&lt;/a&gt; Tutorials and economic applications in Julia, especially for macroeconomics&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://medium.com/dev-genius/what-is-the-best-ide-for-developing-in-the-programming-language-julia-484c913f07bc&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;IDE Guide&lt;/strong&gt;&lt;/a&gt;: Guide for IDEs for Julia. Suggested: Juno for Atom.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;r&#34;&gt;R&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;https://cran.r-project.org/doc/manuals/r-release/R-intro.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;An Introduction to R&lt;/strong&gt;&lt;/a&gt;:
-Complete introduction to base R&lt;/p&gt;
+&lt;p&gt;📗&lt;a href=&#34;https://cran.r-project.org/doc/manuals/r-release/R-intro.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;An Introduction to R&lt;/strong&gt;&lt;/a&gt;: Complete introduction to base R&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;http://r4ds.had.co.nz/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;R for Data Science&lt;/strong&gt;&lt;/a&gt;
-Introduction to data analysis using R, focused on the tidyverse packages&lt;/p&gt;
+&lt;p&gt;📗&lt;a href=&#34;http://r4ds.had.co.nz/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;R for Data Science&lt;/strong&gt;&lt;/a&gt; Introduction to data analysis using R, focused on the tidyverse packages&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;https://adv-r.hadley.nz/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Advanced R&lt;/strong&gt;&lt;/a&gt;:
-In depth discussion of programming in R&lt;/p&gt;
+&lt;p&gt;📗&lt;a href=&#34;https://adv-r.hadley.nz/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Advanced R&lt;/strong&gt;&lt;/a&gt;: In depth discussion of programming in R&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;https://bradleyboehmke.github.io/HOML/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Hands-On Machine Learning with R&lt;/strong&gt;&lt;/a&gt;:
-Fitting ML models in R&lt;/p&gt;
+&lt;p&gt;📗&lt;a href=&#34;https://bradleyboehmke.github.io/HOML/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Hands-On Machine Learning with R&lt;/strong&gt;&lt;/a&gt;: Fitting ML models in R&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;🌐&lt;a href=&#34;https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Bayesian statistics using Stan&lt;/strong&gt;&lt;/a&gt; and &lt;a href=&#34;https://mc-stan.org/docs/2_20/stan-users-guide/index.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;link&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://www.rstudio.com/resources/cheatsheets/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;RStudio Cheat Sheets&lt;/strong&gt;&lt;/a&gt;
-for various extensions, including data processing, visualization, writing web apps, …&lt;/p&gt;
+&lt;p&gt;🌐&lt;a href=&#34;https://www.rstudio.com/resources/cheatsheets/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;RStudio Cheat Sheets&lt;/strong&gt;&lt;/a&gt; for various extensions, including data processing, visualization, writing web apps, …&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;📈&lt;a href=&#34;https://www.r-graph-gallery.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;R Graph Gallery&lt;/strong&gt;&lt;/a&gt;:
-Graph examples in R&lt;/p&gt;
+&lt;p&gt;📈&lt;a href=&#34;https://www.r-graph-gallery.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;R Graph Gallery&lt;/strong&gt;&lt;/a&gt;: Graph examples in R&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;📈&lt;a href=&#34;https://www.christophenicault.com/pages/visualizations/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Nice Graphs with code&lt;/strong&gt;&lt;/a&gt;&lt;/p&gt;
@@ -33947,22 +33950,10 @@ Graph examples in R&lt;/p&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;others&#34;&gt;Others&lt;/h2&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;📗&lt;a href=&#34;https://git-scm.com/book/en/v2&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Github Advanced&lt;/strong&gt;&lt;/a&gt;:
-Advanced guide for version control with Github&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🎥&lt;a href=&#34;https://missing.csail.mit.edu/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;The Missing Semester of Your CS Education&lt;/strong&gt;&lt;/a&gt;
-Video lectures and notes on tools for computer scientists (version control, debugging, &amp;hellip;)&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;📈&lt;a href=&#34;http://pgfplots.sourceforge.net/gallery.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;PGF plots in Latex&lt;/strong&gt;&lt;/a&gt;:
-Gallery and examples to make plots directly in Latex&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;🌐&lt;a href=&#34;https://medium.com/@SergioPietri/how-to-setup-and-use-ssh-for-remote-connections-e86556d804dd&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Work remotely from server&lt;/strong&gt;&lt;/a&gt;:
-How to setup SSH for remote computing&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;📗&lt;a href=&#34;https://git-scm.com/book/en/v2&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Github Advanced&lt;/strong&gt;&lt;/a&gt;: Advanced guide for version control with Github&lt;/li&gt;
+&lt;li&gt;🎥&lt;a href=&#34;https://missing.csail.mit.edu/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;The Missing Semester of Your CS Education&lt;/strong&gt;&lt;/a&gt; Video lectures and notes on tools for computer scientists (version control, debugging, …)&lt;/li&gt;
+&lt;li&gt;📈&lt;a href=&#34;http://pgfplots.sourceforge.net/gallery.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;PGF plots in Latex&lt;/strong&gt;&lt;/a&gt;: Gallery and examples to make plots directly in Latex&lt;/li&gt;
+&lt;li&gt;🌐&lt;a href=&#34;https://medium.com/@SergioPietri/how-to-setup-and-use-ssh-for-remote-connections-e86556d804dd&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Work remotely from server&lt;/strong&gt;&lt;/a&gt;: How to setup SSH for remote computing&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
@@ -33983,7 +33974,7 @@ How to setup SSH for remote computing&lt;/p&gt;
 db = wrds.Connection() 
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Then, you will be propted to input your WRDS username and password.&lt;/p&gt;
-&lt;p&gt;However, if you are using a Python IDE such as &lt;a href=&#34;https://www.jetbrains.com/pycharm/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyCharm&lt;/a&gt;, you cannot run the command from the Python Console. Moreover, you might want to save your credentials once and for all, so that you don&amp;rsquo;t have to log in every time.&lt;/p&gt;
+&lt;p&gt;However, if you are using a Python IDE such as &lt;a href=&#34;https://www.jetbrains.com/pycharm/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyCharm&lt;/a&gt;, you cannot run the command from the Python Console. Moreover, you might want to save your credentials once and for all, so that you don’t have to log in every time.&lt;/p&gt;
 &lt;p&gt;First, walk to your home directory from the Terminal (&lt;code&gt;/Users/username&lt;/code&gt;).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;cd
 &lt;/code&gt;&lt;/pre&gt;
@@ -34007,12 +33998,12 @@ Done
 &lt;h2 id=&#34;query&#34;&gt;Query&lt;/h2&gt;
 &lt;p&gt;The available functions are:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;db.connection() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.connection()&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;db.list_libraries()&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;db.list_tables() &lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;db.get_table() &lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;db.describe_table() &lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;db.raw_sql() &lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.list_tables()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.get_table()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.describe_table()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;db.raw_sql()&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;db.close()&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;I make a simple example of how they work. Suppose first you want to list all the libraries in the WRDS database.&lt;/p&gt;
@@ -34044,11 +34035,20 @@ Done
     </item>
     
     <item>
-      <title>Summer Schools in Economics and Finance</title>
-      <link>https://matteocourthoud.github.io/post/summerschools/</link>
-      <pubDate>Mon, 15 Feb 2021 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/summerschools/</guid>
-      <description>&lt;p&gt;I will use this page to collect information about summer schools in Economics.&lt;/p&gt;
+      <title>Approximation Methods for Large Dynamic Stochastic Games</title>
+      <link>https://matteocourthoud.github.io/project/approximations/</link>
+      <pubDate>Fri, 01 Jan 2021 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/project/approximations/</guid>
+      <description>&lt;p&gt;Dynamic stochastic games notoriously suffer from a curse of dimensionality that makes computing the Markov Perfect Equilibrium of large games infeasible. This article compares the existing approximation methods and alternative equilibrium concepts that have been proposed in the literature to overcome this problem. No method clearly dominates the others but some are dominated in all dimensions. In general, alternative equilibrium concepts outperform sampling-based approximation methods. I propose a new game structure, games with random order, in which players move sequentially and the order of play is unknown. The Markov Perfect equilibrium of this game consistently outperforms all existing approximation methods in terms of approximation accuracy while still being extremely efficient in terms of computational time.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Summer Schools in Economics</title>
+      <link>https://matteocourthoud.github.io/post/summer_schools/</link>
+      <pubDate>Tue, 10 Mar 2020 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/summer_schools/</guid>
+      <description>&lt;p&gt;In this page, I collect information about summer schools in Economics.&lt;/p&gt;
 &lt;p&gt;If you know about summer schools that are missing from this list, please either &lt;a href=&#34;mailto:matteo.courthoud@econ.uzh.ch&#34;&gt;contact me&lt;/a&gt; or &lt;a href=&#34;https://github.com/matteocourthoud/website/blob/master/content/post/summerschools/index.md&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;edit the table on Github&lt;/a&gt;!&lt;/p&gt;
 &lt;h2 id=&#34;2020&#34;&gt;2020&lt;/h2&gt;
 &lt;table&gt;
@@ -34100,7 +34100,7 @@ Done
 &lt;td&gt;maybe&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td&gt;&lt;a href=&#34;https://www.parisschoolofeconomics.eu/en/teaching/pse-summer-school/social-networks-platforms/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Social Networks, Platforms&amp;hellip;&lt;/a&gt;&lt;/td&gt;
+&lt;td&gt;&lt;a href=&#34;https://www.parisschoolofeconomics.eu/en/teaching/pse-summer-school/social-networks-platforms/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Social Networks, Platforms…&lt;/a&gt;&lt;/td&gt;
 &lt;td&gt;Comp. Policy, IO&lt;/td&gt;
 &lt;td&gt;PSE&lt;/td&gt;
 &lt;td&gt;Paris&lt;/td&gt;
@@ -34203,26 +34203,17 @@ Done
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;&lt;a href=&#34;https://www.cemfi.es/studies/css/course_previous_years.asp?c=12&amp;amp;y=2018&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Empirical Analysis of Innovation in Oligopoly Industries&lt;/a&gt;&lt;/td&gt;
-&lt;td&gt;Econometrics, IO&lt;/td&gt;
-&lt;td&gt;CEMFI&lt;/td&gt;
-&lt;td&gt;Madrid&lt;/td&gt;
-&lt;td&gt;Victor Aguirregabiria&lt;/td&gt;
-&lt;td&gt;September 03-07&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
 &lt;td&gt;&lt;/td&gt;
 &lt;td&gt;&lt;/td&gt;
 &lt;td&gt;&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Approximation Methods for Large Dynamic Stochastic Games</title>
-      <link>https://matteocourthoud.github.io/project/approximations/</link>
-      <pubDate>Fri, 01 Jan 2021 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/project/approximations/</guid>
-      <description>&lt;p&gt;Dynamic stochastic games notoriously suffer from a curse of dimensionality that makes computing the Markov Perfect Equilibrium of large games infeasible. This article compares the existing approximation methods and alternative equilibrium concepts that have been proposed in the literature to overcome this problem. No method clearly dominates the others but some are dominated in all dimensions. In general, alternative equilibrium concepts outperform sampling-based approximation methods. I propose a new game structure, games with random order, in which players move sequentially and the order of play is unknown. The Markov Perfect equilibrium of this game consistently outperforms all existing approximation methods in terms of approximation accuracy while still being extremely efficient in terms of computational time.&lt;/p&gt;
 </description>
     </item>
     

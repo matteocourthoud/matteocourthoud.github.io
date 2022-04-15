@@ -1,0 +1,1447 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Welcome to my tutorial on how to set up a remote machine and deploy your code there. I will first analyze SSH and then look at two specific applications: coding in Python and Julia." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/ssh/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.54afc4f4589fb91aec4b1cdd90ab2e05.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/ssh/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/ssh/" />
+  <meta property="og:title" content="How to Work on a Remote Machine via SSH | Matteo Courthoud" />
+  <meta property="og:description" content="Welcome to my tutorial on how to set up a remote machine and deploy your code there. I will first analyze SSH and then look at two specific applications: coding in Python and Julia." /><meta property="og:image" content="https://matteocourthoud.github.io/post/ssh/featured.jpeg" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/ssh/featured.jpeg" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2021-12-06T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2021-12-06T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/ssh/"
+  },
+  "headline": "How to Work on a Remote Machine via SSH",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/ssh/featured.jpeg"
+  ],
+  
+  "datePublished": "2021-12-06T00:00:00Z",
+  "dateModified": "2021-12-06T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "Welcome to my tutorial on how to set up a remote machine and deploy your code there. I will first analyze SSH and then look at two specific applications: coding in Python and Julia."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>How to Work on a Remote Machine via SSH | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="2a9a4ca9e5b7b3d6e6bbc3e3e8d7c4b3" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>Graduate Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>Graduate Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#setup">Setup</a></li>
+    <li><a href="#connect">Connect</a></li>
+    <li><a href="#managing-screens">Managing screens</a></li>
+    <li><a href="#python-and-pycharm">Python and Pycharm</a></li>
+    <li><a href="#julia-and-juno">Julia and Juno</a></li>
+    <li><a href="#jupyter-notebooks">Jupyter Notebooks</a></li>
+    <li><a href="#sources">Sources</a></li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="article-container pt-3">
+  <h1>How to Work on a Remote Machine via SSH</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Dec 6, 2021
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    7 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1000px; max-height: 667px;">
+  <div style="position: relative">
+    <img src="/post/ssh/featured.jpeg" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p>Welcome to my tutorial on how to set up a remote machine and deploy your code there. I will first analyze SSH and then look at two specific applications: coding in Python and Julia.</p>
+<h2 id="setup">Setup</h2>
+<p>In order to start working on a remote server you need</p>
+<ul>
+<li>the server</li>
+<li>local shell</li>
+<li>SSH installed</li>
+</ul>
+<p>SSH, or Secure Shell, is a protocol designed to transfer data between a client and a server (two computers basically) over an untrusted network.</p>
+<p>The way SSH works is it encrypts the connection using a pair of keys and the server, which is the computer you would connect to, is usually waiting for an SSH connection on Port 22.</p>
+<p>SSH is normally installed by default. To check if you have SSH installed, open the terminal and write <code>ssh</code>. You should receive a message that looks like this</p>
+<pre><code class="language-shell">usage: ssh [-1246AaCfGgKkMNnqsTtVvXxYy] [-b bind_address] [-c cipher_spec]
+[-D [bind_address:]port] [-E log_file] [-e escape_char]
+[-F configfile] [-I pkcs11] [-i identity_file]
+[-J [user@]host[:port]] [-L address] [-l login_name] [-m mac_spec] [-O ctl_cmd] [-o option] [-p port] [-Q query_option] [-R address] [-S ctl_path] [-W host:port] [-w local_tun[:remote_tun]]
+[user@]hostname [command]
+</code></pre>
+<p>If SSH is not installed, you can install it using the following commands.</p>
+<pre><code class="language-shell">sudo apt-get install openssh-server
+sudo systemctl enable ssh
+sudo systemctl start ssh
+</code></pre>
+<p>Now that you have installed SSH, we are ready to setup a remote connection.</p>
+<p>From the computer you want to access remotey, generate the public key.</p>
+<pre><code class="language-shell">ssh-keygen -t rsa
+</code></pre>
+<p>You will be asked for a location. If you decide to enter one manually then that will be the pair’s location, if you leave the default one it will be inside the <code>.ssh</code> hidden folder in your home directory.</p>
+<p>Now you will be prompted for a password. If you enter one you will be asked for it every time you use the key, this works for added security. If you don’t want a password just press enter and continue without one.</p>
+<p>Two files were created. One file ends with the ‘.pub’ extension and the other one doesn’t. The file that ends with ‘.pub’ is your public key. This key needs to be in the computer you want to connect to (the server) inside a file called <code>authorized_keys</code> . You can accomplish this with the following command:</p>
+<pre><code class="language-shell">ssh-copy-id username@ip
+</code></pre>
+<p>For example in my case to send the key to my computer it would be:</p>
+<pre><code class="language-shell">ssh-copy-id sergiop@132.132.132.132
+</code></pre>
+<p>If you have MacOS there’s a chance you don’t have ssh-copy-id installed, in that case you can install it using</p>
+<pre><code class="language-shell">brew install ssh-copy-id
+</code></pre>
+<p>If you haven’t installed <code>brew</code>, you can install it by following <a href="https://brew.sh/" target="_blank" rel="noopener">this guide</a>.</p>
+<h2 id="connect">Connect</h2>
+<p>To permanently add the SSH key, you can use the follwing command</p>
+<pre><code class="language-shell">ssh-add directory\key.pem
+</code></pre>
+<p>Lastly, to connect, just type the following command.</p>
+<pre><code>ssh username@ip
+</code></pre>
+<p>Where <code>username</code> is the server name and <code>ip</code> is the public IP adress, e.g. 132.132.132.132.</p>
+<p>If your server is not public, you will not be able to access it.</p>
+<p>If your server is password protected, you will be prompted to insert a password when you connect. If not, you should protect it with a password.</p>
+<h2 id="managing-screens">Managing screens</h2>
+<p>While you are connected to the remote terminal, any disturbance to your connection will interrupt the code. In order to avoid that, you want to create separate screens. This will allow your code to run remotely undisturbed, irrespectively of your connection.</p>
+<p>First, you need to install <code>screen</code>.</p>
+<pre><code class="language-shell">brew install screen
+</code></pre>
+<p>To create a new screen, just type</p>
+<pre><code class="language-shell">screen
+</code></pre>
+<p>Now you can lunch your code.</p>
+<p>After that, you want to detach from that screen so that the code can run remotely undisturbed.</p>
+<pre><code>screen -d
+</code></pre>
+<p>Another option is to use <code>ctrl+a</code> followed by <code>ctrl+d</code>. This will detach the screen without the need to type anythin in the terminal, in case the terminal is busy (most likely).</p>
+<p>To list the current active screens type</p>
+<pre><code>screen -ls
+</code></pre>
+<p>If you want to check at any time that your code is running, without re-attaching to the screen, you can just type</p>
+<pre><code class="language-shell">top
+</code></pre>
+<p>which is the general command to check active processes. To exit, use <code>ctrl+z</code>, which generally terminates processes in the terminal.</p>
+<p>To reattach to your screen, type</p>
+<pre><code>screen -r
+</code></pre>
+<p>In case you have multiple screens (you can check with <code>screen -ls</code>), you can reattach to a specific one by typing</p>
+<pre><code class="language-shell">screen -r 12345
+</code></pre>
+<p>where <code>12345</code> is the id of the screen.</p>
+<p>To kill a screen, type</p>
+<pre><code>screen -XS 12345 quit
+</code></pre>
+<p>where again <code>12345</code> is the id of the screen.</p>
+<h2 id="python-and-pycharm">Python and Pycharm</h2>
+<p>If you are coding in Python, <a href="https://www.jetbrains.com/pycharm/" target="_blank" rel="noopener">PyCharm</a> is one of the best IDEs. Among many features, it offers the possibility to set a remote compiler for your pthon console and to sync input and output files automatically.</p>
+<p>First, you need to have setup a remote SSH connection following the steps above. Importantly, you need to have added the public key to your machine using the <code>ssh-add</code> command, as explained above.</p>
+<p>Then open Pytharm, go to the lower-right corner, where the current interpreter is listed (e.g. Pytohn 3.8), click it and select <code>interpreter settings</code>.</p>
+<p><img src="img/interpreter_settings.png" alt="interpreter_settings"></p>
+<p>Click on the gear icon ⚙️ on the top-right corner and select <code>add</code>.</p>
+<p><img src="img/add.png" alt="add"></p>
+<p>Insert the server <code>host</code> (IP address, e.g. 132.132.132.132) and <code>username</code> (e.g. sergiop).</p>
+<p><img src="img/configuration.png" alt="configuration"></p>
+<p>Next, you have to insert your credentials. If you have a password, insert it, otherwise you have to insert the path to your SSH key file.</p>
+<p><img src="img/password.png" alt="configuration"></p>
+<p>Lastly, select the remote interpreter. If you are using a python version that is not default, browse to the preferred python installation folder. Also, check the box for <code>execute code giving this interpreter with root privileges via sudo</code>.</p>
+<p>You can also select which remote folder to sync with your local project. By default, you are given a <code>tmp/pycharm_project_XX</code> folder. You can change it if you want. I recommend also to have the last option checked: <code>automatically sync project files to the server</code>. This will automatically synch all remote changes with your local machine, in your local project folder.</p>
+<p><img src="img/folder.png" alt="configuration"></p>
+<h2 id="julia-and-juno">Julia and Juno</h2>
+<p>If you are coding in Julia, <a href="https://junolab.org/" target="_blank" rel="noopener">Juno</a> is the best IDE around. It’s an integration with <a href="https://atom.io/" target="_blank" rel="noopener">Atom</a> with a dedicated compiler, local variables, syntax highlight, autocompletion.</p>
+<p>On Atom, you first need to install the <a href="https://github.com/h3imdall/ftp-remote-edit" target="_blank" rel="noopener"><code>ftp-remote-edit</code></a> package.</p>
+<p>Then go to the menu item <code>Packages &gt; Ftp-Remote-Edit &gt; Toggle</code>.</p>
+<img src="img/toggle.png" alt="julia" style="zoom:50%;" />
+<p>A new <code>Remote</code> panel will open with the default button to <code>Edit a new server</code>.</p>
+<img src="img/edit.png" alt="julia" style="zoom:50%;" />
+<p>Click it and you will be able to set up your remote connection.</p>
+<ul>
+<li>Press <code>New</code></li>
+<li>Insert your username in <code>The name of the server</code>, for example <code>sergiop</code></li>
+<li>Insert your ip adress in <code>The hostname or IP adress of the server</code>, for example <code>123.123.123.123</code></li>
+<li>Select <code>SFTP - SSH File Transfer Protocol</code> under <code>Protocol</code></li>
+<li>Select your <code>Logon</code> option. You can either insert your password every time, just once, or use a keyfile.</li>
+<li>Insert again your username in <code>Username for autentication</code>, again for example <code>sergiop</code></li>
+<li>If you don’t want to start from the root folder, you can change the <code>Initial Directory</code></li>
+</ul>
+<p><img src="img/julia.png" alt="julia"></p>
+<p>Now you will be able to see your remote directory (named for example <code>sergiop</code>) in the <code>Remote</code> panel.</p>
+<p>To start using Julia remotely, just start a new remote Julia process from the menu on the left.</p>
+<img src="img/remote.png" alt="julia" style="zoom:50%;" />
+<p>Now you are ready to deploy your Julia code on your remote server!</p>
+<h2 id="jupyter-notebooks">Jupyter Notebooks</h2>
+<p>If you want to have a <a href="https://jupyter.org/" target="_blank" rel="noopener">Jupyter Notebook</a> running remotely, the steps are the following. The main advantage of a Jupyter Notebook is that it allows you to mix text and code in a single file, similarly to <a href="https://rmarkdown.rstudio.com/" target="_blank" rel="noopener">RMarkdown</a>, with the advantage of not being contrained to use a R (or Python) kernel. For example, I often use Jupyter Notebook with Julia or Matlab Kernels. Moreover, you can also make nice slides out of it!</p>
+<p>First, connect to the remote machine. Look at <a href="https://matteocourthoud.github.io/post/remote/#setup" target="_blank" rel="noopener">section 1</a> to set up your SSH connection.</p>
+<pre><code class="language-shell">ssh username@ip
+</code></pre>
+<p>Start a Jupyter Notebook in the remote machine.</p>
+<pre><code class="language-shell">jupyter notebook --no-browser
+</code></pre>
+<p>The command will open a jupyter notebook in the remote machine. To connect to it, we need to know which port it used. The default port is <code>8888</code>. If that port is busy, it will look for another available one. We can see the port from the output in terminal.</p>
+<blockquote>
+<p>Jupyter Notebook is running at: http://localhost:XXXX/…</p>
+</blockquote>
+<p>Where <code>XXXX</code> is the repote port used.</p>
+<p>Now we need to forward the remote port <code>XXXX</code> to our local <code>YYYY</code> port.</p>
+<p>Open a new <em>local</em> shell. Type</p>
+<pre><code class="language-shell">ssh -L localhost:YYYY:localhost:XXXX username@ip
+</code></pre>
+<p>Where <code>YYYY</code> can be anything. I’d use the default port <code>8888</code>.</p>
+<pre><code class="language-shell">ssh -L localhost:8889:localhost:8888 username@ip
+</code></pre>
+<p>Now go to your browser and type</p>
+<pre><code>localhost:YYYY
+</code></pre>
+<p>Which in my case is</p>
+<pre><code>localhost:8889
+</code></pre>
+<p>This will open the remote Jupyter Notebook.</p>
+<p>Done!</p>
+<p>In case you want to check which Jupiter notebooks are running, type</p>
+<pre><code class="language-shell">jupyter notebook list
+</code></pre>
+<p>To kill a notebook use</p>
+<pre><code class="language-shell">jupyter notebook stop XXXX
+</code></pre>
+<h2 id="sources">Sources</h2>
+<ul>
+<li><a href="https://medium.com/@SergioPietri/how-to-setup-and-use-ssh-for-remote-connections-e86556d804dd" target="_blank" rel="noopener">How To Setup And Use SSH For Remote Connections</a></li>
+<li><a href="https://docs.junolab.org/stable/man/remote/" target="_blank" rel="noopener">Connecting to a Julia session on a remote machine</a></li>
+<li><a href="https://ljvmiranda921.github.io/notebook/2018/01/31/running-a-jupyter-notebook/" target="_blank" rel="noopener">Running a Jupyter notebook from a remote server</a></li>
+</ul>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/ssh/&amp;text=How%20to%20Work%20on%20a%20Remote%20Machine%20via%20SSH" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/ssh/&amp;t=How%20to%20Work%20on%20a%20Remote%20Machine%20via%20SSH" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=How%20to%20Work%20on%20a%20Remote%20Machine%20via%20SSH&amp;body=https://matteocourthoud.github.io/post/ssh/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/ssh/&amp;title=How%20to%20Work%20on%20a%20Remote%20Machine%20via%20SSH" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=How%20to%20Work%20on%20a%20Remote%20Machine%20via%20SSH%20https://matteocourthoud.github.io/post/ssh/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/ssh/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+          <i class="fab fa-telegram"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">My research fields are empirical Industrial Organization and Competition Policy. My research interests include the relationship between competition and innovation, big data, artificial intelligence, platform markets, peer to peer services.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.econ.uzh.ch/en/people/graduatestudents/courthoud.html" target="_blank" rel="noopener">
+        <i class="fas fa-envelope"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>
