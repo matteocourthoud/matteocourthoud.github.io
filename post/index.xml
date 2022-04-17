@@ -5,12 +5,477 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Fri, 15 Apr 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sun, 17 Apr 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://matteocourthoud.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>DAGs and Bad Controls</title>
+      <link>https://matteocourthoud.github.io/post/controls/</link>
+      <pubDate>Sun, 17 Apr 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/controls/</guid>
+      <description>&lt;p&gt;In this tutorial, we are going to have a brief overview of directed acyclic graphs (DAG), a very powerful visual tool to analyze causal relationships. The main goal is to use DAGs to assess which control variables to include or not in a regression.&lt;/p&gt;
+&lt;h2 id=&#34;directed-acyclic-graphs&#34;&gt;Directed Acyclic Graphs&lt;/h2&gt;
+&lt;h3 id=&#34;definitions&#34;&gt;Definitions&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;Directed acyclic graphs&lt;/strong&gt; (&lt;strong&gt;DAG&lt;/strong&gt;s) provide a visual representation of the data generating process. Random variables are represented with letters (e.g. $X$) and causal relationships are represented with arrows (e.g. $\to$). For example, we interpret&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef white fill:#FFFFFF,stroke:#000000,stroke-width:2px
+X((X)):::white --&amp;gt; Y((Y)):::white
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;as $X$ (possibly) causes $Y$. We call a &lt;strong&gt;path&lt;/strong&gt; between two variables $X$ and $Y$ any connection between $X$ and $Y$, &lt;em&gt;independently on the direction of the arrows&lt;/em&gt;. If all arrows point forward, we call it a &lt;strong&gt;causal path&lt;/strong&gt;, otherwise we call it a &lt;strong&gt;spurious path&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Z1
+Z1 --&amp;gt; Z2
+Z3 --&amp;gt; Z2
+Z3 --&amp;gt; Y
+
+class X,Y included;
+class Z1,Z2,Z3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this example, we have a path between $X$ and $Y$ passing through the variables $Z_1$, $Z_2$ and $Z_3$. Since not all arrows point forward, the path is &lt;em&gt;spurious&lt;/em&gt; and there is no causal relationship of $X$ on $Y$. In fact, variable $Z_2$ is caused by both $Z_1$ and $Z_3$ and therefore &lt;strong&gt;blocks&lt;/strong&gt; the path.&lt;/p&gt;
+&lt;p&gt;$Z_2$ is called a &lt;strong&gt;collider&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The purpose of our analysis is to assess the &lt;strong&gt;causal relationship&lt;/strong&gt; between two variables $X$ and $Y$. Directed acyclic graphs are useful because they provide us instructions on which other variables $Z$ we need to &lt;strong&gt;condition&lt;/strong&gt; our analysis on. Conditioning the analysis on a variable means that we keep it fixed and we draw our conclusions &lt;em&gt;ceteris paribus&lt;/em&gt;. For example, in a linear regression framework, inserting another regressor $Z$ means that we are computing the best linear approximation of the conditional expectation function of $Y$ given $X$, &lt;em&gt;conditional&lt;/em&gt; on the observed values of $Z$.&lt;/p&gt;
+&lt;h3 id=&#34;causality&#34;&gt;Causality&lt;/h3&gt;
+&lt;p&gt;In order to assess causality we want to &lt;strong&gt;close all spurious paths&lt;/strong&gt; between $X$ and $Y$. The &lt;strong&gt;questions&lt;/strong&gt; now are:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;when is a path &lt;strong&gt;open&lt;/strong&gt;?
+&lt;ul&gt;
+&lt;li&gt;if it does not contain &lt;em&gt;colliders&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;how do you &lt;strong&gt;close an open path&lt;/strong&gt;?
+&lt;ul&gt;
+&lt;li&gt;if you condition on &lt;em&gt;at least one&lt;/em&gt; intermediate variable&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;how do you &lt;strong&gt;open a closed path&lt;/strong&gt;?
+&lt;ul&gt;
+&lt;li&gt;if you condition on &lt;em&gt;all&lt;/em&gt; colliders along the path&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Suppose we are again interested in the relationship between $X$ and $Y$. Let&amp;rsquo;s consider the following graph&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Y
+X --&amp;gt; Z2
+Z2 --&amp;gt; Y
+Z1 --&amp;gt; X
+Z1 --&amp;gt; Y
+X --&amp;gt; Z3
+Y --&amp;gt; Z3
+
+class X,Y included;
+class Z1,Z2,Z3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this case, there are &lt;strong&gt;three non-direct paths&lt;/strong&gt; between $X$ and $Y$ through the variables $Z_1$, $Z_2$ and $Z_3$.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s consider the case in which we analyze the relationship between $X$ and $Y$, ignoring all other variables.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The path through $Z_1$ is &lt;strong&gt;open&lt;/strong&gt; but it is &lt;strong&gt;spurious&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;The path through $Z_2$ is &lt;strong&gt;open&lt;/strong&gt; and &lt;strong&gt;causal&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;The path through $Z_3$ is &lt;strong&gt;closed&lt;/strong&gt; since $Z_3$ is a &lt;em&gt;collider&lt;/em&gt; and it is &lt;strong&gt;spurious&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Let&amp;rsquo;s draw the same graph indicating in gray variables that we are conditioning on, with dotted lines closed paths, with red lines spurious paths and with green lines causal paths.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Y
+X --&amp;gt; Z2
+Z2 --&amp;gt; Y
+Z1 --&amp;gt; X
+Z1 --&amp;gt; Y
+X -.-&amp;gt; Z3
+Y -.-&amp;gt; Z3
+
+linkStyle 0,1,2 stroke:#00ff00,stroke-width:4px;
+linkStyle 3,4 stroke:#ff0000,stroke-width:4px;
+class X,Y included;
+class Z1,Z2,Z3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this case, to assess the &lt;strong&gt;causal&lt;/strong&gt; relationship between $X$ and $Y$ we need to close the path that passes through $Z_1$. We can do that by conditioning the analysis on $Z_1$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Y
+X --&amp;gt; Z2
+Z2 --&amp;gt; Y
+Z1 -.-&amp;gt; X
+Z1 -.-&amp;gt; Y
+X -.-&amp;gt; Z3
+Y -.-&amp;gt; Z3
+
+linkStyle 0,1,2 stroke:#00ff00,stroke-width:4px;
+class X,Y,Z1 included;
+class Z2,Z3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we are able to recover the causal relationship between $X$ and $Y$ by conditioning on $Z_1$.&lt;/p&gt;
+&lt;p&gt;What would happen if we were also &lt;strong&gt;conditioning on $Z_2$&lt;/strong&gt;? In this case, we would &lt;strong&gt;close&lt;/strong&gt; the path passing through $Z_2$ leaving only the direct path between $X$ and $Y$ open. We would then recover only the &lt;strong&gt;direct effect&lt;/strong&gt; of $X$ on $Y$ and not the &lt;em&gt;indirect&lt;/em&gt; one.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Y
+X -.-&amp;gt; Z2
+Z2 -.-&amp;gt; Y
+Z1 -.-&amp;gt; X
+Z1 -.-&amp;gt; Y
+X -.-&amp;gt; Z3
+Y -.-&amp;gt; Z3
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+class X,Y,Z1,Z2 included;
+class Z3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What would happen if we were also &lt;strong&gt;conditioning on $Z_3$&lt;/strong&gt;? In this case, we would &lt;strong&gt;open&lt;/strong&gt; the path passing through $Z_3$ which is a &lt;strong&gt;spurious&lt;/strong&gt; path. We would then &lt;strong&gt;not&lt;/strong&gt; be able to recover the causal effect of $X$ on $Y$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+
+X((X))
+Y((Y))
+Z1((Z1))
+Z2((Z2))
+Z3((Z3))
+
+X --&amp;gt; Y
+X -.-&amp;gt; Z2
+Z2 -.-&amp;gt; Y
+Z1 -.-&amp;gt; X
+Z1 -.-&amp;gt; Y
+X --&amp;gt; Z3
+Y --&amp;gt; Z3
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+linkStyle 5,6 stroke:#ff0000,stroke-width:4px;
+class X,Y,Z1,Z2,Z3 included;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;example-1-class-size-and-math-scores&#34;&gt;Example 1: class size and math scores&lt;/h2&gt;
+&lt;p&gt;Suppose you are interested in the &lt;strong&gt;effect of class size on math scores&lt;/strong&gt;. Are bigger classes better or worse for students&#39; performance?&lt;/p&gt;
+&lt;p&gt;Assume that the data generating process can be represented with the following &lt;strong&gt;DAG&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+
+X((class size))
+Y((math score))
+Z1((class year))
+Z2((good school))
+Z3((math hours))
+Z4((hist score))
+U((ability))
+
+X --&amp;gt; Y
+Z1 --&amp;gt; X
+X --&amp;gt; Z4
+U --&amp;gt; Y
+U --&amp;gt; Z4
+Z2 --&amp;gt; X
+Z2 --&amp;gt; Y
+Z2 --&amp;gt; Z4
+Z3 --&amp;gt; Y
+
+class X,Y included;
+class Z1,Z2,Z3,Z4 excluded;
+class U unobserved;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I have highlighted the variables of interest. Moreover, the dotted line around &lt;code&gt;ability&lt;/code&gt; indicates that this is a variable that we do not observe in the data.&lt;/p&gt;
+&lt;p&gt;We can now load the data and check what it looks like.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+from src.utils import *
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import dgp_class
+
+dgp = dgp_class()
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;math_hours&lt;/th&gt;
+      &lt;th&gt;history_hours&lt;/th&gt;
+      &lt;th&gt;good_school&lt;/th&gt;
+      &lt;th&gt;class_year&lt;/th&gt;
+      &lt;th&gt;class_size&lt;/th&gt;
+      &lt;th&gt;math_score&lt;/th&gt;
+      &lt;th&gt;hist_score&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;33&lt;/td&gt;
+      &lt;td&gt;16.747190&lt;/td&gt;
+      &lt;td&gt;16.797349&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;14&lt;/td&gt;
+      &lt;td&gt;13.994490&lt;/td&gt;
+      &lt;td&gt;12.870178&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;18&lt;/td&gt;
+      &lt;td&gt;15.547838&lt;/td&gt;
+      &lt;td&gt;15.649692&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;10&lt;/td&gt;
+      &lt;td&gt;11.342831&lt;/td&gt;
+      &lt;td&gt;11.780903&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;20&lt;/td&gt;
+      &lt;td&gt;9.801164&lt;/td&gt;
+      &lt;td&gt;7.429193&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;What variables should we condition our regression on, in order to estimate the causal effect of &lt;code&gt;class size&lt;/code&gt; on &lt;code&gt;math scores&lt;/code&gt;. First of all, let&amp;rsquo;s look at what happens if we do not condition our analysis on any variable and we just regress &lt;code&gt;math score&lt;/code&gt; on &lt;code&gt;class size&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;  &lt;td&gt;   11.0603&lt;/td&gt; &lt;td&gt;    0.269&lt;/td&gt; &lt;td&gt;   41.142&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   10.533&lt;/td&gt; &lt;td&gt;   11.588&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_size&lt;/th&gt; &lt;td&gt;    0.0249&lt;/td&gt; &lt;td&gt;    0.015&lt;/td&gt; &lt;td&gt;    1.653&lt;/td&gt; &lt;td&gt; 0.099&lt;/td&gt; &lt;td&gt;   -0.005&lt;/td&gt; &lt;td&gt;    0.055&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Should we believe this esimated effect? Without controlling for anything, this is &lt;strong&gt;DAG representation&lt;/strong&gt; of the effect we are capturing.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+
+X((class size))
+Y((math score))
+Z1((class year))
+Z2((good school))
+Z3((math hours))
+Z4((hist score))
+U((ability))
+
+X --&amp;gt; Y
+Z1 --&amp;gt; X
+X -.-&amp;gt; Z4
+U --&amp;gt; Y
+U -.-&amp;gt; Z4
+Z2 --&amp;gt; X
+Z2 --&amp;gt; Y
+Z2 --&amp;gt; Z4
+Z3 --&amp;gt; Y
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+linkStyle 5,6 stroke:#ff0000,stroke-width:4px;
+
+class X,Y included;
+class Z1,Z2,Z3,Z4 excluded;
+class U unobserved;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;There is a &lt;strong&gt;spurious&lt;/strong&gt; path passing through &lt;code&gt;good school&lt;/code&gt; that &lt;strong&gt;biases&lt;/strong&gt; our estimated coefficient. We need to control for it.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    5.3494&lt;/td&gt; &lt;td&gt;    0.188&lt;/td&gt; &lt;td&gt;   28.439&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.980&lt;/td&gt; &lt;td&gt;    5.718&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_size&lt;/th&gt;  &lt;td&gt;    0.2056&lt;/td&gt; &lt;td&gt;    0.009&lt;/td&gt; &lt;td&gt;   22.751&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.188&lt;/td&gt; &lt;td&gt;    0.223&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    5.0336&lt;/td&gt; &lt;td&gt;    0.104&lt;/td&gt; &lt;td&gt;   48.516&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.830&lt;/td&gt; &lt;td&gt;    5.237&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Now the estimator of the effect of &lt;code&gt;class size&lt;/code&gt; on &lt;code&gt;math score&lt;/code&gt; in &lt;strong&gt;unbiased&lt;/strong&gt;!&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+
+X((class size))
+Y((math score))
+Z1((class year))
+Z2((good school))
+Z3((math hours))
+Z4((hist score))
+U((ability))
+
+X --&amp;gt; Y
+Z1 --&amp;gt; X
+X -.-&amp;gt; Z4
+U --&amp;gt; Y
+U -.-&amp;gt; Z4
+Z2 -.-&amp;gt; X
+Z2 -.-&amp;gt; Y
+Z2 --&amp;gt; Z4
+Z3 --&amp;gt; Y
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+
+class X,Y,Z2 included;
+class Z1,Z3,Z4 excluded;
+class U unobserved;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What would happen if we were to instead &lt;strong&gt;control for all variables&lt;/strong&gt;?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school + math_hours + class_year + hist_score&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;   -0.2056&lt;/td&gt; &lt;td&gt;    0.384&lt;/td&gt; &lt;td&gt;   -0.535&lt;/td&gt; &lt;td&gt; 0.593&lt;/td&gt; &lt;td&gt;   -0.960&lt;/td&gt; &lt;td&gt;    0.548&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_size&lt;/th&gt;  &lt;td&gt;    0.1135&lt;/td&gt; &lt;td&gt;    0.010&lt;/td&gt; &lt;td&gt;   11.535&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.094&lt;/td&gt; &lt;td&gt;    0.133&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    2.8049&lt;/td&gt; &lt;td&gt;    0.160&lt;/td&gt; &lt;td&gt;   17.571&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.492&lt;/td&gt; &lt;td&gt;    3.118&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;math_hours&lt;/th&gt;  &lt;td&gt;    0.8389&lt;/td&gt; &lt;td&gt;    0.080&lt;/td&gt; &lt;td&gt;   10.492&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.682&lt;/td&gt; &lt;td&gt;    0.996&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;class_year&lt;/th&gt;  &lt;td&gt;    0.0125&lt;/td&gt; &lt;td&gt;    0.039&lt;/td&gt; &lt;td&gt;    0.323&lt;/td&gt; &lt;td&gt; 0.746&lt;/td&gt; &lt;td&gt;   -0.063&lt;/td&gt; &lt;td&gt;    0.088&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;hist_score&lt;/th&gt;  &lt;td&gt;    0.4641&lt;/td&gt; &lt;td&gt;    0.027&lt;/td&gt; &lt;td&gt;   17.017&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.411&lt;/td&gt; &lt;td&gt;    0.518&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The coefficient is again &lt;strong&gt;biased&lt;/strong&gt;. Why?&lt;/p&gt;
+&lt;p&gt;We have opened a new spurious path by controlling for &lt;code&gt;hist score&lt;/code&gt;. In fact, &lt;code&gt;hist score&lt;/code&gt; is a &lt;strong&gt;collider&lt;/strong&gt; and controlling for it has opened a path through &lt;code&gt;hist score&lt;/code&gt; and &lt;code&gt;ability&lt;/code&gt; that was otherwise closed.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+
+X((class size))
+Y((math score))
+Z1((class year))
+Z2((good school))
+Z3((math hours))
+Z4((hist score))
+U((ability))
+
+X --&amp;gt; Y
+Z1 --&amp;gt; X
+X --&amp;gt; Z4
+U --&amp;gt; Y
+U --&amp;gt; Z4
+Z2 -.-&amp;gt; X
+Z2 -.-&amp;gt; Y
+Z2 --&amp;gt; Z4
+Z3 --&amp;gt; Y
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+linkStyle 2,3,4 stroke:#ff0000,stroke-width:4px;
+
+class X,Y,Z1,Z2,Z3,Z4 included;
+class U unobserved;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The example was inspired by the following tweet.&lt;/p&gt;
+&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;We can illustrate this with Model 16 of the &amp;quot;Crash Course in Good and Bad Controls&amp;quot; (&lt;a href=&#34;https://t.co/GcSNzhuVt2&#34;&gt;https://t.co/GcSNzhuVt2&lt;/a&gt;). Here X = class size, Y = math4, Z = read4, and U = student&amp;#39;s ability. Conditioning on Z opens the path X -&amp;gt; Z &amp;lt;- U -&amp;gt; Y and it is thus a &amp;quot;bad control.&amp;quot; &lt;a href=&#34;https://t.co/KNfqtsMWwB&#34;&gt;https://t.co/KNfqtsMWwB&lt;/a&gt; &lt;a href=&#34;https://t.co/lUSigNYSJj&#34;&gt;pic.twitter.com/lUSigNYSJj&lt;/a&gt;&lt;/p&gt;&amp;mdash; Análise Real (@analisereal) &lt;a href=&#34;https://twitter.com/analisereal/status/1502793254592401409?ref_src=twsrc%5Etfw&#34;&gt;March 12, 2022&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3689437&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;A Crash Course in Bad Controls&lt;/a&gt; by Carlos Cinelli, Andrew Forney and Judea Pearl&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mixtape.scunning.com/dag.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 3&lt;/a&gt; of The Causal Inference Mixtape by Scott Cunningham&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://microsoft.github.io/dowhy/example_notebooks/dowhy_simple_example.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Getting started with DoWhy&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
     
     <item>
       <title>AIPW</title>
@@ -1720,430 +2185,6 @@ plot_test(x, chi2_stat, df=3)
 &lt;/ol&gt;
 &lt;p&gt;The underlying principle is the same: testing discrepancies between expected and observed count data.&lt;/p&gt;
 &lt;p&gt;The key statistic is Pearson&amp;rsquo;s chi-square statistic and the key distribution is the chi-squared distribution. We have seen how to compute the statistic, why it has a chi-squared distribution, and how to use this information to perform a statistical hypothesis test.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>DAGs and Bad Controls</title>
-      <link>https://matteocourthoud.github.io/post/controls/</link>
-      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/controls/</guid>
-      <description>&lt;p&gt;In this tutorial, we are going to have a brief overview of directed acyclic graphs (DAG), a very powerful visual tool to analyze causal relationships. The main goal is to use DAGs to assess which control variables to include or not in a regression.&lt;/p&gt;
-&lt;h2 id=&#34;directed-acyclic-graphs&#34;&gt;Directed Acyclic Graphs&lt;/h2&gt;
-&lt;h3 id=&#34;definitions&#34;&gt;Definitions&lt;/h3&gt;
-&lt;p&gt;&lt;strong&gt;Directed acyclic graphs&lt;/strong&gt; (&lt;strong&gt;DAG&lt;/strong&gt;s) provide a visual representation of the data generating process. Random variables are represented with letters (e.g. $X$) and causal relationships are represented with arrows (e.g. $\to$). For example, we interpret&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
-classDef white fill:#FFFFFF,stroke:#000000,stroke-width:2px
-X((X)):::white --&amp;gt; Y((Y)):::white
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;as $X$ (possibly) causes $Y$. We call a &lt;strong&gt;path&lt;/strong&gt; between two variables $X$ and $Y$ any connection between $X$ and $Y$, &lt;em&gt;independently on the direction of the arrows&lt;/em&gt;. If all arrows point forward, we call it a &lt;strong&gt;causal path&lt;/strong&gt;, otherwise we call it a &lt;strong&gt;spurious path&lt;/strong&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
-classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
-classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
-
-X((X))
-Y((Y))
-Z1((Z1))
-Z2((Z2))
-Z3((Z3))
-
-X --&amp;gt; Z1
-Z1 --&amp;gt; Z2
-Z3 --&amp;gt; Z2
-Z3 --&amp;gt; Y
-
-class X,Y included;
-class Z1,Z2,Z3 excluded;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example, we have a path between $X$ and $Y$ passing through the variables $Z_1$, $Z_2$ and $Z_3$. Since not all arrows point forward, the path is &lt;em&gt;spurious&lt;/em&gt; and there is no causal relationship of $X$ on $Y$. In fact, variable $Z_2$ is caused by both $Z_1$ and $Z_3$ and therefore &lt;strong&gt;blocks&lt;/strong&gt; the path.&lt;/p&gt;
-&lt;p&gt;$Z_2$ is called a &lt;strong&gt;collider&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;The purpose of our analysis is to assess the &lt;strong&gt;causal relationship&lt;/strong&gt; between two variables $X$ and $Y$. Directed acyclic graphs are useful because they provide us instructions on which other variables $Z$ we should include in our analysis and why. When we include a variable in the analysis, we say we &lt;strong&gt;condition&lt;/strong&gt; the analysis on it.&lt;/p&gt;
-&lt;h3 id=&#34;causality&#34;&gt;Causality&lt;/h3&gt;
-&lt;p&gt;In order to assess causality we want to &lt;strong&gt;close all spurious paths&lt;/strong&gt; between $X$ and $Y$. The &lt;strong&gt;questions&lt;/strong&gt; now are:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;when is a path &lt;strong&gt;open&lt;/strong&gt;?
-&lt;ul&gt;
-&lt;li&gt;if it does not contain &lt;em&gt;colliders&lt;/em&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;when do you &lt;strong&gt;close an open path&lt;/strong&gt;?
-&lt;ul&gt;
-&lt;li&gt;if you condition on &lt;em&gt;at least one&lt;/em&gt; intermediate variable&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;when do you &lt;strong&gt;open a closed path&lt;/strong&gt;?
-&lt;ul&gt;
-&lt;li&gt;if you condition on &lt;em&gt;all&lt;/em&gt; colliders along the path&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Suppose we are again interested in the relationship between $X$ and $Y$. Let&amp;rsquo;s consider the following graph&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
-classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
-classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
-
-X((X))
-Y((Y))
-Z1((Z1))
-Z2((Z2))
-Z3((Z3))
-
-X --&amp;gt; Y
-X --&amp;gt; Z2
-Z2 --&amp;gt; Y
-Z1 --&amp;gt; X
-Z1 --&amp;gt; Y
-X --&amp;gt; Z3
-Y --&amp;gt; Z3
-
-class X,Y included;
-class Z1,Z2,Z3 excluded;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this case, there are &lt;strong&gt;three non-direct paths&lt;/strong&gt; between $X$ and $Y$ through the variables $Z_1$, $Z_2$ and $Z_3$.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s consider the case in which we analyze the relationship between $X$ and $Y$, ignoring all other variables.&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;The path through $Z_1$ is &lt;strong&gt;open&lt;/strong&gt; but it is &lt;strong&gt;spurious&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;The path through $Z_2$ is &lt;strong&gt;open&lt;/strong&gt; and &lt;strong&gt;causal&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;The path through $Z_3$ is &lt;strong&gt;closed&lt;/strong&gt; since $Z_3$ is a &lt;em&gt;collider&lt;/em&gt; and it is &lt;strong&gt;spurious&lt;/strong&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Let&amp;rsquo;s draw the same graph indicating in gray variables that we are conditioning on, with dotted lines closed paths, with red lines spurious paths and with green lines causal paths.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
-classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
-classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
-
-X((X))
-Y((Y))
-Z1((Z1))
-Z2((Z2))
-Z3((Z3))
-
-X --&amp;gt; Y
-X --&amp;gt; Z2
-Z2 --&amp;gt; Y
-Z1 --&amp;gt; X
-Z1 --&amp;gt; Y
-X -.-&amp;gt; Z3
-Y -.-&amp;gt; Z3
-
-linkStyle 0,1,2 stroke:#00ff00,stroke-width:4px;
-linkStyle 3,4 stroke:#ff0000,stroke-width:4px;
-class X,Y included;
-class Z1,Z2,Z3 excluded;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this case, to assess the &lt;strong&gt;causal&lt;/strong&gt; relationship between $X$ and $Y$ we need to close the path that passes through $Z_1$. We can do that by conditioning the analysis on $Z_1$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
-classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
-classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
-
-X((X))
-Y((Y))
-Z1((Z1))
-Z2((Z2))
-Z3((Z3))
-
-X --&amp;gt; Y
-X --&amp;gt; Z2
-Z2 --&amp;gt; Y
-Z1 -.-&amp;gt; X
-Z1 -.-&amp;gt; Y
-X -.-&amp;gt; Z3
-Y -.-&amp;gt; Z3
-
-linkStyle 0,1,2 stroke:#00ff00,stroke-width:4px;
-class X,Y,Z1 included;
-class Z2,Z3 excluded;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now we are able to recover the causal relationship between $X$ and $Y$ by conditioning on $Z_1$.&lt;/p&gt;
-&lt;p&gt;What would happen if we were also &lt;strong&gt;conditioning on $Z_2$&lt;/strong&gt;? In this case, we would &lt;strong&gt;close&lt;/strong&gt; the path passing through $Z_2$ leaving only the direct path between $X$ and $Y$ open. We would then recover only the &lt;strong&gt;direct effect&lt;/strong&gt; of $X$ on $Y$ and not the &lt;em&gt;indirect&lt;/em&gt; one.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
-classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
-classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
-
-X((X))
-Y((Y))
-Z1((Z1))
-Z2((Z2))
-Z3((Z3))
-
-X --&amp;gt; Y
-X -.-&amp;gt; Z2
-Z2 -.-&amp;gt; Y
-Z1 -.-&amp;gt; X
-Z1 -.-&amp;gt; Y
-X -.-&amp;gt; Z3
-Y -.-&amp;gt; Z3
-
-linkStyle 0 stroke:#00ff00,stroke-width:4px;
-class X,Y,Z1,Z2 included;
-class Z3 excluded;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;What would happen if we were also &lt;strong&gt;conditioning on $Z_3$&lt;/strong&gt;? In this case, we would &lt;strong&gt;open&lt;/strong&gt; the path passing through $Z_3$ which is a &lt;strong&gt;spurious&lt;/strong&gt; path. We would then &lt;strong&gt;not&lt;/strong&gt; be able to recover the causal effect of $X$ on $Y$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
-classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
-
-X((X))
-Y((Y))
-Z1((Z1))
-Z2((Z2))
-Z3((Z3))
-
-X --&amp;gt; Y
-X -.-&amp;gt; Z2
-Z2 -.-&amp;gt; Y
-Z1 -.-&amp;gt; X
-Z1 -.-&amp;gt; Y
-X --&amp;gt; Z3
-Y --&amp;gt; Z3
-
-linkStyle 0 stroke:#00ff00,stroke-width:4px;
-linkStyle 5,6 stroke:#ff0000,stroke-width:4px;
-class X,Y,Z1,Z2,Z3 included;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;cheat-sheet&#34;&gt;Cheat Sheet&lt;/h3&gt;
-&lt;p&gt;A path $p$ from $X$ to $Y$ is blocked conditioning on $Z$ if and only if&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;$Z$ is a common cause&lt;/li&gt;
-&lt;li&gt;$Z$ is a mediator&lt;/li&gt;
-&lt;li&gt;the path $p$ contains a collider and $Z$ is not that collider or any of its descendants&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Therefore, if we are interested in the causal effect of $X$ on $Y$ we &lt;strong&gt;must&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Block all spurious paths between $X$ and $Y$&lt;/li&gt;
-&lt;li&gt;Not perturb any causal path between them&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;example-1-class-size-and-math-scores&#34;&gt;Example 1: class size and math scores&lt;/h2&gt;
-&lt;p&gt;Suppose you have&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
-classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
-classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
-classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
-
-
-X((class size))
-Y((math score))
-Z1((class year))
-Z2((good school))
-Z3((math hours))
-Z4((hist score))
-U((ability))
-
-X --&amp;gt; Y
-Z1 --&amp;gt; X
-X --&amp;gt; Z4
-U --&amp;gt; Y
-U --&amp;gt; Z4
-Z2 --&amp;gt; X
-Z2 --&amp;gt; Y
-Z2 --&amp;gt; Z4
-Z3 --&amp;gt; Y
-
-class X,Y included;
-class Z1,Z2,Z3,Z4 excluded;
-class U unobserved;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example we are going to&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
-%config InlineBackend.figure_format = &#39;retina&#39;
-from src.utils import *
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import dgp_class
-
-dgp = dgp_class()
-df = dgp.generate_data()
-df.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;math_hours&lt;/th&gt;
-      &lt;th&gt;history_hours&lt;/th&gt;
-      &lt;th&gt;good_school&lt;/th&gt;
-      &lt;th&gt;class_year&lt;/th&gt;
-      &lt;th&gt;class_size&lt;/th&gt;
-      &lt;th&gt;math_score&lt;/th&gt;
-      &lt;th&gt;hist_score&lt;/th&gt;
-      &lt;th&gt;final_score&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;4&lt;/td&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;33&lt;/td&gt;
-      &lt;td&gt;16.747190&lt;/td&gt;
-      &lt;td&gt;16.797349&lt;/td&gt;
-      &lt;td&gt;16.772269&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;4&lt;/td&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;4&lt;/td&gt;
-      &lt;td&gt;14&lt;/td&gt;
-      &lt;td&gt;13.994490&lt;/td&gt;
-      &lt;td&gt;12.870178&lt;/td&gt;
-      &lt;td&gt;13.432334&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;18&lt;/td&gt;
-      &lt;td&gt;15.547838&lt;/td&gt;
-      &lt;td&gt;15.649692&lt;/td&gt;
-      &lt;td&gt;15.598765&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;4&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;10&lt;/td&gt;
-      &lt;td&gt;11.342831&lt;/td&gt;
-      &lt;td&gt;11.780903&lt;/td&gt;
-      &lt;td&gt;11.561867&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;4&lt;/td&gt;
-      &lt;td&gt;3&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;20&lt;/td&gt;
-      &lt;td&gt;9.801164&lt;/td&gt;
-      &lt;td&gt;7.429193&lt;/td&gt;
-      &lt;td&gt;8.615179&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;Syntax for regressing $y$ on $x1$ and $x2$ is &lt;code&gt;smf.ols(&#39;y ~ x1 + x2&#39;, df).fit()&lt;/code&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size&#39;, df).fit().summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;  &lt;td&gt;   11.0603&lt;/td&gt; &lt;td&gt;    0.269&lt;/td&gt; &lt;td&gt;   41.142&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   10.533&lt;/td&gt; &lt;td&gt;   11.588&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;class_size&lt;/th&gt; &lt;td&gt;    0.0249&lt;/td&gt; &lt;td&gt;    0.015&lt;/td&gt; &lt;td&gt;    1.653&lt;/td&gt; &lt;td&gt; 0.099&lt;/td&gt; &lt;td&gt;   -0.005&lt;/td&gt; &lt;td&gt;    0.055&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school&#39;, df).fit().summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-       &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    5.3494&lt;/td&gt; &lt;td&gt;    0.188&lt;/td&gt; &lt;td&gt;   28.439&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.980&lt;/td&gt; &lt;td&gt;    5.718&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;class_size&lt;/th&gt;  &lt;td&gt;    0.2056&lt;/td&gt; &lt;td&gt;    0.009&lt;/td&gt; &lt;td&gt;   22.751&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.188&lt;/td&gt; &lt;td&gt;    0.223&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    5.0336&lt;/td&gt; &lt;td&gt;    0.104&lt;/td&gt; &lt;td&gt;   48.516&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.830&lt;/td&gt; &lt;td&gt;    5.237&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school + math_hours&#39;, df).fit().summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-       &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    2.4483&lt;/td&gt; &lt;td&gt;    0.362&lt;/td&gt; &lt;td&gt;    6.757&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.737&lt;/td&gt; &lt;td&gt;    3.159&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;class_size&lt;/th&gt;  &lt;td&gt;    0.2042&lt;/td&gt; &lt;td&gt;    0.009&lt;/td&gt; &lt;td&gt;   23.534&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.187&lt;/td&gt; &lt;td&gt;    0.221&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    5.0502&lt;/td&gt; &lt;td&gt;    0.100&lt;/td&gt; &lt;td&gt;   50.684&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.855&lt;/td&gt; &lt;td&gt;    5.246&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;math_hours&lt;/th&gt;  &lt;td&gt;    0.8382&lt;/td&gt; &lt;td&gt;    0.091&lt;/td&gt; &lt;td&gt;    9.236&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.660&lt;/td&gt; &lt;td&gt;    1.016&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school + math_hours + class_year&#39;, df).fit().summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-       &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    2.3591&lt;/td&gt; &lt;td&gt;    0.401&lt;/td&gt; &lt;td&gt;    5.877&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.571&lt;/td&gt; &lt;td&gt;    3.147&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;class_size&lt;/th&gt;  &lt;td&gt;    0.2060&lt;/td&gt; &lt;td&gt;    0.009&lt;/td&gt; &lt;td&gt;   22.110&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.188&lt;/td&gt; &lt;td&gt;    0.224&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    5.0592&lt;/td&gt; &lt;td&gt;    0.101&lt;/td&gt; &lt;td&gt;   50.005&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.861&lt;/td&gt; &lt;td&gt;    5.258&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;math_hours&lt;/th&gt;  &lt;td&gt;    0.8373&lt;/td&gt; &lt;td&gt;    0.091&lt;/td&gt; &lt;td&gt;    9.220&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.659&lt;/td&gt; &lt;td&gt;    1.015&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;class_year&lt;/th&gt;  &lt;td&gt;    0.0227&lt;/td&gt; &lt;td&gt;    0.044&lt;/td&gt; &lt;td&gt;    0.517&lt;/td&gt; &lt;td&gt; 0.605&lt;/td&gt; &lt;td&gt;   -0.063&lt;/td&gt; &lt;td&gt;    0.109&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school + math_hours + class_year + hist_score&#39;, df).fit().summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-       &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;   -0.2056&lt;/td&gt; &lt;td&gt;    0.384&lt;/td&gt; &lt;td&gt;   -0.535&lt;/td&gt; &lt;td&gt; 0.593&lt;/td&gt; &lt;td&gt;   -0.960&lt;/td&gt; &lt;td&gt;    0.548&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;class_size&lt;/th&gt;  &lt;td&gt;    0.1135&lt;/td&gt; &lt;td&gt;    0.010&lt;/td&gt; &lt;td&gt;   11.535&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.094&lt;/td&gt; &lt;td&gt;    0.133&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    2.8049&lt;/td&gt; &lt;td&gt;    0.160&lt;/td&gt; &lt;td&gt;   17.571&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.492&lt;/td&gt; &lt;td&gt;    3.118&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;math_hours&lt;/th&gt;  &lt;td&gt;    0.8389&lt;/td&gt; &lt;td&gt;    0.080&lt;/td&gt; &lt;td&gt;   10.492&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.682&lt;/td&gt; &lt;td&gt;    0.996&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;class_year&lt;/th&gt;  &lt;td&gt;    0.0125&lt;/td&gt; &lt;td&gt;    0.039&lt;/td&gt; &lt;td&gt;    0.323&lt;/td&gt; &lt;td&gt; 0.746&lt;/td&gt; &lt;td&gt;   -0.063&lt;/td&gt; &lt;td&gt;    0.088&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;hist_score&lt;/th&gt;  &lt;td&gt;    0.4641&lt;/td&gt; &lt;td&gt;    0.027&lt;/td&gt; &lt;td&gt;   17.017&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.411&lt;/td&gt; &lt;td&gt;    0.518&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.hist(df[&#39;class_size&#39;]);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/controls_20_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3689437&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;A Crash Course in Bad Controls&lt;/a&gt; by Carlos Cinelli, Andrew Forney and Judea Pearl&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://mixtape.scunning.com/dag.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 3&lt;/a&gt; of The Causal Inference Mixtape by Scott Cunningham&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://microsoft.github.io/dowhy/example_notebooks/dowhy_simple_example.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Getting started with DoWhy&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
 </description>
     </item>
     

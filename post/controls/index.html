@@ -339,10 +339,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-04-15T00:00:00&#43;00:00"
+        content="2022-04-17T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-15T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-04-17T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/controls/featured.png"
   ],
   
-  "datePublished": "2022-04-15T00:00:00Z",
-  "dateModified": "2022-04-15T00:00:00Z",
+  "datePublished": "2022-04-17T00:00:00Z",
+  "dateModified": "2022-04-17T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -771,7 +771,6 @@
       <ul>
         <li><a href="#definitions">Definitions</a></li>
         <li><a href="#causality">Causality</a></li>
-        <li><a href="#cheat-sheet">Cheat Sheet</a></li>
       </ul>
     </li>
     <li><a href="#example-1-class-size-and-math-scores">Example 1: class size and math scores</a></li>
@@ -825,7 +824,7 @@
     
       
     
-    Apr 15, 2022
+    Apr 17, 2022
   </span>
   
 
@@ -834,7 +833,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    7 min read
+    8 min read
   </span>
   
 
@@ -898,7 +897,7 @@ class Z1,Z2,Z3 excluded;
 </code></pre>
 <p>In this example, we have a path between $X$ and $Y$ passing through the variables $Z_1$, $Z_2$ and $Z_3$. Since not all arrows point forward, the path is <em>spurious</em> and there is no causal relationship of $X$ on $Y$. In fact, variable $Z_2$ is caused by both $Z_1$ and $Z_3$ and therefore <strong>blocks</strong> the path.</p>
 <p>$Z_2$ is called a <strong>collider</strong>.</p>
-<p>The purpose of our analysis is to assess the <strong>causal relationship</strong> between two variables $X$ and $Y$. Directed acyclic graphs are useful because they provide us instructions on which other variables $Z$ we should include in our analysis and why. When we include a variable in the analysis, we say we <strong>condition</strong> the analysis on it.</p>
+<p>The purpose of our analysis is to assess the <strong>causal relationship</strong> between two variables $X$ and $Y$. Directed acyclic graphs are useful because they provide us instructions on which other variables $Z$ we need to <strong>condition</strong> our analysis on. Conditioning the analysis on a variable means that we keep it fixed and we draw our conclusions <em>ceteris paribus</em>. For example, in a linear regression framework, inserting another regressor $Z$ means that we are computing the best linear approximation of the conditional expectation function of $Y$ given $X$, <em>conditional</em> on the observed values of $Z$.</p>
 <h3 id="causality">Causality</h3>
 <p>In order to assess causality we want to <strong>close all spurious paths</strong> between $X$ and $Y$. The <strong>questions</strong> now are:</p>
 <ul>
@@ -907,12 +906,12 @@ class Z1,Z2,Z3 excluded;
 <li>if it does not contain <em>colliders</em></li>
 </ul>
 </li>
-<li>when do you <strong>close an open path</strong>?
+<li>how do you <strong>close an open path</strong>?
 <ul>
 <li>if you condition on <em>at least one</em> intermediate variable</li>
 </ul>
 </li>
-<li>when do you <strong>open a closed path</strong>?
+<li>how do you <strong>open a closed path</strong>?
 <ul>
 <li>if you condition on <em>all</em> colliders along the path</li>
 </ul>
@@ -1040,20 +1039,9 @@ linkStyle 0 stroke:#00ff00,stroke-width:4px;
 linkStyle 5,6 stroke:#ff0000,stroke-width:4px;
 class X,Y,Z1,Z2,Z3 included;
 </code></pre>
-<h3 id="cheat-sheet">Cheat Sheet</h3>
-<p>A path $p$ from $X$ to $Y$ is blocked conditioning on $Z$ if and only if</p>
-<ul>
-<li>$Z$ is a common cause</li>
-<li>$Z$ is a mediator</li>
-<li>the path $p$ contains a collider and $Z$ is not that collider or any of its descendants</li>
-</ul>
-<p>Therefore, if we are interested in the causal effect of $X$ on $Y$ we <strong>must</strong></p>
-<ul>
-<li>Block all spurious paths between $X$ and $Y$</li>
-<li>Not perturb any causal path between them</li>
-</ul>
 <h2 id="example-1-class-size-and-math-scores">Example 1: class size and math scores</h2>
-<p>Suppose you have</p>
+<p>Suppose you are interested in the <strong>effect of class size on math scores</strong>. Are bigger classes better or worse for students' performance?</p>
+<p>Assume that the data generating process can be represented with the following <strong>DAG</strong>.</p>
 <pre><code class="language-mermaid">flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -1082,7 +1070,8 @@ class X,Y included;
 class Z1,Z2,Z3,Z4 excluded;
 class U unobserved;
 </code></pre>
-<p>In this example we are going to</p>
+<p>I have highlighted the variables of interest. Moreover, the dotted line around <code>ability</code> indicates that this is a variable that we do not observe in the data.</p>
+<p>We can now load the data and check what it looks like.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
 from src.utils import *
@@ -1118,7 +1107,6 @@ df.head()
       <th>class_size</th>
       <th>math_score</th>
       <th>hist_score</th>
-      <th>final_score</th>
     </tr>
   </thead>
   <tbody>
@@ -1131,7 +1119,6 @@ df.head()
       <td>33</td>
       <td>16.747190</td>
       <td>16.797349</td>
-      <td>16.772269</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1142,7 +1129,6 @@ df.head()
       <td>14</td>
       <td>13.994490</td>
       <td>12.870178</td>
-      <td>13.432334</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1153,7 +1139,6 @@ df.head()
       <td>18</td>
       <td>15.547838</td>
       <td>15.649692</td>
-      <td>15.598765</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1164,7 +1149,6 @@ df.head()
       <td>10</td>
       <td>11.342831</td>
       <td>11.780903</td>
-      <td>11.561867</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1175,12 +1159,11 @@ df.head()
       <td>20</td>
       <td>9.801164</td>
       <td>7.429193</td>
-      <td>8.615179</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>Syntax for regressing $y$ on $x1$ and $x2$ is <code>smf.ols('y ~ x1 + x2', df).fit()</code></p>
+<p>What variables should we condition our regression on, in order to estimate the causal effect of <code>class size</code> on <code>math scores</code>. First of all, let&rsquo;s look at what happens if we do not condition our analysis on any variable and we just regress <code>math score</code> on <code>class size</code>.</p>
 <pre><code class="language-python">smf.ols('math_score ~ class_size', df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -1194,6 +1177,39 @@ df.head()
   <th>class_size</th> <td>    0.0249</td> <td>    0.015</td> <td>    1.653</td> <td> 0.099</td> <td>   -0.005</td> <td>    0.055</td>
 </tr>
 </table>
+<p>Should we believe this esimated effect? Without controlling for anything, this is <strong>DAG representation</strong> of the effect we are capturing.</p>
+<pre><code class="language-mermaid">flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+
+X((class size))
+Y((math score))
+Z1((class year))
+Z2((good school))
+Z3((math hours))
+Z4((hist score))
+U((ability))
+
+X --&gt; Y
+Z1 --&gt; X
+X -.-&gt; Z4
+U --&gt; Y
+U -.-&gt; Z4
+Z2 --&gt; X
+Z2 --&gt; Y
+Z2 --&gt; Z4
+Z3 --&gt; Y
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+linkStyle 5,6 stroke:#ff0000,stroke-width:4px;
+
+class X,Y included;
+class Z1,Z2,Z3,Z4 excluded;
+class U unobserved;
+</code></pre>
+<p>There is a <strong>spurious</strong> path passing through <code>good school</code> that <strong>biases</strong> our estimated coefficient. We need to control for it.</p>
 <pre><code class="language-python">smf.ols('math_score ~ class_size + good_school', df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -1210,47 +1226,38 @@ df.head()
   <th>good_school</th> <td>    5.0336</td> <td>    0.104</td> <td>   48.516</td> <td> 0.000</td> <td>    4.830</td> <td>    5.237</td>
 </tr>
 </table>
-<pre><code class="language-python">smf.ols('math_score ~ class_size + good_school + math_hours', df).fit().summary().tables[1]
+<p>Now the estimator of the effect of <code>class size</code> on <code>math score</code> in <strong>unbiased</strong>!</p>
+<pre><code class="language-mermaid">flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+
+X((class size))
+Y((math score))
+Z1((class year))
+Z2((good school))
+Z3((math hours))
+Z4((hist score))
+U((ability))
+
+X --&gt; Y
+Z1 --&gt; X
+X -.-&gt; Z4
+U --&gt; Y
+U -.-&gt; Z4
+Z2 -.-&gt; X
+Z2 -.-&gt; Y
+Z2 --&gt; Z4
+Z3 --&gt; Y
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+
+class X,Y,Z2 included;
+class Z1,Z3,Z4 excluded;
+class U unobserved;
 </code></pre>
-<table class="simpletable">
-<tr>
-       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th>   <td>    2.4483</td> <td>    0.362</td> <td>    6.757</td> <td> 0.000</td> <td>    1.737</td> <td>    3.159</td>
-</tr>
-<tr>
-  <th>class_size</th>  <td>    0.2042</td> <td>    0.009</td> <td>   23.534</td> <td> 0.000</td> <td>    0.187</td> <td>    0.221</td>
-</tr>
-<tr>
-  <th>good_school</th> <td>    5.0502</td> <td>    0.100</td> <td>   50.684</td> <td> 0.000</td> <td>    4.855</td> <td>    5.246</td>
-</tr>
-<tr>
-  <th>math_hours</th>  <td>    0.8382</td> <td>    0.091</td> <td>    9.236</td> <td> 0.000</td> <td>    0.660</td> <td>    1.016</td>
-</tr>
-</table>
-<pre><code class="language-python">smf.ols('math_score ~ class_size + good_school + math_hours + class_year', df).fit().summary().tables[1]
-</code></pre>
-<table class="simpletable">
-<tr>
-       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th>   <td>    2.3591</td> <td>    0.401</td> <td>    5.877</td> <td> 0.000</td> <td>    1.571</td> <td>    3.147</td>
-</tr>
-<tr>
-  <th>class_size</th>  <td>    0.2060</td> <td>    0.009</td> <td>   22.110</td> <td> 0.000</td> <td>    0.188</td> <td>    0.224</td>
-</tr>
-<tr>
-  <th>good_school</th> <td>    5.0592</td> <td>    0.101</td> <td>   50.005</td> <td> 0.000</td> <td>    4.861</td> <td>    5.258</td>
-</tr>
-<tr>
-  <th>math_hours</th>  <td>    0.8373</td> <td>    0.091</td> <td>    9.220</td> <td> 0.000</td> <td>    0.659</td> <td>    1.015</td>
-</tr>
-<tr>
-  <th>class_year</th>  <td>    0.0227</td> <td>    0.044</td> <td>    0.517</td> <td> 0.605</td> <td>   -0.063</td> <td>    0.109</td>
-</tr>
-</table>
+<p>What would happen if we were to instead <strong>control for all variables</strong>?</p>
 <pre><code class="language-python">smf.ols('math_score ~ class_size + good_school + math_hours + class_year + hist_score', df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -1276,9 +1283,42 @@ df.head()
   <th>hist_score</th>  <td>    0.4641</td> <td>    0.027</td> <td>   17.017</td> <td> 0.000</td> <td>    0.411</td> <td>    0.518</td>
 </tr>
 </table>
-<pre><code class="language-python">plt.hist(df['class_size']);
+<p>The coefficient is again <strong>biased</strong>. Why?</p>
+<p>We have opened a new spurious path by controlling for <code>hist score</code>. In fact, <code>hist score</code> is a <strong>collider</strong> and controlling for it has opened a path through <code>hist score</code> and <code>ability</code> that was otherwise closed.</p>
+<pre><code class="language-mermaid">flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+
+X((class size))
+Y((math score))
+Z1((class year))
+Z2((good school))
+Z3((math hours))
+Z4((hist score))
+U((ability))
+
+X --&gt; Y
+Z1 --&gt; X
+X --&gt; Z4
+U --&gt; Y
+U --&gt; Z4
+Z2 -.-&gt; X
+Z2 -.-&gt; Y
+Z2 --&gt; Z4
+Z3 --&gt; Y
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+linkStyle 2,3,4 stroke:#ff0000,stroke-width:4px;
+
+class X,Y,Z1,Z2,Z3,Z4 included;
+class U unobserved;
 </code></pre>
-<p><img src="img/controls_20_0.png" alt="png"></p>
+<p>The example was inspired by the following tweet.</p>
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">We can illustrate this with Model 16 of the &quot;Crash Course in Good and Bad Controls&quot; (<a href="https://t.co/GcSNzhuVt2">https://t.co/GcSNzhuVt2</a>). Here X = class size, Y = math4, Z = read4, and U = student&#39;s ability. Conditioning on Z opens the path X -&gt; Z &lt;- U -&gt; Y and it is thus a &quot;bad control.&quot; <a href="https://t.co/KNfqtsMWwB">https://t.co/KNfqtsMWwB</a> <a href="https://t.co/lUSigNYSJj">pic.twitter.com/lUSigNYSJj</a></p>&mdash; Análise Real (@analisereal) <a href="https://twitter.com/analisereal/status/1502793254592401409?ref_src=twsrc%5Etfw">March 12, 2022</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 <h2 id="references">References</h2>
 <ul>
 <li><a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3689437" target="_blank" rel="noopener">A Crash Course in Bad Controls</a> by Carlos Cinelli, Andrew Forney and Judea Pearl</li>
