@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Mon, 18 Apr 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 19 Apr 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -26064,6 +26064,623 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     </item>
     
     <item>
+      <title>Synthetic Control</title>
+      <link>https://matteocourthoud.github.io/post/synthetic_control/</link>
+      <pubDate>Tue, 19 Apr 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/synthetic_control/</guid>
+      <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak. However, there still exist methods for causal inference, under certain assumptions.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Rubin&amp;rsquo;s potential outcome framework&lt;/li&gt;
+&lt;li&gt;Ordinary least squares regression&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://matteocourthoud.github.io/post/permutation_test/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Randomization/permutation inference&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://matteocourthoud.github.io/post/diff_in_diffs/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Difference in differences&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;Academic Application&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;As an academic application, we are going to replicate &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program&lt;/a&gt; (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Business Case&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;TBD&lt;/p&gt;
+&lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
+&lt;p&gt;We assume that for a panel of i.i.d. subjects $i = 1, &amp;hellip;, n$ over time $t=1, &amp;hellip;,T$ we observed a tuple $(X_{it}, Y_{it})$ comprised of&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a feature vector $X_{i,t} \in \mathbb R^p$&lt;/li&gt;
+&lt;li&gt;a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
+&lt;li&gt;a response $Y_{i,t} \in \mathbb R$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Moreover, one unit is treated at time $t^*$. We distinguish time periods before treatment and time periods after treatment.&lt;/p&gt;
+&lt;p&gt;Crucially, treatment $D_i$ is not randomly assignment, therefore a difference in means between the treated unit(s) and the control group is not an unbiased estimator of the average treatment effect.&lt;/p&gt;
+&lt;h2 id=&#34;synthetic-control&#34;&gt;Synthetic Control&lt;/h2&gt;
+&lt;p&gt;The problem is that, as usual, we do not observe the counterfactual outcome for treated units, i.e. we do not know what would have happened to them, if they had not been treated. This is known as the &lt;strong&gt;fundamental problem of causal inference&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The simplest approach, would be just to compare pre and post periods. This is called the &lt;strong&gt;event study&lt;/strong&gt; approach.&lt;/p&gt;
+&lt;p&gt;However, we can do better than this. In fact, even though treatment was not randomly assigned, we still have access to some units that were not treated.&lt;/p&gt;
+&lt;p&gt;For the outcome variable we have the following setup&lt;/p&gt;
+&lt;p&gt;$$
+Y =
+\begin{bmatrix}
+Y_{t, post} \ &amp;amp; Y_{c, post} \newline
+Y_{t, pre} \ &amp;amp; Y_{c, pre}
+\end{bmatrix}
+$$&lt;/p&gt;
+&lt;p&gt;which we can rewrite as&lt;/p&gt;
+&lt;p&gt;$$
+Y =
+\begin{bmatrix}
+Y^{(1)} _ {t, post} \ &amp;amp; Y^{(0)} _ {c, post} \newline
+Y^{(0)} _ {t, pre} \ &amp;amp; Y^{(0)} _ {c, pre}
+\end{bmatrix}
+$$&lt;/p&gt;
+&lt;p&gt;We basically have a &lt;strong&gt;missing data problem&lt;/strong&gt; since we do not observe $Y^{(0)} _ {t, post}$.&lt;/p&gt;
+&lt;p&gt;Following Doudchenko and Inbens (2018), we can formulate an estimate of the counterfactual outcome for the treated unit as a linear combination of the observed outcomes for the control units.&lt;/p&gt;
+&lt;p&gt;$$
+\hat Y^{(0)} _ {t, post} = \alpha + \sum_{i \in c} \beta_{i} Y^{(0)} _ {i, post}
+$$&lt;/p&gt;
+&lt;p&gt;where&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the constant $\alpha$ allows for different averages between the two groups&lt;/li&gt;
+&lt;li&gt;the weights $\beta_i$ are allowed to vary across control units $i$
+&lt;ul&gt;
+&lt;li&gt;otherwise it would be a diff-in-diff&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;weights&#34;&gt;Weights&lt;/h3&gt;
+&lt;p&gt;How should we choose which weights to use? One &lt;strong&gt;option&lt;/strong&gt; could be to simply run a linear regression of the pre-treatment outcome of the treatment unit $Y^{(0)} _ {t, pre}$ on the pre-treatment outcome of the control group $Y^{(0)} _ {c, pre}$.&lt;/p&gt;
+&lt;p&gt;There are two problems with this approach:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;the weights might be negative&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;how should we interpret them?&lt;/li&gt;
+&lt;li&gt;they make no sense in the potential outcome framework&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;weights could be greater or lower than one&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;therefore we would not be able to interpret the synthetic control as a weighted average of untreated units&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;To solve this problem, Abadie et al. (2010) propose the following weights:&lt;/p&gt;
+&lt;p&gt;$$
+\hat \beta = \arg \min_{\beta} || \boldsymbol X_t - \boldsymbol \beta \boldsymbol X_c || = \sqrt{ \sum_{p} \left( X_{t, p}  - \sum_{i \in c} \beta_{p} X_{c, p} \right)^2 }
+\quad \text{s.t.} \quad \sum_{p} \beta_p = 1 \quad \text{and} \quad \beta_p \geq 0 \ \forall p
+$$&lt;/p&gt;
+&lt;p&gt;With this approach we get an interpretable counterfactual as a weighted avarage of untreated units.&lt;/p&gt;
+&lt;h3 id=&#34;synthetic-control-vs-ols&#34;&gt;Synthetic Control vs OLS&lt;/h3&gt;
+&lt;p&gt;What are the advantages and disadvantages of synthetic control methods with respect to a simple regression?&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;As long as we use positive weights that are constrained to sum to one, the method avoid extrapolation&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;we will never go out of the support of the data&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It can be &amp;ldquo;pre-registered&amp;rdquo; in the sense that you don&amp;rsquo;t need post-treatment observations to build the method&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;could avoid p-hacking and cherry picking&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Weights make explicit the counterfactual analysis&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;one can look at the weights and understand which comparison we are making&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;It&amp;rsquo;s a bridge between quantitative and qualitative research&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;can be used to inspect single-treated unit cases&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;academic-application&#34;&gt;Academic Application&lt;/h2&gt;
+&lt;p&gt;As an academic application, we are going to replicate &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program&lt;/a&gt; (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.&lt;/p&gt;
+&lt;p&gt;This is how the authors describe the policy:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Its primary effect is to impose a 25-cent per pack state excise tax on the sale of tobacco cigarettes within California, with approximately equivalent excise taxes similarly imposed on the retail sale of other commercial tobacco products, such as cigars and chewing tobacco. Additional restrictions placed on the sale of tobacco include a ban on cigarette vending machines in public areas accessible by juveniles, and a ban on the individual sale of single cigarettes. Revenue generated by the act was earmarked for various environmental and health care programs, and anti-tobacco advertisements.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Let&amp;rsquo;s start by loading the data. We have information on cigarette costs, sales, tax rate and revenues for all US states for years from 1970 to 2014.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = pd.read_csv(&#39;data/adh10.csv&#39;)
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;state&lt;/th&gt;
+      &lt;th&gt;year&lt;/th&gt;
+      &lt;th&gt;cig_sales&lt;/th&gt;
+      &lt;th&gt;lnincome&lt;/th&gt;
+      &lt;th&gt;beer&lt;/th&gt;
+      &lt;th&gt;age15to24&lt;/th&gt;
+      &lt;th&gt;retprice&lt;/th&gt;
+      &lt;th&gt;california&lt;/th&gt;
+      &lt;th&gt;after_treatment&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;Alabama&lt;/td&gt;
+      &lt;td&gt;1970&lt;/td&gt;
+      &lt;td&gt;89.800003&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.178862&lt;/td&gt;
+      &lt;td&gt;39.599998&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Alabama&lt;/td&gt;
+      &lt;td&gt;1971&lt;/td&gt;
+      &lt;td&gt;95.400002&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.179928&lt;/td&gt;
+      &lt;td&gt;42.700001&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Alabama&lt;/td&gt;
+      &lt;td&gt;1972&lt;/td&gt;
+      &lt;td&gt;101.099998&lt;/td&gt;
+      &lt;td&gt;9.498476&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.180994&lt;/td&gt;
+      &lt;td&gt;42.299999&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;Alabama&lt;/td&gt;
+      &lt;td&gt;1973&lt;/td&gt;
+      &lt;td&gt;102.900002&lt;/td&gt;
+      &lt;td&gt;9.550107&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.182060&lt;/td&gt;
+      &lt;td&gt;42.099998&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;Alabama&lt;/td&gt;
+      &lt;td&gt;1974&lt;/td&gt;
+      &lt;td&gt;108.199997&lt;/td&gt;
+      &lt;td&gt;9.537163&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;0.183126&lt;/td&gt;
+      &lt;td&gt;43.099998&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;Is the sample balanced? Let&amp;rsquo;s check the distribution of covariates, by treatment assignment.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import create_table_one
+
+create_table_one(df, &#39;california&#39;, [&#39;cig_sales&#39;, &#39;lnincome&#39;, &#39;beer&#39;, &#39;age15to24&#39;, &#39;retprice&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Control&lt;/th&gt;
+      &lt;th&gt;Treatment&lt;/th&gt;
+      &lt;th&gt;SMD&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Variable&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;n&lt;/th&gt;
+      &lt;td&gt;1178&lt;/td&gt;
+      &lt;td&gt;31&lt;/td&gt;
+      &lt;td&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;age15to24&lt;/th&gt;
+      &lt;td&gt;0.18 (0.02)&lt;/td&gt;
+      &lt;td&gt;0.18 (0.01)&lt;/td&gt;
+      &lt;td&gt;0.0454&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;beer&lt;/th&gt;
+      &lt;td&gt;23.46 (4.26)&lt;/td&gt;
+      &lt;td&gt;22.26 (2.11)&lt;/td&gt;
+      &lt;td&gt;-0.3559&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;cig_sales&lt;/th&gt;
+      &lt;td&gt;119.53 (32.60)&lt;/td&gt;
+      &lt;td&gt;94.59 (30.01)&lt;/td&gt;
+      &lt;td&gt;-0.7962&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;lnincome&lt;/th&gt;
+      &lt;td&gt;9.86 (0.17)&lt;/td&gt;
+      &lt;td&gt;10.07 (0.08)&lt;/td&gt;
+      &lt;td&gt;1.6107&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;retprice&lt;/th&gt;
+      &lt;td&gt;108.04 (64.00)&lt;/td&gt;
+      &lt;td&gt;119.92 (77.90)&lt;/td&gt;
+      &lt;td&gt;0.1667&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;The sample is quite unbalanced. In particular, California is a richer state with a higher income, &lt;code&gt;lnincome&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We are interested in the sales of cigarettes &lt;code&gt;cig_sales&lt;/code&gt; over time. Let&amp;rsquo;s start by reshaping the dataset so that each state is a time series.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = df.pivot(index=&#39;year&#39;, columns=&#39;state&#39;, values=&#39;cig_sales&#39;).reset_index()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;state&lt;/th&gt;
+      &lt;th&gt;year&lt;/th&gt;
+      &lt;th&gt;Alabama&lt;/th&gt;
+      &lt;th&gt;Arkansas&lt;/th&gt;
+      &lt;th&gt;California&lt;/th&gt;
+      &lt;th&gt;Colorado&lt;/th&gt;
+      &lt;th&gt;Connecticut&lt;/th&gt;
+      &lt;th&gt;Delaware&lt;/th&gt;
+      &lt;th&gt;Georgia&lt;/th&gt;
+      &lt;th&gt;Idaho&lt;/th&gt;
+      &lt;th&gt;Illinois&lt;/th&gt;
+      &lt;th&gt;...&lt;/th&gt;
+      &lt;th&gt;South Carolina&lt;/th&gt;
+      &lt;th&gt;South Dakota&lt;/th&gt;
+      &lt;th&gt;Tennessee&lt;/th&gt;
+      &lt;th&gt;Texas&lt;/th&gt;
+      &lt;th&gt;Utah&lt;/th&gt;
+      &lt;th&gt;Vermont&lt;/th&gt;
+      &lt;th&gt;Virginia&lt;/th&gt;
+      &lt;th&gt;West Virginia&lt;/th&gt;
+      &lt;th&gt;Wisconsin&lt;/th&gt;
+      &lt;th&gt;Wyoming&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1970&lt;/td&gt;
+      &lt;td&gt;89.800003&lt;/td&gt;
+      &lt;td&gt;100.300003&lt;/td&gt;
+      &lt;td&gt;123.000000&lt;/td&gt;
+      &lt;td&gt;124.800003&lt;/td&gt;
+      &lt;td&gt;120.000000&lt;/td&gt;
+      &lt;td&gt;155.000000&lt;/td&gt;
+      &lt;td&gt;109.900002&lt;/td&gt;
+      &lt;td&gt;102.400002&lt;/td&gt;
+      &lt;td&gt;124.800003&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;103.599998&lt;/td&gt;
+      &lt;td&gt;92.699997&lt;/td&gt;
+      &lt;td&gt;99.800003&lt;/td&gt;
+      &lt;td&gt;106.400002&lt;/td&gt;
+      &lt;td&gt;65.500000&lt;/td&gt;
+      &lt;td&gt;122.599998&lt;/td&gt;
+      &lt;td&gt;124.300003&lt;/td&gt;
+      &lt;td&gt;114.500000&lt;/td&gt;
+      &lt;td&gt;106.400002&lt;/td&gt;
+      &lt;td&gt;132.199997&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1971&lt;/td&gt;
+      &lt;td&gt;95.400002&lt;/td&gt;
+      &lt;td&gt;104.099998&lt;/td&gt;
+      &lt;td&gt;121.000000&lt;/td&gt;
+      &lt;td&gt;125.500000&lt;/td&gt;
+      &lt;td&gt;117.599998&lt;/td&gt;
+      &lt;td&gt;161.100006&lt;/td&gt;
+      &lt;td&gt;115.699997&lt;/td&gt;
+      &lt;td&gt;108.500000&lt;/td&gt;
+      &lt;td&gt;125.599998&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;115.000000&lt;/td&gt;
+      &lt;td&gt;96.699997&lt;/td&gt;
+      &lt;td&gt;106.300003&lt;/td&gt;
+      &lt;td&gt;108.900002&lt;/td&gt;
+      &lt;td&gt;67.699997&lt;/td&gt;
+      &lt;td&gt;124.400002&lt;/td&gt;
+      &lt;td&gt;128.399994&lt;/td&gt;
+      &lt;td&gt;111.500000&lt;/td&gt;
+      &lt;td&gt;105.400002&lt;/td&gt;
+      &lt;td&gt;131.699997&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1972&lt;/td&gt;
+      &lt;td&gt;101.099998&lt;/td&gt;
+      &lt;td&gt;103.900002&lt;/td&gt;
+      &lt;td&gt;123.500000&lt;/td&gt;
+      &lt;td&gt;134.300003&lt;/td&gt;
+      &lt;td&gt;110.800003&lt;/td&gt;
+      &lt;td&gt;156.300003&lt;/td&gt;
+      &lt;td&gt;117.000000&lt;/td&gt;
+      &lt;td&gt;126.099998&lt;/td&gt;
+      &lt;td&gt;126.599998&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;118.699997&lt;/td&gt;
+      &lt;td&gt;103.000000&lt;/td&gt;
+      &lt;td&gt;111.500000&lt;/td&gt;
+      &lt;td&gt;108.599998&lt;/td&gt;
+      &lt;td&gt;71.300003&lt;/td&gt;
+      &lt;td&gt;138.000000&lt;/td&gt;
+      &lt;td&gt;137.000000&lt;/td&gt;
+      &lt;td&gt;117.500000&lt;/td&gt;
+      &lt;td&gt;108.800003&lt;/td&gt;
+      &lt;td&gt;140.000000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1973&lt;/td&gt;
+      &lt;td&gt;102.900002&lt;/td&gt;
+      &lt;td&gt;108.000000&lt;/td&gt;
+      &lt;td&gt;124.400002&lt;/td&gt;
+      &lt;td&gt;137.899994&lt;/td&gt;
+      &lt;td&gt;109.300003&lt;/td&gt;
+      &lt;td&gt;154.699997&lt;/td&gt;
+      &lt;td&gt;119.800003&lt;/td&gt;
+      &lt;td&gt;121.800003&lt;/td&gt;
+      &lt;td&gt;124.400002&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;125.500000&lt;/td&gt;
+      &lt;td&gt;103.500000&lt;/td&gt;
+      &lt;td&gt;109.699997&lt;/td&gt;
+      &lt;td&gt;110.400002&lt;/td&gt;
+      &lt;td&gt;72.699997&lt;/td&gt;
+      &lt;td&gt;146.800003&lt;/td&gt;
+      &lt;td&gt;143.100006&lt;/td&gt;
+      &lt;td&gt;116.599998&lt;/td&gt;
+      &lt;td&gt;109.500000&lt;/td&gt;
+      &lt;td&gt;141.199997&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1974&lt;/td&gt;
+      &lt;td&gt;108.199997&lt;/td&gt;
+      &lt;td&gt;109.699997&lt;/td&gt;
+      &lt;td&gt;126.699997&lt;/td&gt;
+      &lt;td&gt;132.800003&lt;/td&gt;
+      &lt;td&gt;112.400002&lt;/td&gt;
+      &lt;td&gt;151.300003&lt;/td&gt;
+      &lt;td&gt;123.699997&lt;/td&gt;
+      &lt;td&gt;125.599998&lt;/td&gt;
+      &lt;td&gt;131.899994&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;129.699997&lt;/td&gt;
+      &lt;td&gt;108.400002&lt;/td&gt;
+      &lt;td&gt;114.800003&lt;/td&gt;
+      &lt;td&gt;114.699997&lt;/td&gt;
+      &lt;td&gt;75.599998&lt;/td&gt;
+      &lt;td&gt;151.800003&lt;/td&gt;
+      &lt;td&gt;149.600006&lt;/td&gt;
+      &lt;td&gt;119.900002&lt;/td&gt;
+      &lt;td&gt;111.800003&lt;/td&gt;
+      &lt;td&gt;145.800003&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;5 rows × 40 columns&lt;/p&gt;
+&lt;/div&gt;
+&lt;p&gt;In an ideal world, one could use the average of all the other states in the United States as a control group for California. Let&amp;rsquo;s plot the average cigarette consumption over time.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;states = [c for c in df.columns if c not in [&#39;year&#39;]]
+df[&#39;Other States&#39;] = df[[s for s in states if s != &#39;California&#39;]].mean(axis=1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_lines(df, line1, line2, hline=True):
+    sns.lineplot(x=df[&#39;year&#39;], y=df[line1].values, label=line1)
+    sns.lineplot(x=df[&#39;year&#39;], y=df[line2].values, label=line2)
+    plt.axvline(x=1988, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;, label=&#39;Proposition 99&#39;, zorder=1)
+    plt.legend();
+    plt.title(&amp;quot;Per-capita cigarette sales (in packs)&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_lines(df, &#39;California&#39;, &#39;Other States&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;People in California on average smoke less than in other states. This would not be a problem in a diff-in-diff setting if&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;we had enough observations in each group&lt;/li&gt;
+&lt;li&gt;trends were parallel&lt;/li&gt;
+&lt;li&gt;other diff-in-diff assumptions were holding&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;However, we have just one treated unit and very few control units. Morover, the trends were definitely not parallel before treatment. Therefore, it feels quite a stretch to attribute the differences in cigarette sales post 1989 to Proposition 99 alone.&lt;/p&gt;
+&lt;p&gt;The idea is to exploit the time dimension and &lt;strong&gt;build a synthetic control&lt;/strong&gt; state for California. Maybe no single state is a good control, but a combination of them could actually provide a good approximation to California. Moreover, we can exploit the time dimension to compensate for the fact that we have few observations. We are going to try to match the sales of cigarettes in california for all the pre-treatment years, from 1970 to 1988.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s start by using &lt;code&gt;LinearRegression&lt;/code&gt; of &lt;code&gt;cigsales&lt;/code&gt; in California onto &lt;code&gt;cigsales&lt;/code&gt; of all the other states, pre 1989.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import LinearRegression
+
+def synth_predict(df, state, model):
+    y = df.loc[df[&#39;year&#39;] &amp;lt;= 1988, state]
+    other_states = [c for c in states if c not in [&#39;year&#39;, state]]
+    X = df.loc[df[&#39;year&#39;] &amp;lt;= 1988, other_states]
+    df[f&#39;Synthetic {state}&#39;] = model.fit(X, y).predict(df[other_states])
+    return model
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;coef = synth_predict(df, &#39;California&#39;, LinearRegression()).coef_
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;How well did we predict pre-1989 sales of cigarettes in California? If we believe that that&amp;rsquo;s a sensible control, what is the treatment effect?&lt;/p&gt;
+&lt;p&gt;We can visually answe both questions by plotting the actual sales of cigarettes in California against the predicted ones.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_lines(df, &#39;California&#39;, &#39;Synthetic California&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_27_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It looks like the policy had a sensible &lt;strong&gt;negative effect&lt;/strong&gt; on cigarette sales: the predicted trend is higher than the actual sales and diverges right after the approval of Proposition 99.&lt;/p&gt;
+&lt;p&gt;We can also observe that we are clearly &lt;strong&gt;overfitting&lt;/strong&gt;: the pre-policy predicted cigarette sales line is perfectly overlapping with the actual data.&lt;/p&gt;
+&lt;p&gt;Another problem concerns the &lt;strong&gt;weights&lt;/strong&gt;. We have not set any constraint on the weights.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_states = pd.DataFrame({&#39;state&#39;: df.columns[[i for i in range(2,40) if i!=3]], &#39;ols_coef&#39;: coef[1:]})
+sns.barplot(data=df_states, x=&#39;ols_coef&#39;, y=&#39;state&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We have many &lt;strong&gt;negative weights&lt;/strong&gt;, which do not make much sense from a causal inference perspective. Since we would like to interpret our synthetic control as a &lt;strong&gt;weighted average&lt;/strong&gt; of untreated states, all weights should be positive  and they should sum to one.&lt;/p&gt;
+&lt;p&gt;To address both concerns, we are going to build a new estimator called &lt;code&gt;SyntheticControl()&lt;/code&gt; which constrains the weights to be positive and to sum to one.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from typing import List
+from operator import add
+from toolz import reduce, partial
+from scipy.optimize import fmin_slsqp
+
+class SyntheticControl():
+    
+    # Loss function
+    def loss(self, W, X, y) -&amp;gt; float:
+        return np.sqrt(np.mean((y - X.dot(W))**2))
+
+    # Fit model
+    def fit(self, X, y):
+        w_start = [1/X.shape[1]]*X.shape[1]
+        self.coef_ = fmin_slsqp(partial(self.loss, X=X, y=y),
+                         np.array(w_start),
+                         f_eqcons=lambda x: np.sum(x) - 1,
+                         bounds=[(0.0, 1.0)]*len(w_start),
+                         disp=False)
+        self.mse = self.loss(W=self.coef_, X=X, y=y)
+        return self
+    
+    # Predict 
+    def predict(self, X):
+        return X.dot(self.coef_)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can now plot the actual and predicted cigarette sales in California using the &lt;code&gt;SyntheticControl&lt;/code&gt; method.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;coef_new = synth_predict(df, &#39;California&#39;, SyntheticControl()).coef_
+plot_lines(df, &#39;California&#39;, &#39;Synthetic California&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It looks like the effect is again negative. However, let&amp;rsquo;s plot the &lt;strong&gt;difference&lt;/strong&gt; between the two lines to better visualize the magnitude.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_difference(df, state, vline=True, hline=True, **kwargs):
+    sns.lineplot(x=df[&#39;year&#39;], y=df[state] - df[f&#39;Synthetic {state}&#39;], **kwargs)
+    if vline: 
+        plt.axvline(x=1988, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;, label=&#39;Proposition 99&#39;, zorder=1)
+        plt.legend()
+    if hline: sns.lineplot(x=df[&#39;year&#39;], y=0, lw=1, color=&#39;black&#39;, zorder=1)
+    plt.title(&amp;quot;Normalized per-capita cigarette sales (in packs)&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_36_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The difference is clearly negative and decreasing over time. Moreover, now we see that the estimator is not overfitting the pre-period anymore. The reason is that the non-negativity constraint is constraining most coefficients to be zero (as &lt;a href=&#34;https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Lasso&lt;/a&gt; does).&lt;/p&gt;
+&lt;p&gt;We can visualize it by plotting the distribution of coefficients.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_states[&#39;coef_synth&#39;] = coef_new[1:]
+sns.barplot(data=df_states, x=&#39;coef_synth&#39;, y=&#39;state&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;What about &lt;strong&gt;inference&lt;/strong&gt;? Is the estimate significantly different from zero? Or, more practically, &amp;ldquo;&lt;em&gt;how unusual is this estimate under the null hypothesis of no policy effect&lt;/em&gt;?&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;We are going to perform a &lt;strong&gt;randomization/permutation test&lt;/strong&gt; in order to answer this question. The &lt;strong&gt;idea&lt;/strong&gt; is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.&lt;/p&gt;
+&lt;p&gt;Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;for state in states:
+    synth_predict(df, state, SyntheticControl())
+    plot_difference(df, state, vline=False, alpha=0.2, color=&#39;grey&#39;)
+plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;From the graph we notice two things. First, the effect for California is quite extreme and therefore likely not to be driven by random noise.&lt;/p&gt;
+&lt;p&gt;Second, we also notice that there are a couple of states for which we cannot fit the pre-trend very well. This is expected since, for each state, we are building the counterfactual trend as a &lt;strong&gt;convex combination&lt;/strong&gt; of all other states. States that are quite extreme in terms of cigarette consumpion are very useful to build the counterfactuals of other states, but it&amp;rsquo;s hard to build a counterfactual for them. Not to bias the analysis, let&amp;rsquo;s exclude states for which we cannot build a &amp;ldquo;good enough&amp;rdquo; counterfectual, in terms of pre-treatment MSE.&lt;/p&gt;
+&lt;p&gt;$$
+MSE_{pre} = \frac{1}{n} \sum_{t \in \text{pre}} \left( Y_t - \hat Y_t \right)^2
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;for state in states:
+    mse = synth_predict(df, state, SyntheticControl()).mse
+    if mse &amp;lt; 15:
+        plot_difference(df, state, vline=False, alpha=0.2, color=&#39;grey&#39;)
+plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_42_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;After exluding extreme observations, it looks like the effect for California is very unusual, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales).&lt;/p&gt;
+&lt;p&gt;One &lt;strong&gt;statistic&lt;/strong&gt; that the authors suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.&lt;/p&gt;
+&lt;p&gt;$$
+\lambda = \frac{MSE_{post}}{MSE_{pre}} = \frac{\frac{1}{n} \sum_{t \in \text{post}} \left( Y_t - \hat Y_t \right)^2 }{\frac{1}{n} \sum_{t \in \text{pre}} \left( Y_t - \hat Y_t \right)^2 }
+$$&lt;/p&gt;
+&lt;p&gt;We can compute a p-value as the number of observations with higher ratio.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;lambdas = {}
+for state in states:
+    mse_pre = synth_predict(df, state, SyntheticControl()).mse
+    mse_tot = np.mean((df[f&#39;Synthetic {state}&#39;] - df[state])**2)
+    lambdas[state] = (mse_tot - mse_pre) / mse_pre
+    
+print(f&amp;quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype=&#39;float&#39;) &amp;gt; lambdas[&#39;California&#39;]):.4}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;p-value: 0.02564
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It seems that only $2.5%$ of the states had a larger MSE ratio. We can visualize the distribution of the statistic under permutation with a histogram.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;_, bins, _ = plt.hist(lambdas.values(), bins=20);
+plt.hist([lambdas[&#39;California&#39;]], bins=bins, color=&amp;quot;C2&amp;quot;, label=&amp;quot;California&amp;quot;)
+plt.legend();
+plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synthetic_control_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Indeed, the California statistic is quite extreme.&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=BsRqy7juMus&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Video lecture on Synthetic Controls&lt;/a&gt; by Paul Goldsmith-Pinkham (Yale)&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://matheusfacure.github.io/python-causality-handbook/15-Synthetic-Control.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 10&lt;/a&gt; of Causal Inference for the Brave and True by Matheus Facure&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://mixtape.scunning.com/synthetic-control.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 15&lt;/a&gt; of Causal Inference: The Mixtape by Scott Cunningham&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
+    
+    <item>
       <title>How To Make A Personal Website with Hugo</title>
       <link>https://matteocourthoud.github.io/post/website/</link>
       <pubDate>Mon, 18 Apr 2022 00:00:00 +0000</pubDate>
@@ -32010,621 +32627,6 @@ plt.axvline(x=0.5, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;);
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=72KFY8beH0w&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Regression discontinuity video lecture by Paul Goldsmith-Pinkham (Yale)&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Synthetic Control</title>
-      <link>https://matteocourthoud.github.io/post/synthetic_control/</link>
-      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/synthetic_control/</guid>
-      <description>&lt;p&gt;In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak. However, there still exist methods for causal inference, under certain assumptions.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Requisites&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Rubin&amp;rsquo;s potential outcome framework&lt;/li&gt;
-&lt;li&gt;Ordinary least squares regression&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://matteocourthoud.github.io/post/permutation_test/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Randomization/permutation inference&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://matteocourthoud.github.io/post/diff_in_diffs/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Difference in differences&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;Academic Application&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;As an academic application, we are going to replicate &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program&lt;/a&gt; (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Business Case&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;TBD&lt;/p&gt;
-&lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
-&lt;p&gt;We assume that for a panel of i.i.d. subjects $i = 1, &amp;hellip;, n$ over time $t=1, &amp;hellip;,T$ we observed a tuple $(X_{it}, Y_{it})$ comprised of&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;a feature vector $X_{i,t} \in \mathbb R^p$&lt;/li&gt;
-&lt;li&gt;a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
-&lt;li&gt;a response $Y_{i,t} \in \mathbb R$&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Moreover, one unit is treated at time $t^*$. We distinguish time periods before treatment and time periods after treatment.&lt;/p&gt;
-&lt;p&gt;Crucially, treatment $D_i$ is not randomly assignment, therefore a difference in means between the treated unit(s) and the control group is not an unbiased estimator of the average treatment effect.&lt;/p&gt;
-&lt;h2 id=&#34;synthetic-control&#34;&gt;Synthetic Control&lt;/h2&gt;
-&lt;p&gt;The problem is that, as usual, we do not observe the counterfactual outcome for treated units, i.e. we do not know what would have happened to them, if they had not been treated. This is known as the &lt;strong&gt;fundamental problem of causal inference&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;The simplest approach, would be just to compare pre and post periods. This is called the &lt;strong&gt;event study&lt;/strong&gt; approach.&lt;/p&gt;
-&lt;p&gt;However, we can do better than this. In fact, even though treatment was not randomly assigned, we still have access to some units that were not treated.&lt;/p&gt;
-&lt;p&gt;For the outcome variable we have the following setup&lt;/p&gt;
-&lt;p&gt;$$
-Y =
-\begin{bmatrix}
-Y_{t, post} \ &amp;amp; Y_{c, post} \newline
-Y_{t, pre} \ &amp;amp; Y_{c, pre}
-\end{bmatrix}
-$$&lt;/p&gt;
-&lt;p&gt;which we can rewrite as&lt;/p&gt;
-&lt;p&gt;$$
-Y =
-\begin{bmatrix}
-Y^{(1)} _ {t, post} \ &amp;amp; Y^{(0)} _ {c, post} \newline
-Y^{(0)} _ {t, pre} \ &amp;amp; Y^{(0)} _ {c, pre}
-\end{bmatrix}
-$$&lt;/p&gt;
-&lt;p&gt;We basically have a &lt;strong&gt;missing data problem&lt;/strong&gt; since we do not observe $Y^{(0)} _ {t, post}$.&lt;/p&gt;
-&lt;p&gt;Following Doudchenko and Inbens (2018), we can formulate an estimate of the counterfactual outcome for the treated unit as a linear combination of the observed outcomes for the control units.&lt;/p&gt;
-&lt;p&gt;$$
-\hat Y^{(0)} _ {t, post} = \alpha + \sum_{i \in c} \beta_{i} Y^{(0)} _ {i, post}
-$$&lt;/p&gt;
-&lt;p&gt;where&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;the constant $\alpha$ allows for different averages between the two groups&lt;/li&gt;
-&lt;li&gt;the weights $\beta_i$ are allowed to vary across control units $i$
-&lt;ul&gt;
-&lt;li&gt;otherwise it would be a diff-in-diff&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;weights&#34;&gt;Weights&lt;/h3&gt;
-&lt;p&gt;How should we choose which weights to use? One &lt;strong&gt;option&lt;/strong&gt; could be to simply run a linear regression of the pre-treatment outcome of the treatment unit $Y^{(0)} _ {t, pre}$ on the pre-treatment outcome of the control group $Y^{(0)} _ {c, pre}$.&lt;/p&gt;
-&lt;p&gt;There are two problems with this approach:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;the weights might be negative&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;how should we interpret them?&lt;/li&gt;
-&lt;li&gt;they make no sense in the potential outcome framework&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;weights could be greater or lower than one&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;therefore we would not be able to interpret the synthetic control as a weighted average of untreated units&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;To solve this problem, Abadie et al. (2010) propose the following weights:&lt;/p&gt;
-&lt;p&gt;$$
-\hat \beta = \arg \min_{\beta} || \boldsymbol X_t - \boldsymbol \beta \boldsymbol X_c || = \sqrt{ \sum_{p} \left( X_{t, p}  - \sum_{i \in c} \beta_{p} X_{c, p} \right)^2 }
-\quad \text{s.t.} \quad \sum_{p} \beta_p = 1 \quad \text{and} \quad \beta_p \geq 0 \ \forall p
-$$&lt;/p&gt;
-&lt;p&gt;With this approach we get an interpretable counterfactual as a weighted avarage of untreated units.&lt;/p&gt;
-&lt;h3 id=&#34;synthetic-control-vs-ols&#34;&gt;Synthetic Control vs OLS&lt;/h3&gt;
-&lt;p&gt;What are the advantages and disadvantages of synthetic control methods with respect to a simple regression?&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;As long as we use positive weights that are constrained to sum to one, the method avoid extrapolation&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;we will never go out of the support of the data&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;It can be &amp;ldquo;pre-registered&amp;rdquo; in the sense that you don&amp;rsquo;t need post-treatment observations to build the method&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;could avoid p-hacking and cherry picking&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Weights make explicit the counterfactual analysis&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;one can look at the weights and understand which comparison we are making&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;It&amp;rsquo;s a bridge between quantitative and qualitative research&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;can be used to inspect single-treated unit cases&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&#34;academic-application&#34;&gt;Academic Application&lt;/h2&gt;
-&lt;p&gt;As an academic application, we are going to replicate &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program&lt;/a&gt; (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.&lt;/p&gt;
-&lt;p&gt;This is how the authors describe the policy:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Its primary effect is to impose a 25-cent per pack state excise tax on the sale of tobacco cigarettes within California, with approximately equivalent excise taxes similarly imposed on the retail sale of other commercial tobacco products, such as cigars and chewing tobacco. Additional restrictions placed on the sale of tobacco include a ban on cigarette vending machines in public areas accessible by juveniles, and a ban on the individual sale of single cigarettes. Revenue generated by the act was earmarked for various environmental and health care programs, and anti-tobacco advertisements.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Let&amp;rsquo;s start by loading the data. We have information on cigarette costs, sales, tax rate and revenues for all US states for years from 1970 to 2014.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
-%config InlineBackend.figure_format = &#39;retina&#39;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = pd.read_csv(&#39;data/adh10.csv&#39;)
-df.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;state&lt;/th&gt;
-      &lt;th&gt;year&lt;/th&gt;
-      &lt;th&gt;cig_sales&lt;/th&gt;
-      &lt;th&gt;lnincome&lt;/th&gt;
-      &lt;th&gt;beer&lt;/th&gt;
-      &lt;th&gt;age15to24&lt;/th&gt;
-      &lt;th&gt;retprice&lt;/th&gt;
-      &lt;th&gt;california&lt;/th&gt;
-      &lt;th&gt;after_treatment&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;1970&lt;/td&gt;
-      &lt;td&gt;89.800003&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;0.178862&lt;/td&gt;
-      &lt;td&gt;39.599998&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;1971&lt;/td&gt;
-      &lt;td&gt;95.400002&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;0.179928&lt;/td&gt;
-      &lt;td&gt;42.700001&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;1972&lt;/td&gt;
-      &lt;td&gt;101.099998&lt;/td&gt;
-      &lt;td&gt;9.498476&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;0.180994&lt;/td&gt;
-      &lt;td&gt;42.299999&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;1973&lt;/td&gt;
-      &lt;td&gt;102.900002&lt;/td&gt;
-      &lt;td&gt;9.550107&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;0.182060&lt;/td&gt;
-      &lt;td&gt;42.099998&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;1974&lt;/td&gt;
-      &lt;td&gt;108.199997&lt;/td&gt;
-      &lt;td&gt;9.537163&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;0.183126&lt;/td&gt;
-      &lt;td&gt;43.099998&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;Is the sample balanced? Let&amp;rsquo;s check the distribution of covariates, by treatment assignment.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import create_table_one
-
-create_table_one(df, &#39;california&#39;, [&#39;cig_sales&#39;, &#39;lnincome&#39;, &#39;beer&#39;, &#39;age15to24&#39;, &#39;retprice&#39;])
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;Control&lt;/th&gt;
-      &lt;th&gt;Treatment&lt;/th&gt;
-      &lt;th&gt;SMD&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Variable&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;n&lt;/th&gt;
-      &lt;td&gt;1178&lt;/td&gt;
-      &lt;td&gt;31&lt;/td&gt;
-      &lt;td&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;age15to24&lt;/th&gt;
-      &lt;td&gt;0.18 (0.02)&lt;/td&gt;
-      &lt;td&gt;0.18 (0.01)&lt;/td&gt;
-      &lt;td&gt;0.0454&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;beer&lt;/th&gt;
-      &lt;td&gt;23.46 (4.26)&lt;/td&gt;
-      &lt;td&gt;22.26 (2.11)&lt;/td&gt;
-      &lt;td&gt;-0.3559&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;cig_sales&lt;/th&gt;
-      &lt;td&gt;119.53 (32.60)&lt;/td&gt;
-      &lt;td&gt;94.59 (30.01)&lt;/td&gt;
-      &lt;td&gt;-0.7962&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;lnincome&lt;/th&gt;
-      &lt;td&gt;9.86 (0.17)&lt;/td&gt;
-      &lt;td&gt;10.07 (0.08)&lt;/td&gt;
-      &lt;td&gt;1.6107&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;retprice&lt;/th&gt;
-      &lt;td&gt;108.04 (64.00)&lt;/td&gt;
-      &lt;td&gt;119.92 (77.90)&lt;/td&gt;
-      &lt;td&gt;0.1667&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;The sample is quite unbalanced. In particular, California is a richer state with a higher income, &lt;code&gt;lnincome&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;We are interested in the sales of cigarettes &lt;code&gt;cig_sales&lt;/code&gt; over time. Let&amp;rsquo;s start by reshaping the dataset so that each state is a time series.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = df.pivot(index=&#39;year&#39;, columns=&#39;state&#39;, values=&#39;cig_sales&#39;).reset_index()
-df.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;state&lt;/th&gt;
-      &lt;th&gt;year&lt;/th&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;th&gt;10&lt;/th&gt;
-      &lt;th&gt;11&lt;/th&gt;
-      &lt;th&gt;12&lt;/th&gt;
-      &lt;th&gt;13&lt;/th&gt;
-      &lt;th&gt;14&lt;/th&gt;
-      &lt;th&gt;15&lt;/th&gt;
-      &lt;th&gt;16&lt;/th&gt;
-      &lt;th&gt;17&lt;/th&gt;
-      &lt;th&gt;...&lt;/th&gt;
-      &lt;th&gt;37&lt;/th&gt;
-      &lt;th&gt;38&lt;/th&gt;
-      &lt;th&gt;39&lt;/th&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;th&gt;5&lt;/th&gt;
-      &lt;th&gt;6&lt;/th&gt;
-      &lt;th&gt;7&lt;/th&gt;
-      &lt;th&gt;8&lt;/th&gt;
-      &lt;th&gt;9&lt;/th&gt;
-      &lt;th&gt;California&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;1970&lt;/td&gt;
-      &lt;td&gt;89.800003&lt;/td&gt;
-      &lt;td&gt;134.600006&lt;/td&gt;
-      &lt;td&gt;108.500000&lt;/td&gt;
-      &lt;td&gt;114.000000&lt;/td&gt;
-      &lt;td&gt;155.800003&lt;/td&gt;
-      &lt;td&gt;115.900002&lt;/td&gt;
-      &lt;td&gt;128.500000&lt;/td&gt;
-      &lt;td&gt;104.300003&lt;/td&gt;
-      &lt;td&gt;93.400002&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;114.500000&lt;/td&gt;
-      &lt;td&gt;106.400002&lt;/td&gt;
-      &lt;td&gt;132.199997&lt;/td&gt;
-      &lt;td&gt;124.800003&lt;/td&gt;
-      &lt;td&gt;120.000000&lt;/td&gt;
-      &lt;td&gt;155.000000&lt;/td&gt;
-      &lt;td&gt;109.900002&lt;/td&gt;
-      &lt;td&gt;102.400002&lt;/td&gt;
-      &lt;td&gt;124.800003&lt;/td&gt;
-      &lt;td&gt;123.000000&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;1971&lt;/td&gt;
-      &lt;td&gt;95.400002&lt;/td&gt;
-      &lt;td&gt;139.300003&lt;/td&gt;
-      &lt;td&gt;108.400002&lt;/td&gt;
-      &lt;td&gt;102.800003&lt;/td&gt;
-      &lt;td&gt;163.500000&lt;/td&gt;
-      &lt;td&gt;119.800003&lt;/td&gt;
-      &lt;td&gt;133.199997&lt;/td&gt;
-      &lt;td&gt;116.400002&lt;/td&gt;
-      &lt;td&gt;105.400002&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;111.500000&lt;/td&gt;
-      &lt;td&gt;105.400002&lt;/td&gt;
-      &lt;td&gt;131.699997&lt;/td&gt;
-      &lt;td&gt;125.500000&lt;/td&gt;
-      &lt;td&gt;117.599998&lt;/td&gt;
-      &lt;td&gt;161.100006&lt;/td&gt;
-      &lt;td&gt;115.699997&lt;/td&gt;
-      &lt;td&gt;108.500000&lt;/td&gt;
-      &lt;td&gt;125.599998&lt;/td&gt;
-      &lt;td&gt;121.000000&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;1972&lt;/td&gt;
-      &lt;td&gt;101.099998&lt;/td&gt;
-      &lt;td&gt;149.199997&lt;/td&gt;
-      &lt;td&gt;109.400002&lt;/td&gt;
-      &lt;td&gt;111.000000&lt;/td&gt;
-      &lt;td&gt;179.399994&lt;/td&gt;
-      &lt;td&gt;125.300003&lt;/td&gt;
-      &lt;td&gt;136.500000&lt;/td&gt;
-      &lt;td&gt;96.800003&lt;/td&gt;
-      &lt;td&gt;112.099998&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;117.500000&lt;/td&gt;
-      &lt;td&gt;108.800003&lt;/td&gt;
-      &lt;td&gt;140.000000&lt;/td&gt;
-      &lt;td&gt;134.300003&lt;/td&gt;
-      &lt;td&gt;110.800003&lt;/td&gt;
-      &lt;td&gt;156.300003&lt;/td&gt;
-      &lt;td&gt;117.000000&lt;/td&gt;
-      &lt;td&gt;126.099998&lt;/td&gt;
-      &lt;td&gt;126.599998&lt;/td&gt;
-      &lt;td&gt;123.500000&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;1973&lt;/td&gt;
-      &lt;td&gt;102.900002&lt;/td&gt;
-      &lt;td&gt;156.000000&lt;/td&gt;
-      &lt;td&gt;110.599998&lt;/td&gt;
-      &lt;td&gt;115.199997&lt;/td&gt;
-      &lt;td&gt;201.899994&lt;/td&gt;
-      &lt;td&gt;126.699997&lt;/td&gt;
-      &lt;td&gt;138.000000&lt;/td&gt;
-      &lt;td&gt;106.800003&lt;/td&gt;
-      &lt;td&gt;115.000000&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;116.599998&lt;/td&gt;
-      &lt;td&gt;109.500000&lt;/td&gt;
-      &lt;td&gt;141.199997&lt;/td&gt;
-      &lt;td&gt;137.899994&lt;/td&gt;
-      &lt;td&gt;109.300003&lt;/td&gt;
-      &lt;td&gt;154.699997&lt;/td&gt;
-      &lt;td&gt;119.800003&lt;/td&gt;
-      &lt;td&gt;121.800003&lt;/td&gt;
-      &lt;td&gt;124.400002&lt;/td&gt;
-      &lt;td&gt;124.400002&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;1974&lt;/td&gt;
-      &lt;td&gt;108.199997&lt;/td&gt;
-      &lt;td&gt;159.600006&lt;/td&gt;
-      &lt;td&gt;116.099998&lt;/td&gt;
-      &lt;td&gt;118.599998&lt;/td&gt;
-      &lt;td&gt;212.399994&lt;/td&gt;
-      &lt;td&gt;129.899994&lt;/td&gt;
-      &lt;td&gt;142.100006&lt;/td&gt;
-      &lt;td&gt;110.599998&lt;/td&gt;
-      &lt;td&gt;117.099998&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;119.900002&lt;/td&gt;
-      &lt;td&gt;111.800003&lt;/td&gt;
-      &lt;td&gt;145.800003&lt;/td&gt;
-      &lt;td&gt;132.800003&lt;/td&gt;
-      &lt;td&gt;112.400002&lt;/td&gt;
-      &lt;td&gt;151.300003&lt;/td&gt;
-      &lt;td&gt;123.699997&lt;/td&gt;
-      &lt;td&gt;125.599998&lt;/td&gt;
-      &lt;td&gt;131.899994&lt;/td&gt;
-      &lt;td&gt;126.699997&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;5 rows × 40 columns&lt;/p&gt;
-&lt;/div&gt;
-&lt;p&gt;In an ideal world, one could use the average of all the other states in the United States as a control group for California. Let&amp;rsquo;s plot the average cigarette consumption over time.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;states = [c for c in df.columns if c not in [&#39;year&#39;]]
-df[&#39;Other States&#39;] = df[[s for s in states if s != &#39;California&#39;]].mean(axis=1)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_lines(df, line1, line2, hline=True):
-    sns.lineplot(x=df[&#39;year&#39;], y=df[line1].values, label=line1)
-    sns.lineplot(x=df[&#39;year&#39;], y=df[line2].values, label=line2)
-    plt.axvline(x=1988, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;, label=&#39;Proposition 99&#39;, zorder=1)
-    plt.legend();
-    plt.title(&amp;quot;Per-capita cigarette sales (in packs)&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_lines(df, &#39;California&#39;, &#39;Other States&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;People in California on average smoke less than in other states. This would not be a problem in a diff-in-diff setting if&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;we had enough observations in each group&lt;/li&gt;
-&lt;li&gt;trends were parallel&lt;/li&gt;
-&lt;li&gt;other diff-in-diff assumptions were holding&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;However, we have just one treated unit and very few control units. Morover, the trends were definitely not parallel before treatment. Therefore, it feels quite a stretch to attribute the differences in cigarette sales post 1989 to Proposition 99 alone.&lt;/p&gt;
-&lt;p&gt;The idea is to exploit the time dimension and &lt;strong&gt;build a synthetic control&lt;/strong&gt; state for California. Maybe no single state is a good control, but a combination of them could actually provide a good approximation to California. Moreover, we can exploit the time dimension to compensate for the fact that we have few observations. We are going to try to match the sales of cigarettes in california for all the pre-treatment years, from 1970 to 1988.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s start by using &lt;code&gt;LinearRegression&lt;/code&gt; of &lt;code&gt;cigsales&lt;/code&gt; in California onto &lt;code&gt;cigsales&lt;/code&gt; of all the other states, pre 1989.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import LinearRegression
-
-def synth_predict(df, state, model):
-    y = df.loc[df[&#39;year&#39;] &amp;lt;= 1988, state]
-    other_states = [c for c in states if c not in [&#39;year&#39;, state]]
-    X = df.loc[df[&#39;year&#39;] &amp;lt;= 1988, other_states]
-    df[f&#39;Synthetic {state}&#39;] = model.fit(X, y).predict(df[other_states])
-    return model
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;coef = synth_predict(df, &#39;California&#39;, LinearRegression()).coef_
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;How well did we predict pre-1989 sales of cigarettes in California? If we believe that that&amp;rsquo;s a sensible control, what is the treatment effect?&lt;/p&gt;
-&lt;p&gt;We can visually answe both questions by plotting the actual sales of cigarettes in California against the predicted ones.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_lines(df, &#39;California&#39;, &#39;Synthetic California&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_27_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;It looks like the policy had a sensible &lt;strong&gt;negative effect&lt;/strong&gt; on cigarette sales: the predicted trend is higher than the actual sales and diverges right after the approval of Proposition 99.&lt;/p&gt;
-&lt;p&gt;We can also observe that we are clearly &lt;strong&gt;overfitting&lt;/strong&gt;: the pre-policy predicted cigarette sales line is perfectly overlapping with the actual data.&lt;/p&gt;
-&lt;p&gt;Another problem concerns the &lt;strong&gt;weights&lt;/strong&gt;. We have not set any constraint on the weights.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(coef, bins=30).set(title=&#39;Linear Regression Coefficients&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;We have many &lt;strong&gt;negative weights&lt;/strong&gt;, which do not make much sense from a causal inference perspective. Since we would like to interpret our synthetic control as a &lt;strong&gt;weighted average&lt;/strong&gt; of untreated states, all weights should be positive  and they should sum to one.&lt;/p&gt;
-&lt;p&gt;To address both concerns, we are going to build a new estimator called &lt;code&gt;SyntheticControl()&lt;/code&gt; which constrains the weights to be positive and to sum to one.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from typing import List
-from operator import add
-from toolz import reduce, partial
-from scipy.optimize import fmin_slsqp
-
-class SyntheticControl():
-    
-    # Loss function
-    def loss(self, W, X, y) -&amp;gt; float:
-        return np.sqrt(np.mean((y - X.dot(W))**2))
-
-    # Fit model
-    def fit(self, X, y):
-        w_start = [1/X.shape[1]]*X.shape[1]
-        self.coef_ = fmin_slsqp(partial(self.loss, X=X, y=y),
-                         np.array(w_start),
-                         f_eqcons=lambda x: np.sum(x) - 1,
-                         bounds=[(0.0, 1.0)]*len(w_start),
-                         disp=False)
-        self.mse = self.loss(W=self.coef_, X=X, y=y)
-        return self
-    
-    # Predict 
-    def predict(self, X):
-        return X.dot(self.coef_)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can now plot the actual and predicted cigarette sales in California using the &lt;code&gt;SyntheticControl&lt;/code&gt; method.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;coef_new = synth_predict(df, &#39;California&#39;, SyntheticControl()).coef_
-plot_lines(df, &#39;California&#39;, &#39;Synthetic California&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;It looks like the effect is again negative. However, let&amp;rsquo;s plot the &lt;strong&gt;difference&lt;/strong&gt; between the two lines to better visualize the magnitude.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_difference(df, state, vline=True, hline=True, **kwargs):
-    sns.lineplot(x=df[&#39;year&#39;], y=df[state] - df[f&#39;Synthetic {state}&#39;], **kwargs)
-    if vline: 
-        plt.axvline(x=1988, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;, label=&#39;Proposition 99&#39;, zorder=1)
-        plt.legend()
-    if hline: sns.lineplot(x=df[&#39;year&#39;], y=0, lw=1, color=&#39;black&#39;, zorder=1)
-    plt.title(&amp;quot;Normalized per-capita cigarette sales (in packs)&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_36_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;The difference is clearly negative and decreasing over time. Moreover, now we see that the estimator is not overfitting the pre-period anymore. The reason is that the non-negativity constraint is constraining most coefficients to be zero (as &lt;a href=&#34;https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Lasso&lt;/a&gt; does).&lt;/p&gt;
-&lt;p&gt;We can visualize it by plotting the distribution of coefficients.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(coef_new, bins=30).set(title=&#39;Synthetic Control Coefficients&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;What about &lt;strong&gt;inference&lt;/strong&gt;? Is the estimate significantly different from zero? Or, more practically, &amp;ldquo;&lt;em&gt;how unusual is this estimate under the null hypothesis of no policy effect&lt;/em&gt;?&amp;rdquo;.&lt;/p&gt;
-&lt;p&gt;We are going to perform a &lt;strong&gt;randomization/permutation test&lt;/strong&gt; in order to answer this question. The &lt;strong&gt;idea&lt;/strong&gt; is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.&lt;/p&gt;
-&lt;p&gt;Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;for state in states:
-    synth_predict(df, state, SyntheticControl())
-    plot_difference(df, state, vline=False, alpha=0.2, color=&#39;grey&#39;)
-plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;From the graph we notice two things. First, the effect for California is quite extreme and therefore likely not to be driven by random noise.&lt;/p&gt;
-&lt;p&gt;Second, we also notice that there are a couple of states for which we cannot fit the pre-trend very well. This is expected since, for each state, we are building the counterfactual trend as a &lt;strong&gt;convex combination&lt;/strong&gt; of all other states. States that are quite extreme in terms of cigarette consumpion are very useful to build the counterfactuals of other states, but it&amp;rsquo;s hard to build a counterfactual for them. Not to bias the analysis, let&amp;rsquo;s exclude states for which we cannot build a &amp;ldquo;good enough&amp;rdquo; counterfectual, in terms of pre-treatment MSE.&lt;/p&gt;
-&lt;p&gt;$$
-MSE_{pre} = \frac{1}{n} \sum_{t \in \text{pre}} \left( Y_t - \hat Y_t \right)^2
-$$&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;for state in states:
-    mse = synth_predict(df, state, SyntheticControl()).mse
-    if mse &amp;lt; 15:
-        plot_difference(df, state, vline=False, alpha=0.2, color=&#39;grey&#39;)
-plot_difference(df, &#39;California&#39;, label=&#39;California&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_42_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;After exluding extreme observations, it looks like the effect for California is very unusual, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales).&lt;/p&gt;
-&lt;p&gt;One &lt;strong&gt;statistic&lt;/strong&gt; that the authors suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.&lt;/p&gt;
-&lt;p&gt;$$
-\lambda = \frac{MSE_{post}}{MSE_{pre}} = \frac{\frac{1}{n} \sum_{t \in \text{post}} \left( Y_t - \hat Y_t \right)^2 }{\frac{1}{n} \sum_{t \in \text{pre}} \left( Y_t - \hat Y_t \right)^2 }
-$$&lt;/p&gt;
-&lt;p&gt;We can compute a p-value as the number of observations with higher ratio.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;lambdas = {}
-for state in states:
-    mse_pre = synth_predict(df, state, SyntheticControl()).mse
-    mse_tot = np.mean((df[f&#39;Synthetic {state}&#39;] - df[state])**2)
-    lambdas[state] = (mse_tot - mse_pre) / mse_pre
-    
-print(f&amp;quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype=&#39;float&#39;) &amp;gt; lambdas[&#39;California&#39;]):.4}&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;p-value: 0.02564
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;It seems that only $2.5%$ of the states had a larger MSE ratio. We can visualize the distribution of the statistic under permutation with a histogram.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;_, bins, _ = plt.hist(lambdas.values(), bins=20);
-plt.hist([lambdas[&#39;California&#39;]], bins=bins, color=&amp;quot;C2&amp;quot;, label=&amp;quot;California&amp;quot;)
-plt.legend();
-plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across states&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synthetic_control_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Indeed, the California statistic is quite extreme.&lt;/p&gt;
-&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=BsRqy7juMus&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Video lecture on Synthetic Controls&lt;/a&gt; by Paul Goldsmith-Pinkham (Yale)&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://matheusfacure.github.io/python-causality-handbook/15-Synthetic-Control.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 10&lt;/a&gt; of Causal Inference for the Brave and True by Matheus Facure&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://mixtape.scunning.com/synthetic-control.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chapter 15&lt;/a&gt; of Causal Inference: The Mixtape by Scott Cunningham&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
