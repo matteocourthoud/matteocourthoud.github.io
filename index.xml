@@ -26064,28 +26064,13 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     </item>
     
     <item>
-      <title>---</title>
+      <title>DAGs and Bad Controls</title>
       <link>https://matteocourthoud.github.io/post/controls/</link>
       <pubDate>Mon, 25 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/controls/</guid>
-      <description>&lt;p&gt;title: &amp;mdash;
-type: post
-date: 2022-04-25
-author: Matteo Courthoud&lt;/p&gt;
-&lt;hr&gt;
-&lt;p&gt;title: &amp;mdash;
-type: post
-date: 2022-04-25
-author: Matteo Courthoud&lt;/p&gt;
-&lt;hr&gt;
-&lt;p&gt;title:  DAGs and Bad Controls
-type: post
-date: 2022-04-24
-author: Matteo Courthoud&lt;/p&gt;
-&lt;hr&gt;
-&lt;p&gt;When analyzing causal relationships, it is very hard to understand which variables to &lt;strong&gt;condition the analysis on&lt;/strong&gt;, i.e. how to &amp;ldquo;split&amp;rdquo; the data so that we are &lt;strong&gt;comparing apples to apples&lt;/strong&gt;. For example, if you want to understand the effect of having an tablet in class on student&amp;rsquo;s performance, it makes sense to compare schools where students have similar socio-economic backgrounds. Otherwise, the risk is that only wealthier students can afford a tablet and, without controlling for it, we might attribute the effect to tablets instead of the socio-economic background.&lt;/p&gt;
-&lt;p&gt;When the treatment of interest comes from a proper &lt;strong&gt;randomized experiment&lt;/strong&gt;, we do not need to worry about conditioning on other variables. If tablets are distributed randomly across schools, and we have enough schools in the experiment, we do not have to worry about the socio-economic background students kids. The only advantage of conditioning the analysis on some so-called &amp;ldquo;control variable&amp;rdquo; could be an increase in power. However this is a different story.&lt;/p&gt;
-&lt;p&gt;In this post, we are going to have a brief introduction to Dyrected Acyclic Graphs and how they can be useful to select variables to condition a causal analysis on. Not only DAGs provide visual intuition on which variables we need to &lt;em&gt;include&lt;/em&gt; in the analysis, but also on which variables &lt;em&gt;not to include&lt;/em&gt;.&lt;/p&gt;
+      <description>&lt;p&gt;When analyzing causal relationships, it is very hard to understand which variables to &lt;strong&gt;condition the analysis on&lt;/strong&gt;, i.e. how to &amp;ldquo;split&amp;rdquo; the data so that we are &lt;strong&gt;comparing apples to apples&lt;/strong&gt;. For example, if you want to understand the effect of having a tablet in class on studenta&#39; performance, it makes sense to compare schools where students have similar socio-economic backgrounds. Otherwise, the risk is that only wealthier students can afford a tablet and, without controlling for it, we might attribute the effect to tablets instead of the socio-economic background.&lt;/p&gt;
+&lt;p&gt;When the treatment of interest comes from a proper &lt;strong&gt;randomized experiment&lt;/strong&gt;, we do not need to worry about conditioning on other variables. If tablets are distributed randomly across schools, and we have enough schools in the experiment, we do not have to worry about the socio-economic background of students. The only advantage of conditioning the analysis on some so-called &amp;ldquo;control variable&amp;rdquo; could be an increase in power. However, this is a different story.&lt;/p&gt;
+&lt;p&gt;In this post, we are going to have a brief introduction to Directed Acyclic Graphs and how they can be useful to select variables to condition a causal analysis on. Not only DAGs provide visual intuition on which variables we need to &lt;em&gt;include&lt;/em&gt; in the analysis, but also on which variables we should &lt;em&gt;not include&lt;/em&gt;, and why.&lt;/p&gt;
 &lt;h2 id=&#34;directed-acyclic-graphs&#34;&gt;Directed Acyclic Graphs&lt;/h2&gt;
 &lt;h3 id=&#34;definitions&#34;&gt;Definitions&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;Directed acyclic graphs&lt;/strong&gt; (&lt;strong&gt;DAG&lt;/strong&gt;s) provide a visual representation of the data generating process. Random variables are represented with letters (e.g. $X$) and causal relationships are represented with arrows (e.g. $\to$). For example, we interpret&lt;/p&gt;
@@ -26093,7 +26078,7 @@ author: Matteo Courthoud&lt;/p&gt;
 classDef white fill:#FFFFFF,stroke:#000000,stroke-width:2px
 X((X)):::white --&amp;gt; Y((Y)):::white
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;as $X$ (possibly) causes $Y$. We call a &lt;strong&gt;path&lt;/strong&gt; between two variables $X$ and $Y$ any connection between $X$ and $Y$, &lt;em&gt;independently on the direction of the arrows&lt;/em&gt;. If all arrows point forward, we call it a &lt;strong&gt;causal path&lt;/strong&gt;, otherwise we call it a &lt;strong&gt;spurious path&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;as $X$ (possibly) causes $Y$. We call a &lt;strong&gt;path&lt;/strong&gt; between two variables $X$ and $Y$ any connection, &lt;em&gt;independently of the direction of the arrows&lt;/em&gt;. If all arrows point forward, we call it a &lt;strong&gt;causal path&lt;/strong&gt;, otherwise we call it a &lt;strong&gt;spurious path&lt;/strong&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -26112,29 +26097,29 @@ Z3 --&amp;gt; Y
 class X,Y included;
 class Z1,Z2,Z3 excluded;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example, we have a path between $X$ and $Y$ passing through the variables $Z_1$, $Z_2$ and $Z_3$. Since not all arrows point forward, the path is &lt;em&gt;spurious&lt;/em&gt; and there is no causal relationship of $X$ on $Y$. In fact, variable $Z_2$ is caused by both $Z_1$ and $Z_3$ and therefore &lt;strong&gt;blocks&lt;/strong&gt; the path.&lt;/p&gt;
+&lt;p&gt;In the example above, we have a path between $X$ and $Y$ passing through the variables $Z_1$, $Z_2$, and $Z_3$. Since not all arrows point forward, the path is &lt;em&gt;spurious&lt;/em&gt; and there is no causal relationship of $X$ on $Y$. In fact, variable $Z_2$ is caused by both $Z_1$ and $Z_3$ and therefore &lt;strong&gt;blocks&lt;/strong&gt; the path.&lt;/p&gt;
 &lt;p&gt;$Z_2$ is called a &lt;strong&gt;collider&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;The purpose of our analysis is to assess the &lt;strong&gt;causal relationship&lt;/strong&gt; between two variables $X$ and $Y$. Directed acyclic graphs are useful because they provide us instructions on which other variables $Z$ we need to &lt;strong&gt;condition&lt;/strong&gt; our analysis on. Conditioning the analysis on a variable means that we keep it fixed and we draw our conclusions &lt;em&gt;ceteris paribus&lt;/em&gt;. For example, in a linear regression framework, inserting another regressor $Z$ means that we are computing the best linear approximation of the conditional expectation function of $Y$ given $X$, &lt;em&gt;conditional&lt;/em&gt; on the observed values of $Z$.&lt;/p&gt;
 &lt;h3 id=&#34;causality&#34;&gt;Causality&lt;/h3&gt;
-&lt;p&gt;In order to assess causality we want to &lt;strong&gt;close all spurious paths&lt;/strong&gt; between $X$ and $Y$. The &lt;strong&gt;questions&lt;/strong&gt; now are:&lt;/p&gt;
+&lt;p&gt;In order to assess causality, we want to &lt;strong&gt;close all spurious paths&lt;/strong&gt; between $X$ and $Y$. The &lt;strong&gt;questions&lt;/strong&gt; now are:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;when is a path &lt;strong&gt;open&lt;/strong&gt;?
+&lt;li&gt;When is a path &lt;strong&gt;open&lt;/strong&gt;?
 &lt;ul&gt;
-&lt;li&gt;if it does not contain &lt;em&gt;colliders&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;If it does not contain &lt;em&gt;colliders&lt;/em&gt;. Otherwise, it is &lt;em&gt;closed&lt;/em&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;how do you &lt;strong&gt;close an open path&lt;/strong&gt;?
+&lt;li&gt;How do you &lt;strong&gt;close an open path&lt;/strong&gt;?
 &lt;ul&gt;
-&lt;li&gt;if you condition on &lt;em&gt;at least one&lt;/em&gt; intermediate variable&lt;/li&gt;
+&lt;li&gt;You condition on &lt;em&gt;at least one&lt;/em&gt; intermediate variable.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;how do you &lt;strong&gt;open a closed path&lt;/strong&gt;?
+&lt;li&gt;How do you &lt;strong&gt;open a closed path&lt;/strong&gt;?
 &lt;ul&gt;
-&lt;li&gt;if you condition on &lt;em&gt;all&lt;/em&gt; colliders along the path&lt;/li&gt;
+&lt;li&gt;You condition on &lt;em&gt;all&lt;/em&gt; colliders along the path.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Suppose we are again interested in the relationship between $X$ and $Y$. Let&amp;rsquo;s consider the following graph&lt;/p&gt;
+&lt;p&gt;Suppose we are again interested in the causal relationship of $X$ on $Y$. Let&amp;rsquo;s consider the following graph&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -26156,14 +26141,14 @@ Y --&amp;gt; Z3
 class X,Y included;
 class Z1,Z2,Z3 excluded;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this case, there are &lt;strong&gt;three non-direct paths&lt;/strong&gt; between $X$ and $Y$ through the variables $Z_1$, $Z_2$ and $Z_3$.&lt;/p&gt;
+&lt;p&gt;In this case, apart from the direct path, there are &lt;strong&gt;three non-direct paths&lt;/strong&gt; between $X$ and $Y$ through the variables $Z_1$, $Z_2$, and $Z_3$.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s consider the case in which we analyze the relationship between $X$ and $Y$, ignoring all other variables.&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;The path through $Z_1$ is &lt;strong&gt;open&lt;/strong&gt; but it is &lt;strong&gt;spurious&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;The path through $Z_2$ is &lt;strong&gt;open&lt;/strong&gt; and &lt;strong&gt;causal&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;The path through $Z_3$ is &lt;strong&gt;closed&lt;/strong&gt; since $Z_3$ is a &lt;em&gt;collider&lt;/em&gt; and it is &lt;strong&gt;spurious&lt;/strong&gt;&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;Let&amp;rsquo;s draw the same graph indicating in gray variables that we are conditioning on, with dotted lines closed paths, with red lines spurious paths and with green lines causal paths.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s draw the same graph indicating in &lt;em&gt;grey&lt;/em&gt; variables that we are conditioning on, with &lt;em&gt;dotted lines&lt;/em&gt; closed paths, with &lt;em&gt;red lines&lt;/em&gt; spurious open paths, and with &lt;em&gt;green lines&lt;/em&gt; causal open paths.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -26187,7 +26172,7 @@ linkStyle 3,4 stroke:#ff0000,stroke-width:4px;
 class X,Y included;
 class Z1,Z2,Z3 excluded;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this case, to assess the &lt;strong&gt;causal&lt;/strong&gt; relationship between $X$ and $Y$ we need to close the path that passes through $Z_1$. We can do that by conditioning the analysis on $Z_1$.&lt;/p&gt;
+&lt;p&gt;In this case, to assess the &lt;strong&gt;causal&lt;/strong&gt; relationship between $X$ and $Y$ we need to &lt;strong&gt;close&lt;/strong&gt; the path that passes through $Z_1$. We can do that by conditioning the analysis on $Z_1$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -26211,7 +26196,7 @@ class X,Y,Z1 included;
 class Z2,Z3 excluded;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Now we are able to recover the causal relationship between $X$ and $Y$ by conditioning on $Z_1$.&lt;/p&gt;
-&lt;p&gt;What would happen if we were also &lt;strong&gt;conditioning on $Z_2$&lt;/strong&gt;? In this case, we would &lt;strong&gt;close&lt;/strong&gt; the path passing through $Z_2$ leaving only the direct path between $X$ and $Y$ open. We would then recover only the &lt;strong&gt;direct effect&lt;/strong&gt; of $X$ on $Y$ and not the &lt;em&gt;indirect&lt;/em&gt; one.&lt;/p&gt;
+&lt;p&gt;What would happen if we were also &lt;strong&gt;conditioning on $Z_2$&lt;/strong&gt;? In this case, we would &lt;strong&gt;close&lt;/strong&gt; the path passing through $Z_2$ leaving only the &lt;em&gt;direct&lt;/em&gt; path between $X$ and $Y$ open. We would then recover only the &lt;strong&gt;direct effect&lt;/strong&gt; of $X$ on $Y$ and not the &lt;em&gt;indirect&lt;/em&gt; one.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -26287,16 +26272,15 @@ class X,Y included;
 class Z1,Z2,Z3,Z4 excluded;
 class U unobserved;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;I have highlighted the variables of interest. Moreover, the dotted line around &lt;code&gt;ability&lt;/code&gt; indicates that this is a variable that we do not observe in the data.&lt;/p&gt;
+&lt;p&gt;The variables of interest are highlighted. Moreover, the dotted line around &lt;code&gt;ability&lt;/code&gt; indicates that this is a variable that we do not observe in the data.&lt;/p&gt;
 &lt;p&gt;We can now load the data and check what it looks like.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
 from src.utils import *
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import dgp_class
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import dgp_school
 
-dgp = dgp_class()
-df = dgp.generate_data()
+df = dgp_school().generate_data()
 df.head()
 &lt;/code&gt;&lt;/pre&gt;
 &lt;div&gt;
@@ -26380,7 +26364,8 @@ df.head()
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;What variables should we condition our regression on, in order to estimate the causal effect of &lt;code&gt;class size&lt;/code&gt; on &lt;code&gt;math scores&lt;/code&gt;. First of all, let&amp;rsquo;s look at what happens if we do not condition our analysis on any variable and we just regress &lt;code&gt;math score&lt;/code&gt; on &lt;code&gt;class size&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;What variables should we condition our regression on, in order to estimate the causal effect of &lt;code&gt;class size&lt;/code&gt; on &lt;code&gt;math scores&lt;/code&gt;?&lt;/p&gt;
+&lt;p&gt;First of all, let&amp;rsquo;s look at what happens if we do not condition our analysis on any variable and we just regress &lt;code&gt;math score&lt;/code&gt; on &lt;code&gt;class size&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size&#39;, df).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -26394,7 +26379,8 @@ df.head()
   &lt;th&gt;class_size&lt;/th&gt; &lt;td&gt;   -0.0399&lt;/td&gt; &lt;td&gt;    0.013&lt;/td&gt; &lt;td&gt;   -3.025&lt;/td&gt; &lt;td&gt; 0.003&lt;/td&gt; &lt;td&gt;   -0.066&lt;/td&gt; &lt;td&gt;   -0.014&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
-&lt;p&gt;Should we believe this esimated effect? Without controlling for anything, this is &lt;strong&gt;DAG representation&lt;/strong&gt; of the effect we are capturing.&lt;/p&gt;
+&lt;p&gt;The effect of &lt;code&gt;class_size&lt;/code&gt; is negative and statistically different from zero.&lt;/p&gt;
+&lt;p&gt;But should we believe this estimated effect? Without controlling for anything, this is &lt;strong&gt;DAG representation&lt;/strong&gt; of the effect we are capturing.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -26426,7 +26412,7 @@ class X,Y included;
 class Z1,Z2,Z3,Z4 excluded;
 class U unobserved;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;There is a &lt;strong&gt;spurious&lt;/strong&gt; path passing through &lt;code&gt;good school&lt;/code&gt; that &lt;strong&gt;biases&lt;/strong&gt; our estimated coefficient. We need to control for it.&lt;/p&gt;
+&lt;p&gt;There is a &lt;strong&gt;spurious&lt;/strong&gt; path passing through &lt;code&gt;good school&lt;/code&gt; that &lt;strong&gt;biases&lt;/strong&gt; our estimated coefficient. Intuitively, being enrolled in a better school improves the students&#39; math scores and better schools might have smaller class sizes. We need to control for the quality of the school.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school&#39;, df).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -26443,7 +26429,7 @@ class U unobserved;
   &lt;th&gt;good_school&lt;/th&gt; &lt;td&gt;    5.0807&lt;/td&gt; &lt;td&gt;    0.130&lt;/td&gt; &lt;td&gt;   39.111&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.826&lt;/td&gt; &lt;td&gt;    5.336&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
-&lt;p&gt;Now the estimate of the effect of &lt;code&gt;class size&lt;/code&gt; on &lt;code&gt;math score&lt;/code&gt; in &lt;strong&gt;unbiased&lt;/strong&gt;! Indeed, the true coefficient in the data generating process was $0.2$.&lt;/p&gt;
+&lt;p&gt;Now the estimate of the effect of &lt;code&gt;class size&lt;/code&gt; on &lt;code&gt;math score&lt;/code&gt; is &lt;strong&gt;unbiased&lt;/strong&gt;! Indeed, the true coefficient in the data generating process was $0.2$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -26536,10 +26522,12 @@ class U unobserved;
 &lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;We can illustrate this with Model 16 of the &amp;quot;Crash Course in Good and Bad Controls&amp;quot; (&lt;a href=&#34;https://t.co/GcSNzhuVt2&#34;&gt;https://t.co/GcSNzhuVt2&lt;/a&gt;). Here X = class size, Y = math4, Z = read4, and U = student&amp;#39;s ability. Conditioning on Z opens the path X -&amp;gt; Z &amp;lt;- U -&amp;gt; Y and it is thus a &amp;quot;bad control.&amp;quot; &lt;a href=&#34;https://t.co/KNfqtsMWwB&#34;&gt;https://t.co/KNfqtsMWwB&lt;/a&gt; &lt;a href=&#34;https://t.co/lUSigNYSJj&#34;&gt;pic.twitter.com/lUSigNYSJj&lt;/a&gt;&lt;/p&gt;&amp;mdash; Análise Real (@analisereal) &lt;a href=&#34;https://twitter.com/analisereal/status/1502793254592401409?ref_src=twsrc%5Etfw&#34;&gt;March 12, 2022&lt;/a&gt;&lt;/blockquote&gt;
 &lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
 
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this post, we have seen how to use Directed Acyclic Graphs to select control variables in a causal analysis. DAGs are very helpful tools since they provide an intuitive graphical representation of causal relationships between random variables. Contrary to common intuition that &amp;ldquo;the more information the better&amp;rdquo;, sometimes including extra variables might bias the analysis, preventing a causal interpretation of the results. In particular, we must pay attention not to include &lt;em&gt;colliders&lt;/em&gt; that open &lt;em&gt;spurious&lt;/em&gt; paths that would otherwise be closed.&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;p&gt;[1] C. Cinelli, A. Forney, J. Pearl, &lt;a href=&#34;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3689437&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;A Crash Course in Good and Bad Controls&lt;/a&gt; (2018), working paper.&lt;/p&gt;
 &lt;p&gt;[2] J. Pearl, &lt;a href=&#34;http://bayes.cs.ucla.edu/BOOK-2K/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Causality&lt;/a&gt; (2009), Cambridge University Press.&lt;/p&gt;
-&lt;p&gt;[3] S. Cunningham, Chapter 3 of &lt;a href=&#34;https://mixtape.scunning.com/dag.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Causal Inference Mixtape&lt;/a&gt; (2021), Cambridge University Press.&lt;/p&gt;
+&lt;p&gt;[3] S. Cunningham, Chapter 3 of &lt;a href=&#34;https://mixtape.scunning.com/dag.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Causal Inference Mixtape&lt;/a&gt; (2021), Yale University Press.&lt;/p&gt;
 </description>
     </item>
     
