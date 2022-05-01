@@ -30,7 +30,8 @@
   
     
   
-  <meta name="description" content="import numpy as np import pandas as pd  Setup For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at Inside AirBnb: http://insideairbnb." />
+  <meta name="description" content="Setup For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at Inside AirBnb: http://insideairbnb.com/get-the-data.html.
+A description of all variables in all datasets is avaliable here." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/course/data-science/04_data_wrangling/" />
@@ -334,16 +335,17 @@
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/course/data-science/04_data_wrangling/" />
   <meta property="og:title" content="Data Wrangling | Matteo Courthoud" />
-  <meta property="og:description" content="import numpy as np import pandas as pd  Setup For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at Inside AirBnb: http://insideairbnb." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+  <meta property="og:description" content="Setup For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at Inside AirBnb: http://insideairbnb.com/get-the-data.html.
+A description of all variables in all datasets is avaliable here." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-04-25T00:00:00&#43;00:00"
+        content="2022-05-01T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-25T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-05-01T00:00:00&#43;00:00">
   
 
   
@@ -818,10 +820,11 @@
       <nav id="TableOfContents">
   <ul>
     <li><a href="#setup">Setup</a></li>
-    <li><a href="#editing-the-dataframe">Editing the Dataframe</a></li>
+    <li><a href="#sorting-and-renaming">Sorting and Renaming</a></li>
     <li><a href="#aggregating">Aggregating</a></li>
     <li><a href="#combining-datasets">Combining Datasets</a></li>
     <li><a href="#reshaping">Reshaping</a></li>
+    <li><a href="#window-functions">Window Functions</a></li>
   </ul>
 </nav>
 
@@ -837,13 +840,10 @@
 
           <h1>Data Wrangling</h1>
 
-          <p>Last updated on Apr 25, 2022</p>
+          <p>Last updated on May 1, 2022</p>
 
           <div class="article-style">
-            <pre><code class="language-python">import numpy as np
-import pandas as pd
-</code></pre>
-<h2 id="setup">Setup</h2>
+            <h2 id="setup">Setup</h2>
 <p>For the scope of this tutorial we are going to use AirBnb Scraped data for the city of Bologna. The data is freely available at <strong>Inside AirBnb</strong>: <a href="http://insideairbnb.com/get-the-data.html" target="_blank" rel="noopener">http://insideairbnb.com/get-the-data.html</a>.</p>
 <p>A description of all variables in all datasets is avaliable <a href="https://docs.google.com/spreadsheets/d/1iWCNJcSutYqpULSQHlNyGInUvHg2BoUGoNRIGa6Szc4/edit#gid=982310896" target="_blank" rel="noopener">here</a>.</p>
 <p>We are going to use 2 datasets:</p>
@@ -851,6 +851,9 @@ import pandas as pd
 <li>listing dataset: contains listing-level information</li>
 <li>pricing dataset: contains pricing data, over time</li>
 </ul>
+<pre><code class="language-python">import numpy as np
+import pandas as pd
+</code></pre>
 <pre><code class="language-python"># Import listings data
 url_listings = &quot;http://data.insideairbnb.com/italy/emilia-romagna/bologna/2021-12-17/visualisations/listings.csv&quot;
 df_listings = pd.read_csv(url_listings)
@@ -859,7 +862,7 @@ df_listings = pd.read_csv(url_listings)
 url_prices = &quot;http://data.insideairbnb.com/italy/emilia-romagna/bologna/2021-12-17/data/calendar.csv.gz&quot;
 df_prices = pd.read_csv(url_prices, compression=&quot;gzip&quot;)
 </code></pre>
-<h2 id="editing-the-dataframe">Editing the Dataframe</h2>
+<h2 id="sorting-and-renaming">Sorting and Renaming</h2>
 <p>You can <strong>sort</strong> the data using the <code>sort_values</code> function.</p>
 <p><em>Options</em></p>
 <ul>
@@ -1169,6 +1172,86 @@ df_prices = pd.read_csv(url_prices, compression=&quot;gzip&quot;)
 </table>
 </div>
 <h2 id="aggregating">Aggregating</h2>
+<p>If we want to count observations across 2 categorical variables, we can use <code>pd.crosstab()</code>.</p>
+<pre><code class="language-python">pd.crosstab(df_listings['neighbourhood'], df_listings['room_type'])
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>room_type</th>
+      <th>Entire home/apt</th>
+      <th>Hotel room</th>
+      <th>Private room</th>
+      <th>Shared room</th>
+    </tr>
+    <tr>
+      <th>neighbourhood</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Borgo Panigale - Reno</th>
+      <td>107</td>
+      <td>0</td>
+      <td>39</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>Navile</th>
+      <td>250</td>
+      <td>3</td>
+      <td>149</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Porto - Saragozza</th>
+      <td>842</td>
+      <td>16</td>
+      <td>299</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>San Donato - San Vitale</th>
+      <td>280</td>
+      <td>1</td>
+      <td>134</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>Santo Stefano</th>
+      <td>924</td>
+      <td>29</td>
+      <td>237</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>Savena</th>
+      <td>73</td>
+      <td>0</td>
+      <td>48</td>
+      <td>2</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 <p>We can compute statistics by group using <code>groupby()</code>.</p>
 <pre><code class="language-python">df_listings.groupby('neighbourhood')[['price', 'reviews_per_month']].mean()
 </code></pre>
@@ -1363,7 +1446,7 @@ df_prices = pd.read_csv(url_prices, compression=&quot;gzip&quot;)
 </table>
 </div>
 <h2 id="combining-datasets">Combining Datasets</h2>
-<p>We can <strong>concatenate</strong> datasets using <code>pd.concat()</code>. It takes as argument a list of dataframes. By default, <code>pd.concat()</code> performs the outer join. We can change it using the <code>join</code> option.</p>
+<p>We can <strong>concatenate</strong> datasets using <code>pd.concat()</code>. It takes as argument a list of dataframes. By default, <code>pd.concat()</code> performs the outer join. We can change it using the <code>join</code> option (in this case, it makes no difference).</p>
 <pre><code class="language-python">df_listings1 = df_listings[:2000]
 np.shape(df_listings1)
 </code></pre>
@@ -1375,7 +1458,7 @@ np.shape(df_listings2)
 <pre><code>(2453, 18)
 </code></pre>
 <pre><code class="language-python">np.shape(
-    pd.concat([df_listings1, df_listings2], join='inner')
+    pd.concat([df_listings1, df_listings2])
 )
 </code></pre>
 <pre><code>(4453, 18)
@@ -1736,7 +1819,7 @@ df_wide.head()
     <tr style="text-align: right;">
       <th></th>
       <th>date</th>
-      <th>NaN</th>
+      <th>None</th>
       <th>neighbourhood</th>
       <th>price</th>
     </tr>
@@ -1933,6 +2016,780 @@ df_wide2.head()
 </table>
 </div>
 <p>Note that we had to change the <code>suffix</code> to <code>\D+</code>, i.e. not digits.</p>
+<h2 id="window-functions">Window Functions</h2>
+<blockquote>
+<p>Methods</p>
+<ul>
+<li><code>shift()</code></li>
+<li><code>expanding()</code></li>
+<li><code>rolling()</code></li>
+</ul>
+</blockquote>
+<p>When we have time series data, we might want to do operations across time. First, let&rsquo;s aggregate the <code>df_price</code> dataset at the year-month level.</p>
+<pre><code class="language-python">temp = df_prices.copy()
+temp['price'] = temp['price'].str.replace('[$|,]', '', regex=True).astype(float)
+temp['date'] = pd.to_datetime(temp['date']).dt.to_period('M')
+temp = temp.groupby(['listing_id', 'date'])['price'].mean().reset_index()\
+    .sort_values(by=['listing_id', 'date'], ascending=[False, True])
+temp.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>listing_id</th>
+      <th>date</th>
+      <th>price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>44876</th>
+      <td>53854962</td>
+      <td>2021-12</td>
+      <td>147.400000</td>
+    </tr>
+    <tr>
+      <th>44877</th>
+      <td>53854962</td>
+      <td>2022-01</td>
+      <td>137.645161</td>
+    </tr>
+    <tr>
+      <th>44878</th>
+      <td>53854962</td>
+      <td>2022-02</td>
+      <td>124.642857</td>
+    </tr>
+    <tr>
+      <th>44879</th>
+      <td>53854962</td>
+      <td>2022-03</td>
+      <td>285.096774</td>
+    </tr>
+    <tr>
+      <th>44880</th>
+      <td>53854962</td>
+      <td>2022-04</td>
+      <td>115.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can <strong>lead or lag</strong> one variable using <code>shift()</code>.</p>
+<pre><code class="language-python">temp['price1'] = temp['price'].shift(1)
+temp.head(15)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>listing_id</th>
+      <th>date</th>
+      <th>price</th>
+      <th>price1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>44876</th>
+      <td>53854962</td>
+      <td>2021-12</td>
+      <td>147.400000</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>44877</th>
+      <td>53854962</td>
+      <td>2022-01</td>
+      <td>137.645161</td>
+      <td>147.400000</td>
+    </tr>
+    <tr>
+      <th>44878</th>
+      <td>53854962</td>
+      <td>2022-02</td>
+      <td>124.642857</td>
+      <td>137.645161</td>
+    </tr>
+    <tr>
+      <th>44879</th>
+      <td>53854962</td>
+      <td>2022-03</td>
+      <td>285.096774</td>
+      <td>124.642857</td>
+    </tr>
+    <tr>
+      <th>44880</th>
+      <td>53854962</td>
+      <td>2022-04</td>
+      <td>115.000000</td>
+      <td>285.096774</td>
+    </tr>
+    <tr>
+      <th>44881</th>
+      <td>53854962</td>
+      <td>2022-05</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44882</th>
+      <td>53854962</td>
+      <td>2022-06</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44883</th>
+      <td>53854962</td>
+      <td>2022-07</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44884</th>
+      <td>53854962</td>
+      <td>2022-08</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44885</th>
+      <td>53854962</td>
+      <td>2022-09</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44886</th>
+      <td>53854962</td>
+      <td>2022-10</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44887</th>
+      <td>53854962</td>
+      <td>2022-11</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44888</th>
+      <td>53854962</td>
+      <td>2022-12</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44863</th>
+      <td>53837654</td>
+      <td>2021-12</td>
+      <td>184.133333</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44864</th>
+      <td>53837654</td>
+      <td>2022-01</td>
+      <td>148.741935</td>
+      <td>184.133333</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>If we want to <strong>lead or lag a variable within a group</strong>, we can combine <code>shift()</code> with <code>groupby()</code></p>
+<pre><code class="language-python">temp['price1'] = temp.groupby('listing_id')['price'].shift(1)
+temp.head(15)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>listing_id</th>
+      <th>date</th>
+      <th>price</th>
+      <th>price1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>44876</th>
+      <td>53854962</td>
+      <td>2021-12</td>
+      <td>147.400000</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>44877</th>
+      <td>53854962</td>
+      <td>2022-01</td>
+      <td>137.645161</td>
+      <td>147.400000</td>
+    </tr>
+    <tr>
+      <th>44878</th>
+      <td>53854962</td>
+      <td>2022-02</td>
+      <td>124.642857</td>
+      <td>137.645161</td>
+    </tr>
+    <tr>
+      <th>44879</th>
+      <td>53854962</td>
+      <td>2022-03</td>
+      <td>285.096774</td>
+      <td>124.642857</td>
+    </tr>
+    <tr>
+      <th>44880</th>
+      <td>53854962</td>
+      <td>2022-04</td>
+      <td>115.000000</td>
+      <td>285.096774</td>
+    </tr>
+    <tr>
+      <th>44881</th>
+      <td>53854962</td>
+      <td>2022-05</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44882</th>
+      <td>53854962</td>
+      <td>2022-06</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44883</th>
+      <td>53854962</td>
+      <td>2022-07</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44884</th>
+      <td>53854962</td>
+      <td>2022-08</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44885</th>
+      <td>53854962</td>
+      <td>2022-09</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44886</th>
+      <td>53854962</td>
+      <td>2022-10</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44887</th>
+      <td>53854962</td>
+      <td>2022-11</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44888</th>
+      <td>53854962</td>
+      <td>2022-12</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44863</th>
+      <td>53837654</td>
+      <td>2021-12</td>
+      <td>184.133333</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>44864</th>
+      <td>53837654</td>
+      <td>2022-01</td>
+      <td>148.741935</td>
+      <td>184.133333</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can perform <strong>cumulative</strong> operations using the <code>expanding()</code> function</p>
+<pre><code class="language-python">temp['avg_cum_price'] = temp['price'].expanding().mean()
+temp.head(15)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>listing_id</th>
+      <th>date</th>
+      <th>price</th>
+      <th>price1</th>
+      <th>avg_cum_price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>44876</th>
+      <td>53854962</td>
+      <td>2021-12</td>
+      <td>147.400000</td>
+      <td>NaN</td>
+      <td>147.400000</td>
+    </tr>
+    <tr>
+      <th>44877</th>
+      <td>53854962</td>
+      <td>2022-01</td>
+      <td>137.645161</td>
+      <td>147.400000</td>
+      <td>142.522581</td>
+    </tr>
+    <tr>
+      <th>44878</th>
+      <td>53854962</td>
+      <td>2022-02</td>
+      <td>124.642857</td>
+      <td>137.645161</td>
+      <td>136.562673</td>
+    </tr>
+    <tr>
+      <th>44879</th>
+      <td>53854962</td>
+      <td>2022-03</td>
+      <td>285.096774</td>
+      <td>124.642857</td>
+      <td>173.696198</td>
+    </tr>
+    <tr>
+      <th>44880</th>
+      <td>53854962</td>
+      <td>2022-04</td>
+      <td>115.000000</td>
+      <td>285.096774</td>
+      <td>161.956959</td>
+    </tr>
+    <tr>
+      <th>44881</th>
+      <td>53854962</td>
+      <td>2022-05</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>154.130799</td>
+    </tr>
+    <tr>
+      <th>44882</th>
+      <td>53854962</td>
+      <td>2022-06</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>148.540685</td>
+    </tr>
+    <tr>
+      <th>44883</th>
+      <td>53854962</td>
+      <td>2022-07</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>144.348099</td>
+    </tr>
+    <tr>
+      <th>44884</th>
+      <td>53854962</td>
+      <td>2022-08</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>141.087199</td>
+    </tr>
+    <tr>
+      <th>44885</th>
+      <td>53854962</td>
+      <td>2022-09</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>138.478479</td>
+    </tr>
+    <tr>
+      <th>44886</th>
+      <td>53854962</td>
+      <td>2022-10</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>136.344072</td>
+    </tr>
+    <tr>
+      <th>44887</th>
+      <td>53854962</td>
+      <td>2022-11</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>134.565399</td>
+    </tr>
+    <tr>
+      <th>44888</th>
+      <td>53854962</td>
+      <td>2022-12</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>133.060369</td>
+    </tr>
+    <tr>
+      <th>44863</th>
+      <td>53837654</td>
+      <td>2021-12</td>
+      <td>184.133333</td>
+      <td>NaN</td>
+      <td>136.708438</td>
+    </tr>
+    <tr>
+      <th>44864</th>
+      <td>53837654</td>
+      <td>2022-01</td>
+      <td>148.741935</td>
+      <td>184.133333</td>
+      <td>137.510671</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>To perform <strong>cumulative operations within a group</strong>, we can combine <code>expanding()</code> with <code>groupby()</code>. Since groups with not enough observations get dropped, we need to merge the dataset back.</p>
+<pre><code class="language-python">temp.groupby('listing_id')['price'].expanding().mean().reset_index(level=0).head(15)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>listing_id</th>
+      <th>price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>42196</td>
+      <td>68.000000</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>46352</td>
+      <td>29.333333</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>46352</td>
+      <td>29.311828</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>If we want to perform an operation over a <strong>rolling window</strong>, we can use the <code>rolling()</code> function</p>
+<pre><code class="language-python">temp['avg3_price'] = temp['price'].rolling(3).mean()
+temp.head(15)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>listing_id</th>
+      <th>date</th>
+      <th>price</th>
+      <th>price1</th>
+      <th>avg_cum_price</th>
+      <th>avg3_price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>44876</th>
+      <td>53854962</td>
+      <td>2021-12</td>
+      <td>147.400000</td>
+      <td>NaN</td>
+      <td>147.400000</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>44877</th>
+      <td>53854962</td>
+      <td>2022-01</td>
+      <td>137.645161</td>
+      <td>147.400000</td>
+      <td>142.522581</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>44878</th>
+      <td>53854962</td>
+      <td>2022-02</td>
+      <td>124.642857</td>
+      <td>137.645161</td>
+      <td>136.562673</td>
+      <td>136.562673</td>
+    </tr>
+    <tr>
+      <th>44879</th>
+      <td>53854962</td>
+      <td>2022-03</td>
+      <td>285.096774</td>
+      <td>124.642857</td>
+      <td>173.696198</td>
+      <td>182.461598</td>
+    </tr>
+    <tr>
+      <th>44880</th>
+      <td>53854962</td>
+      <td>2022-04</td>
+      <td>115.000000</td>
+      <td>285.096774</td>
+      <td>161.956959</td>
+      <td>174.913210</td>
+    </tr>
+    <tr>
+      <th>44881</th>
+      <td>53854962</td>
+      <td>2022-05</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>154.130799</td>
+      <td>171.698925</td>
+    </tr>
+    <tr>
+      <th>44882</th>
+      <td>53854962</td>
+      <td>2022-06</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>148.540685</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44883</th>
+      <td>53854962</td>
+      <td>2022-07</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>144.348099</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44884</th>
+      <td>53854962</td>
+      <td>2022-08</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>141.087199</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44885</th>
+      <td>53854962</td>
+      <td>2022-09</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>138.478479</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44886</th>
+      <td>53854962</td>
+      <td>2022-10</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>136.344072</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44887</th>
+      <td>53854962</td>
+      <td>2022-11</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>134.565399</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44888</th>
+      <td>53854962</td>
+      <td>2022-12</td>
+      <td>115.000000</td>
+      <td>115.000000</td>
+      <td>133.060369</td>
+      <td>115.000000</td>
+    </tr>
+    <tr>
+      <th>44863</th>
+      <td>53837654</td>
+      <td>2021-12</td>
+      <td>184.133333</td>
+      <td>NaN</td>
+      <td>136.708438</td>
+      <td>138.044444</td>
+    </tr>
+    <tr>
+      <th>44864</th>
+      <td>53837654</td>
+      <td>2022-01</td>
+      <td>148.741935</td>
+      <td>184.133333</td>
+      <td>137.510671</td>
+      <td>149.291756</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
           </div>
 

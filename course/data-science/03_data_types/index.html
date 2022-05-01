@@ -340,10 +340,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-04-25T00:00:00&#43;00:00"
+        content="2022-05-01T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-25T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-05-01T00:00:00&#43;00:00">
   
 
   
@@ -837,7 +837,7 @@
 
           <h1>Data Types</h1>
 
-          <p>Last updated on Apr 25, 2022</p>
+          <p>Last updated on May 1, 2022</p>
 
           <div class="article-style">
             <pre><code class="language-python">import numpy as np
@@ -863,6 +863,8 @@ df_prices = pd.read_csv(url_prices, compression=&quot;gzip&quot;)
 <blockquote>
 <p>Methods</p>
 <ul>
+<li><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></li>
+<li>numpy functions</li>
 <li><code>pd.cut()</code></li>
 </ul>
 </blockquote>
@@ -921,7 +923,11 @@ Categories (3, object): ['cheap' &lt; 'ok' &lt; 'expensive']
 <blockquote>
 <p>Methods</p>
 <ul>
-<li><code>.str()</code></li>
+<li><code>+</code></li>
+<li><code>.str.replace</code></li>
+<li><code>.str.contains</code></li>
+<li><code>.astype(str)</code>
+-<code>pd.get_dummies()</code></li>
 </ul>
 </blockquote>
 <p>We can use the <code>+</code> operator between columns, to do pairwise append.</p>
@@ -941,73 +947,11 @@ Categories (3, object): ['cheap' &lt; 'ok' &lt; 'expensive']
 3452    Wonderful ItalyPorto - Saragozza
 Length: 3453, dtype: object
 </code></pre>
-<p>Pandas Series have a lot of vectorized string functions you can call on them.</p>
-<pre><code class="language-python">[i for i in dir(pd.Series.str) if '_' not in i]
-</code></pre>
-<pre><code>['capitalize',
- 'casefold',
- 'cat',
- 'center',
- 'contains',
- 'count',
- 'decode',
- 'encode',
- 'endswith',
- 'extract',
- 'extractall',
- 'find',
- 'findall',
- 'fullmatch',
- 'get',
- 'index',
- 'isalnum',
- 'isalpha',
- 'isdecimal',
- 'isdigit',
- 'islower',
- 'isnumeric',
- 'isspace',
- 'istitle',
- 'isupper',
- 'join',
- 'len',
- 'ljust',
- 'lower',
- 'lstrip',
- 'match',
- 'normalize',
- 'pad',
- 'partition',
- 'repeat',
- 'replace',
- 'rfind',
- 'rindex',
- 'rjust',
- 'rpartition',
- 'rsplit',
- 'rstrip',
- 'slice',
- 'split',
- 'startswith',
- 'strip',
- 'swapcase',
- 'title',
- 'translate',
- 'upper',
- 'wrap',
- 'zfill']
-</code></pre>
+<p>Pandas Series have a lot of vectorized string functions. You can find a list <a href="https://pandas.pydata.org/docs/user_guide/text.html#method-summary" target="_blank" rel="noopener">here</a>.</p>
 <p>For example, we want to remove the dollar symbol from the <code>price</code> variable in the <code>df_prices</code> dataset.</p>
-<pre><code class="language-python">df_prices['price'].str.replace('$', '')
+<pre><code class="language-python">df_prices['price'].str.replace('$', '', regex=False)
 </code></pre>
-<pre><code>/var/folders/xy/szm3b7211cj16ldwcywbvfzdqv7yhd/T/ipykernel_74833/117745113.py:1: FutureWarning: The default value of regex will change from True to False in a future version. In addition, single character regular expressions will*not* be treated as literal strings when regex=True.
-  df_prices['price'].str.replace('$', '')
-
-
-
-
-
-0           70.00
+<pre><code>0           70.00
 1           68.00
 2           68.00
 3           68.00
@@ -1079,12 +1023,91 @@ Name: price, Length: 1260345, dtype: float64
 3452    53854962
 Name: id, Length: 3453, dtype: object
 </code></pre>
+<p>We can generate dummies from a categorical variable using <code>pd.get_dummies()</code></p>
+<pre><code class="language-python">pd.get_dummies(df_listings['neighbourhood']).head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Borgo Panigale - Reno</th>
+      <th>Navile</th>
+      <th>Porto - Saragozza</th>
+      <th>San Donato - San Vitale</th>
+      <th>Santo Stefano</th>
+      <th>Savena</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 <h2 id="time-data">Time Data</h2>
 <blockquote>
 <p>Methods</p>
 <ul>
 <li><code>pd.to_datetime()</code></li>
-<li><code>.dt.year()</code></li>
+<li><code>.dt.year</code></li>
+<li><code>.df.to_period()</code></li>
 <li><code>pd.to_timedelta()</code></li>
 </ul>
 </blockquote>
@@ -1093,7 +1116,7 @@ Name: id, Length: 3453, dtype: object
 </code></pre>
 <pre><code>dtype('O')
 </code></pre>
-<p>We can convert a variable into a date using the</p>
+<p>We can <strong>convert</strong> a variable into a date using the</p>
 <pre><code class="language-python">df_prices['datetime'] = pd.to_datetime(df_prices['date'])
 </code></pre>
 <p>Indeed, if we now check the format of the <code>datetime</code> variable, it&rsquo;s <code>datetime</code>.</p>
@@ -1101,7 +1124,8 @@ Name: id, Length: 3453, dtype: object
 </code></pre>
 <pre><code>dtype('&lt;M8[ns]')
 </code></pre>
-<p>Once we have a variable in <code>datetime</code> format, we gain plenty of datetime operations through the <code>dt</code> library. For example, we can extract the year using <code>.dt.year</code>.</p>
+<p>Once we have a variable in <code>datetime</code> format, we gain plenty of datetime operations through the <code>dt</code> accessor object for datetime-like properties.</p>
+<p>For example, we can <strong>extract the year</strong> using <code>.dt.year</code>. We can do the same with <code>month</code>, <code>week</code> and <code>day</code>.</p>
 <pre><code class="language-python">df_prices['datetime'].dt.year
 </code></pre>
 <pre><code>0          2021
@@ -1117,7 +1141,23 @@ Name: id, Length: 3453, dtype: object
 1260344    2022
 Name: datetime, Length: 1260345, dtype: int64
 </code></pre>
-<p>We can add or subtract time periods from a date using the <code>pd.to_timedelta()</code> function. We need to specify the unit of measurement with the <code>unit</code> option.</p>
+<p>We can change the <strong>level of aggregation</strong> of a date using <code>.dt.to_period()</code>. The option <code>M</code> converts to year-month level.</p>
+<pre><code class="language-python">df_prices['datetime'].dt.to_period('M')
+</code></pre>
+<pre><code>0          2021-12
+1          2021-12
+2          2021-12
+3          2021-12
+4          2021-12
+            ...   
+1260340    2022-12
+1260341    2022-12
+1260342    2022-12
+1260343    2022-12
+1260344    2022-12
+Name: datetime, Length: 1260345, dtype: period[M]
+</code></pre>
+<p>We can <strong>add or subtract time periods</strong> from a date using the <code>pd.to_timedelta()</code> function. We need to specify the unit of measurement with the <code>unit</code> option.</p>
 <pre><code class="language-python">df_prices['datetime'] -  pd.to_timedelta(3, unit='d')
 </code></pre>
 <pre><code>0         2021-12-14
