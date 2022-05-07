@@ -769,7 +769,12 @@
   <ul>
     <li><a href="#the-scatterplot">The Scatterplot</a></li>
     <li><a href="#scatterplot-alternatives">Scatterplot Alternatives</a></li>
-    <li><a href="#the-binned-scatterplot">The Binned Scatterplot</a></li>
+    <li><a href="#the-binned-scatterplot">The Binned Scatterplot</a>
+      <ul>
+        <li><a href="#details">Details</a></li>
+        <li><a href="#binsreg">Binsreg</a></li>
+      </ul>
+    </li>
     <li><a href="#conclusion">Conclusion</a></li>
     <li><a href="#references">References</a></li>
   </ul>
@@ -830,7 +835,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    8 min read
+    10 min read
   </span>
   
 
@@ -855,7 +860,7 @@
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1256px; max-height: 830px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1256px; max-height: 835px;">
   <div style="position: relative">
     <img src="/post/binscatter/featured.png" alt="" class="featured-image">
     
@@ -951,7 +956,7 @@ df.head()
 </ul>
 <p>Suppose we are interested in understanding the relationship between <code>age</code> and <code>sales</code>. What is the <strong>life-cycle</strong> of sales?</p>
 <p>Let&rsquo;s start with a simple <strong>scatterplot</strong> of <code>sales</code> over <code>age</code>.</p>
-<pre><code class="language-python">sns.scatterplot('age', 'sales', data=df);
+<pre><code class="language-python">sns.scatterplot(x='age', y='sales', data=df);
 plt.title(&quot;Sales by firm's age&quot;);
 </code></pre>
 <p><img src="img/binscatter_7_0.png" alt="png"></p>
@@ -959,9 +964,9 @@ plt.title(&quot;Sales by firm's age&quot;);
 <p>We are now going to explore some plausible tweaks and alternatives.</p>
 <h2 id="scatterplot-alternatives">Scatterplot Alternatives</h2>
 <p>What can we do when we have an extremely dense scatterplot? One solution could be to plot the <strong>density</strong> of the observations, instead of the observations themselves.</p>
-<p>There are multiple solutions in Python to visualize the density of a 2-dimensional distribution. A very useful one is <a href="https://seaborn.pydata.org/" target="_blank" rel="noopener">seaborn</a> <a href="https://seaborn.pydata.org/generated/seaborn.jointplot.html" target="_blank" rel="noopener">jointplot</a>. <code>jointplot</code> plots the joint distribution of two variables, together with the marginal distributions along the axis. The default option is the scatterplot, but one can also choose add a regression line (<code>reg</code>), change the plot to a histogram (<code>hist</code>), a hexplot (<code>hex</code>), or a <a href="https://en.wikipedia.org/wiki/Kernel_density_estimation" target="_blank" rel="noopener">kernel density estimate</a> (<code>kde</code>).</p>
+<p>There are multiple solutions in Python to visualize the density of a 2-dimensional distribution. A very useful one is <a href="https://seaborn.pydata.org/" target="_blank" rel="noopener">seaborn</a> <a href="https://seaborn.pydata.org/generated/seaborn.jointplot.html" target="_blank" rel="noopener">jointplot</a>. <code>jointplot</code> plots the joint distribution of two variables, together with the marginal distributions along the axis. The default option is the scatterplot, but one can also choose to add a regression line (<code>reg</code>), change the plot to a histogram (<code>hist</code>), a hexplot (<code>hex</code>), or a <a href="https://en.wikipedia.org/wiki/Kernel_density_estimation" target="_blank" rel="noopener">kernel density estimate</a> (<code>kde</code>).</p>
 <p>Let&rsquo;s try the <strong>hexplot</strong>, which is basically a histogram of the data, where the bins are hexagons, in the 2-dimensional space.</p>
-<pre><code class="language-python">s = sns.jointplot('age', 'sales', data=df, kind='hex', );
+<pre><code class="language-python">s = sns.jointplot(x='age', y='sales', data=df, kind='hex', );
 s.ax_joint.grid(False);
 s.ax_marg_y.grid(False);
 s.fig.suptitle(&quot;Sales by firm's age&quot;);
@@ -969,13 +974,13 @@ s.fig.suptitle(&quot;Sales by firm's age&quot;);
 <p><img src="img/binscatter_11_0.png" alt="png"></p>
 <p>Not much has changed. It looks like the distributions of <code>age</code> and <code>sales</code> are both very <strong>skewed</strong> and, therefore, most of the action is concentrated in a very small subspace.</p>
 <p>Maybe we could remove <strong>outliers</strong> and zoom-in on the area where most of the data is located. Let&rsquo;s zoom-in on the bottom-left corner, on observations what have <code>age &lt; 3</code> and <code>sales &lt; 3000</code>.</p>
-<pre><code class="language-python">s = sns.jointplot(x='age', y='sales', data=df.loc[(df['age']&lt;3) &amp; (df['sales']&lt;3000), :], kind=&quot;hex&quot;);
+<pre><code class="language-python">s = sns.jointplot(x='age', y='sales', data=df.query(&quot;age &lt; 3 &amp; sales &lt; 3000&quot;), kind=&quot;hex&quot;);
 s.ax_joint.grid(False);
 s.ax_marg_y.grid(False);
 s.fig.suptitle(&quot;Sales by firm's age&quot;);
 </code></pre>
 <p><img src="img/binscatter_13_0.png" alt="png"></p>
-<p>Now there is much less empty space, but does not look like we are going far. The joint distributions is <strong>still too skewed</strong>. This is often the case when the data follows some power distribution, as it&rsquo;s often the case with business data.</p>
+<p>Now there is much less empty space, but it does not look like we are going far. The joint distribution is <strong>still too skewed</strong>. This is the case when the data follows some power distribution, as it&rsquo;s often the case with business data.</p>
 <p>One solution is to <strong>transform</strong> the variable, by taking the <a href="https://en.wikipedia.org/wiki/Natural_logarithm" target="_blank" rel="noopener"><strong>natural logarithm</strong></a>.</p>
 <pre><code class="language-python">df['log_age'] = np.log(df['age'])
 df['log_sales'] = np.log(df['sales'])
@@ -1032,26 +1037,47 @@ s.fig.suptitle(&quot;Sales by firm's age&quot;, y=1.02);
 <h2 id="the-binned-scatterplot">The Binned Scatterplot</h2>
 <p>The <strong>binned scatterplot</strong> is a very powerful tool that provides a <strong>flexible</strong> and <strong>parsimonious</strong> way of visualizing and summarizing conditional means (and not only) in large datasets.</p>
 <p>The <strong>idea</strong> behind the binned scatterplot is to divide the conditioning variable, <code>age</code> in our example, into <strong>equally sized bins or quantiles</strong>, and then plot the conditional mean of the dependent variable, <code>sales</code> in our example, within each bin.</p>
-<p>&mdash; more details to come &mdash;</p>
-<p><a href="https://arxiv.org/abs/1902.09608" target="_blank" rel="noopener">Cattaneo, Crump, Farrell, Feng (2021)</a> have built an extremely good package for binned scatterplots in R, <a href="https://cran.r-project.org/web/packages/binsreg/index.html" target="_blank" rel="noopener">binsreg</a>. Moreover, they have ported the package to Python. We can install <code>binsreg</code> directly from pip using <code>pip install binsreg</code>. You can find more information on the Python package here: <a href="https://pypi.org/project/binsreg/" target="_blank" rel="noopener">https://pypi.org/project/binsreg/</a>.</p>
-<p>One problem with the Python version of the package, is that is not extremely Python-ish. Therefore, I have wrapped the <code>binsreg</code> package into a function <code>binscatter</code> that takes care of cleaning and formatting the output in a nicely readable <a href="https://pandas.pydata.org/" target="_blank" rel="noopener">Pandas</a> DataFrame.</p>
+<h3 id="details">Details</h3>
+<p><a href="https://arxiv.org/abs/1902.09608" target="_blank" rel="noopener">Cattaneo, Crump, Farrell, Feng (2021)</a> have built an extremely good package for binned scatterplots in R, <a href="https://cran.r-project.org/web/packages/binsreg/index.html" target="_blank" rel="noopener">binsreg</a>. Moreover, they have ported the package to Python. We can install <code>binsreg</code> directly from pip using <code>pip install binsreg</code>. You can find more information on the Python package <a href="https://pypi.org/project/binsreg/" target="_blank" rel="noopener">here</a>, while the original and detailed R package documentation can be found <a href="https://www.rdocumentation.org/packages/binsreg/versions/0.7/topics/binsreg" target="_blank" rel="noopener">here</a>.</p>
+<p>The most important choice when building a binned scatterplot is the <strong>number of bins</strong>. The trade-off is the usual <a href="https://en.wikipedia.org/wiki/Bias%E2%80%93variance_tradeoff" target="_blank" rel="noopener"><strong>bias-variance trade-off</strong></a>. By picking a higher number of bins, we have more points in the graph. In the extreme, we end up having a standard <strong>scatterplot</strong> (assuming the conditioning variable is continuous). On the other hand, by decreasing the number bins, the plot will be more stable. However, in the extreme, we will have a <strong>single point</strong> representing the sample mean.</p>
+<p><a href="https://arxiv.org/abs/1902.09608" target="_blank" rel="noopener">Cattaneo, Crump, Farrell, Feng (2021)</a> prove that, in the basic binned scatterplot, the number of bins that minimizes the mean squared error is proportional to $n^{1/3}$, where $n$ is the number of observations. Therefore, in general, more observations lead to more bins.</p>
+<p><a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/smj.3199" target="_blank" rel="noopener">Starr and Goldfarb (2020)</a> add the following consideration:</p>
+<blockquote>
+<p>&ldquo;<em>However other elements are also important. For example, holding the distribution of x constant, the more curvilinear the true relationship between x and y is, the more bins the algorithm will select (otherwise mean squared error will increase). This implies that even with large n, few bins will be chosen for relatively flat relationships. The calculation of the optimal number of bins in a basic binned scatterplot thus takes into account the amount and location of variation in the data available to identify the relationship between x and y.</em>&rdquo;</p>
+</blockquote>
+<p>It is strongly recommended to use the default optimal number of bins. However, one can also set a customized number of bins in <code>binsreg</code> with the <code>nbins</code> option.</p>
+<p>Binned scatterplots however, do not just compute conditional means, for optimally chosen intervals, but they can also provide <strong>inference</strong> for these means. In particular, we can build <strong>confidence intervals</strong> around each data point. In the <code>binsreg</code> package, the option <code>ci</code> adds confidence intervals to the estimation results. The option takes as input a tuple of parameters <code>(p, s)</code> and uses a piecewise polynomial of degree <code>p</code> with <code>s</code> smoothness constraints to construct the confidence intervals. By default, the confidence intervals are not included in the plot. For what concerns the choice of <code>p</code> and <code>s</code>, the <a href="https://www.rdocumentation.org/packages/binsreg/versions/0.7/topics/binsreg" target="_blank" rel="noopener">package documentation</a> reports:</p>
+<blockquote>
+<p>&ldquo;<em>Recommended specification is ci=c(3,3), which adds confidence intervals based on cubic B-spline estimate of the regression function of interest to the binned scatter plot.</em>&rdquo;</p>
+</blockquote>
+<h3 id="binsreg">Binsreg</h3>
+<p>One problem with the Python version of the package, is that is not very Python-ish. Therefore, I have wrapped the <code>binsreg</code> package into a function <code>binscatter</code> that takes care of cleaning and formatting the output in a nicely readable <a href="https://pandas.pydata.org/" target="_blank" rel="noopener">Pandas</a> DataFrame.</p>
 <pre><code class="language-python">import binsreg
 
 def binscatter(**kwargs):
+    # Estimate binsreg
     est = binsreg.binsreg(**kwargs)
+    
+    # Retrieve estimates
     df_est = pd.concat([d.dots for d in est.data_plot])
     df_est = df_est.rename(columns={'x': kwargs.get(&quot;x&quot;), 'fit': kwargs.get(&quot;y&quot;)})
+    
+    # Add confidence intervals
     if &quot;ci&quot; in kwargs:
         df_est = pd.merge(df_est, pd.concat([d.ci for d in est.data_plot]))
         df_est = df_est.drop(columns=['x'])
         df_est['ci'] = df_est['ci_r'] - df_est['ci_l']
+    
+    # Rename groups
     if &quot;by&quot; in kwargs:
+        df_est['group'] = df_est['group'].astype(df[kwargs.get(&quot;by&quot;)].dtype)
         df_est = df_est.rename(columns={'group': kwargs.get(&quot;by&quot;)})
+
     return df_est
 </code></pre>
 <p>We can now proceed to <strong>estimate</strong> and <strong>visualize</strong> the binned scatterplot for <code>age</code> based on <code>sales</code>.</p>
 <pre><code class="language-python"># Estimate binsreg
-df_est = binscatter(x='age', y='sales', data=df, ci=(2,2))
+df_est = binscatter(x='age', y='sales', data=df, ci=(3,3))
 df_est.head()
 </code></pre>
 <div>
@@ -1092,9 +1118,9 @@ df_est.head()
       <td>0</td>
       <td>0</td>
       <td>1624.779616</td>
-      <td>1379.144922</td>
-      <td>1888.275284</td>
-      <td>509.130361</td>
+      <td>1312.439124</td>
+      <td>1905.535412</td>
+      <td>593.096288</td>
     </tr>
     <tr>
       <th>1</th>
@@ -1104,9 +1130,9 @@ df_est.head()
       <td>0</td>
       <td>0</td>
       <td>1664.078013</td>
-      <td>1424.671343</td>
-      <td>1916.398302</td>
-      <td>491.726959</td>
+      <td>1435.438411</td>
+      <td>1893.888819</td>
+      <td>458.450408</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1116,9 +1142,9 @@ df_est.head()
       <td>0</td>
       <td>0</td>
       <td>1779.657894</td>
-      <td>1494.591288</td>
-      <td>1979.023980</td>
-      <td>484.432692</td>
+      <td>1555.909281</td>
+      <td>1968.681960</td>
+      <td>412.772679</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1128,9 +1154,9 @@ df_est.head()
       <td>0</td>
       <td>0</td>
       <td>1976.464837</td>
-      <td>1714.973527</td>
-      <td>2314.134971</td>
-      <td>599.161444</td>
+      <td>1740.530049</td>
+      <td>2216.800005</td>
+      <td>476.269956</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1140,45 +1166,46 @@ df_est.head()
       <td>0</td>
       <td>0</td>
       <td>2015.833752</td>
-      <td>1721.218575</td>
-      <td>2301.109732</td>
-      <td>579.891157</td>
+      <td>1796.489393</td>
+      <td>2280.237320</td>
+      <td>483.747927</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>The <code>binscatter</code> function outputs a data set in which, for each bin of the conditioning variable, <code>age</code>, we have values and confidence intervals for the outcome variable, <code>sales</code>.</p>
+<p>The <code>binscatter</code> function outputs a dataset in which, for each bin of the conditioning variable, <code>age</code>, we have values and confidence intervals for the outcome variable, <code>sales</code>.</p>
 <p>We can now plot the estimates.</p>
 <pre><code class="language-python"># Plot binned scatterplot
 sns.scatterplot(x='age', y='sales', data=df_est);
 plt.errorbar('age', 'sales', yerr='ci', data=df_est, ls='', lw=2, alpha=0.2);
 plt.title(&quot;Sales by firm's age&quot;);
 </code></pre>
-<p><img src="img/binscatter_30_0.png" alt="png"></p>
+<p><img src="img/binscatter_33_0.png" alt="png"></p>
 <p>The plot is quite revealing. Now the relationship looks extremely <strong>non-linear</strong> with a sharp increase in <code>sales</code> at the beginning of the lifetime of a firm, followed by a plateau.</p>
+<p>Moreover, the plot is also telling us information regarding the distributions of <code>age</code> and <code>sales</code>. In fact, the plot is more dense on the left, where the distribution of <code>age</code> is concentrated. Also, confidence intervals are tighter on the left, where most of the conditional distribution of <code>sales</code> lies.</p>
 <p>As we already discussed in the previous section, it might be important to control for other variables. For example, the number of <code>products</code>, since firms that sell more products probably survive longer in the markets and also make more sales.</p>
 <p><code>binsreg</code> allows to <strong>condition</strong> the analysis on any number of variables, with the <code>w</code> option.</p>
 <pre><code class="language-python"># Estimate binsreg
-df_est = binscatter(x='age', y='sales', w=['products'], data=df, ci=(2,2))
+df_est = binscatter(x='age', y='sales', w=['products'], data=df, ci=(3,3))
 
 # Plot binned scatterplot
 sns.scatterplot(x='age', y='sales', data=df_est);
 plt.errorbar('age', 'sales', yerr='ci', data=df_est, ls='', lw=2, alpha=0.2);
 plt.title(&quot;Sales by firm's age&quot;);
 </code></pre>
-<p><img src="img/binscatter_32_0.png" alt="png"></p>
+<p><img src="img/binscatter_35_0.png" alt="png"></p>
 <p>Conditional on number of <code>products</code>, the shape of the <code>sales</code> life-cycle changes further. Now, after an initial increase in sales, we observe a gradual decrease over time.</p>
 <p>Do <code>online</code>-only firms have different <code>sales</code> life-cycles with respect to mixed online-offline firms? We can produce different binned scatterplots <strong>by group</strong> using the option <code>by</code>.</p>
 <pre><code class="language-python"># Estimate binsreg
-df_est = binscatter(x='age', y='sales', by='online', w=['products'], data=df, ci=(2,2))
+df_est = binscatter(x='age', y='sales', by='online', w=['products'], data=df, ci=(3,3))
 
 # Plot binned scatterplot
 sns.scatterplot(x='age', y='sales', data=df_est, hue='online');
-plt.errorbar('age', 'sales', yerr='ci', data=df_est.loc[df_est['online']=='0',:], ls='', lw=2, alpha=0.2);
-plt.errorbar('age', 'sales', yerr='ci', data=df_est.loc[df_est['online']=='1',:], ls='', lw=2, alpha=0.2);
+plt.errorbar('age', 'sales', yerr='ci', data=df_est.query(&quot;online==0&quot;), ls='', lw=2, alpha=0.2);
+plt.errorbar('age', 'sales', yerr='ci', data=df_est.query(&quot;online==1&quot;), ls='', lw=2, alpha=0.2);
 plt.title(&quot;Sales by firm's age&quot;);
 </code></pre>
-<p><img src="img/binscatter_34_0.png" alt="png"></p>
+<p><img src="img/binscatter_37_0.png" alt="png"></p>
 <p>From the binned scatterplot, we can see that <code>online</code> products have on average shorter lifetimes, with a higher initial peak in <code>sales</code>, followed by a sharper decline.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this blog post, we have analyzed a very powerful data visualization tool: the <strong>binned scatterplot</strong>.</p>
