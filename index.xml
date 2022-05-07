@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Fri, 06 May 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sat, 07 May 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -27303,6 +27303,334 @@ Economic Studies&lt;/em&gt; 60 (3): 497–529.&lt;/p&gt;
 Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (5): 1006–24.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Goodbye Scatterplot, Welcome Binned Scatterplot</title>
+      <link>https://matteocourthoud.github.io/post/binscatter/</link>
+      <pubDate>Sat, 07 May 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/binscatter/</guid>
+      <description>&lt;p&gt;When we want to visualize the relationship between two continuous variables, the go-to plot is the &lt;strong&gt;scatterplot&lt;/strong&gt;. It&amp;rsquo;s a very intuitive visualization tool that allows us to directly look at the data. However, when we have a lot of data and when the data is skewed, scatterplots can be too noisy to be informative.&lt;/p&gt;
+&lt;p&gt;In this blog post, I am going to review a very powerful alternative to the scatterplot to visualize correlations between two variables: the &lt;strong&gt;binned scatterplot&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;the-scatterplot&#34;&gt;The Scatterplot&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s start with an example. Suppose we are an &lt;strong&gt;online marketplace&lt;/strong&gt; where multiple firms offer goods that consumer can efficiently browse, compare and buy. Our &lt;strong&gt;dataset&lt;/strong&gt; consists in a snapshot of the firms active on the marketplace.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s load the data and have a look at it. You can find the code for the data generating process &lt;a href=&#34;&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp_marketplace
+
+df = dgp_marketplace().generate_data(N=10_000)
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;th&gt;sales&lt;/th&gt;
+      &lt;th&gt;online&lt;/th&gt;
+      &lt;th&gt;products&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;0.312777&lt;/td&gt;
+      &lt;td&gt;450.858091&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1.176221&lt;/td&gt;
+      &lt;td&gt;1121.882449&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1.764048&lt;/td&gt;
+      &lt;td&gt;2698.714549&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1.082742&lt;/td&gt;
+      &lt;td&gt;1627.746386&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;3.156503&lt;/td&gt;
+      &lt;td&gt;1464.593939&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on 10.000 firms. For each firm we know:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;age&lt;/code&gt;: the age of the firm&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;sales&lt;/code&gt;: the monthly sales from last month&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;online&lt;/code&gt;: whether the firm is only active online&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;products&lt;/code&gt;: the number of products that the firm offers&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Suppose we are interested in understanding the relationship between &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;sales&lt;/code&gt;. What is the &lt;strong&gt;life-cycle&lt;/strong&gt; of sales?&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s start with a simple &lt;strong&gt;scatterplot&lt;/strong&gt; of &lt;code&gt;sales&lt;/code&gt; over &lt;code&gt;age&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(&#39;age&#39;, &#39;sales&#39;, data=df);
+plt.title(&amp;quot;Sales by firm&#39;s age&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/binscatter_7_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The plot is extremely &lt;strong&gt;noisy&lt;/strong&gt;. We have a lot of observations, therefore, it is very difficult to visualize them all. If we had to guess, we could say that the relationship looks negative (&lt;code&gt;sales&lt;/code&gt; decrease with &lt;code&gt;age&lt;/code&gt;), but it would be a very uninformed guess.&lt;/p&gt;
+&lt;p&gt;We are now going to explore some plausible tweaks and alternatives.&lt;/p&gt;
+&lt;h2 id=&#34;scatterplot-alternatives&#34;&gt;Scatterplot Alternatives&lt;/h2&gt;
+&lt;p&gt;What can we do when we have an extremely dense scatterplot? One solution could be to plot the &lt;strong&gt;density&lt;/strong&gt; of the observations, instead of the observations themselves.&lt;/p&gt;
+&lt;p&gt;There are multiple solutions in Python to visualize the density of a 2-dimensional distribution. A very useful one is &lt;a href=&#34;https://seaborn.pydata.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;seaborn&lt;/a&gt; &lt;a href=&#34;https://seaborn.pydata.org/generated/seaborn.jointplot.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;jointplot&lt;/a&gt;. &lt;code&gt;jointplot&lt;/code&gt; plots the joint distribution of two variables, together with the marginal distributions along the axis. The default option is the scatterplot, but one can also choose add a regression line (&lt;code&gt;reg&lt;/code&gt;), change the plot to a histogram (&lt;code&gt;hist&lt;/code&gt;), a hexplot (&lt;code&gt;hex&lt;/code&gt;), or a &lt;a href=&#34;https://en.wikipedia.org/wiki/Kernel_density_estimation&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;kernel density estimate&lt;/a&gt; (&lt;code&gt;kde&lt;/code&gt;).&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s try the &lt;strong&gt;hexplot&lt;/strong&gt;, which is basically a histogram of the data, where the bins are hexagons, in the 2-dimensional space.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;s = sns.jointplot(&#39;age&#39;, &#39;sales&#39;, data=df, kind=&#39;hex&#39;, );
+s.ax_joint.grid(False);
+s.ax_marg_y.grid(False);
+s.fig.suptitle(&amp;quot;Sales by firm&#39;s age&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/binscatter_11_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Not much has changed. It looks like the distributions of &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;sales&lt;/code&gt; are both very &lt;strong&gt;skewed&lt;/strong&gt; and, therefore, most of the action is concentrated in a very small subspace.&lt;/p&gt;
+&lt;p&gt;Maybe we could remove &lt;strong&gt;outliers&lt;/strong&gt; and zoom-in on the area where most of the data is located. Let&amp;rsquo;s zoom-in on the bottom-left corner, on observations what have &lt;code&gt;age &amp;lt; 3&lt;/code&gt; and &lt;code&gt;sales &amp;lt; 3000&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;s = sns.jointplot(x=&#39;age&#39;, y=&#39;sales&#39;, data=df.loc[(df[&#39;age&#39;]&amp;lt;3) &amp;amp; (df[&#39;sales&#39;]&amp;lt;3000), :], kind=&amp;quot;hex&amp;quot;);
+s.ax_joint.grid(False);
+s.ax_marg_y.grid(False);
+s.fig.suptitle(&amp;quot;Sales by firm&#39;s age&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/binscatter_13_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now there is much less empty space, but does not look like we are going far. The joint distributions is &lt;strong&gt;still too skewed&lt;/strong&gt;. This is often the case when the data follows some power distribution, as it&amp;rsquo;s often the case with business data.&lt;/p&gt;
+&lt;p&gt;One solution is to &lt;strong&gt;transform&lt;/strong&gt; the variable, by taking the &lt;a href=&#34;https://en.wikipedia.org/wiki/Natural_logarithm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;natural logarithm&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;log_age&#39;] = np.log(df[&#39;age&#39;])
+df[&#39;log_sales&#39;] = np.log(df[&#39;sales&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can now plot the relationship between the logarithms of &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;sales&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;s = sns.jointplot(x=&#39;log_age&#39;, y=&#39;log_sales&#39;, data=df, kind=&#39;hex&#39;);
+s.ax_joint.grid(False);
+s.ax_marg_y.grid(False);
+s.fig.suptitle(&amp;quot;Sales by firm&#39;s age&amp;quot;, y=1.02);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/binscatter_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The logarithm definitely helped. Now the data is more spread across space, which means that the visualization is more informative. Moreover, it looks like there is &lt;strong&gt;no relationship&lt;/strong&gt; between the two variables.&lt;/p&gt;
+&lt;p&gt;However, there is still &lt;strong&gt;too much noise&lt;/strong&gt;. Maybe data visualization alone is not sufficient do draw a conclusion.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s swap to a more structured approach: &lt;a href=&#34;https://en.wikipedia.org/wiki/Linear_regression&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;linear regression&lt;/strong&gt;&lt;/a&gt;. Let&amp;rsquo;s linearly regress &lt;code&gt;log_sales&lt;/code&gt; on &lt;code&gt;log_age&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;log_sales ~ log_age&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    7.3971&lt;/td&gt; &lt;td&gt;    0.015&lt;/td&gt; &lt;td&gt;  478.948&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    7.367&lt;/td&gt; &lt;td&gt;    7.427&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;log_age&lt;/th&gt;   &lt;td&gt;    0.1690&lt;/td&gt; &lt;td&gt;    0.010&lt;/td&gt; &lt;td&gt;   16.888&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.149&lt;/td&gt; &lt;td&gt;    0.189&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The regression coefficient for &lt;code&gt;log_age&lt;/code&gt; is &lt;strong&gt;positive&lt;/strong&gt; and statistically significant (i.e. different from zero). It seems that all previous visualizations were very &lt;strong&gt;misleading&lt;/strong&gt;. From none of the graphs above we could have guessed such a strong positive relationship.&lt;/p&gt;
+&lt;p&gt;However, maybe this relationship is different for &lt;code&gt;online&lt;/code&gt;-only firms and the rest of the sample. We need to control for this variable in order to avoid &lt;a href=&#34;https://en.wikipedia.org/wiki/Simpson%27s_paradox&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Simpson&amp;rsquo;s Paradox&lt;/a&gt; and, more generally, bias.&lt;/p&gt;
+&lt;p&gt;With linear regression, we can &lt;strong&gt;condition the analysis on covariates&lt;/strong&gt;. Let&amp;rsquo;s add the binary indicator for &lt;code&gt;online&lt;/code&gt;-only firms and the variable counting the number of &lt;code&gt;products&lt;/code&gt; to the regression.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;log_sales ~ log_age + online + products&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    6.5717&lt;/td&gt; &lt;td&gt;    0.037&lt;/td&gt; &lt;td&gt;  176.893&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    6.499&lt;/td&gt; &lt;td&gt;    6.644&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;log_age&lt;/th&gt;   &lt;td&gt;    0.0807&lt;/td&gt; &lt;td&gt;    0.010&lt;/td&gt; &lt;td&gt;    7.782&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.060&lt;/td&gt; &lt;td&gt;    0.101&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;online&lt;/th&gt;    &lt;td&gt;    0.1447&lt;/td&gt; &lt;td&gt;    0.027&lt;/td&gt; &lt;td&gt;    5.433&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.092&lt;/td&gt; &lt;td&gt;    0.197&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;products&lt;/th&gt;  &lt;td&gt;    0.3456&lt;/td&gt; &lt;td&gt;    0.014&lt;/td&gt; &lt;td&gt;   24.110&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.317&lt;/td&gt; &lt;td&gt;    0.374&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The coefficient for &lt;code&gt;log_age&lt;/code&gt; is still positive and statistically significant, but its &lt;strong&gt;magnitude&lt;/strong&gt; has halved.&lt;/p&gt;
+&lt;p&gt;What should we conclude? It seems that &lt;code&gt;sales&lt;/code&gt; increase over age, on average. However, this pattern might be very &lt;strong&gt;non-linear&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Within the linear regression framework, one approach could be to &lt;strong&gt;add extra terms&lt;/strong&gt; such as polynomials (&lt;code&gt;age^2&lt;/code&gt;) or categorical features (e.g. &lt;code&gt;age &amp;lt; 2&lt;/code&gt;). However, it would be really cool if there was a more &lt;strong&gt;flexible&lt;/strong&gt; (i.e. &lt;a href=&#34;https://en.wikipedia.org/wiki/Nonparametric_statistics&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;non-parametric&lt;/a&gt;) approach that could inform us on the relationship between firm &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;sales&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;If only&amp;hellip;&lt;/p&gt;
+&lt;h2 id=&#34;the-binned-scatterplot&#34;&gt;The Binned Scatterplot&lt;/h2&gt;
+&lt;p&gt;The &lt;strong&gt;binned scatterplot&lt;/strong&gt; is a very powerful tool that provides a &lt;strong&gt;flexible&lt;/strong&gt; and &lt;strong&gt;parsimonious&lt;/strong&gt; way of visualizing and summarizing conditional means (and not only) in large datasets.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;idea&lt;/strong&gt; behind the binned scatterplot is to divide the conditioning variable, &lt;code&gt;age&lt;/code&gt; in our example, into &lt;strong&gt;equally sized bins or quantiles&lt;/strong&gt;, and then plot the conditional mean of the dependent variable, &lt;code&gt;sales&lt;/code&gt; in our example, within each bin.&lt;/p&gt;
+&lt;p&gt;&amp;mdash; more details to come &amp;mdash;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/1902.09608&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Cattaneo, Crump, Farrell, Feng (2021)&lt;/a&gt; have built an extremely good package for binned scatterplots in R, &lt;a href=&#34;https://cran.r-project.org/web/packages/binsreg/index.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;binsreg&lt;/a&gt;. Moreover, they have ported the package to Python. We can install &lt;code&gt;binsreg&lt;/code&gt; directly from pip using &lt;code&gt;pip install binsreg&lt;/code&gt;. You can find more information on the Python package here: &lt;a href=&#34;https://pypi.org/project/binsreg/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://pypi.org/project/binsreg/&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;One problem with the Python version of the package, is that is not extremely Python-ish. Therefore, I have wrapped the &lt;code&gt;binsreg&lt;/code&gt; package into a function &lt;code&gt;binscatter&lt;/code&gt; that takes care of cleaning and formatting the output in a nicely readable &lt;a href=&#34;https://pandas.pydata.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Pandas&lt;/a&gt; DataFrame.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import binsreg
+
+def binscatter(**kwargs):
+    est = binsreg.binsreg(**kwargs)
+    df_est = pd.concat([d.dots for d in est.data_plot])
+    df_est = df_est.rename(columns={&#39;x&#39;: kwargs.get(&amp;quot;x&amp;quot;), &#39;fit&#39;: kwargs.get(&amp;quot;y&amp;quot;)})
+    if &amp;quot;ci&amp;quot; in kwargs:
+        df_est = pd.merge(df_est, pd.concat([d.ci for d in est.data_plot]))
+        df_est = df_est.drop(columns=[&#39;x&#39;])
+        df_est[&#39;ci&#39;] = df_est[&#39;ci_r&#39;] - df_est[&#39;ci_l&#39;]
+    if &amp;quot;by&amp;quot; in kwargs:
+        df_est = df_est.rename(columns={&#39;group&#39;: kwargs.get(&amp;quot;by&amp;quot;)})
+    return df_est
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can now proceed to &lt;strong&gt;estimate&lt;/strong&gt; and &lt;strong&gt;visualize&lt;/strong&gt; the binned scatterplot for &lt;code&gt;age&lt;/code&gt; based on &lt;code&gt;sales&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Estimate binsreg
+df_est = binscatter(x=&#39;age&#39;, y=&#39;sales&#39;, data=df, ci=(2,2))
+df_est.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;group&lt;/th&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;th&gt;bin&lt;/th&gt;
+      &lt;th&gt;isknot&lt;/th&gt;
+      &lt;th&gt;mid&lt;/th&gt;
+      &lt;th&gt;sales&lt;/th&gt;
+      &lt;th&gt;ci_l&lt;/th&gt;
+      &lt;th&gt;ci_r&lt;/th&gt;
+      &lt;th&gt;ci&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;Full Sample&lt;/td&gt;
+      &lt;td&gt;0.012556&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1624.779616&lt;/td&gt;
+      &lt;td&gt;1379.144922&lt;/td&gt;
+      &lt;td&gt;1888.275284&lt;/td&gt;
+      &lt;td&gt;509.130361&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Full Sample&lt;/td&gt;
+      &lt;td&gt;0.037015&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1664.078013&lt;/td&gt;
+      &lt;td&gt;1424.671343&lt;/td&gt;
+      &lt;td&gt;1916.398302&lt;/td&gt;
+      &lt;td&gt;491.726959&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Full Sample&lt;/td&gt;
+      &lt;td&gt;0.065813&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1779.657894&lt;/td&gt;
+      &lt;td&gt;1494.591288&lt;/td&gt;
+      &lt;td&gt;1979.023980&lt;/td&gt;
+      &lt;td&gt;484.432692&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;Full Sample&lt;/td&gt;
+      &lt;td&gt;0.094486&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1976.464837&lt;/td&gt;
+      &lt;td&gt;1714.973527&lt;/td&gt;
+      &lt;td&gt;2314.134971&lt;/td&gt;
+      &lt;td&gt;599.161444&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;Full Sample&lt;/td&gt;
+      &lt;td&gt;0.125363&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2015.833752&lt;/td&gt;
+      &lt;td&gt;1721.218575&lt;/td&gt;
+      &lt;td&gt;2301.109732&lt;/td&gt;
+      &lt;td&gt;579.891157&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;The &lt;code&gt;binscatter&lt;/code&gt; function outputs a data set in which, for each bin of the conditioning variable, &lt;code&gt;age&lt;/code&gt;, we have values and confidence intervals for the outcome variable, &lt;code&gt;sales&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We can now plot the estimates.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot binned scatterplot
+sns.scatterplot(x=&#39;age&#39;, y=&#39;sales&#39;, data=df_est);
+plt.errorbar(&#39;age&#39;, &#39;sales&#39;, yerr=&#39;ci&#39;, data=df_est, ls=&#39;&#39;, lw=2, alpha=0.2);
+plt.title(&amp;quot;Sales by firm&#39;s age&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/binscatter_30_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The plot is quite revealing. Now the relationship looks extremely &lt;strong&gt;non-linear&lt;/strong&gt; with a sharp increase in &lt;code&gt;sales&lt;/code&gt; at the beginning of the lifetime of a firm, followed by a plateau.&lt;/p&gt;
+&lt;p&gt;As we already discussed in the previous section, it might be important to control for other variables. For example, the number of &lt;code&gt;products&lt;/code&gt;, since firms that sell more products probably survive longer in the markets and also make more sales.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;binsreg&lt;/code&gt; allows to &lt;strong&gt;condition&lt;/strong&gt; the analysis on any number of variables, with the &lt;code&gt;w&lt;/code&gt; option.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Estimate binsreg
+df_est = binscatter(x=&#39;age&#39;, y=&#39;sales&#39;, w=[&#39;products&#39;], data=df, ci=(2,2))
+
+# Plot binned scatterplot
+sns.scatterplot(x=&#39;age&#39;, y=&#39;sales&#39;, data=df_est);
+plt.errorbar(&#39;age&#39;, &#39;sales&#39;, yerr=&#39;ci&#39;, data=df_est, ls=&#39;&#39;, lw=2, alpha=0.2);
+plt.title(&amp;quot;Sales by firm&#39;s age&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/binscatter_32_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Conditional on number of &lt;code&gt;products&lt;/code&gt;, the shape of the &lt;code&gt;sales&lt;/code&gt; life-cycle changes further. Now, after an initial increase in sales, we observe a gradual decrease over time.&lt;/p&gt;
+&lt;p&gt;Do &lt;code&gt;online&lt;/code&gt;-only firms have different &lt;code&gt;sales&lt;/code&gt; life-cycles with respect to mixed online-offline firms? We can produce different binned scatterplots &lt;strong&gt;by group&lt;/strong&gt; using the option &lt;code&gt;by&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Estimate binsreg
+df_est = binscatter(x=&#39;age&#39;, y=&#39;sales&#39;, by=&#39;online&#39;, w=[&#39;products&#39;], data=df, ci=(2,2))
+
+# Plot binned scatterplot
+sns.scatterplot(x=&#39;age&#39;, y=&#39;sales&#39;, data=df_est, hue=&#39;online&#39;);
+plt.errorbar(&#39;age&#39;, &#39;sales&#39;, yerr=&#39;ci&#39;, data=df_est.loc[df_est[&#39;online&#39;]==&#39;0&#39;,:], ls=&#39;&#39;, lw=2, alpha=0.2);
+plt.errorbar(&#39;age&#39;, &#39;sales&#39;, yerr=&#39;ci&#39;, data=df_est.loc[df_est[&#39;online&#39;]==&#39;1&#39;,:], ls=&#39;&#39;, lw=2, alpha=0.2);
+plt.title(&amp;quot;Sales by firm&#39;s age&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/binscatter_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;From the binned scatterplot, we can see that &lt;code&gt;online&lt;/code&gt; products have on average shorter lifetimes, with a higher initial peak in &lt;code&gt;sales&lt;/code&gt;, followed by a sharper decline.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this blog post, we have analyzed a very powerful data visualization tool: the &lt;strong&gt;binned scatterplot&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;p&gt;[1] E Starr, B Goldfarb, &lt;a href=&#34;https://onlinelibrary.wiley.com/doi/abs/10.1002/smj.3199&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Binned Scatterplots: A Simple Tool to Make Research Easier and Better&lt;/a&gt; (2020), Strategic Management Journal.&lt;/p&gt;
+&lt;p&gt;[2] M. D. Cattaneo, R. K. Crump, M. H. Farrell, Y. Feng, &lt;a href=&#34;https://arxiv.org/abs/1902.09608&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;On Binscatter&lt;/a&gt; (2021), working paper.&lt;/p&gt;
 </description>
     </item>
     
