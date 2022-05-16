@@ -30,7 +30,8 @@
   
     
   
-  <meta name="description" content="The Frisch-Waugh-Lowell theorem is a simple but yet powerful theorem that allows us to reduce multi-variate regressions to univariate ones. This is extremely useful when we are interested in the relationship between two variables, but we still need to control for other factors, as it is often the case in causal inference." />
+  <meta name="description" content="An introduction to the Frisch-Waugh-Lowell theorem and how to use it to gain intuition in linear regressions
+The Frisch-Waugh-Lowell theorem is a simple but yet powerful theorem that allows us to reduce multivariate regressions to univariate ones." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/fwl/" />
@@ -332,17 +333,18 @@
   
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/fwl/" />
-  <meta property="og:title" content="Frisch-Waugh-Lowell | Matteo Courthoud" />
-  <meta property="og:description" content="The Frisch-Waugh-Lowell theorem is a simple but yet powerful theorem that allows us to reduce multi-variate regressions to univariate ones. This is extremely useful when we are interested in the relationship between two variables, but we still need to control for other factors, as it is often the case in causal inference." /><meta property="og:image" content="https://matteocourthoud.github.io/post/fwl/featured.png" />
+  <meta property="og:title" content="The FWL Theorem, Or How To Make All Regressions Intuitive | Matteo Courthoud" />
+  <meta property="og:description" content="An introduction to the Frisch-Waugh-Lowell theorem and how to use it to gain intuition in linear regressions
+The Frisch-Waugh-Lowell theorem is a simple but yet powerful theorem that allows us to reduce multivariate regressions to univariate ones." /><meta property="og:image" content="https://matteocourthoud.github.io/post/fwl/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/fwl/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-05-15T00:00:00&#43;00:00"
+        content="2022-05-16T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-05-15T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-05-16T00:00:00&#43;00:00">
   
 
   
@@ -368,14 +370,14 @@
     "@type": "WebPage",
     "@id": "https://matteocourthoud.github.io/post/fwl/"
   },
-  "headline": "Frisch-Waugh-Lowell",
+  "headline": "The FWL Theorem, Or How To Make All Regressions Intuitive",
   
   "image": [
     "https://matteocourthoud.github.io/post/fwl/featured.png"
   ],
   
-  "datePublished": "2022-05-15T00:00:00Z",
-  "dateModified": "2022-05-15T00:00:00Z",
+  "datePublished": "2022-05-16T00:00:00Z",
+  "dateModified": "2022-05-16T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -385,7 +387,7 @@
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "The Frisch-Waugh-Lowell theorem is a simple but yet powerful theorem that allows us to reduce multi-variate regressions to univariate ones. This is extremely useful when we are interested in the relationship between two variables, but we still need to control for other factors, as it is often the case in causal inference."
+  "description": "An introduction to the Frisch-Waugh-Lowell theorem and how to use it to gain intuition in linear regressions\nThe Frisch-Waugh-Lowell theorem is a simple but yet powerful theorem that allows us to reduce multivariate regressions to univariate ones."
 }
 </script>
 
@@ -431,7 +433,7 @@
 
 
 
-  <title>Frisch-Waugh-Lowell | Matteo Courthoud</title>
+  <title>The FWL Theorem, Or How To Make All Regressions Intuitive | Matteo Courthoud</title>
 </head>
 
 
@@ -774,8 +776,9 @@
     </li>
     <li><a href="#example">Example</a>
       <ul>
-        <li><a href="#check-frisch-waugh-lowell">Check Frisch-Waugh-Lowell</a></li>
+        <li><a href="#verifying-the-theorem">Verifying the Theorem</a></li>
         <li><a href="#projection">Projection</a></li>
+        <li><a href="#multiple-controls">Multiple Controls</a></li>
       </ul>
     </li>
     <li><a href="#applications">Applications</a>
@@ -817,7 +820,7 @@
 
 
 <div class="article-container pt-3">
-  <h1>Frisch-Waugh-Lowell</h1>
+  <h1>The FWL Theorem, Or How To Make All Regressions Intuitive</h1>
 
   
 
@@ -835,7 +838,7 @@
     
       
     
-    May 15, 2022
+    May 16, 2022
   </span>
   
 
@@ -844,7 +847,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    8 min read
+    10 min read
   </span>
   
 
@@ -869,7 +872,7 @@
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 982px; max-height: 548px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1152px; max-height: 642px;">
   <div style="position: relative">
     <img src="/post/fwl/featured.png" alt="" class="featured-image">
     
@@ -879,11 +882,14 @@
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>The Frisch-Waugh-Lowell theorem is a <strong>simple</strong> but yet <strong>powerful</strong> theorem that allows us to reduce multi-variate regressions to <strong>univariate</strong> ones. This is extremely useful when we are interested in the relationship between two variables, but we still need to control for other factors, as it is often the case in <strong>causal inference</strong>.</p>
+            <p><em>An introduction to the Frisch-Waugh-Lowell theorem and how to use it to gain intuition in linear regressions</em></p>
+<p>The Frisch-Waugh-Lowell theorem is a <strong>simple</strong> but yet <strong>powerful</strong> theorem that allows us to reduce multivariate regressions to <strong>univariate</strong> ones. This is extremely useful when we are interested in the relationship between two variables, but we still need to control for other factors, as it is often the case in <strong>causal inference</strong>.</p>
+<p>In this blog post, I am going to introduce the Frisch-Waugh-Lowell theorem and illustrate some interesting applications.</p>
 <h2 id="the-theorem">The Theorem</h2>
-<p>The theorem, in its simplest form, states that, given the data generating process</p>
+<p>The theorem was first published by <a href="https://www.jstor.org/stable/1907330" target="_blank" rel="noopener">Ragnar Frisch and Frederick Waugh in 1933</a>. However, since its proof was lengthy and cumbersome, <a href="https://www.tandfonline.com/doi/abs/10.1080/01621459.1963.10480682" target="_blank" rel="noopener">Michael Lovell in 1963</a> provided a very simple and intuitive proof and his name was added to the theorem name.</p>
+<p>The theorem states that, when estimating a model of the form</p>
 <p>$$
-y = \beta_1 x_1 + \beta_2 x_2 + \varepsilon
+y_i = \beta_1 x_{i,1} + \beta_2 x_{i,2} + \varepsilon_i
 $$</p>
 <p>then, the following estimators of $\beta_1$ are equivalent:</p>
 <ul>
@@ -901,10 +907,10 @@ $$</p>
 </ul>
 <h3 id="interpretation">Interpretation</h3>
 <p>What did we actually <strong>learn</strong>?</p>
-<p>The <strong>Frisch-Waugh-Lowell theorem</strong> is telling us that there are multiple ways to obtain one regression coefficient. One possibility is to run the full regression of $y$ on $x$, as usual.</p>
-<p>However, we can also regress $x_1$ on $x_2$, take the residuals, and regress $y$ only those residuals. The first part of this process is sometimes referred to as <strong>orthogonalization</strong>, <strong>residualization</strong> or <strong>partialling out</strong> of $x_1$ with respect to $x_2$. The idea is that we are isolating the variation in $x_1$ that is <em>orthogonal</em> to $x_2$. Note that $x_2$ can be also be multi-dimensional (i.e. include multiple variables and not just one).</p>
+<p>The <strong>Frisch-Waugh-Lowell theorem</strong> is telling us that there are multiple ways to estimate a single regression coefficient. One possibility is to run the full regression of $y$ on $x$, as usual.</p>
+<p>However, we can also regress $x_1$ on $x_2$, take the residuals, and regress $y$ only those residuals. The first part of this process is sometimes referred to as <strong>partialling-out</strong> (or <em>orthogonalization</em>, or <em>residualization</em>) of $x_1$ with respect to $x_2$. The idea is that we are isolating the variation in $x_1$ that is <em>orthogonal</em> to $x_2$. Note that $x_2$ can be also be multi-dimensional (i.e. include multiple variables and not just one).</p>
 <p>Why would one ever do that?</p>
-<p>This seems like a way more complicated procedure. Instead of simply doing the regression in 1 step, now we need to do 2 or even 3 steps. It&rsquo;s not intuitive at all.</p>
+<p>This seems like a way more <strong>complicated</strong> procedure. Instead of simply doing the regression in 1 step, now we need to do 2 or even 3 steps. It&rsquo;s not intuitive at all. The main advantage comes from the fact that we have reduced a multivariate regression to a univariate one, making more tractable and more intuitive.</p>
 <p>We will later explore more in detail three <strong>applications</strong>:</p>
 <ul>
 <li>data visualization</li>
@@ -914,24 +920,27 @@ $$</p>
 <p>However, let&rsquo;s first explore the theorem more in detail with an example.</p>
 <h2 id="example">Example</h2>
 <p>Suppose we were a retail chain, owning many different stores in different locations. We come up with a brilliant <strong>idea to increase sales</strong>: give away discounts in the form of <strong>coupons</strong>. We print a lot of coupons and we distribute them around.</p>
-<p>To understand whether our marketing strategy worked, in each store, we check the average weekly <code>sales</code> and which percentage of shoppers used a <code>coupon</code>. However, there is one <strong>problem</strong>: we are worried that higher income people are less likely to use the discount, but usually spend more. To be safe, we also record the average <code>income</code> in the neighborhood of each store.</p>
-<p>We can represent the data generating process with a <strong>Directed Acyclic Graph</strong> (DAG). If you are not familiar with DAGs, I have written a short introduction to Directed Acyclic Graphs <a href="https://medium.com/towards-data-science/controls-b63dc69e3d8c" target="_blank" rel="noopener">here</a>.</p>
+<p>To understand whether our marketing strategy worked, in each store, we check the average daily <code>sales</code> and which percentage of shoppers used a <code>coupon</code>. However, there is one <strong>problem</strong>: we are worried that higher income people are less likely to use the discount, but usually they spend more. To be safe, we also record the average <code>income</code> in the neighborhood of each store.</p>
+<p>We can represent the data generating process with a <strong>Directed Acyclic Graph</strong> (DAG). If you are not familiar with DAGs, I have written a short introduction to <a href="https://medium.com/towards-data-science/controls-b63dc69e3d8c" target="_blank" rel="noopener">Directed Acyclic Graphs here</a>.</p>
 <pre><code class="language-mermaid">flowchart LR
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
 classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
 
-X((coupons))
+X1((coupons))
+X2((income))
+X3((weekday))
 Y((sales))
-Z((income))
 
-X --&gt; Y
-Z --&gt; X
-Z --&gt; Y
 
-class X,Y,Z excluded;
+X1 --&gt; Y
+X2 --&gt; X1
+X2 --&gt; Y
+X3 --&gt; Y
+
+class X1,X2,X3,Y excluded;
 </code></pre>
-<p>Let&rsquo;s load and inspect the data. I import the data generating process from <code>src.dgp</code> and some plotting functions and libraries from <code>src.utils</code>.</p>
+<p>Let&rsquo;s load and inspect the <strong>data</strong>. I import the data generating process from <code>src.dgp</code> and some plotting functions and libraries from <code>src.utils</code>.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
 </code></pre>
@@ -962,88 +971,100 @@ df.head()
       <th>sales</th>
       <th>coupons</th>
       <th>income</th>
+      <th>dayofweek</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>788.8</td>
+      <td>821.7</td>
       <td>0.199</td>
       <td>66.243</td>
+      <td>2</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>624.6</td>
+      <td>602.3</td>
       <td>0.245</td>
       <td>43.882</td>
+      <td>3</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>591.7</td>
+      <td>655.1</td>
       <td>0.162</td>
       <td>44.718</td>
+      <td>5</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>564.3</td>
+      <td>625.8</td>
       <td>0.269</td>
       <td>39.270</td>
+      <td>4</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>690.9</td>
+      <td>696.6</td>
       <td>0.186</td>
       <td>58.654</td>
+      <td>1</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>We have information on <strong>50 stores</strong>, for which we observe the percentage of customers that use <code>coupons</code>, weekly <code>sales</code> (in thousand $) and average <code>income</code> of the neighborhood (in thousand $).</p>
-<p>Suppose we were directly regressing <code>sales</code> on <code>coupon</code> usage. What would we get? I represent the result of the regression graphically, using <code>seaborn</code> <code>regplot</code>.</p>
+<p>We have information on <strong>50 stores</strong>, for which we observe the percentage of customers that use <code>coupons</code>, daily <code>sales</code> (in thousand $), average <code>income</code> of the neighborhood (in thousand $), and <code>day of the week</code>.</p>
+<p>Suppose we were directly regressing <code>sales</code> on <code>coupon</code> usage. What would we get? I represent the <strong>result</strong> of the regression graphically, using <code>seaborn</code> <code>regplot</code>.</p>
 <pre><code class="language-python">sns.regplot(x=&quot;coupons&quot;, y=&quot;sales&quot;, data=df, ci=False, line_kws={'color':'r', 'label':'linear fit'})
 plt.legend()
 plt.title(f&quot;Sales and coupon usage&quot;);
 </code></pre>
-<p><img src="img/fwl_11_0.png" alt="png"></p>
-<p>It looks like coupons were really a <strong>bad idea</strong>: in stores where coupons are used more, we observe lower sales.</p>
-<p>However, it might just be that people with higher income are using less coupons, while also spending more. If this was true, it could <strong>bias</strong> our results.</p>
-<p>In terms of the DAG, it means that we have a <strong>backdoor path</strong> passing through <code>income</code>.</p>
+<p><img src="img/fwl_12_0.png" alt="png"></p>
+<p>It looks like coupons were a <strong>bad idea</strong>: in stores where coupons are used more, we observe lower sales.</p>
+<p>However, it might just be that people with higher income are using less coupons, while also spending more. If this was true, it could <strong>bias</strong> our results. In terms of the DAG, it means that we have a <strong>backdoor path</strong> passing through <code>income</code>, generating a non-causal relationship.</p>
 <pre><code class="language-mermaid">flowchart LR
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
 classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
 
-X((coupons))
+X1((coupons))
+X2((income))
+X3((weekday))
 Y((sales))
-Z((income))
 
-X --&gt; Y
-Z --&gt; X
-Z --&gt; Y
+
+X1 --&gt; Y
+X2 --&gt; X1
+X2 --&gt; Y
+X3 --&gt; Y
+
+class X1,Y included;
+class X2,X3 excluded;
 
 linkStyle 1,2 stroke:#ff0000,stroke-width:4px;
-
-class X,Y included;
-class Z excluded;
 </code></pre>
-<p>In order to recover the causal effect of <code>coupons</code> on <code>sales</code> we need to <strong>condition</strong> our analysis on <code>income</code>. This will block the non-causal path passing through <code>income</code>, leaving only the direct path from <code>coupons</code> to <code>sales</code> open, allowing us to estimate the causal effect.</p>
+<p>In order to recover the causal effect of <code>coupons</code> on <code>sales</code> we need to <strong>condition</strong> our analysis on <code>income</code>. This will <strong>block</strong> the non-causal path passing through <code>income</code>, leaving only the direct path from <code>coupons</code> to <code>sales</code> open, allowing us to estimate the causal effect.</p>
 <pre><code class="language-mermaid">flowchart LR
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
 classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
 
-X((coupons))
-Y((sales))
-Z((income))
 
-X --&gt; Y
-Z -.-&gt; X
-Z -.-&gt; Y
+X1((coupons))
+X2((income))
+X3((weekday))
+Y((sales))
+
+
+X1 --&gt; Y
+X2 -.-&gt; X1
+X2 -.-&gt; Y
+X3 --&gt; Y
+
+class X1,X2,Y included;
+class X3 excluded;
 
 linkStyle 0 stroke:#00ff00,stroke-width:4px;
-
-class X,Y,Z included;
-class U excluded;
 </code></pre>
 <p>Let&rsquo;s implement this, by including <code>income</code> in the regression.</p>
 <pre><code class="language-python">smf.ols('sales ~ coupons + income', df).fit().summary().tables[1]
@@ -1053,18 +1074,18 @@ class U excluded;
       <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>  105.2564</td> <td>   32.356</td> <td>    3.253</td> <td> 0.002</td> <td>   40.164</td> <td>  170.349</td>
+  <th>Intercept</th> <td>  161.4982</td> <td>   33.253</td> <td>    4.857</td> <td> 0.000</td> <td>   94.601</td> <td>  228.395</td>
 </tr>
 <tr>
-  <th>coupons</th>   <td>  185.4974</td> <td>   48.707</td> <td>    3.808</td> <td> 0.000</td> <td>   87.512</td> <td>  283.483</td>
+  <th>coupons</th>   <td>  218.7548</td> <td>   50.058</td> <td>    4.370</td> <td> 0.000</td> <td>  118.052</td> <td>  319.458</td>
 </tr>
 <tr>
-  <th>income</th>    <td>   10.0228</td> <td>    0.467</td> <td>   21.468</td> <td> 0.000</td> <td>    9.084</td> <td>   10.962</td>
+  <th>income</th>    <td>    9.5094</td> <td>    0.480</td> <td>   19.818</td> <td> 0.000</td> <td>    8.544</td> <td>   10.475</td>
 </tr>
 </table>
-<p>Now the estimated effect of <code>coupons</code> on <code>sales</code> is positive and significant. Coupons were actually a good idea after all.</p>
-<h3 id="check-frisch-waugh-lowell">Check Frisch-Waugh-Lowell</h3>
-<p>Let&rsquo;s now verify that the <strong>Frisch-Waugh-Lowell</strong> theorem actually holds. In particular, we want to check whether we get the same coefficient if, instead of regressing <code>sales</code> on <code>coupons</code> and <code>income</code>, we were</p>
+<p>Now the estimated effect of <code>coupons</code> on <code>sales</code> is positive and significant. Coupons were actually a <strong>good idea</strong> after all.</p>
+<h3 id="verifying-the-theorem">Verifying the Theorem</h3>
+<p>Let&rsquo;s now verify that the Frisch-Waugh-Lowell theorem actually holds. In particular, we want to check whether we get the <strong>same coefficient</strong> if, instead of regressing <code>sales</code> on <code>coupons</code> and <code>income</code>, we were</p>
 <ul>
 <li>regressing <code>coupons</code> on <code>income</code></li>
 <li>computing the residuals <code>coupons_tilde</code>, i.e. the variation in <code>coupons</code> <strong>not</strong> explained by <code>income</code></li>
@@ -1079,14 +1100,14 @@ smf.ols('sales ~ coupons_tilde - 1', df).fit().summary().tables[1]
         <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>coupons_tilde</th> <td>  185.4974</td> <td> 1205.070</td> <td>    0.154</td> <td> 0.878</td> <td>-2236.181</td> <td> 2607.176</td>
+  <th>coupons_tilde</th> <td>  218.7548</td> <td> 1275.236</td> <td>    0.172</td> <td> 0.865</td> <td>-2343.929</td> <td> 2781.438</td>
 </tr>
 </table>
-<p>Yes, the coefficient is the same! However, the standard errors now have increased a lot and the estimated coefficient is not significantly different from zero anymore.</p>
-<p>A better approach is to add a further step an repeat the same procedure also for sales:</p>
+<p>Yes, the coefficient is the same! However, the <strong>standard errors</strong> now have increased a lot and the estimated coefficient is not significantly different from zero anymore.</p>
+<p>A better approach is to add a further step and repeat the same procedure also for <code>sales</code>:</p>
 <ul>
 <li>regressing <code>sales</code> on <code>income</code></li>
-<li>computing the residuals <code>sales_tilde</code>, i.e. the variation in <code>coupons</code> <strong>not</strong> explained by <code>income</code></li>
+<li>computing the residuals <code>sales_tilde</code>, i.e. the variation in <code>sales</code> <strong>not</strong> explained by <code>income</code></li>
 </ul>
 <p>and finally regress <code>sales_tilde</code> on <code>coupons_tilde</code>.</p>
 <pre><code class="language-python">df['sales_tilde'] = smf.ols('sales ~ income', df).fit().resid
@@ -1098,12 +1119,12 @@ smf.ols('sales_tilde ~ coupons_tilde - 1', df).fit().summary().tables[1]
         <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>coupons_tilde</th> <td>  185.4974</td> <td>   47.703</td> <td>    3.889</td> <td> 0.000</td> <td>   89.635</td> <td>  281.359</td>
+  <th>coupons_tilde</th> <td>  218.7548</td> <td>   49.025</td> <td>    4.462</td> <td> 0.000</td> <td>  120.235</td> <td>  317.275</td>
 </tr>
 </table>
 <p>The coefficient is still exactly the same, but now also the standard errors are almost identical.</p>
 <h3 id="projection">Projection</h3>
-<p>What is <strong>partialling out</strong> (or residualization, or orthogonalization) actually doing? What is happening when we take the residuals of <code>coupons</code> with respect to <code>income</code>?</p>
+<p>What is <strong>partialling-out</strong> (or residualization, or orthogonalization) actually doing? What is happening when we take the residuals of <code>coupons</code> with respect to <code>income</code>?</p>
 <p>We can <strong>visualize</strong> the procedure in a plot. First, let&rsquo;s actually display the <strong>residuals</strong> of <code>coupons</code> with respect to income.</p>
 <pre><code class="language-python">df[&quot;coupons_hat&quot;] = smf.ols('coupons ~ income', df).fit().predict()
 ax = sns.regplot(x=&quot;income&quot;, y=&quot;coupons&quot;, data=df, ci=False, line_kws={'color':'r', 'label':'linear fit'})
@@ -1112,16 +1133,67 @@ ax.vlines(df[&quot;income&quot;], np.minimum(df[&quot;coupons&quot;], df[&quot;c
 plt.legend()
 plt.title(f&quot;Coupons usage, income and residuals&quot;);
 </code></pre>
-<p><img src="img/fwl_23_0.png" alt="png"></p>
-<p>The <strong>residuals</strong> are the vertical dotted lines between the data and the linear fit, i.e. the part of <code>coupons</code> unexplained by <code>income</code>.</p>
-<p>By <strong>partialling out</strong>, we are removing the linear fit from the data and keeping only the residuals. We can visualize this procedure with a gif. I import the code from the <code>src.figures</code> file that you can find <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/figures.py" target="_blank" rel="noopener">here</a>.</p>
+<p><img src="img/fwl_24_0.png" alt="png"></p>
+<p>The <strong>residuals</strong> are the vertical dotted lines between the data and the linear fit, i.e. the part of the variation in <code>coupons</code> unexplained by <code>income</code>.</p>
+<p>By <strong>partialling-out</strong>, we are removing the linear fit from the data and keeping only the residuals. We can visualize this procedure with a gif. I import the code from the <code>src.figures</code> file that you can find <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/figures.py" target="_blank" rel="noopener">here</a>.</p>
 <pre><code class="language-python">from src.figures import gif_projection
 
-gif_projection(x='income', y='coupons', df=df, gifname=&quot;gifs/fwl8.gif&quot;)
+gif_projection(x='income', y='coupons', df=df, gifname=&quot;gifs/fwl.gif&quot;)
 </code></pre>
-<p><img src="gifs/fwl8.gif" alt=""></p>
-<p>The original distribution of the data is on the left in blue, the partialled out data in on the right in green.</p>
+<p><img src="gifs/fwl.gif" alt="fwl"></p>
+<p>The original distribution of the data is on the left in <em>blue</em>, the partialled-out data in on the right in <em>green</em>. As we can see, partialling-out removes both the level and the trend in <code>coupons</code> that is explained by <code>income</code>.</p>
+<h3 id="multiple-controls">Multiple Controls</h3>
+<p>We can use the Frisch-Waugh-Theorem also when we have <strong>multiple control variables</strong>. Suppose that we wanted to also include <code>day of the week</code> in the regression, to increase precision.</p>
+<pre><code class="language-python">smf.ols('sales ~ coupons + income + dayofweek', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+         <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>      <td>  124.2721</td> <td>   28.764</td> <td>    4.320</td> <td> 0.000</td> <td>   66.182</td> <td>  182.362</td>
+</tr>
+<tr>
+  <th>dayofweek[T.2]</th> <td>    7.7703</td> <td>   14.607</td> <td>    0.532</td> <td> 0.598</td> <td>  -21.729</td> <td>   37.270</td>
+</tr>
+<tr>
+  <th>dayofweek[T.3]</th> <td>   15.0895</td> <td>   11.678</td> <td>    1.292</td> <td> 0.204</td> <td>   -8.495</td> <td>   38.674</td>
+</tr>
+<tr>
+  <th>dayofweek[T.4]</th> <td>   28.2762</td> <td>    9.868</td> <td>    2.866</td> <td> 0.007</td> <td>    8.348</td> <td>   48.204</td>
+</tr>
+<tr>
+  <th>dayofweek[T.5]</th> <td>   44.0937</td> <td>   10.214</td> <td>    4.317</td> <td> 0.000</td> <td>   23.467</td> <td>   64.720</td>
+</tr>
+<tr>
+  <th>dayofweek[T.6]</th> <td>   50.7664</td> <td>   13.130</td> <td>    3.866</td> <td> 0.000</td> <td>   24.249</td> <td>   77.283</td>
+</tr>
+<tr>
+  <th>dayofweek[T.7]</th> <td>   57.3142</td> <td>   12.413</td> <td>    4.617</td> <td> 0.000</td> <td>   32.245</td> <td>   82.383</td>
+</tr>
+<tr>
+  <th>coupons</th>        <td>  192.0262</td> <td>   39.140</td> <td>    4.906</td> <td> 0.000</td> <td>  112.981</td> <td>  271.071</td>
+</tr>
+<tr>
+  <th>income</th>         <td>    9.8152</td> <td>    0.404</td> <td>   24.314</td> <td> 0.000</td> <td>    9.000</td> <td>   10.630</td>
+</tr>
+</table>
+<p>We can perform the same procedure as before, but instead of <strong>partialling-out</strong> only <code>income</code>, now we partial out both <code>income</code> and <code>day of the week</code>.</p>
+<pre><code class="language-python">df['coupons_tilde'] = smf.ols('coupons ~ income + dayofweek', df).fit().resid
+df['sales_tilde'] = smf.ols('sales ~ income + dayofweek', df).fit().resid
+smf.ols('sales_tilde ~ coupons_tilde - 1', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+        <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>coupons_tilde</th> <td>  192.0262</td> <td>   35.803</td> <td>    5.363</td> <td> 0.000</td> <td>  120.078</td> <td>  263.974</td>
+</tr>
+</table>
+<p>We still get exactly the same coefficient!</p>
 <h2 id="applications">Applications</h2>
+<p>Let&rsquo;s now inspect some useful applications of the FWL theorem.</p>
 <h3 id="data-visualization">Data Visualization</h3>
 <p>One of the advantages of the Frisch-Waugh-Theorem is that it allows us to estimate the coefficient of interest from a <strong>univariate</strong> regression, i.e. with a single explanatory variable (or feature).</p>
 <p>Therefore, we can now represent the relationship of interest <strong>graphically</strong>. Let&rsquo;s plot the residual <code>sales</code> against the residual <code>coupons</code>.</p>
@@ -1129,20 +1201,21 @@ gif_projection(x='income', y='coupons', df=df, gifname=&quot;gifs/fwl8.gif&quot;
 plt.legend()
 plt.title(f&quot;Residual sales and residual coupons&quot;);
 </code></pre>
-<p><img src="img/fwl_31_0.png" alt="png"></p>
-<p>One problem with this approach is that the variables are hard to interpret: we now have negative values for both <code>sales</code> and <code>coupons</code>. Weird.</p>
-<p>Why did it happen? It happened because when we residualized the variables, we included the <strong>intercept</strong> in the regression, effectively de-meaning the variables (i.e. normalizing their values so that their mean is zero).</p>
-<p>We can <strong>solve</strong> this problem by scaling both variables, adding their mean.</p>
+<p><img src="img/fwl_39_0.png" alt="png"></p>
+<p>Now it&rsquo;s evident from the graph that the <strong>conditional relationship</strong> between <code>sales</code> and <code>coupons</code> is positive.</p>
+<p>One problem with this approach is that the variables are <strong>hard to interpret</strong>: we now have negative values for both <code>sales</code> and <code>coupons</code>. Weird.</p>
+<p>Why did it happen? It happened because when we partialled-out the variables, we included the <strong>intercept</strong> in the regression, effectively de-meaning the variables (i.e. normalizing their values so that their mean is zero).</p>
+<p>We can <strong>solve</strong> this problem by <strong>scaling</strong> both variables, adding their mean.</p>
 <pre><code class="language-python">df['coupons_tilde_scaled'] = df['coupons_tilde'] + np.mean(df['coupons'])
 df['sales_tilde_scaled'] = df['sales_tilde'] + np.mean(df['sales'])
 </code></pre>
-<p>Now the magnitudes of the two variables a</p>
+<p>Now the magnitudes of the two variables are interpretable again.</p>
 <pre><code class="language-python">sns.regplot(x=&quot;coupons_tilde_scaled&quot;, y=&quot;sales_tilde_scaled&quot;, data=df, ci=False, line_kws={'color':'r', 'label':'linear fit'})
 plt.legend()
 plt.title(f&quot;Residual sales scaled and residual coupons scaled&quot;);
 </code></pre>
-<p><img src="img/fwl_35_0.png" alt="png"></p>
-<p>Is this a valid approach or did it alter our estimates? We can can check it by running the regression with the scaled residualized variables.</p>
+<p><img src="img/fwl_43_0.png" alt="png"></p>
+<p>Is this a <strong>valid</strong> approach or did it alter our estimates? We can can check it by running the regression with the scaled partialled-out variables.</p>
 <pre><code class="language-python">smf.ols('sales_tilde_scaled ~ coupons_tilde_scaled', df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -1150,26 +1223,27 @@ plt.title(f&quot;Residual sales scaled and residual coupons scaled&quot;);
             <td></td>              <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>            <td>  603.8408</td> <td>   13.360</td> <td>   45.198</td> <td> 0.000</td> <td>  576.979</td> <td>  630.703</td>
+  <th>Intercept</th>            <td>  641.6486</td> <td>   10.017</td> <td>   64.054</td> <td> 0.000</td> <td>  621.507</td> <td>  661.790</td>
 </tr>
 <tr>
-  <th>coupons_tilde_scaled</th> <td>  185.4974</td> <td>   48.197</td> <td>    3.849</td> <td> 0.000</td> <td>   88.591</td> <td>  282.404</td>
+  <th>coupons_tilde_scaled</th> <td>  192.0262</td> <td>   36.174</td> <td>    5.308</td> <td> 0.000</td> <td>  119.294</td> <td>  264.758</td>
 </tr>
 </table>
 <p>The coefficient is exactly the same as before!</p>
 <h3 id="computational-speed">Computational Speed</h3>
-<p>Another application of the Frisch-Waugh-Lovell theorem is to increase the computational speed of linear estimators. For example it is used to compute efficient linear estimators in presence of high-dimensional fixed effects.</p>
+<p>Another application of the Frisch-Waugh-Lovell theorem is to increase the computational speed of linear estimators. For example it is used to compute efficient linear estimators in presence of high-dimensional fixed effects (<code>day of the week</code> in our example).</p>
 <p>Some packages that exploit the Frisch-Waugh-Lovell theorem include</p>
 <ul>
 <li><a href="http://scorreia.com/software/reghdfe/" target="_blank" rel="noopener">reghdfe in Stata</a></li>
 <li><a href="https://pyhdfe.readthedocs.io/en/stable/index.html" target="_blank" rel="noopener">pyhdfe in Python</a></li>
 </ul>
-<p>However, it&rsquo;s important to also mention the <a href="https://cran.r-project.org/web/packages/fixest/index.html" target="_blank" rel="noopener">fixest</a> package in R, which is also exceptionally efficient.</p>
+<p>However, it&rsquo;s important to also mention the <a href="https://cran.r-project.org/web/packages/fixest/index.html" target="_blank" rel="noopener">fixest</a> package in R, which is also exceptionally efficient in running regressions with high dimensional fixed effects.</p>
 <h3 id="inference-and-machine-learning">Inference and Machine Learning</h3>
-<p>Another important application of the FWL theorem sits at the intersection of <strong>machine learning</strong> and <strong>causal inference</strong>. I am referring to the work on post-double selection by <a href="https://academic.oup.com/restud/article-abstract/81/2/608/1523757" target="_blank" rel="noopener">Belloni, Chernozhukov, Hansen (2013)</a> and the follow up work on the so-called &ldquo;double machine learning&rdquo; by <a href="https://academic.oup.com/ectj/article/21/1/C1/5056401" target="_blank" rel="noopener">Chernozhukov, Chetverikov, Demirer, Duflo, Hansen, Newey, Robins (2018)</a>.</p>
-<p>I plan to cover both applications in future posts, but first it was important to cover the basics. Stay tuned!</p>
+<p>Another important application of the FWL theorem sits at the intersection of <strong>machine learning</strong> and <strong>causal inference</strong>. I am referring to the work on post-double selection by <a href="https://academic.oup.com/restud/article-abstract/81/2/608/1523757" target="_blank" rel="noopener">Belloni, Chernozhukov, Hansen (2013)</a> and the follow up work on &ldquo;double machine learning&rdquo; by <a href="https://academic.oup.com/ectj/article/21/1/C1/5056401" target="_blank" rel="noopener">Chernozhukov, Chetverikov, Demirer, Duflo, Hansen, Newey, Robins (2018)</a>.</p>
+<p>I plan to cover both applications in future posts, but I wanted to start with the basics. Stay tuned!</p>
 <h2 id="references">References</h2>
 <p>[1] R. Frisch and F. V. Waugh, <a href="https://www.jstor.org/stable/1907330" target="_blank" rel="noopener">Partial Time Regressions as Compared with Individual Trends</a> (1933), <em>Econometrica</em>.</p>
+<p>[2] M. C. Lowell, <a href="https://www.tandfonline.com/doi/abs/10.1080/01621459.1963.10480682" target="_blank" rel="noopener">Seasonal Adjustment of Economic Time Series and Multiple Regression Analysis</a> (1963), <em>Journal of the American Statistical Association</em>.</p>
 
           </div>
           
@@ -1192,7 +1266,7 @@ plt.title(f&quot;Residual sales scaled and residual coupons scaled&quot;);
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/fwl/&amp;text=Frisch-Waugh-Lowell" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/fwl/&amp;text=The%20FWL%20Theorem,%20Or%20How%20To%20Make%20All%20Regressions%20Intuitive" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -1205,7 +1279,7 @@ plt.title(f&quot;Residual sales scaled and residual coupons scaled&quot;);
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/fwl/&amp;t=Frisch-Waugh-Lowell" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/fwl/&amp;t=The%20FWL%20Theorem,%20Or%20How%20To%20Make%20All%20Regressions%20Intuitive" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook"></i>
         </a>
       </li>
@@ -1218,7 +1292,7 @@ plt.title(f&quot;Residual sales scaled and residual coupons scaled&quot;);
       
       
       <li>
-        <a href="mailto:?subject=Frisch-Waugh-Lowell&amp;body=https://matteocourthoud.github.io/post/fwl/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=The%20FWL%20Theorem,%20Or%20How%20To%20Make%20All%20Regressions%20Intuitive&amp;body=https://matteocourthoud.github.io/post/fwl/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -1231,7 +1305,7 @@ plt.title(f&quot;Residual sales scaled and residual coupons scaled&quot;);
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/fwl/&amp;title=Frisch-Waugh-Lowell" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/fwl/&amp;title=The%20FWL%20Theorem,%20Or%20How%20To%20Make%20All%20Regressions%20Intuitive" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -1244,7 +1318,7 @@ plt.title(f&quot;Residual sales scaled and residual coupons scaled&quot;);
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=Frisch-Waugh-Lowell%20https://matteocourthoud.github.io/post/fwl/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=The%20FWL%20Theorem,%20Or%20How%20To%20Make%20All%20Regressions%20Intuitive%20https://matteocourthoud.github.io/post/fwl/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>
