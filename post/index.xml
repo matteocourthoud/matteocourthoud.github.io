@@ -364,26 +364,40 @@ plt.title(&amp;quot;Sales by firm&#39;s age&amp;quot;);
     </item>
     
     <item>
-      <title>Omitted Variable Bias and what to do about it</title>
+      <title>Omitted Variable Bias And What Can We Do About It</title>
       <link>https://matteocourthoud.github.io/post/ovb/</link>
       <pubDate>Sat, 21 May 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/ovb/</guid>
-      <description>&lt;p&gt;In causal inference, estimation &lt;strong&gt;bias&lt;/strong&gt; is extremely problematic because it makes inference not valid.&lt;/p&gt;
-&lt;p&gt;This is why, in general, we prefer estimators that are &lt;strong&gt;unbiased&lt;/strong&gt;, at the cost of them having a higher variance, i.e. more noisy. Does it mean that every biased estimator is useless? Actually no. Sometimes, with domain knowledge, we can still draw some causal conclusion even with a biased estimator.&lt;/p&gt;
-&lt;p&gt;In this post, we are going to review a specific but frequent source of bias, &lt;strong&gt;omitted variable bias&lt;/strong&gt;, and we are going to explore some &lt;strong&gt;sensitivity analysis&lt;/strong&gt; that we can perform in these scenarios.&lt;/p&gt;
+      <description>&lt;p&gt;In causal inference, &lt;strong&gt;bias&lt;/strong&gt; is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver an estimate of the true effect, on average.&lt;/p&gt;
+&lt;p&gt;This is why, in general, we prefer estimators that are &lt;strong&gt;unbiased&lt;/strong&gt;, at the cost of a higher variance, i.e. more noise. Does it mean that every biased estimator is useless? Actually no. Sometimes, with domain knowledge, we can still draw some causal conclusion even with a biased estimator.&lt;/p&gt;
+&lt;p&gt;In this post, we are going to review a specific but frequent source of bias, &lt;strong&gt;omitted variable bias&lt;/strong&gt;. We are going to explore the causes of the bias and leverage these insights to make causal claims, despite the bias.&lt;/p&gt;
 &lt;h2 id=&#34;theory&#34;&gt;Theory&lt;/h2&gt;
-&lt;p&gt;Suppose you have the following data generating process:&lt;/p&gt;
+&lt;p&gt;Suppose we are interested in the effect of a variable $D$ on a variable $y$. Assume the data generating process can be represented with the following &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Directed Acyclic Graph (DAG)&lt;/strong&gt;&lt;/a&gt;. If you are not familiar with DAGs, I have written a short &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;introduction here&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TD
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+D((D))
+Z((Z))
+Y((Y))
+
+D --&amp;gt; Y
+Z --&amp;gt; D
+Z --&amp;gt; Y
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If we could observe $Z$, we would run a linear regression to estimate the following model:&lt;/p&gt;
 &lt;p&gt;$$
 y = \alpha D + \gamma Z + \varepsilon
 $$&lt;/p&gt;
-&lt;p&gt;This model is usually referred to as the &lt;strong&gt;long model&lt;/strong&gt; since it includes all variables of the model.&lt;/p&gt;
-&lt;p&gt;However, we do not include $Z$ in the regression and we estimate the following model.&lt;/p&gt;
+&lt;p&gt;where $\alpha$ is the effect of interest, and $Z$ is a variable that we do not observe or have access to. This model is usually referred to as the &lt;strong&gt;long model&lt;/strong&gt; since it includes all variables of the model.&lt;/p&gt;
+&lt;p&gt;However, we do not observe $Z$, so that we have to estimate the following model:&lt;/p&gt;
 &lt;p&gt;$$
 y = \alpha D + u
 $$&lt;/p&gt;
 &lt;p&gt;This model is usually referred to as the &lt;strong&gt;short model&lt;/strong&gt; since it does not include all the variables of the model&lt;/p&gt;
-&lt;p&gt;What is the consequence of estimating the &lt;strong&gt;short model&lt;/strong&gt; when the true model is the &lt;strong&gt;long&lt;/strong&gt; one?&lt;/p&gt;
-&lt;p&gt;The OLS estimator of $\alpha$ is&lt;/p&gt;
+&lt;p&gt;What is the &lt;strong&gt;consequence&lt;/strong&gt; of estimating the short model when the true model is the long one?&lt;/p&gt;
+&lt;p&gt;In that case, the OLS estimator of $\alpha$ is&lt;/p&gt;
 &lt;p&gt;$$
 \begin{align}
 \hat \alpha &amp;amp;= \frac{Cov(D, y)}{Var(D)} =
@@ -409,16 +423,14 @@ $$&lt;/p&gt;
 &lt;p&gt;$$
 y = \alpha D + \beta X + \gamma Z + \varepsilon
 $$&lt;/p&gt;
-&lt;p&gt;Thanks to the &lt;a href=&#34;https://towardsdatascience.com/the-fwl-theorem-or-how-to-make-all-regressions-intuitive-59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Frisch-Waugh-Lowell theorem&lt;/strong&gt;&lt;/a&gt;, we can simply &lt;strong&gt;partial-out&lt;/strong&gt; $X$ and express the Omitted Variable Bias in terms of partialled-out variables.&lt;/p&gt;
+&lt;p&gt;Thanks to the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Frisch-Waugh-Lowell theorem&lt;/strong&gt;&lt;/a&gt;, we can simply &lt;strong&gt;partial-out&lt;/strong&gt; $X$ and express the Omitted Variable Bias in terms of $D$ and $Z$.&lt;/p&gt;
 &lt;p&gt;$$
 \text{omitted variable bias} = \gamma \times \frac{Cov(D^{\perp X}, Z^{\perp X})}{Var(D^{\perp X})}
 $$&lt;/p&gt;
-&lt;p&gt;where $D^{\perp X}$ are the residuals from regressing $D$ on $X$ and $Z^{\perp X}$ are the residuals from regressing $Z$ on $X$.&lt;/p&gt;
-&lt;p&gt;If you want to know more about the FWL theorem, I wrote a blog post here:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/the-fwl-theorem-or-how-to-make-all-regressions-intuitive-59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://towardsdatascience.com/the-fwl-theorem-or-how-to-make-all-regressions-intuitive-59f801eb3299&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;where $D^{\perp X}$ are the residuals from regressing $D$ on $X$ and $Z^{\perp X}$ are the residuals from regressing $Z$ on $X$. If you are not familiar with Frisch-Waugh-Lowell theorem, I have written a short &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;note here&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
-&lt;p&gt;Suppose we were a retail chain, owning many different stores in different locations. We come up with a brilliant &lt;strong&gt;idea to increase sales&lt;/strong&gt;: give away discounts in the form of &lt;strong&gt;coupons&lt;/strong&gt;. We print a lot of coupons and we distribute them around.&lt;/p&gt;
-&lt;p&gt;To understand whether our marketing strategy worked, in each store, we check the average daily &lt;code&gt;sales&lt;/code&gt; and which percentage of shoppers used a &lt;code&gt;coupon&lt;/code&gt;. However, there is one &lt;strong&gt;problem&lt;/strong&gt;: we are worried that higher income people are less likely to use the discount, but usually they spend more. To be safe, we also record the average &lt;code&gt;income&lt;/code&gt; in the neighborhood of each store.&lt;/p&gt;
+&lt;p&gt;Suppose were a researcher interested in the relationship between &lt;strong&gt;education&lt;/strong&gt; and &lt;strong&gt;wages&lt;/strong&gt;. Does investing in education pay off in terms of future wages? Suppose we had data on wages for people with different years of education. Why not looking at the correlation between years of education and wages.&lt;/p&gt;
+&lt;p&gt;The problem is that there might be many unobserved variables that are actually correlated with both variables. For simplicity, let&amp;rsquo;s concentrate on &lt;strong&gt;ability&lt;/strong&gt;. People of higher ability might decide to invest more in education just because they are better in school and they get more opportunities. On the other hand, they might also get higher wages afterwards, purely because of their innate ability.&lt;/p&gt;
 &lt;p&gt;We can represent the data generating process with a &lt;strong&gt;Directed Acyclic Graph&lt;/strong&gt; (DAG). If you are not familiar with DAGs, I have written a short introduction to &lt;a href=&#34;https://medium.com/towards-data-science/controls-b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Directed Acyclic Graphs here&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TD
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
@@ -440,7 +452,7 @@ X2 --&amp;gt; Y
 class D,X1,X2,Y excluded;
 class Z unobserved;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Let&amp;rsquo;s load and inspect the &lt;strong&gt;data&lt;/strong&gt;. I import the data generating process from &lt;code&gt;src.dgp&lt;/code&gt; and some plotting functions and libraries from &lt;code&gt;src.utils&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s load and inspect the &lt;strong&gt;data&lt;/strong&gt;. I import the data generating process from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt; and some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
 &lt;/code&gt;&lt;/pre&gt;
@@ -513,8 +525,8 @@ df.head()
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;We have information on &lt;strong&gt;50 stores&lt;/strong&gt;, for which we observe the percentage of customers that use &lt;code&gt;coupons&lt;/code&gt;, daily &lt;code&gt;sales&lt;/code&gt; (in thousand $), average &lt;code&gt;income&lt;/code&gt; of the neighborhood (in thousand $), and &lt;code&gt;day of the week&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Suppose we were directly regressing &lt;code&gt;sales&lt;/code&gt; on &lt;code&gt;coupon&lt;/code&gt; usage.&lt;/p&gt;
+&lt;p&gt;We have information on &lt;strong&gt;300 individuals&lt;/strong&gt;, for which we observe their &lt;code&gt;age&lt;/code&gt;, their &lt;code&gt;gender&lt;/code&gt;, the years of &lt;code&gt;education&lt;/code&gt;, and the current monthly &lt;code&gt;wage&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Suppose we were directly regressing &lt;code&gt;wage&lt;/code&gt; on &lt;code&gt;education&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model = smf.ols(&#39;wage ~ education + male + age&#39;, df).fit()
 model.summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
@@ -535,7 +547,7 @@ model.summary().tables[1]
   &lt;th&gt;age&lt;/th&gt;       &lt;td&gt;   20.5268&lt;/td&gt; &lt;td&gt;    9.583&lt;/td&gt; &lt;td&gt;    2.142&lt;/td&gt; &lt;td&gt; 0.038&lt;/td&gt; &lt;td&gt;    1.236&lt;/td&gt; &lt;td&gt;   39.817&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
-&lt;p&gt;The coefficient of &lt;code&gt;education&lt;/code&gt; is positive and significant.&lt;/p&gt;
+&lt;p&gt;The coefficient of &lt;code&gt;education&lt;/code&gt; is positive and significant. However, we know there might be an &lt;strong&gt;omitted variable bias&lt;/strong&gt;, because we do not observe &lt;code&gt;ability&lt;/code&gt;. In terms of DAGs, there is a &lt;strong&gt;backdoor path&lt;/strong&gt; from &lt;code&gt;education&lt;/code&gt; to &lt;code&gt;wage&lt;/code&gt; that is not blocked and therefore biases our estimate.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TD
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -558,7 +570,7 @@ class Z unobserved;
 
 linkStyle 1,2 stroke:#ff0000,stroke-width:4px;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;However, we know it is biased. Does it mean that all our analysis is garbage? Can we still draw some causal inference from the regression results?&lt;/p&gt;
+&lt;p&gt;Does it mean that all our analysis is garbage? Can we still draw some causal inference from the regression results?&lt;/p&gt;
 &lt;h2 id=&#34;direction-of-the-bias&#34;&gt;Direction of the Bias&lt;/h2&gt;
 &lt;p&gt;If we knew the signs of $\gamma$ and $\delta$, we could infer the sign of the bias, since it&amp;rsquo;s the product of the two signs.&lt;/p&gt;
 &lt;p&gt;$$
@@ -574,12 +586,13 @@ $$&lt;/p&gt;
 &lt;li&gt;The correlation between &lt;code&gt;ability&lt;/code&gt; and &lt;code&gt;education&lt;/code&gt; is most likely positive&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Therefore, the bias is most likely &lt;strong&gt;positive&lt;/strong&gt;. From this, we can conclude that our estimate from the regression on &lt;code&gt;wage&lt;/code&gt; on &lt;code&gt;education&lt;/code&gt; is most likely a &lt;strong&gt;overestimate&lt;/strong&gt; of the true effect, which is most likely smaller.&lt;/p&gt;
-&lt;p&gt;This might seem like a small insight, but it&amp;rsquo;s actually huge. Now we can say with confidence that one year of &lt;code&gt;education&lt;/code&gt; increases &lt;code&gt;wages&lt;/code&gt; by &lt;strong&gt;at most&lt;/strong&gt; 300 dollars, which is a much much better than nothing.&lt;/p&gt;
+&lt;p&gt;This might seem like a small insight, but it&amp;rsquo;s actually huge. Now we can say with confidence that one year of &lt;code&gt;education&lt;/code&gt; increases &lt;code&gt;wages&lt;/code&gt; by &lt;strong&gt;at most&lt;/strong&gt; 118 dollars per month, which is a much much better than not being able to say anything.&lt;/p&gt;
 &lt;h2 id=&#34;further-sensitivity-analysis&#34;&gt;Further Sensitivity Analysis&lt;/h2&gt;
 &lt;p&gt;Can we say more about the omitted variable bias without making strong assumptions?&lt;/p&gt;
 &lt;p&gt;The answer is yes! In particular, we can ask ourselves: how strong should the partial correlations $\gamma$ and $\delta$ be in order to overturn our results?&lt;/p&gt;
 &lt;p&gt;In our example, we found a positive correlation between &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wages&lt;/code&gt; in the data. However, we know that we are omitting &lt;code&gt;ability&lt;/code&gt; in our regression. The question is: how strong should the correlation between &lt;code&gt;ability&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt;, $\gamma$ and between &lt;code&gt;ability&lt;/code&gt; and &lt;code&gt;education&lt;/code&gt;, $\delta$, be in order to make the effect not significant or even negative?&lt;/p&gt;
-&lt;p&gt;We are going to use the &lt;code&gt;sensemakr&lt;/code&gt; package from &lt;a href=&#34;https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12348&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Cinelli and Hazlett (2020)&lt;/a&gt; to conduct the sensitivity analysis. You can find a detailed description of the package &lt;a href=&#34;https://cran.r-project.org/web/packages/sensemakr/vignettes/sensemakr.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12348&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Cinelli and Hazlett (2020)&lt;/a&gt; show that we can transform this question in terms of residual variation explained, i.e. the &lt;a href=&#34;https://en.wikipedia.org/wiki/Coefficient_of_determination&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;coefficient of determination, $R^2$&lt;/a&gt;. The advantage of this approach is interpretability. It is much easier to make a guess about the percentage of variance explained than to make a guess about the magnitude of a conditional correlation.&lt;/p&gt;
+&lt;p&gt;The authors wrote a companion package &lt;a href=&#34;https://github.com/carloscinelli/sensemakr&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;sensemakr&lt;/code&gt;&lt;/a&gt; to conduct the sensitivity analysis. You can find a detailed description of the package &lt;a href=&#34;https://cran.r-project.org/web/packages/sensemakr/vignettes/sensemakr.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;The main &lt;strong&gt;arguments&lt;/strong&gt; of the &lt;code&gt;Sensemakr&lt;/code&gt; function are:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;model&lt;/code&gt;: the regression model we want to analyze&lt;/li&gt;
@@ -597,8 +610,13 @@ plt.xlabel(&amp;quot;Partial $R^2$ of ability with education&amp;quot;);
 plt.ylabel(&amp;quot;Partial $R^2$ of ability with wage&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/ovb_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;From the plot, we can see, we need &lt;code&gt;ability&lt;/code&gt; to explain around 30% of the residual variation in both &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; in order for the effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wages&lt;/code&gt; to disappear. In particular, the red line plots the level curve for the coefficient to be zero.&lt;/p&gt;
-&lt;p&gt;One question that you might (legitimately) have now is: what is 30%? Is it big or is it small? We can get a sense of the magnitude, by comparing the results with the residual variance explained by another &lt;em&gt;observed&lt;/em&gt; variable. Let&amp;rsquo;s use &lt;code&gt;age&lt;/code&gt; for example.&lt;/p&gt;
+&lt;p&gt;From the plot, we can see, we need &lt;code&gt;ability&lt;/code&gt; to explain around 30% of the residual variation in both &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; in order for the effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wages&lt;/code&gt; to disappear. In particular, the red line plots the level curve corresponding to a zero coefficient.&lt;/p&gt;
+&lt;p&gt;One question that you might (legitimately) have now is: what is 30%? Is it big or is it small? We can get a sense of the &lt;strong&gt;magnitude&lt;/strong&gt; by comparing the results with the residual variance explained by another &lt;em&gt;observed&lt;/em&gt; variable. Let&amp;rsquo;s use &lt;code&gt;age&lt;/code&gt; for example.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;Sensemakr&lt;/code&gt; function accepts the following optional arguments:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;benchmark_covariates&lt;/code&gt;: the covariate to use as a benchmark&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;kd&lt;/code&gt; and &lt;code&gt;ky&lt;/code&gt;: these arguments parameterize how many times stronger the confounder is related to the treatment (&lt;code&gt;kd&lt;/code&gt;) and to the outcome (&lt;code&gt;ky&lt;/code&gt;) in comparison to the observed benchmark covariate (female). In our example, setting &lt;code&gt;kd&lt;/code&gt; and &lt;code&gt;ky&lt;/code&gt; equal to $[0.5, 1, 2]$ means we want to investigate the maximum strength of a confounder half, same, or twice as strong as &lt;code&gt;age&lt;/code&gt; (in explaining treatment and outcome variation).&lt;/li&gt;
+&lt;/ul&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sensitivity = sensemakr.Sensemakr(model = model, 
                                   treatment = &amp;quot;education&amp;quot;,
                                   benchmark_covariates = &amp;quot;age&amp;quot;,
@@ -610,7 +628,8 @@ plt.ylabel(&amp;quot;Partial $R^2$ of ability with wage&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/ovb_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;It looks like even if &lt;code&gt;ability&lt;/code&gt; had twice as much explanatory power as &lt;code&gt;age&lt;/code&gt;, the effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wage&lt;/code&gt; would still be positive. But would it be &lt;strong&gt;statistically significant&lt;/strong&gt;?&lt;/p&gt;
-&lt;p&gt;We can repeat the same exercise, looking at the t-statistic instead of the magnitude of the coefficient. The question that we are trying to answer in this case is:&lt;/p&gt;
+&lt;p&gt;We can repeat the same exercise, looking at the t-statistic instead of the magnitude of the coefficient. We just need to set the &lt;code&gt;sensitivity_of&lt;/code&gt; option in the plotting function equal to &lt;code&gt;t-value&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The question that we are trying to answer in this case is:&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;em&gt;How much of the residual variation in &lt;code&gt;education&lt;/code&gt; (x axis) and &lt;code&gt;wage&lt;/code&gt; (y axis) does &lt;code&gt;ability&lt;/code&gt; need to explain in order for the effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wages&lt;/code&gt; to &lt;strong&gt;become not significant&lt;/strong&gt;?&lt;/em&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -624,13 +643,16 @@ plt.ylabel(&amp;quot;Partial $R^2$ of ability with wage&amp;quot;);
 &lt;blockquote&gt;
 &lt;p&gt;Suppose that &lt;code&gt;ability&lt;/code&gt; would fully explain the residual variation in &lt;code&gt;wage&lt;/code&gt;. How would the estimated effect on &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wages&lt;/code&gt; then depend on the residual variation of &lt;code&gt;education&lt;/code&gt; explained by &lt;code&gt;ability&lt;/code&gt;?&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sensitivity.plot(plot_type = &#39;extreme&#39;)
+&lt;p&gt;We just need to set the &lt;code&gt;plot_type&lt;/code&gt; option in the plotting function equal to &lt;code&gt;extreme&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sensitivity.plot(plot_type=&#39;extreme&#39;, lim=0.2)
 plt.xlabel(&amp;quot;Partial $R^2$ of ability with education&amp;quot;);
 plt.legend().set_title(&amp;quot;Partial $R^2$ of ability with wage&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/ovb_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;In the extreme scenarios of high correlation between &lt;code&gt;ability&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt;, even a small correlation between &lt;code&gt;ability&lt;/code&gt; is sufficient to imply a substantially smaller true effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wage&lt;/code&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;TBD&lt;/p&gt;
+&lt;p&gt;In this post, I have introduced the concept of omitted variable bias. We have seen how it&amp;rsquo;s computed in a simple linear model and how we can exploit qualitative information to make inference in presence of omitted variable bias.&lt;/p&gt;
+&lt;p&gt;These tools are extremely useful since omitted variable bias is essentially &lt;strong&gt;everywhere&lt;/strong&gt;. First of all, there are always factors that we do not observe, such as ability in our toy example. However, even if we could observe everything, omitted variable bias can also emerge in the form of &lt;strong&gt;model misspecification&lt;/strong&gt;. Suppose that &lt;code&gt;wages&lt;/code&gt; depended on &lt;code&gt;age&lt;/code&gt; in a quadratic way. Then, also omitting the quadratic term from the regression introduces bias, which can be analyzed with the same tools we have used for &lt;code&gt;ability&lt;/code&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;p&gt;[1] C. Cinelli, C. Hazlett, &lt;a href=&#34;https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12348&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Making Sense of Sensitivity: Extending Omitted Variable Bias&lt;/a&gt; (2019), &lt;em&gt;Journal of the Royal Statistical Society&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[2] V. Chernozhukov, C. Cinelli, W. Newey, A. Sharma, V. Syrgkanis, &lt;a href=&#34;https://arxiv.org/abs/2112.13398&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Long Story Short: Omitted Variable Bias in Causal Machine Learning&lt;/a&gt; (2022), working paper.&lt;/p&gt;
