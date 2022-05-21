@@ -339,10 +339,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-05-07T00:00:00&#43;00:00"
+        content="2022-05-21T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-05-07T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-05-21T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/binscatter/featured.png"
   ],
   
-  "datePublished": "2022-05-07T00:00:00Z",
-  "dateModified": "2022-05-07T00:00:00Z",
+  "datePublished": "2022-05-21T00:00:00Z",
+  "dateModified": "2022-05-21T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -826,7 +826,7 @@
     
       
     
-    May 7, 2022
+    May 21, 2022
   </span>
   
 
@@ -835,7 +835,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    10 min read
+    11 min read
   </span>
   
 
@@ -860,7 +860,7 @@
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1146px; max-height: 611px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1143px; max-height: 634px;">
   <div style="position: relative">
     <img src="/post/binscatter/featured.png" alt="" class="featured-image">
     
@@ -870,8 +870,8 @@
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>When we want to visualize the relationship between two continuous variables, the go-to plot is the <strong>scatterplot</strong>. It&rsquo;s a very intuitive visualization tool that allows us to directly look at the data. However, when we have a lot of data and when the data is skewed, scatterplots can be too noisy to be informative.</p>
-<p>In this blog post, I am going to review a very powerful alternative to the scatterplot to visualize correlations between two variables: the <strong>binned scatterplot</strong>.</p>
+            <p>When we want to visualize the relationship between two continuous variables, the go-to plot is the <strong>scatterplot</strong>. It&rsquo;s a very intuitive visualization tool that allows us to directly look at the data. However, when we have a lot of data and/or when the data is skewed, scatterplots can be too noisy to be informative.</p>
+<p>In this blog post, I am going to review a very powerful alternative to the scatterplot to visualize correlations between two variables: the <strong>binned scatterplot</strong>. Binned scatterplots are not only a great visualization tool, but they can also be used to do inference on the conditional distribution of the dependent variable.</p>
 <h2 id="the-scatterplot">The Scatterplot</h2>
 <p>Let&rsquo;s start with an example. Suppose we are an <strong>online marketplace</strong> where multiple firms offer goods that consumer can efficiently browse, compare and buy. Our <strong>dataset</strong> consists in a snapshot of the firms active on the marketplace.</p>
 <p>Let&rsquo;s load the data and have a look at it. You can find the code for the data generating process <a href="">here</a>.</p>
@@ -1177,7 +1177,7 @@ df_est.head()
 <p>We can now plot the estimates.</p>
 <pre><code class="language-python"># Plot binned scatterplot
 sns.scatterplot(x='age', y='sales', data=df_est);
-plt.errorbar('age', 'sales', yerr='ci', data=df_est, ls='', lw=2, alpha=0.2);
+plt.errorbar('age', 'sales', yerr='ci', data=df_est, ls='', lw=3, alpha=0.2);
 plt.title(&quot;Sales by firm's age&quot;);
 </code></pre>
 <p><img src="img/binscatter_33_0.png" alt="png"></p>
@@ -1190,7 +1190,7 @@ df_est = binscatter(x='age', y='sales', w=['products'], data=df, ci=(3,3))
 
 # Plot binned scatterplot
 sns.scatterplot(x='age', y='sales', data=df_est);
-plt.errorbar('age', 'sales', yerr='ci', data=df_est, ls='', lw=2, alpha=0.2);
+plt.errorbar('age', 'sales', yerr='ci', data=df_est, ls='', lw=3, alpha=0.2);
 plt.title(&quot;Sales by firm's age&quot;);
 </code></pre>
 <p><img src="img/binscatter_35_0.png" alt="png"></p>
@@ -1201,15 +1201,14 @@ df_est = binscatter(x='age', y='sales', by='online', w=['products'], data=df, ci
 
 # Plot binned scatterplot
 sns.scatterplot(x='age', y='sales', data=df_est, hue='online');
-plt.errorbar('age', 'sales', yerr='ci', data=df_est.query(&quot;online==0&quot;), ls='', lw=2, alpha=0.2);
-plt.errorbar('age', 'sales', yerr='ci', data=df_est.query(&quot;online==1&quot;), ls='', lw=2, alpha=0.2);
+plt.errorbar('age', 'sales', yerr='ci', data=df_est.query(&quot;online==0&quot;), ls='', lw=3, alpha=0.2);
+plt.errorbar('age', 'sales', yerr='ci', data=df_est.query(&quot;online==1&quot;), ls='', lw=3, alpha=0.2);
 plt.title(&quot;Sales by firm's age&quot;);
-plt.legend().remove();
 </code></pre>
 <p><img src="img/binscatter_37_0.png" alt="png"></p>
 <p>From the binned scatterplot, we can see that <code>online</code> products have on average shorter lifetimes, with a higher initial peak in <code>sales</code>, followed by a sharper decline.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>In this blog post, we have analyzed a very powerful data visualization tool: the <strong>binned scatterplot</strong>.</p>
+<p>In this blog post, we have analyzed a very powerful data visualization tool: the <strong>binned scatterplot</strong>. In particular, we have seen how to use the <code>binsreg</code> package to automatically pick the optimal number of bins and perform non-parametric inference on conditional means. However, the <code>binsreg</code> package offers much more than that and I strongly recommend checking <a href="https://cran.r-project.org/web/packages/binsreg/binsreg.pdf" target="_blank" rel="noopener">its manual</a> more in depth.</p>
 <h2 id="references">References</h2>
 <p>[1] E Starr, B Goldfarb, <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/smj.3199" target="_blank" rel="noopener">Binned Scatterplots: A Simple Tool to Make Research Easier and Better</a> (2020), Strategic Management Journal.</p>
 <p>[2] M. D. Cattaneo, R. K. Crump, M. H. Farrell, Y. Feng, <a href="https://arxiv.org/abs/1902.09608" target="_blank" rel="noopener">On Binscatter</a> (2021), working paper.</p>
