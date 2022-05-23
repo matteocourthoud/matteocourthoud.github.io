@@ -775,8 +775,13 @@
     <li><a href="#example">Example</a></li>
     <li><a href="#direction-of-the-bias">Direction of the Bias</a></li>
     <li><a href="#further-sensitivity-analysis">Further Sensitivity Analysis</a></li>
-    <li><a href="#conclusion">Conclusion</a></li>
-    <li><a href="#references">References</a></li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
     </div>
@@ -860,7 +865,7 @@
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1370px; max-height: 723px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1452px; max-height: 626px;">
   <div style="position: relative">
     <img src="/post/ovb/featured.png" alt="" class="featured-image">
     
@@ -1080,6 +1085,7 @@ class D,Y included;
 class X1,X2 excluded;
 class Z unobserved;
 
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
 linkStyle 1,2 stroke:#ff0000,stroke-width:4px;
 </code></pre>
 <p>Does it mean that all our analysis is <strong>garbage</strong>? Can we still draw some causal conclusion from the regression results?</p>
@@ -1122,8 +1128,9 @@ plt.xlabel(&quot;Partial $R^2$ of ability with education&quot;);
 plt.ylabel(&quot;Partial $R^2$ of ability with wage&quot;);
 </code></pre>
 <p><img src="img/ovb_17_0.png" alt="png"></p>
-<p>From the plot, we can see that we need <code>ability</code> to explain around 30% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wages</code> to disappear. In particular, the red line plots the level curve corresponding to a zero coefficient.</p>
-<p>One question that you might (legitimately) have now is: what is 30%? Is it big or is it small? We can get a sense of the <strong>magnitude</strong> by comparing the results with the residual variance explained by another <em>observed</em> variable. Let&rsquo;s use <code>age</code> for example.</p>
+<p>In the <strong>plot</strong>, we see how the partial (because conditional on <code>age</code> and <code>gender</code>) $R^2$ of <code>ability</code> with <code>education</code> and <code>wage</code> affects the estimated coefficient of <code>education</code> on <code>wage</code>. The $(0,0)$ coordinate, marked with a <strong>triangle</strong>, corresponds to the current estimate and reflects what would happen if <code>ability</code> had no explanatory power for both <code>wage</code> with <code>education</code>: nothing. As the explanatory power of <code>ability</code> grows (moving upwards and rightwards from the triangle), the estimated coefficient decreases, as marked by the <strong>level curves</strong>, until it becomes zero at the <strong>dotted red line</strong>.</p>
+<p>How should we <strong>interpret</strong> the plot? We can see that we need <code>ability</code> to explain around 30% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wages</code> to disappear, corresponding to the red line.</p>
+<p>One question that you might (legitimately) have now is: what is 30%? Is it big or is it small? We can get a sense of the <strong>magnitude</strong> of the partial $R^2$ by <strong>benchmarking</strong> the results with the residual variance explained by another <em>observed</em> variable. Let&rsquo;s use <code>age</code> for example.</p>
 <p>The <code>Sensemakr</code> function accepts the following optional arguments:</p>
 <ul>
 <li><code>benchmark_covariates</code>: the covariate to use as a benchmark</li>
@@ -1150,24 +1157,21 @@ plt.xlabel(&quot;Partial $R^2$ of ability with education&quot;);
 plt.ylabel(&quot;Partial $R^2$ of ability with wage&quot;);
 </code></pre>
 <p><img src="img/ovb_21_0.png" alt="png"></p>
-<p>From the plot, we can see, we need <code>ability</code> to explain around 5% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wages</code> not to be significant. In particular, the red line plots the level curve for the t-statistic equal to 2.01, corresponding to a 5% significance level. From the comparison with <code>age</code>, we see that a similar explanatory power would be sufficient to make the coefficient of <code>education</code> on <code>wages</code> not statisticall significant.</p>
-<p>Lastly, we can look at some <strong>extreme scenarios</strong>, trying to answer the following question:</p>
-<blockquote>
-<p>Suppose that <code>ability</code> would fully explain the residual variation in <code>wage</code>. What would the estimated effect on <code>education</code> on <code>wages</code> be, depending on the residual variation of <code>education</code> explained by <code>ability</code>?</p>
-</blockquote>
-<p>We just need to set the <code>plot_type</code> option in the plotting function equal to <code>extreme</code>.</p>
-<pre><code class="language-python">sensitivity.plot(plot_type='extreme', lim=0.2)
-plt.xlabel(&quot;Partial $R^2$ of ability with education&quot;);
-plt.legend().set_title(&quot;Partial $R^2$ of ability with wage&quot;);
-</code></pre>
-<p><img src="img/ovb_23_0.png" alt="png"></p>
-<p>In the extreme scenarios of high correlation between <code>ability</code> and <code>wage</code>, even a small correlation between <code>ability</code> and <code>education</code> is sufficient to imply a substantially smaller true effect of <code>education</code> on <code>wage</code>.</p>
+<p>From the plot, we can see, we need <code>ability</code> to explain around 5% to 10% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wage</code> not to be significant. In particular, the red line plots the level curve for the t-statistic equal to 2.01, corresponding to a 5% significance level. From the comparison with <code>age</code>, we see that a similar explanatory power (<code>1.0x age</code>) would be sufficient to make the coefficient of <code>education</code> on <code>wage</code> not statistically significant.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this post, I have introduced the concept of <strong>omitted variable bias</strong>. We have seen how it&rsquo;s computed in a simple linear model and how we can exploit qualitative information about the variables to make inference in presence of omitted variable bias.</p>
 <p>These tools are extremely useful since omitted variable bias is essentially <strong>everywhere</strong>. First of all, there are always factors that we do not observe, such as ability in our toy example. However, even if we could observe everything, omitted variable bias can also emerge in the form of <strong>model misspecification</strong>. Suppose that <code>wages</code> depended on <code>age</code> in a quadratic way. Then, omitting the quadratic term from the regression introduces bias, which can be analyzed with the same tools we have used for <code>ability</code>.</p>
-<h2 id="references">References</h2>
+<h3 id="references">References</h3>
 <p>[1] C. Cinelli, C. Hazlett, <a href="https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12348" target="_blank" rel="noopener">Making Sense of Sensitivity: Extending Omitted Variable Bias</a> (2019), <em>Journal of the Royal Statistical Society</em>.</p>
 <p>[2] V. Chernozhukov, C. Cinelli, W. Newey, A. Sharma, V. Syrgkanis, <a href="https://arxiv.org/abs/2112.13398" target="_blank" rel="noopener">Long Story Short: Omitted Variable Bias in Causal Machine Learning</a> (2022), working paper.</p>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li><a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">The FWL Theorem, Or How To Make Regressions Intuitive</a></li>
+<li><a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">DAGs and Control Variables</a></li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/ovb.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/ovb.ipynb</a></p>
 
           </div>
           

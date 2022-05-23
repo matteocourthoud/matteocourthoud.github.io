@@ -227,6 +227,7 @@ class D,Y included;
 class X1,X2 excluded;
 class Z unobserved;
 
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
 linkStyle 1,2 stroke:#ff0000,stroke-width:4px;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Does it mean that all our analysis is &lt;strong&gt;garbage&lt;/strong&gt;? Can we still draw some causal conclusion from the regression results?&lt;/p&gt;
@@ -269,8 +270,9 @@ plt.xlabel(&amp;quot;Partial $R^2$ of ability with education&amp;quot;);
 plt.ylabel(&amp;quot;Partial $R^2$ of ability with wage&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/ovb_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;From the plot, we can see that we need &lt;code&gt;ability&lt;/code&gt; to explain around 30% of the residual variation in both &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; in order for the effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wages&lt;/code&gt; to disappear. In particular, the red line plots the level curve corresponding to a zero coefficient.&lt;/p&gt;
-&lt;p&gt;One question that you might (legitimately) have now is: what is 30%? Is it big or is it small? We can get a sense of the &lt;strong&gt;magnitude&lt;/strong&gt; by comparing the results with the residual variance explained by another &lt;em&gt;observed&lt;/em&gt; variable. Let&amp;rsquo;s use &lt;code&gt;age&lt;/code&gt; for example.&lt;/p&gt;
+&lt;p&gt;In the &lt;strong&gt;plot&lt;/strong&gt;, we see how the partial (because conditional on &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;gender&lt;/code&gt;) $R^2$ of &lt;code&gt;ability&lt;/code&gt; with &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; affects the estimated coefficient of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wage&lt;/code&gt;. The $(0,0)$ coordinate, marked with a &lt;strong&gt;triangle&lt;/strong&gt;, corresponds to the current estimate and reflects what would happen if &lt;code&gt;ability&lt;/code&gt; had no explanatory power for both &lt;code&gt;wage&lt;/code&gt; with &lt;code&gt;education&lt;/code&gt;: nothing. As the explanatory power of &lt;code&gt;ability&lt;/code&gt; grows (moving upwards and rightwards from the triangle), the estimated coefficient decreases, as marked by the &lt;strong&gt;level curves&lt;/strong&gt;, until it becomes zero at the &lt;strong&gt;dotted red line&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;How should we &lt;strong&gt;interpret&lt;/strong&gt; the plot? We can see that we need &lt;code&gt;ability&lt;/code&gt; to explain around 30% of the residual variation in both &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; in order for the effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wages&lt;/code&gt; to disappear, corresponding to the red line.&lt;/p&gt;
+&lt;p&gt;One question that you might (legitimately) have now is: what is 30%? Is it big or is it small? We can get a sense of the &lt;strong&gt;magnitude&lt;/strong&gt; of the partial $R^2$ by &lt;strong&gt;benchmarking&lt;/strong&gt; the results with the residual variance explained by another &lt;em&gt;observed&lt;/em&gt; variable. Let&amp;rsquo;s use &lt;code&gt;age&lt;/code&gt; for example.&lt;/p&gt;
 &lt;p&gt;The &lt;code&gt;Sensemakr&lt;/code&gt; function accepts the following optional arguments:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;benchmark_covariates&lt;/code&gt;: the covariate to use as a benchmark&lt;/li&gt;
@@ -297,24 +299,21 @@ plt.xlabel(&amp;quot;Partial $R^2$ of ability with education&amp;quot;);
 plt.ylabel(&amp;quot;Partial $R^2$ of ability with wage&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/ovb_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;From the plot, we can see, we need &lt;code&gt;ability&lt;/code&gt; to explain around 5% of the residual variation in both &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; in order for the effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wages&lt;/code&gt; not to be significant. In particular, the red line plots the level curve for the t-statistic equal to 2.01, corresponding to a 5% significance level. From the comparison with &lt;code&gt;age&lt;/code&gt;, we see that a similar explanatory power would be sufficient to make the coefficient of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wages&lt;/code&gt; not statisticall significant.&lt;/p&gt;
-&lt;p&gt;Lastly, we can look at some &lt;strong&gt;extreme scenarios&lt;/strong&gt;, trying to answer the following question:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Suppose that &lt;code&gt;ability&lt;/code&gt; would fully explain the residual variation in &lt;code&gt;wage&lt;/code&gt;. What would the estimated effect on &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wages&lt;/code&gt; be, depending on the residual variation of &lt;code&gt;education&lt;/code&gt; explained by &lt;code&gt;ability&lt;/code&gt;?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;We just need to set the &lt;code&gt;plot_type&lt;/code&gt; option in the plotting function equal to &lt;code&gt;extreme&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sensitivity.plot(plot_type=&#39;extreme&#39;, lim=0.2)
-plt.xlabel(&amp;quot;Partial $R^2$ of ability with education&amp;quot;);
-plt.legend().set_title(&amp;quot;Partial $R^2$ of ability with wage&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/ovb_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;In the extreme scenarios of high correlation between &lt;code&gt;ability&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt;, even a small correlation between &lt;code&gt;ability&lt;/code&gt; and &lt;code&gt;education&lt;/code&gt; is sufficient to imply a substantially smaller true effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wage&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;From the plot, we can see, we need &lt;code&gt;ability&lt;/code&gt; to explain around 5% to 10% of the residual variation in both &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; in order for the effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wage&lt;/code&gt; not to be significant. In particular, the red line plots the level curve for the t-statistic equal to 2.01, corresponding to a 5% significance level. From the comparison with &lt;code&gt;age&lt;/code&gt;, we see that a similar explanatory power (&lt;code&gt;1.0x age&lt;/code&gt;) would be sufficient to make the coefficient of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wage&lt;/code&gt; not statistically significant.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;In this post, I have introduced the concept of &lt;strong&gt;omitted variable bias&lt;/strong&gt;. We have seen how it&amp;rsquo;s computed in a simple linear model and how we can exploit qualitative information about the variables to make inference in presence of omitted variable bias.&lt;/p&gt;
 &lt;p&gt;These tools are extremely useful since omitted variable bias is essentially &lt;strong&gt;everywhere&lt;/strong&gt;. First of all, there are always factors that we do not observe, such as ability in our toy example. However, even if we could observe everything, omitted variable bias can also emerge in the form of &lt;strong&gt;model misspecification&lt;/strong&gt;. Suppose that &lt;code&gt;wages&lt;/code&gt; depended on &lt;code&gt;age&lt;/code&gt; in a quadratic way. Then, omitting the quadratic term from the regression introduces bias, which can be analyzed with the same tools we have used for &lt;code&gt;ability&lt;/code&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
 &lt;p&gt;[1] C. Cinelli, C. Hazlett, &lt;a href=&#34;https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12348&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Making Sense of Sensitivity: Extending Omitted Variable Bias&lt;/a&gt; (2019), &lt;em&gt;Journal of the Royal Statistical Society&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[2] V. Chernozhukov, C. Cinelli, W. Newey, A. Sharma, V. Syrgkanis, &lt;a href=&#34;https://arxiv.org/abs/2112.13398&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Long Story Short: Omitted Variable Bias in Causal Machine Learning&lt;/a&gt; (2022), working paper.&lt;/p&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The FWL Theorem, Or How To Make Regressions Intuitive&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/ovb.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/ovb.ipynb&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
