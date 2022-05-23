@@ -30,7 +30,7 @@
   
     
   
-  <meta name="description" content="In causal inference, bias is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver an estimate of the true effect, on average." />
+  <meta name="description" content="In causal inference, bias is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver the estimate of the true effect, on average." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/ovb/" />
@@ -333,16 +333,16 @@
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/ovb/" />
   <meta property="og:title" content="Omitted Variable Bias And What Can We Do About It | Matteo Courthoud" />
-  <meta property="og:description" content="In causal inference, bias is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver an estimate of the true effect, on average." /><meta property="og:image" content="https://matteocourthoud.github.io/post/ovb/featured.png" />
+  <meta property="og:description" content="In causal inference, bias is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver the estimate of the true effect, on average." /><meta property="og:image" content="https://matteocourthoud.github.io/post/ovb/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/ovb/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-05-21T00:00:00&#43;00:00"
+        content="2022-05-23T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-05-21T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-05-23T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/ovb/featured.png"
   ],
   
-  "datePublished": "2022-05-21T00:00:00Z",
-  "dateModified": "2022-05-21T00:00:00Z",
+  "datePublished": "2022-05-23T00:00:00Z",
+  "dateModified": "2022-05-23T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -385,7 +385,7 @@
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "In causal inference, bias is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver an estimate of the true effect, on average."
+  "description": "In causal inference, bias is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver the estimate of the true effect, on average."
 }
 </script>
 
@@ -826,7 +826,7 @@
     
       
     
-    May 21, 2022
+    May 23, 2022
   </span>
   
 
@@ -860,7 +860,7 @@
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1508px; max-height: 886px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1370px; max-height: 723px;">
   <div style="position: relative">
     <img src="/post/ovb/featured.png" alt="" class="featured-image">
     
@@ -870,12 +870,12 @@
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>In causal inference, <strong>bias</strong> is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver an estimate of the true effect, on average.</p>
-<p>This is why, in general, we prefer estimators that are <strong>unbiased</strong>, at the cost of a higher variance, i.e. more noise. Does it mean that every biased estimator is useless? Actually no. Sometimes, with domain knowledge, we can still draw some causal conclusion even with a biased estimator.</p>
-<p>In this post, we are going to review a specific but frequent source of bias, <strong>omitted variable bias</strong>. We are going to explore the causes of the bias and leverage these insights to make causal claims, despite the bias.</p>
+            <p>In causal inference, <strong>bias</strong> is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver the estimate of the true effect, on average.</p>
+<p>This is why, in general, we prefer estimators that are <strong>unbiased</strong>, at the cost of a higher variance, i.e. more noise. Does it mean that every biased estimator is useless? Actually no. Sometimes, with domain knowledge, we can still draw causal conclusions even with a biased estimator.</p>
+<p>In this post, we are going to review a specific but frequent source of bias, <strong>omitted variable bias (OVB)</strong>. We are going to explore the causes of the bias and leverage these insights to make causal statements, despite the bias.</p>
 <h2 id="theory">Theory</h2>
-<p>Suppose we are interested in the effect of a variable $D$ on a variable $y$. Assume the data generating process can be represented with the following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a>. If you are not familiar with DAGs, I have written a short <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">introduction here</a>.</p>
-<pre><code class="language-mermaid">flowchart TD
+<p>Suppose we are interested in the effect of a variable $D$ on a variable $y$. However, there is a third variable $Z$ that we do not observe and that is correlated with both $D$ and $Y$. Assume the data generating process can be represented with the following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a>. If you are not familiar with DAGs, I have written a short <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">introduction here</a>.</p>
+<pre><code class="language-mermaid">flowchart LR
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
 classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
@@ -888,19 +888,20 @@ D --&gt; Y
 Z --&gt; D
 Z --&gt; Y
 
-class D,Z,Y excluded;
+class D,Y excluded;
+class Z unobserved;
 </code></pre>
-<p>If we could observe $Z$, we would run a linear regression to estimate the following model:</p>
+<p>Since there is a <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>backdoor path</strong></a> from $D$ to $y$ passing through $Z$, we need to condition our analysis on $Z$ in order to recover the causal effect of $D$ on $y$. If we could observe $Z$, we would run a linear regression of $y$ on $D$ and $Z$ to estimate the following model:</p>
 <p>$$
 y = \alpha D + \gamma Z + \varepsilon
 $$</p>
-<p>where $\alpha$ is the effect of interest, and $Z$ is a variable that we do not observe or have access to. This model is usually referred to as the <strong>long model</strong> since it includes all variables of the model.</p>
-<p>However, we do not observe $Z$, so that we have to estimate the following model:</p>
+<p>where $\alpha$ is the effect of interest. This regression is usually referred to as the <strong>long regression</strong> since it includes all variables of the model.</p>
+<p>However, since we do not observe $Z$, so that we have to estimate the following model:</p>
 <p>$$
 y = \alpha D + u
 $$</p>
-<p>This model is usually referred to as the <strong>short model</strong> since it does not include all the variables of the model</p>
-<p>What is the <strong>consequence</strong> of estimating the short model when the true model is the long one?</p>
+<p>The corresponding regression is usually referred to as the <strong>short regression</strong> since it does not include all the variables of the model</p>
+<p>What is the <strong>consequence</strong> of estimating the short regression when the true model is the long one?</p>
 <p>In that case, the OLS estimator of $\alpha$ is</p>
 <p>$$
 \begin{align}
@@ -915,7 +916,7 @@ $$</p>
 $$</p>
 <p>Therefore, we can write the <strong>omitted variable bias</strong> as</p>
 <p>$$
-\text{omitted variable bias} = \gamma \delta \qquad \text{ where } \qquad \delta := \frac{Cov(D, Z)}{Var(D)}
+\text{OVB} = \gamma \delta \qquad \text{ where } \qquad \delta := \frac{Cov(D, Z)}{Var(D)}
 $$</p>
 <p>The beauty of this formula is its <strong>interpretability</strong>: the omitted variable bias consists in just <strong>two components</strong>, both extremely easy to interpret.</p>
 <ul>
@@ -927,15 +928,20 @@ $$</p>
 <p>$$
 y = \alpha D + \beta X + \gamma Z + \varepsilon
 $$</p>
-<p>Thanks to the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener"><strong>Frisch-Waugh-Lowell theorem</strong></a>, we can simply <strong>partial-out</strong> $X$ and express the Omitted Variable Bias in terms of $D$ and $Z$.</p>
+<p>Thanks to the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener"><strong>Frisch-Waugh-Lowell theorem</strong></a>, we can simply <strong>partial-out</strong> $X$ and express the omitted variable bias in terms of $D$ and $Z$.</p>
 <p>$$
-\text{omitted variable bias} = \gamma \times \frac{Cov(D^{\perp X}, Z^{\perp X})}{Var(D^{\perp X})}
+\text{OVB} = \gamma \times \frac{Cov(D^{\perp X}, Z^{\perp X})}{Var(D^{\perp X})}
 $$</p>
 <p>where $D^{\perp X}$ are the residuals from regressing $D$ on $X$ and $Z^{\perp X}$ are the residuals from regressing $Z$ on $X$. If you are not familiar with Frisch-Waugh-Lowell theorem, I have written a short <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">note here</a>.</p>
+<p><a href="https://arxiv.org/abs/2112.13398" target="_blank" rel="noopener">Chernozhukov, Cinelli, Newey, Sharma, Syrgkanis (2022)</a> further generalize to analysis the the setting in which the control variables $X$ and the unobserved variables $Z$ enter the long model with a general functional form $f$</p>
+<p>$$
+y = \alpha D + f(Z, X) + \varepsilon
+$$</p>
+<p>You can find more details in their paper, but the underlying idea remains the same.</p>
 <h2 id="example">Example</h2>
-<p>Suppose were a researcher interested in the relationship between <strong>education</strong> and <strong>wages</strong>. Does investing in education pay off in terms of future wages? Suppose we had data on wages for people with different years of education. Why not looking at the correlation between years of education and wages.</p>
-<p>The problem is that there might be many unobserved variables that are actually correlated with both variables. For simplicity, let&rsquo;s concentrate on <strong>ability</strong>. People of higher ability might decide to invest more in education just because they are better in school and they get more opportunities. On the other hand, they might also get higher wages afterwards, purely because of their innate ability.</p>
-<p>We can represent the data generating process with a <strong>Directed Acyclic Graph</strong> (DAG). If you are not familiar with DAGs, I have written a short introduction to <a href="https://medium.com/towards-data-science/controls-b63dc69e3d8c" target="_blank" rel="noopener">Directed Acyclic Graphs here</a>.</p>
+<p>Suppose we were a researcher interested in the relationship between <strong>education</strong> and <strong>wages</strong>. Does investing in education pay off in terms of future wages? Suppose we had data on wages for people with different years of education. Why not looking at the correlation between years of education and wages?</p>
+<p>The problem is that there might be many <strong>unobserved variables</strong> that are correlated with both education and wages. For simplicity, let&rsquo;s concentrate on <strong>ability</strong>. People of higher ability might decide to invest more in education just because they are better in school and they get more opportunities. On the other hand, they might also get higher wages afterwards, purely because of their innate ability.</p>
+<p>We can represent the data generating process with the following <strong>Directed Acyclic Graph</strong> (DAG).</p>
 <pre><code class="language-mermaid">flowchart TD
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -985,7 +991,7 @@ df.head()
     <tr style="text-align: right;">
       <th></th>
       <th>age</th>
-      <th>male</th>
+      <th>gender</th>
       <th>education</th>
       <th>wage</th>
     </tr>
@@ -994,64 +1000,64 @@ df.head()
     <tr>
       <th>0</th>
       <td>62</td>
-      <td>1</td>
-      <td>12.0</td>
-      <td>5700.0</td>
+      <td>male</td>
+      <td>6.0</td>
+      <td>3800.0</td>
     </tr>
     <tr>
       <th>1</th>
       <td>44</td>
-      <td>0</td>
-      <td>13.0</td>
-      <td>4200.0</td>
+      <td>male</td>
+      <td>8.0</td>
+      <td>4500.0</td>
     </tr>
     <tr>
       <th>2</th>
       <td>63</td>
-      <td>1</td>
-      <td>9.0</td>
-      <td>4300.0</td>
+      <td>male</td>
+      <td>8.0</td>
+      <td>4700.0</td>
     </tr>
     <tr>
       <th>3</th>
       <td>33</td>
-      <td>1</td>
-      <td>11.0</td>
-      <td>5000.0</td>
+      <td>male</td>
+      <td>7.0</td>
+      <td>3500.0</td>
     </tr>
     <tr>
       <th>4</th>
       <td>57</td>
-      <td>0</td>
-      <td>12.0</td>
-      <td>4400.0</td>
+      <td>female</td>
+      <td>6.0</td>
+      <td>4000.0</td>
     </tr>
   </tbody>
 </table>
 </div>
 <p>We have information on <strong>300 individuals</strong>, for which we observe their <code>age</code>, their <code>gender</code>, the years of <code>education</code>, and the current monthly <code>wage</code>.</p>
 <p>Suppose we were directly regressing <code>wage</code> on <code>education</code>.</p>
-<pre><code class="language-python">model = smf.ols('wage ~ education + male + age', df).fit()
+<pre><code class="language-python">model = smf.ols('wage ~ education + gender + age', df).fit()
 model.summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+         <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td> 2462.7571</td> <td>  785.781</td> <td>    3.134</td> <td> 0.003</td> <td>  881.061</td> <td> 4044.453</td>
+  <th>Intercept</th>      <td> 2657.8864</td> <td>  444.996</td> <td>    5.973</td> <td> 0.000</td> <td> 1762.155</td> <td> 3553.618</td>
 </tr>
 <tr>
-  <th>education</th> <td>  118.9297</td> <td>   52.623</td> <td>    2.260</td> <td> 0.029</td> <td>   13.005</td> <td>  224.854</td>
+  <th>gender[T.male]</th> <td>  335.1075</td> <td>  132.685</td> <td>    2.526</td> <td> 0.015</td> <td>   68.027</td> <td>  602.188</td>
 </tr>
 <tr>
-  <th>male</th>      <td>  603.7639</td> <td>  208.670</td> <td>    2.893</td> <td> 0.006</td> <td>  183.733</td> <td> 1023.795</td>
+  <th>education</th>      <td>   95.9437</td> <td>   38.752</td> <td>    2.476</td> <td> 0.017</td> <td>   17.940</td> <td>  173.948</td>
 </tr>
 <tr>
-  <th>age</th>       <td>   20.5268</td> <td>    9.583</td> <td>    2.142</td> <td> 0.038</td> <td>    1.236</td> <td>   39.817</td>
+  <th>age</th>            <td>   12.3120</td> <td>    6.110</td> <td>    2.015</td> <td> 0.050</td> <td>    0.013</td> <td>   24.611</td>
 </tr>
 </table>
-<p>The coefficient of <code>education</code> is positive and significant. However, we know there might be an <strong>omitted variable bias</strong>, because we do not observe <code>ability</code>. In terms of DAGs, there is a <strong>backdoor path</strong> from <code>education</code> to <code>wage</code> that is not blocked and therefore biases our estimate.</p>
+<p>The coefficient of <code>education</code> is positive and significant. However, we know there might be an <strong>omitted variable bias</strong>, because we do not observe <code>ability</code>. In terms of DAGs, there is a <strong>backdoor path</strong> from <code>education</code> to <code>wage</code> passing through <code>ability</code> that is not blocked and therefore biases our estimate.</p>
 <pre><code class="language-mermaid">flowchart TD
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -1074,15 +1080,15 @@ class Z unobserved;
 
 linkStyle 1,2 stroke:#ff0000,stroke-width:4px;
 </code></pre>
-<p>Does it mean that all our analysis is garbage? Can we still draw some causal inference from the regression results?</p>
+<p>Does it mean that all our analysis is <strong>garbage</strong>? Can we still draw some causal conclusion from the regression results?</p>
 <h2 id="direction-of-the-bias">Direction of the Bias</h2>
 <p>If we knew the signs of $\gamma$ and $\delta$, we could infer the sign of the bias, since it&rsquo;s the product of the two signs.</p>
 <p>$$
-\text{omitted variable bias} = \gamma \delta \qquad \text{ where } \qquad \gamma := \frac{Cov(Z^{\perp D}, y^{\perp D})}{Var(Z^{\perp D})}, \quad \delta := \frac{Cov(D, Z)}{Var(D)}
+\text{OVB} = \gamma \delta \qquad \text{ where } \qquad \gamma := \frac{Cov(Z, y)}{Var(Z)}, \quad \delta := \frac{Cov(D, Z)}{Var(D)}
 $$</p>
 <p>which in our example is</p>
 <p>$$
-\text{omitted variable bias} = \gamma \delta \qquad \text{ where } \qquad \gamma := \frac{Cov(\text{ability}, \text{wage})}{Var(\text{ability})}, \quad \delta := \frac{Cov(\text{education}, \text{ability})}{Var(\text{education})}
+\text{OVB} = \gamma \delta \qquad \text{ where } \qquad \gamma := \frac{Cov(\text{ability}, \text{wage})}{Var(\text{ability})}, \quad \delta := \frac{Cov(\text{education}, \text{ability})}{Var(\text{education})}
 $$</p>
 <p>Let&rsquo;s analyze the two correlations separately:</p>
 <ul>
@@ -1090,17 +1096,17 @@ $$</p>
 <li>The correlation between <code>ability</code> and <code>education</code> is most likely positive</li>
 </ul>
 <p>Therefore, the bias is most likely <strong>positive</strong>. From this, we can conclude that our estimate from the regression on <code>wage</code> on <code>education</code> is most likely a <strong>overestimate</strong> of the true effect, which is most likely smaller.</p>
-<p>This might seem like a small insight, but it&rsquo;s actually huge. Now we can say with confidence that one year of <code>education</code> increases <code>wages</code> by <strong>at most</strong> 118 dollars per month, which is a much much better than not being able to say anything.</p>
+<p>This might seem like a small insight, but it&rsquo;s actually huge. Now we can say with confidence that one year of <code>education</code> increases <code>wages</code> by <strong>at most</strong> 95 dollars per month, which is a much more informative statement than just saying that the estimate is biased.</p>
 <h2 id="further-sensitivity-analysis">Further Sensitivity Analysis</h2>
-<p>Can we say more about the omitted variable bias without making strong assumptions?</p>
-<p>The answer is yes! In particular, we can ask ourselves: how strong should the partial correlations $\gamma$ and $\delta$ be in order to overturn our results?</p>
-<p>In our example, we found a positive correlation between <code>education</code> and <code>wages</code> in the data. However, we know that we are omitting <code>ability</code> in our regression. The question is: how strong should the correlation between <code>ability</code> and <code>wage</code>, $\gamma$ and between <code>ability</code> and <code>education</code>, $\delta$, be in order to make the effect not significant or even negative?</p>
-<p><a href="https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12348" target="_blank" rel="noopener">Cinelli and Hazlett (2020)</a> show that we can transform this question in terms of residual variation explained, i.e. the <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination" target="_blank" rel="noopener">coefficient of determination, $R^2$</a>. The advantage of this approach is interpretability. It is much easier to make a guess about the percentage of variance explained than to make a guess about the magnitude of a conditional correlation.</p>
+<p>Can we say <strong>more</strong> about the omitted variable bias without making strong assumptions?</p>
+<p>The answer is yes! In particular, we can ask ourselves: how strong should the partial correlations $\gamma$ and $\delta$ be in order to <strong>overturn</strong> our conclusion?</p>
+<p>In our example, we found a positive correlation between <code>education</code> and <code>wages</code> in the data. However, we know that we are omitting <code>ability</code> in the regression. The question is: how strong should the correlation between <code>ability</code> and <code>wage</code>, $\gamma$, and between <code>ability</code> and <code>education</code>, $\delta$, be in order to make the effect not significant or even negative?</p>
+<p><a href="https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12348" target="_blank" rel="noopener">Cinelli and Hazlett (2020)</a> show that we can transform this question in terms of residual variation explained, i.e. the <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination" target="_blank" rel="noopener">coefficient of determination, $R^2$</a>. The advantage of this approach is <strong>interpretability</strong>. It is much easier to make a guess about the percentage of variance explained than to make a guess about the magnitude of a conditional correlation.</p>
 <p>The authors wrote a companion package <a href="https://github.com/carloscinelli/sensemakr" target="_blank" rel="noopener"><code>sensemakr</code></a> to conduct the sensitivity analysis. You can find a detailed description of the package <a href="https://cran.r-project.org/web/packages/sensemakr/vignettes/sensemakr.html" target="_blank" rel="noopener">here</a>.</p>
-<p>The main <strong>arguments</strong> of the <code>Sensemakr</code> function are:</p>
+<p>We will now use the <code>Sensemakr</code> function. The main <strong>arguments</strong> of the <code>Sensemakr</code> function are:</p>
 <ul>
 <li><code>model</code>: the regression model we want to analyze</li>
-<li><code>treatment</code>: the feature/covariate of interest</li>
+<li><code>treatment</code>: the feature/covariate of interest, in our case <code>education</code></li>
 </ul>
 <p>The question we will try to answer is the following:</p>
 <blockquote>
@@ -1114,12 +1120,12 @@ plt.xlabel(&quot;Partial $R^2$ of ability with education&quot;);
 plt.ylabel(&quot;Partial $R^2$ of ability with wage&quot;);
 </code></pre>
 <p><img src="img/ovb_17_0.png" alt="png"></p>
-<p>From the plot, we can see, we need <code>ability</code> to explain around 30% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wages</code> to disappear. In particular, the red line plots the level curve corresponding to a zero coefficient.</p>
+<p>From the plot, we can see that we need <code>ability</code> to explain around 30% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wages</code> to disappear. In particular, the red line plots the level curve corresponding to a zero coefficient.</p>
 <p>One question that you might (legitimately) have now is: what is 30%? Is it big or is it small? We can get a sense of the <strong>magnitude</strong> by comparing the results with the residual variance explained by another <em>observed</em> variable. Let&rsquo;s use <code>age</code> for example.</p>
 <p>The <code>Sensemakr</code> function accepts the following optional arguments:</p>
 <ul>
 <li><code>benchmark_covariates</code>: the covariate to use as a benchmark</li>
-<li><code>kd</code> and <code>ky</code>: these arguments parameterize how many times stronger the confounder is related to the treatment (<code>kd</code>) and to the outcome (<code>ky</code>) in comparison to the observed benchmark covariate (female). In our example, setting <code>kd</code> and <code>ky</code> equal to $[0.5, 1, 2]$ means we want to investigate the maximum strength of a confounder half, same, or twice as strong as <code>age</code> (in explaining treatment and outcome variation).</li>
+<li><code>kd</code> and <code>ky</code>: these arguments parameterize how many times stronger the unobserved variable (<code>ability</code>) is related to the treatment (<code>kd</code>) and to the outcome (<code>ky</code>) in comparison to the observed benchmark covariate (<code>age</code>). In our example, setting <code>kd</code> and <code>ky</code> equal to $[0.5, 1, 2]$ means we want to investigate the maximum strength of a variable half, same, or twice as strong as <code>age</code> (in explaining <code>education</code> and <code>wage</code> variation).</li>
 </ul>
 <pre><code class="language-python">sensitivity = sensemakr.Sensemakr(model = model, 
                                   treatment = &quot;education&quot;,
@@ -1143,9 +1149,9 @@ plt.ylabel(&quot;Partial $R^2$ of ability with wage&quot;);
 </code></pre>
 <p><img src="img/ovb_21_0.png" alt="png"></p>
 <p>From the plot, we can see, we need <code>ability</code> to explain around 5% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wages</code> not to be significant. In particular, the red line plots the level curve for the t-statistic equal to 2.01, corresponding to a 5% significance level. From the comparison with <code>age</code>, we see that a similar explanatory power would be sufficient to make the coefficient of <code>education</code> on <code>wages</code> not statisticall significant.</p>
-<p>Lastly, we can look at some <strong>extreme scenarios</strong>. We try to answer the following question:</p>
+<p>Lastly, we can look at some <strong>extreme scenarios</strong>, trying to answer the following question:</p>
 <blockquote>
-<p>Suppose that <code>ability</code> would fully explain the residual variation in <code>wage</code>. How would the estimated effect on <code>education</code> on <code>wages</code> then depend on the residual variation of <code>education</code> explained by <code>ability</code>?</p>
+<p>Suppose that <code>ability</code> would fully explain the residual variation in <code>wage</code>. What would the estimated effect on <code>education</code> on <code>wages</code> be, depending on the residual variation of <code>education</code> explained by <code>ability</code>?</p>
 </blockquote>
 <p>We just need to set the <code>plot_type</code> option in the plotting function equal to <code>extreme</code>.</p>
 <pre><code class="language-python">sensitivity.plot(plot_type='extreme', lim=0.2)
@@ -1153,10 +1159,10 @@ plt.xlabel(&quot;Partial $R^2$ of ability with education&quot;);
 plt.legend().set_title(&quot;Partial $R^2$ of ability with wage&quot;);
 </code></pre>
 <p><img src="img/ovb_23_0.png" alt="png"></p>
-<p>In the extreme scenarios of high correlation between <code>ability</code> and <code>wage</code>, even a small correlation between <code>ability</code> is sufficient to imply a substantially smaller true effect of <code>education</code> on <code>wage</code>.</p>
+<p>In the extreme scenarios of high correlation between <code>ability</code> and <code>wage</code>, even a small correlation between <code>ability</code> and <code>education</code> is sufficient to imply a substantially smaller true effect of <code>education</code> on <code>wage</code>.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>In this post, I have introduced the concept of omitted variable bias. We have seen how it&rsquo;s computed in a simple linear model and how we can exploit qualitative information to make inference in presence of omitted variable bias.</p>
-<p>These tools are extremely useful since omitted variable bias is essentially <strong>everywhere</strong>. First of all, there are always factors that we do not observe, such as ability in our toy example. However, even if we could observe everything, omitted variable bias can also emerge in the form of <strong>model misspecification</strong>. Suppose that <code>wages</code> depended on <code>age</code> in a quadratic way. Then, also omitting the quadratic term from the regression introduces bias, which can be analyzed with the same tools we have used for <code>ability</code>.</p>
+<p>In this post, I have introduced the concept of <strong>omitted variable bias</strong>. We have seen how it&rsquo;s computed in a simple linear model and how we can exploit qualitative information about the variables to make inference in presence of omitted variable bias.</p>
+<p>These tools are extremely useful since omitted variable bias is essentially <strong>everywhere</strong>. First of all, there are always factors that we do not observe, such as ability in our toy example. However, even if we could observe everything, omitted variable bias can also emerge in the form of <strong>model misspecification</strong>. Suppose that <code>wages</code> depended on <code>age</code> in a quadratic way. Then, omitting the quadratic term from the regression introduces bias, which can be analyzed with the same tools we have used for <code>ability</code>.</p>
 <h2 id="references">References</h2>
 <p>[1] C. Cinelli, C. Hazlett, <a href="https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12348" target="_blank" rel="noopener">Making Sense of Sensitivity: Extending Omitted Variable Bias</a> (2019), <em>Journal of the Royal Statistical Society</em>.</p>
 <p>[2] V. Chernozhukov, C. Cinelli, W. Newey, A. Sharma, V. Syrgkanis, <a href="https://arxiv.org/abs/2112.13398" target="_blank" rel="noopener">Long Story Short: Omitted Variable Bias in Causal Machine Learning</a> (2022), working paper.</p>
