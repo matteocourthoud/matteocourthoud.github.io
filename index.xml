@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Mon, 23 May 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 24 May 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -27309,7 +27309,7 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     <item>
       <title>Omitted Variable Bias And What Can We Do About It</title>
       <link>https://matteocourthoud.github.io/post/ovb/</link>
-      <pubDate>Mon, 23 May 2022 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 24 May 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/ovb/</guid>
       <description>&lt;p&gt;In causal inference, &lt;strong&gt;bias&lt;/strong&gt; is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver the estimate of the true effect, on average.&lt;/p&gt;
 &lt;p&gt;This is why, in general, we prefer estimators that are &lt;strong&gt;unbiased&lt;/strong&gt;, at the cost of a higher variance, i.e. more noise. Does it mean that every biased estimator is useless? Actually no. Sometimes, with domain knowledge, we can still draw causal conclusions even with a biased estimator.&lt;/p&gt;
@@ -27337,7 +27337,7 @@ class Z unobserved;
 y = \alpha D + \gamma Z + \varepsilon
 $$&lt;/p&gt;
 &lt;p&gt;where $\alpha$ is the effect of interest. This regression is usually referred to as the &lt;strong&gt;long regression&lt;/strong&gt; since it includes all variables of the model.&lt;/p&gt;
-&lt;p&gt;However, since we do not observe $Z$, so that we have to estimate the following model:&lt;/p&gt;
+&lt;p&gt;However, since we do not observe $Z$, we have to estimate the following model:&lt;/p&gt;
 &lt;p&gt;$$
 y = \alpha D + u
 $$&lt;/p&gt;
@@ -27479,8 +27479,8 @@ df.head()
 &lt;/div&gt;
 &lt;p&gt;We have information on &lt;strong&gt;300 individuals&lt;/strong&gt;, for which we observe their &lt;code&gt;age&lt;/code&gt;, their &lt;code&gt;gender&lt;/code&gt;, the years of &lt;code&gt;education&lt;/code&gt;, and the current monthly &lt;code&gt;wage&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Suppose we were directly regressing &lt;code&gt;wage&lt;/code&gt; on &lt;code&gt;education&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model = smf.ols(&#39;wage ~ education + gender + age&#39;, df).fit()
-model.summary().tables[1]
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;short_model = smf.ols(&#39;wage ~ education + gender + age&#39;, df).fit()
+short_model.summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
 &lt;tr&gt;
@@ -27539,8 +27539,10 @@ $$&lt;/p&gt;
 &lt;li&gt;The correlation between &lt;code&gt;ability&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; is most likely positive&lt;/li&gt;
 &lt;li&gt;The correlation between &lt;code&gt;ability&lt;/code&gt; and &lt;code&gt;education&lt;/code&gt; is most likely positive&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Therefore, the bias is most likely &lt;strong&gt;positive&lt;/strong&gt;. From this, we can conclude that our estimate from the regression on &lt;code&gt;wage&lt;/code&gt; on &lt;code&gt;education&lt;/code&gt; is most likely a &lt;strong&gt;overestimate&lt;/strong&gt; of the true effect, which is most likely smaller.&lt;/p&gt;
+&lt;p&gt;Therefore, the bias is most likely &lt;strong&gt;positive&lt;/strong&gt;. From this, we can conclude that our estimate from the regression on &lt;code&gt;wage&lt;/code&gt; on &lt;code&gt;education&lt;/code&gt; is most likely an &lt;strong&gt;overestimate&lt;/strong&gt; of the true effect, which is most likely smaller.&lt;/p&gt;
 &lt;p&gt;This might seem like a small insight, but it&amp;rsquo;s actually huge. Now we can say with confidence that one year of &lt;code&gt;education&lt;/code&gt; increases &lt;code&gt;wages&lt;/code&gt; by &lt;strong&gt;at most&lt;/strong&gt; 95 dollars per month, which is a much more informative statement than just saying that the estimate is biased.&lt;/p&gt;
+&lt;p&gt;In general, we can summarize the different possible effects of the bias in a 2-by-2 &lt;strong&gt;table&lt;/strong&gt;.&lt;/p&gt;
+&lt;img src=&#34;other/ovb.png&#34; width=60% /&gt;
 &lt;h2 id=&#34;further-sensitivity-analysis&#34;&gt;Further Sensitivity Analysis&lt;/h2&gt;
 &lt;p&gt;Can we say &lt;strong&gt;more&lt;/strong&gt; about the omitted variable bias without making strong assumptions?&lt;/p&gt;
 &lt;p&gt;The answer is yes! In particular, we can ask ourselves: how strong should the partial correlations $\gamma$ and $\delta$ be in order to &lt;strong&gt;overturn&lt;/strong&gt; our conclusion?&lt;/p&gt;
@@ -27558,7 +27560,7 @@ $$&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import sensemakr
 
-sensitivity = sensemakr.Sensemakr(model = model, treatment = &amp;quot;education&amp;quot;)
+sensitivity = sensemakr.Sensemakr(model = short_model, treatment = &amp;quot;education&amp;quot;)
 sensitivity.plot()
 plt.xlabel(&amp;quot;Partial $R^2$ of ability with education&amp;quot;);
 plt.ylabel(&amp;quot;Partial $R^2$ of ability with wage&amp;quot;);
@@ -27572,7 +27574,7 @@ plt.ylabel(&amp;quot;Partial $R^2$ of ability with wage&amp;quot;);
 &lt;li&gt;&lt;code&gt;benchmark_covariates&lt;/code&gt;: the covariate to use as a benchmark&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;kd&lt;/code&gt; and &lt;code&gt;ky&lt;/code&gt;: these arguments parameterize how many times stronger the unobserved variable (&lt;code&gt;ability&lt;/code&gt;) is related to the treatment (&lt;code&gt;kd&lt;/code&gt;) and to the outcome (&lt;code&gt;ky&lt;/code&gt;) in comparison to the observed benchmark covariate (&lt;code&gt;age&lt;/code&gt;). In our example, setting &lt;code&gt;kd&lt;/code&gt; and &lt;code&gt;ky&lt;/code&gt; equal to $[0.5, 1, 2]$ means we want to investigate the maximum strength of a variable half, same, or twice as strong as &lt;code&gt;age&lt;/code&gt; (in explaining &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; variation).&lt;/li&gt;
 &lt;/ul&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sensitivity = sensemakr.Sensemakr(model = model, 
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sensitivity = sensemakr.Sensemakr(model = short_model, 
                                   treatment = &amp;quot;education&amp;quot;,
                                   benchmark_covariates = &amp;quot;age&amp;quot;,
                                   kd = [0.5, 1, 2],
@@ -27593,7 +27595,7 @@ plt.xlabel(&amp;quot;Partial $R^2$ of ability with education&amp;quot;);
 plt.ylabel(&amp;quot;Partial $R^2$ of ability with wage&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/ovb_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;From the plot, we can see, we need &lt;code&gt;ability&lt;/code&gt; to explain around 5% to 10% of the residual variation in both &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; in order for the effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wage&lt;/code&gt; not to be significant. In particular, the red line plots the level curve for the t-statistic equal to 2.01, corresponding to a 5% significance level. From the comparison with &lt;code&gt;age&lt;/code&gt;, we see that a similar explanatory power (&lt;code&gt;1.0x age&lt;/code&gt;) would be sufficient to make the coefficient of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wage&lt;/code&gt; not statistically significant.&lt;/p&gt;
+&lt;p&gt;From the plot, we can see, we need &lt;code&gt;ability&lt;/code&gt; to explain around 5% to 10% of the residual variation in both &lt;code&gt;education&lt;/code&gt; and &lt;code&gt;wage&lt;/code&gt; in order for the effect of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wage&lt;/code&gt; not to be significant. In particular, the red line plots the level curve for the t-statistic equal to 2.01, corresponding to a 5% significance level. From the comparison with &lt;code&gt;age&lt;/code&gt;, we see that a slightly stronger explanatory power (bigger than &lt;code&gt;1.0x age&lt;/code&gt;) would be sufficient to make the coefficient of &lt;code&gt;education&lt;/code&gt; on &lt;code&gt;wage&lt;/code&gt; not statistically significant.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;In this post, I have introduced the concept of &lt;strong&gt;omitted variable bias&lt;/strong&gt;. We have seen how it&amp;rsquo;s computed in a simple linear model and how we can exploit qualitative information about the variables to make inference in presence of omitted variable bias.&lt;/p&gt;
 &lt;p&gt;These tools are extremely useful since omitted variable bias is essentially &lt;strong&gt;everywhere&lt;/strong&gt;. First of all, there are always factors that we do not observe, such as ability in our toy example. However, even if we could observe everything, omitted variable bias can also emerge in the form of &lt;strong&gt;model misspecification&lt;/strong&gt;. Suppose that &lt;code&gt;wages&lt;/code&gt; depended on &lt;code&gt;age&lt;/code&gt; in a quadratic way. Then, omitting the quadratic term from the regression introduces bias, which can be analyzed with the same tools we have used for &lt;code&gt;ability&lt;/code&gt;.&lt;/p&gt;

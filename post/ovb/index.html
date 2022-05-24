@@ -339,10 +339,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-05-23T00:00:00&#43;00:00"
+        content="2022-05-24T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-05-23T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-05-24T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/ovb/featured.png"
   ],
   
-  "datePublished": "2022-05-23T00:00:00Z",
-  "dateModified": "2022-05-23T00:00:00Z",
+  "datePublished": "2022-05-24T00:00:00Z",
+  "dateModified": "2022-05-24T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -831,7 +831,7 @@
     
       
     
-    May 23, 2022
+    May 24, 2022
   </span>
   
 
@@ -901,7 +901,7 @@ class Z unobserved;
 y = \alpha D + \gamma Z + \varepsilon
 $$</p>
 <p>where $\alpha$ is the effect of interest. This regression is usually referred to as the <strong>long regression</strong> since it includes all variables of the model.</p>
-<p>However, since we do not observe $Z$, so that we have to estimate the following model:</p>
+<p>However, since we do not observe $Z$, we have to estimate the following model:</p>
 <p>$$
 y = \alpha D + u
 $$</p>
@@ -1043,8 +1043,8 @@ df.head()
 </div>
 <p>We have information on <strong>300 individuals</strong>, for which we observe their <code>age</code>, their <code>gender</code>, the years of <code>education</code>, and the current monthly <code>wage</code>.</p>
 <p>Suppose we were directly regressing <code>wage</code> on <code>education</code>.</p>
-<pre><code class="language-python">model = smf.ols('wage ~ education + gender + age', df).fit()
-model.summary().tables[1]
+<pre><code class="language-python">short_model = smf.ols('wage ~ education + gender + age', df).fit()
+short_model.summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
@@ -1103,8 +1103,10 @@ $$</p>
 <li>The correlation between <code>ability</code> and <code>wage</code> is most likely positive</li>
 <li>The correlation between <code>ability</code> and <code>education</code> is most likely positive</li>
 </ul>
-<p>Therefore, the bias is most likely <strong>positive</strong>. From this, we can conclude that our estimate from the regression on <code>wage</code> on <code>education</code> is most likely a <strong>overestimate</strong> of the true effect, which is most likely smaller.</p>
+<p>Therefore, the bias is most likely <strong>positive</strong>. From this, we can conclude that our estimate from the regression on <code>wage</code> on <code>education</code> is most likely an <strong>overestimate</strong> of the true effect, which is most likely smaller.</p>
 <p>This might seem like a small insight, but it&rsquo;s actually huge. Now we can say with confidence that one year of <code>education</code> increases <code>wages</code> by <strong>at most</strong> 95 dollars per month, which is a much more informative statement than just saying that the estimate is biased.</p>
+<p>In general, we can summarize the different possible effects of the bias in a 2-by-2 <strong>table</strong>.</p>
+<img src="other/ovb.png" width=60% />
 <h2 id="further-sensitivity-analysis">Further Sensitivity Analysis</h2>
 <p>Can we say <strong>more</strong> about the omitted variable bias without making strong assumptions?</p>
 <p>The answer is yes! In particular, we can ask ourselves: how strong should the partial correlations $\gamma$ and $\delta$ be in order to <strong>overturn</strong> our conclusion?</p>
@@ -1122,7 +1124,7 @@ $$</p>
 </blockquote>
 <pre><code class="language-python">import sensemakr
 
-sensitivity = sensemakr.Sensemakr(model = model, treatment = &quot;education&quot;)
+sensitivity = sensemakr.Sensemakr(model = short_model, treatment = &quot;education&quot;)
 sensitivity.plot()
 plt.xlabel(&quot;Partial $R^2$ of ability with education&quot;);
 plt.ylabel(&quot;Partial $R^2$ of ability with wage&quot;);
@@ -1136,7 +1138,7 @@ plt.ylabel(&quot;Partial $R^2$ of ability with wage&quot;);
 <li><code>benchmark_covariates</code>: the covariate to use as a benchmark</li>
 <li><code>kd</code> and <code>ky</code>: these arguments parameterize how many times stronger the unobserved variable (<code>ability</code>) is related to the treatment (<code>kd</code>) and to the outcome (<code>ky</code>) in comparison to the observed benchmark covariate (<code>age</code>). In our example, setting <code>kd</code> and <code>ky</code> equal to $[0.5, 1, 2]$ means we want to investigate the maximum strength of a variable half, same, or twice as strong as <code>age</code> (in explaining <code>education</code> and <code>wage</code> variation).</li>
 </ul>
-<pre><code class="language-python">sensitivity = sensemakr.Sensemakr(model = model, 
+<pre><code class="language-python">sensitivity = sensemakr.Sensemakr(model = short_model, 
                                   treatment = &quot;education&quot;,
                                   benchmark_covariates = &quot;age&quot;,
                                   kd = [0.5, 1, 2],
@@ -1157,7 +1159,7 @@ plt.xlabel(&quot;Partial $R^2$ of ability with education&quot;);
 plt.ylabel(&quot;Partial $R^2$ of ability with wage&quot;);
 </code></pre>
 <p><img src="img/ovb_21_0.png" alt="png"></p>
-<p>From the plot, we can see, we need <code>ability</code> to explain around 5% to 10% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wage</code> not to be significant. In particular, the red line plots the level curve for the t-statistic equal to 2.01, corresponding to a 5% significance level. From the comparison with <code>age</code>, we see that a similar explanatory power (<code>1.0x age</code>) would be sufficient to make the coefficient of <code>education</code> on <code>wage</code> not statistically significant.</p>
+<p>From the plot, we can see, we need <code>ability</code> to explain around 5% to 10% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wage</code> not to be significant. In particular, the red line plots the level curve for the t-statistic equal to 2.01, corresponding to a 5% significance level. From the comparison with <code>age</code>, we see that a slightly stronger explanatory power (bigger than <code>1.0x age</code>) would be sufficient to make the coefficient of <code>education</code> on <code>wage</code> not statistically significant.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this post, I have introduced the concept of <strong>omitted variable bias</strong>. We have seen how it&rsquo;s computed in a simple linear model and how we can exploit qualitative information about the variables to make inference in presence of omitted variable bias.</p>
 <p>These tools are extremely useful since omitted variable bias is essentially <strong>everywhere</strong>. First of all, there are always factors that we do not observe, such as ability in our toy example. However, even if we could observe everything, omitted variable bias can also emerge in the form of <strong>model misspecification</strong>. Suppose that <code>wages</code> depended on <code>age</code> in a quadratic way. Then, omitting the quadratic term from the regression introduces bias, which can be analyzed with the same tools we have used for <code>ability</code>.</p>
