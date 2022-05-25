@@ -1,0 +1,1736 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="This problem often arises in causal inference when we have to assess the quality of randomization. The golden standard in causal inference are randomized control trials, also known in the industry as A/B tests." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/distr_compare/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.54afc4f4589fb91aec4b1cdd90ab2e05.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/distr_compare/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/distr_compare/" />
+  <meta property="og:title" content="Comparing Distributions, From Zero to Hero | Matteo Courthoud" />
+  <meta property="og:description" content="This problem often arises in causal inference when we have to assess the quality of randomization. The golden standard in causal inference are randomized control trials, also known in the industry as A/B tests." /><meta property="og:image" content="https://matteocourthoud.github.io/post/distr_compare/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/distr_compare/featured.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2022-05-25T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2022-05-25T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/distr_compare/"
+  },
+  "headline": "Comparing Distributions, From Zero to Hero",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/distr_compare/featured.png"
+  ],
+  
+  "datePublished": "2022-05-25T00:00:00Z",
+  "dateModified": "2022-05-25T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "This problem often arises in causal inference when we have to assess the quality of randomization. The golden standard in causal inference are randomized control trials, also known in the industry as A/B tests."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Comparing Distributions, From Zero to Hero | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="81171df4e768a06dbf2989d511dc9c4f" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#the-data">The Data</a></li>
+    <li><a href="#plots">Plots</a></li>
+    <li><a href="#tests">Tests</a>
+      <ul>
+        <li><a href="#t-test">T-test</a></li>
+        <li><a href="#chi-squared-test">Chi-Squared Test</a></li>
+        <li><a href="#kolmogorov-smirnov-test">Kolmogorov-Smirnov Test</a></li>
+        <li><a href="#permutation-testing">Permutation Testing</a></li>
+      </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="article-container pt-3">
+  <h1>Comparing Distributions, From Zero to Hero</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    May 25, 2022
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    10 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1151px; max-height: 652px;">
+  <div style="position: relative">
+    <img src="/post/distr_compare/featured.png" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p>This problem often arises in causal inference when we have to <strong>assess the quality of randomization</strong>. The golden standard in causal inference are <a href="https://en.wikipedia.org/wiki/Randomized_controlled_trial" target="_blank" rel="noopener"><strong>randomized control trials</strong></a>, also known in the industry as <a href="https://de.wikipedia.org/wiki/A/B-Test" target="_blank" rel="noopener"><strong>A/B tests</strong></a>. In practice, we randomly split the sample into a control and a treatment group and to compare the outcomes between the two groups. The idea is that, if randomization is done properly, the only difference between the two groups, one average, is the treatment. Therefore, we can attribute the differences in outcomes to the treatment effect alone.</p>
+<p>The problem is that, sample size is always finite and therefore it can happen that, despite randomization, the two groups are not comparable. For example, we might have more females in one group, or older people, etc.. When it happens, we cannot be certain anymore that the difference is outcome is only due to the treatment and cannot be attributed to the <strong>inbalanced covariates</strong> instead. Therefore, it&rsquo;s always important, after randomization, to check whether all observed variables are balance across groups and whether there are no systematic differences.</p>
+<p>In this blog post, we are going to see different ways to compare two (or more) distributions and assess the magnitude and significance of their difference. We are going to consider two different approaches, <strong>graphical</strong> and <strong>numerical</strong>. The two approaches generally trade-off <strong>intuition</strong> with <strong>rigour</strong>: from plots we can assess subtle differences but it&rsquo;s hard to assess whether these differences are systematic or due to noise.</p>
+<h2 id="the-data">The Data</h2>
+<p>Let&rsquo;s start by loading the data. I assume we need to perform an experiment on a group of individuals and we have randomized them into a treatment and control group. What does the data look like?</p>
+<p>I import the data generating process from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a> and some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+</code></pre>
+<pre><code class="language-python">from src.utils import *
+</code></pre>
+<pre><code class="language-python">from src.dgp import dgp_balance
+
+df = dgp_balance().generate_data()
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>group</th>
+      <th>gender</th>
+      <th>age</th>
+      <th>income</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>control</td>
+      <td>0</td>
+      <td>37.0</td>
+      <td>2016.81</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>control</td>
+      <td>1</td>
+      <td>45.0</td>
+      <td>2665.92</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>treatment</td>
+      <td>0</td>
+      <td>22.0</td>
+      <td>1642.42</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>control</td>
+      <td>1</td>
+      <td>23.0</td>
+      <td>2396.40</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>treatment</td>
+      <td>1</td>
+      <td>50.0</td>
+      <td>4072.69</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We have information on $1000$ individuals, for which we observe <code>gender</code>, <code>age</code> and <code>income</code>.</p>
+<p>We now want to understand whether the treatment and control <code>groups</code> are comparable or if there are systematic difference between them.</p>
+<h2 id="plots">Plots</h2>
+<p>Let&rsquo;s concentrate on one variable: <code>income</code>. Does the income distribution differ between the two groups?</p>
+<p>A first approach could be the <a href="https://en.wikipedia.org/wiki/Box_plot" target="_blank" rel="noopener"><strong>boxplot</strong></a>. The boxplot is a good trade-off between summary statistics and data visualization: it gives us the quartiles of the distribution and it also allows us to observe outlier points.</p>
+<pre><code class="language-python">sns.boxplot(x='group', y='income', data=df);
+plt.title(&quot;Boxplot&quot;);
+</code></pre>
+<p><img src="img/distr_compare_10_0.png" alt="png"></p>
+<p>It seems that the <code>income</code> distribution in the <code>treatment</code> group is slightly more dispersed. However, the <strong>issue</strong> with the boxplot is that it hides the shape of the data, telling us some summery statistics but now showing us the data distribution.</p>
+<p>The most intuitive way to plot a distribution is the <strong>histogram</strong>.</p>
+<pre><code class="language-python">sns.histplot(x='income', data=df, hue='group', bins=50);
+plt.title(&quot;Histogram&quot;);
+</code></pre>
+<p><img src="img/distr_compare_12_0.png" alt="png"></p>
+<p>There are multiple <strong>issues</strong> with this plot:</p>
+<ul>
+<li>We would like a density, not a count</li>
+<li>The number of bins is arbitrary</li>
+</ul>
+<p>We can solve the first issue using the <code>stat</code> option to plot the <code>density</code> instead of the count and setting the <code>common_norm</code> option to <code>False</code> to use the same normalization.</p>
+<pre><code class="language-python">sns.histplot(x='income', data=df, hue='group', bins=50, stat='density', common_norm=False);
+plt.title(&quot;Density Histogram&quot;);
+</code></pre>
+<p><img src="img/distr_compare_14_0.png" alt="png"></p>
+<p>Now the two histograms are comparable!</p>
+<p>However, an important <strong>issue</strong> remains: the size of the bins is arbitrary. If we bunch the data less, we end up with bins with one observation at most, if we bunch the data more, we lose information. This is a classical <a href="https://en.wikipedia.org/wiki/Bias%E2%80%93variance_tradeoff" target="_blank" rel="noopener">bias-variance trade-off</a>.</p>
+<p>One possible solution is to use a <a href="https://en.wikipedia.org/wiki/Kernel_density_estimation" target="_blank" rel="noopener"><strong>kernel density function</strong></a> that tries to approximate the histogram with a continuous function.</p>
+<pre><code class="language-python">sns.kdeplot(x='income', data=df, hue='group', common_norm=False);
+plt.title(&quot;Kernel Density Function&quot;);
+</code></pre>
+<p><img src="img/distr_compare_16_0.png" alt="png"></p>
+<p>We can now visualize both distributions very intuitively. However, the <strong>issue</strong> with kernel density estimation (KDE) is that it is somehow a black-box and might mask relevant features of the data.</p>
+<p>A much more transparent representation of the two distribution is their <a href="https://en.wikipedia.org/wiki/Cumulative_distribution_function" target="_blank" rel="noopener"><strong>cumulative distribution function</strong></a>. The main advantages of the cumulative distribution function are that</p>
+<ul>
+<li>we do not need to make any arbitrary choice (e.g. number of bins)</li>
+<li>we do not need to perform any approximation (e.g. with KDE)</li>
+</ul>
+<pre><code class="language-python">sns.histplot(x='income', data=df, hue='group', bins=len(df), stat=&quot;density&quot;,
+             element=&quot;step&quot;, fill=False, cumulative=True, common_norm=False);
+plt.title(&quot;Cumulative distribution function&quot;);
+</code></pre>
+<p><img src="img/distr_compare_18_0.png" alt="png"></p>
+<p>We can now clearly see that there are relatively more observations with low income in the treatment group than in the control group!</p>
+<p>A related alternative method is the <strong>qq-plot</strong>, where <em>q</em> stands for quantile. The qq-plot plots the quantiles of the two distributions against each other. If the distributions are the same, we should get the 45 degree line.</p>
+<pre><code class="language-python">income = df['income'].values
+income_t = df.loc[df.group=='treatment', 'income'].values
+income_c = df.loc[df.group=='control', 'income'].values
+</code></pre>
+<pre><code class="language-python">df_pct = pd.DataFrame()
+df_pct['income treatment'] = np.percentile(income_t, range(100))
+df_pct['income control'] = np.percentile(income_c, range(100))
+</code></pre>
+<pre><code class="language-python">sns.scatterplot(x='income control', y='income treatment', data=df_pct, label='Actual fit');
+sns.lineplot(x='income control', y='income control', data=df_pct, color='r', label='Line of perfect fit');
+plt.legend();
+plt.title(&quot;QQ plot&quot;);
+</code></pre>
+<p><img src="img/distr_compare_22_0.png" alt="png"></p>
+<p>The qq-plot delivers a very similar insight with respect to the cumulative distribution plot: income in the treatment group is generally lower.</p>
+<h2 id="tests">Tests</h2>
+<p>So far, we have seen different ways to visualize differences between distributions. The main advantage of visualization is <strong>intuition</strong>: we can see the differences and intuitively assess them.</p>
+<p>However, we might want to be more <strong>rigorous</strong> and try to assess the <strong>statistical significance</strong> of the difference between the distributions: &ldquo;<em>is the observed difference systematic or due to sampling variation?</em>&rdquo;.</p>
+<p>We are now going to analyze different tests to discern two distributions from each other.</p>
+<h3 id="t-test">T-test</h3>
+<p>The first and most common test is the <a href="https://en.wikipedia.org/wiki/Student%27s_t-test" target="_blank" rel="noopener">student t-test</a>. T-tests are generally used to <strong>compare means</strong>. In this case, we want to test whether the means of the <code>income</code> distribution is the same across the two groups.</p>
+<p>We use the <code>ttest_ind</code> function from <code>scipy</code> to perform the t-test.</p>
+<pre><code class="language-python">from scipy.stats import ttest_ind
+
+stat, p_value = ttest_ind(income_c, income_t)
+print(f&quot;t-test: statistic={stat:.4f}, p-value={p_value:.4f}&quot;)
+</code></pre>
+<pre><code>t-test: statistic=-2.0109, p-value=0.0446
+</code></pre>
+<p>In general, it is common practice to always perform this test on all variables, when we are running a randomized control trial or A/B test. The results of these tests are usually collected into a table that is called <strong>balance table</strong>.</p>
+<p>We can use the <code>create_table_one</code> function from the <a href="https://github.com/uber/causalml" target="_blank" rel="noopener"><code>causalml</code></a> library to generate the balance table. As the name of the function suggests, the balance table should always be the <strong>first table</strong> you present.</p>
+<pre><code class="language-python">from causalml.match import create_table_one
+
+df['treatment'] = df['group']=='treatment'
+create_table_one(df, 'treatment', ['gender', 'age', 'income'])
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Control</th>
+      <th>Treatment</th>
+      <th>SMD</th>
+    </tr>
+    <tr>
+      <th>Variable</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>n</th>
+      <td>704</td>
+      <td>296</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>age</th>
+      <td>31.47 (8.03)</td>
+      <td>36.25 (8.64)</td>
+      <td>0.5732</td>
+    </tr>
+    <tr>
+      <th>gender</th>
+      <td>0.52 (0.50)</td>
+      <td>0.57 (0.50)</td>
+      <td>0.0872</td>
+    </tr>
+    <tr>
+      <th>income</th>
+      <td>3143.15 (1269.94)</td>
+      <td>3349.00 (1882.72)</td>
+      <td>0.1282</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>In the first two columns, we can see the average of the different variables across the treatment and control groups, with standard errors in parenthesis. In the <strong>last column</strong>, we have the p-values of the t-test for the null hypothesis of zero difference in means.</p>
+<p>From the table, we observe that we cannot reject the null hypothesis of zero difference in mean for any variable, at the 95% confidence level.</p>
+<h3 id="chi-squared-test">Chi-Squared Test</h3>
+<p>The <a href="https://matteocourthoud.github.io/post/chisquared/" target="_blank" rel="noopener">chi-squared test</a> is a very powerful test that can be used in many different settings. If you want to find out more about it, I have written a very comprehensive <a href="https://matteocourthoud.github.io/post/chisquared/" target="_blank" rel="noopener">blog post here</a>.</p>
+<p>One of the <strong>least known applications</strong> of the chi-squared test, is testing the similarity between two distributions. The <strong>idea</strong> is to bin the distributions into separate bins. If the two distributions were the same, we would expect the same frequency in each bin. Importantly, we need enough observations in each bin, in order for the test to be valid. Therefore, I generate bins corresponding to deciles of the distribution of <code>income</code> in the control group.</p>
+<pre><code class="language-python">df_bins = pd.DataFrame()
+_, bins = pd.qcut(income_c, q=10, retbins=True)
+df_bins['bin'] = pd.cut(income_c, bins=bins).value_counts().index
+df_bins['income_c'] = pd.cut(income_c, bins=bins).value_counts().values
+df_bins['income_t'] = pd.cut(income_t, bins=bins).value_counts().values
+
+df_bins
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>bin</th>
+      <th>income_c</th>
+      <th>income_t</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>(831.93, 1787.733]</td>
+      <td>70</td>
+      <td>48</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>(1787.733, 2108.162]</td>
+      <td>70</td>
+      <td>26</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>(2108.162, 2414.671]</td>
+      <td>70</td>
+      <td>33</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>(2414.671, 2661.638]</td>
+      <td>71</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>(2661.638, 2893.15]</td>
+      <td>70</td>
+      <td>23</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>(2893.15, 3170.632]</td>
+      <td>70</td>
+      <td>19</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>(3170.632, 3531.922]</td>
+      <td>71</td>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>(3531.922, 3970.792]</td>
+      <td>70</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>(3970.792, 4809.54]</td>
+      <td>70</td>
+      <td>31</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>(4809.54, 9947.75]</td>
+      <td>71</td>
+      <td>50</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We can now perform the test by comparing the frequencies of the two distributions, across bins. To compute the test statistic and the p-value we use the <code>chisquare</code> function from <code>scipy</code>.</p>
+<pre><code class="language-python">from scipy.stats import chisquare
+
+df_bins['income_t_norm'] = df_bins['income_t'] / np.sum(df_bins['income_t']) * np.sum(df_bins['income_c'])
+stat, p_value = chisquare(df_bins['income_c'], df_bins['income_t_norm'])
+print(f&quot;Chi-squared Test: statistic={stat:.4f}, p-value={p_value:.4f}&quot;)
+</code></pre>
+<pre><code>Chi-squared Test: statistic=117.2196, p-value=0.0000
+</code></pre>
+<p>The p-value is practically zero, implying that we reject the null hypothesis of no difference between the two distributions.</p>
+<h3 id="kolmogorov-smirnov-test">Kolmogorov-Smirnov Test</h3>
+<p>The idea of the <a href="https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test" target="_blank" rel="noopener">Kolmogorov-Smirnov test</a>, is to <strong>compare the cumulative distributions</strong> of the two groups. In particular, the Kolmogorov-Smirnov test statistic is the maximum absolute difference between the two cumulative distributions.</p>
+<p>$$
+ks = \sup _{x} \ \Big| \ F_1(x) - F_2(x) \ \Big|
+$$</p>
+<p>Where $F_1$ and $F_2$ are the two cumulative distribution functions and $x$ are the values of the underlying variable.</p>
+<pre><code class="language-python">df_ks = pd.DataFrame()
+df_ks['income'] = np.sort(df['income'].unique())
+df_ks['F_control'] = df_ks['income'].apply(lambda x: np.mean(income_c&lt;=x))
+df_ks['F_treatment'] = df_ks['income'].apply(lambda x: np.mean(income_t&lt;=x))
+df_ks.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>income</th>
+      <th>F_control</th>
+      <th>F_treatment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>583.88</td>
+      <td>0.00000</td>
+      <td>0.003378</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>670.20</td>
+      <td>0.00000</td>
+      <td>0.006757</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>716.56</td>
+      <td>0.00000</td>
+      <td>0.010135</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>831.93</td>
+      <td>0.00142</td>
+      <td>0.010135</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>897.77</td>
+      <td>0.00142</td>
+      <td>0.013514</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We now need to find the point where the absolute distance between the cumulative distribution functions is largest.</p>
+<pre><code class="language-python">k = np.argmax( np.abs(df_ks['F_control'] - df_ks['F_treatment']))
+tstat = np.abs(df_ks['F_treatment'][k] - df_ks['F_control'][k])
+</code></pre>
+<p>We can visualize the value of the test statistic, by plotting the two cumulative distribution functions and the value of the test statistic.</p>
+<pre><code class="language-python">y = (df_ks['F_treatment'][k] + df_ks['F_control'][k])/2
+plt.plot('income', 'F_control', data=df_ks, label='Control', alpha=0.5)
+plt.plot('income', 'F_treatment', data=df_ks, label='Treatment', alpha=0.5)
+plt.errorbar(x=df_ks['income'][k], y=y, yerr=tstat/2, color='r',
+             capsize=5, mew=3, label=f&quot;Test statistic: {tstat:.4f}&quot;)
+plt.legend(loc='center right');
+plt.title(&quot;Kolmogorov-Smirnov Test&quot;);
+</code></pre>
+<p><img src="img/distr_compare_44_0.png" alt="png"></p>
+<p>We can now perform the actual test using the <code>kstest</code> function from <code>scipy</code>.</p>
+<pre><code class="language-python">from scipy.stats import kstest
+
+stat, p_value = kstest(income_t, income_c)
+print(f&quot; Kolmogorov-Smirnov Test: statistic={stat:.4f}, p-value={p_value:.4f}&quot;)
+</code></pre>
+<pre><code> Kolmogorov-Smirnov Test: statistic=0.0943, p-value=0.0454
+</code></pre>
+<p>The p-value is just below 5%: we reject the null hypothesis that the two distributions are the same, with 95% confidence.</p>
+<h3 id="permutation-testing">Permutation Testing</h3>
+<p>A non-parametric alternative is permutation testing. The idea is that, under the null hypothesis, the two distributions should be the same, therefore <strong>shuffling</strong> the observations across groups, should not matter.</p>
+<p>We can then chose any statistic and compute how much more extreme it is for different permutations, with respect to its value in the original sample. For example, let&rsquo;s use as a test statistic the sample mean of the treatment group.</p>
+<pre><code class="language-python">stats = [np.mean(np.random.choice(income, size=len(income_t), replace=False)) for _ in range(1000)]
+p_value = np.mean(stats &gt; np.mean(income_t))
+
+print(f&quot;Permutation test: p-value={p_value:.4f}&quot;)
+</code></pre>
+<pre><code>Permutation test: p-value=0.0170
+</code></pre>
+<p>The sample mean of the treatment group in the data is larger than $98.7%$ of the sample mean of the treatment group of the permuted sample. Therefore, it&rsquo;s very unlikely that the two distributions are the same.</p>
+<p>We can <strong>visualize</strong> the test, by plotting the distribution of the test statistic against its sample value.</p>
+<pre><code class="language-python">plt.hist(stats, label='Permutation Statistics');
+plt.axvline(x=np.mean(income_t), c='r', ls='--', label='Sample Statistic');
+plt.legend();
+plt.title('Permutation Test');
+</code></pre>
+<p><img src="img/distr_compare_52_0.png" alt="png"></p>
+<p>As we can see, the sample statistic is very extreme with respect to the values in the permuted samples.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>TBD</p>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/distr_compare/&amp;text=Comparing%20Distributions,%20From%20Zero%20to%20Hero" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/distr_compare/&amp;t=Comparing%20Distributions,%20From%20Zero%20to%20Hero" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Comparing%20Distributions,%20From%20Zero%20to%20Hero&amp;body=https://matteocourthoud.github.io/post/distr_compare/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/distr_compare/&amp;title=Comparing%20Distributions,%20From%20Zero%20to%20Hero" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Comparing%20Distributions,%20From%20Zero%20to%20Hero%20https://matteocourthoud.github.io/post/distr_compare/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/distr_compare/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+          <i class="fab fa-telegram"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">My research fields are empirical Industrial Organization and Competition Policy. My research interests include the relationship between competition and innovation, big data, artificial intelligence, platform markets, peer to peer services.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+  <p class="powered-by">
+    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
+  </p>
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

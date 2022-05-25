@@ -27307,6 +27307,454 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     </item>
     
     <item>
+      <title>Comparing Distributions, From Zero to Hero</title>
+      <link>https://matteocourthoud.github.io/post/distr_compare/</link>
+      <pubDate>Wed, 25 May 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/distr_compare/</guid>
+      <description>&lt;p&gt;This problem often arises in causal inference when we have to &lt;strong&gt;assess the quality of randomization&lt;/strong&gt;. The golden standard in causal inference are &lt;a href=&#34;https://en.wikipedia.org/wiki/Randomized_controlled_trial&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;randomized control trials&lt;/strong&gt;&lt;/a&gt;, also known in the industry as &lt;a href=&#34;https://de.wikipedia.org/wiki/A/B-Test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;A/B tests&lt;/strong&gt;&lt;/a&gt;. In practice, we randomly split the sample into a control and a treatment group and to compare the outcomes between the two groups. The idea is that, if randomization is done properly, the only difference between the two groups, one average, is the treatment. Therefore, we can attribute the differences in outcomes to the treatment effect alone.&lt;/p&gt;
+&lt;p&gt;The problem is that, sample size is always finite and therefore it can happen that, despite randomization, the two groups are not comparable. For example, we might have more females in one group, or older people, etc.. When it happens, we cannot be certain anymore that the difference is outcome is only due to the treatment and cannot be attributed to the &lt;strong&gt;inbalanced covariates&lt;/strong&gt; instead. Therefore, it&amp;rsquo;s always important, after randomization, to check whether all observed variables are balance across groups and whether there are no systematic differences.&lt;/p&gt;
+&lt;p&gt;In this blog post, we are going to see different ways to compare two (or more) distributions and assess the magnitude and significance of their difference. We are going to consider two different approaches, &lt;strong&gt;graphical&lt;/strong&gt; and &lt;strong&gt;numerical&lt;/strong&gt;. The two approaches generally trade-off &lt;strong&gt;intuition&lt;/strong&gt; with &lt;strong&gt;rigour&lt;/strong&gt;: from plots we can assess subtle differences but it&amp;rsquo;s hard to assess whether these differences are systematic or due to noise.&lt;/p&gt;
+&lt;h2 id=&#34;the-data&#34;&gt;The Data&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s start by loading the data. I assume we need to perform an experiment on a group of individuals and we have randomized them into a treatment and control group. What does the data look like?&lt;/p&gt;
+&lt;p&gt;I import the data generating process from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt; and some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import dgp_balance
+
+df = dgp_balance().generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;group&lt;/th&gt;
+      &lt;th&gt;gender&lt;/th&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;th&gt;income&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;control&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;37.0&lt;/td&gt;
+      &lt;td&gt;2016.81&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;control&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;45.0&lt;/td&gt;
+      &lt;td&gt;2665.92&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;treatment&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;22.0&lt;/td&gt;
+      &lt;td&gt;1642.42&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;control&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;23.0&lt;/td&gt;
+      &lt;td&gt;2396.40&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;treatment&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;50.0&lt;/td&gt;
+      &lt;td&gt;4072.69&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on $1000$ individuals, for which we observe &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;income&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We now want to understand whether the treatment and control &lt;code&gt;groups&lt;/code&gt; are comparable or if there are systematic difference between them.&lt;/p&gt;
+&lt;h2 id=&#34;plots&#34;&gt;Plots&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s concentrate on one variable: &lt;code&gt;income&lt;/code&gt;. Does the income distribution differ between the two groups?&lt;/p&gt;
+&lt;p&gt;A first approach could be the &lt;a href=&#34;https://en.wikipedia.org/wiki/Box_plot&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;boxplot&lt;/strong&gt;&lt;/a&gt;. The boxplot is a good trade-off between summary statistics and data visualization: it gives us the quartiles of the distribution and it also allows us to observe outlier points.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.boxplot(x=&#39;group&#39;, y=&#39;income&#39;, data=df);
+plt.title(&amp;quot;Boxplot&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_compare_10_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It seems that the &lt;code&gt;income&lt;/code&gt; distribution in the &lt;code&gt;treatment&lt;/code&gt; group is slightly more dispersed. However, the &lt;strong&gt;issue&lt;/strong&gt; with the boxplot is that it hides the shape of the data, telling us some summery statistics but now showing us the data distribution.&lt;/p&gt;
+&lt;p&gt;The most intuitive way to plot a distribution is the &lt;strong&gt;histogram&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(x=&#39;income&#39;, data=df, hue=&#39;group&#39;, bins=50);
+plt.title(&amp;quot;Histogram&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_compare_12_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;There are multiple &lt;strong&gt;issues&lt;/strong&gt; with this plot:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;We would like a density, not a count&lt;/li&gt;
+&lt;li&gt;The number of bins is arbitrary&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We can solve the first issue using the &lt;code&gt;stat&lt;/code&gt; option to plot the &lt;code&gt;density&lt;/code&gt; instead of the count and setting the &lt;code&gt;common_norm&lt;/code&gt; option to &lt;code&gt;False&lt;/code&gt; to use the same normalization.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(x=&#39;income&#39;, data=df, hue=&#39;group&#39;, bins=50, stat=&#39;density&#39;, common_norm=False);
+plt.title(&amp;quot;Density Histogram&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_compare_14_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now the two histograms are comparable!&lt;/p&gt;
+&lt;p&gt;However, an important &lt;strong&gt;issue&lt;/strong&gt; remains: the size of the bins is arbitrary. If we bunch the data less, we end up with bins with one observation at most, if we bunch the data more, we lose information. This is a classical &lt;a href=&#34;https://en.wikipedia.org/wiki/Bias%E2%80%93variance_tradeoff&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;bias-variance trade-off&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;One possible solution is to use a &lt;a href=&#34;https://en.wikipedia.org/wiki/Kernel_density_estimation&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;kernel density function&lt;/strong&gt;&lt;/a&gt; that tries to approximate the histogram with a continuous function.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.kdeplot(x=&#39;income&#39;, data=df, hue=&#39;group&#39;, common_norm=False);
+plt.title(&amp;quot;Kernel Density Function&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_compare_16_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We can now visualize both distributions very intuitively. However, the &lt;strong&gt;issue&lt;/strong&gt; with kernel density estimation (KDE) is that it is somehow a black-box and might mask relevant features of the data.&lt;/p&gt;
+&lt;p&gt;A much more transparent representation of the two distribution is their &lt;a href=&#34;https://en.wikipedia.org/wiki/Cumulative_distribution_function&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;cumulative distribution function&lt;/strong&gt;&lt;/a&gt;. The main advantages of the cumulative distribution function are that&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;we do not need to make any arbitrary choice (e.g. number of bins)&lt;/li&gt;
+&lt;li&gt;we do not need to perform any approximation (e.g. with KDE)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(x=&#39;income&#39;, data=df, hue=&#39;group&#39;, bins=len(df), stat=&amp;quot;density&amp;quot;,
+             element=&amp;quot;step&amp;quot;, fill=False, cumulative=True, common_norm=False);
+plt.title(&amp;quot;Cumulative distribution function&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_compare_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We can now clearly see that there are relatively more observations with low income in the treatment group than in the control group!&lt;/p&gt;
+&lt;p&gt;A related alternative method is the &lt;strong&gt;qq-plot&lt;/strong&gt;, where &lt;em&gt;q&lt;/em&gt; stands for quantile. The qq-plot plots the quantiles of the two distributions against each other. If the distributions are the same, we should get the 45 degree line.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;income = df[&#39;income&#39;].values
+income_t = df.loc[df.group==&#39;treatment&#39;, &#39;income&#39;].values
+income_c = df.loc[df.group==&#39;control&#39;, &#39;income&#39;].values
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_pct = pd.DataFrame()
+df_pct[&#39;income treatment&#39;] = np.percentile(income_t, range(100))
+df_pct[&#39;income control&#39;] = np.percentile(income_c, range(100))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(x=&#39;income control&#39;, y=&#39;income treatment&#39;, data=df_pct, label=&#39;Actual fit&#39;);
+sns.lineplot(x=&#39;income control&#39;, y=&#39;income control&#39;, data=df_pct, color=&#39;r&#39;, label=&#39;Line of perfect fit&#39;);
+plt.legend();
+plt.title(&amp;quot;QQ plot&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_compare_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The qq-plot delivers a very similar insight with respect to the cumulative distribution plot: income in the treatment group is generally lower.&lt;/p&gt;
+&lt;h2 id=&#34;tests&#34;&gt;Tests&lt;/h2&gt;
+&lt;p&gt;So far, we have seen different ways to visualize differences between distributions. The main advantage of visualization is &lt;strong&gt;intuition&lt;/strong&gt;: we can see the differences and intuitively assess them.&lt;/p&gt;
+&lt;p&gt;However, we might want to be more &lt;strong&gt;rigorous&lt;/strong&gt; and try to assess the &lt;strong&gt;statistical significance&lt;/strong&gt; of the difference between the distributions: &amp;ldquo;&lt;em&gt;is the observed difference systematic or due to sampling variation?&lt;/em&gt;&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;We are now going to analyze different tests to discern two distributions from each other.&lt;/p&gt;
+&lt;h3 id=&#34;t-test&#34;&gt;T-test&lt;/h3&gt;
+&lt;p&gt;The first and most common test is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Student%27s_t-test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;student t-test&lt;/a&gt;. T-tests are generally used to &lt;strong&gt;compare means&lt;/strong&gt;. In this case, we want to test whether the means of the &lt;code&gt;income&lt;/code&gt; distribution is the same across the two groups.&lt;/p&gt;
+&lt;p&gt;We use the &lt;code&gt;ttest_ind&lt;/code&gt; function from &lt;code&gt;scipy&lt;/code&gt; to perform the t-test.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.stats import ttest_ind
+
+stat, p_value = ttest_ind(income_c, income_t)
+print(f&amp;quot;t-test: statistic={stat:.4f}, p-value={p_value:.4f}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;t-test: statistic=-2.0109, p-value=0.0446
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In general, it is common practice to always perform this test on all variables, when we are running a randomized control trial or A/B test. The results of these tests are usually collected into a table that is called &lt;strong&gt;balance table&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;We can use the &lt;code&gt;create_table_one&lt;/code&gt; function from the &lt;a href=&#34;https://github.com/uber/causalml&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;causalml&lt;/code&gt;&lt;/a&gt; library to generate the balance table. As the name of the function suggests, the balance table should always be the &lt;strong&gt;first table&lt;/strong&gt; you present.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import create_table_one
+
+df[&#39;treatment&#39;] = df[&#39;group&#39;]==&#39;treatment&#39;
+create_table_one(df, &#39;treatment&#39;, [&#39;gender&#39;, &#39;age&#39;, &#39;income&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Control&lt;/th&gt;
+      &lt;th&gt;Treatment&lt;/th&gt;
+      &lt;th&gt;SMD&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Variable&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;n&lt;/th&gt;
+      &lt;td&gt;704&lt;/td&gt;
+      &lt;td&gt;296&lt;/td&gt;
+      &lt;td&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;td&gt;31.47 (8.03)&lt;/td&gt;
+      &lt;td&gt;36.25 (8.64)&lt;/td&gt;
+      &lt;td&gt;0.5732&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;gender&lt;/th&gt;
+      &lt;td&gt;0.52 (0.50)&lt;/td&gt;
+      &lt;td&gt;0.57 (0.50)&lt;/td&gt;
+      &lt;td&gt;0.0872&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;income&lt;/th&gt;
+      &lt;td&gt;3143.15 (1269.94)&lt;/td&gt;
+      &lt;td&gt;3349.00 (1882.72)&lt;/td&gt;
+      &lt;td&gt;0.1282&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;In the first two columns, we can see the average of the different variables across the treatment and control groups, with standard errors in parenthesis. In the &lt;strong&gt;last column&lt;/strong&gt;, we have the p-values of the t-test for the null hypothesis of zero difference in means.&lt;/p&gt;
+&lt;p&gt;From the table, we observe that we cannot reject the null hypothesis of zero difference in mean for any variable, at the 95% confidence level.&lt;/p&gt;
+&lt;h3 id=&#34;chi-squared-test&#34;&gt;Chi-Squared Test&lt;/h3&gt;
+&lt;p&gt;The &lt;a href=&#34;https://matteocourthoud.github.io/post/chisquared/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;chi-squared test&lt;/a&gt; is a very powerful test that can be used in many different settings. If you want to find out more about it, I have written a very comprehensive &lt;a href=&#34;https://matteocourthoud.github.io/post/chisquared/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;blog post here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;One of the &lt;strong&gt;least known applications&lt;/strong&gt; of the chi-squared test, is testing the similarity between two distributions. The &lt;strong&gt;idea&lt;/strong&gt; is to bin the distributions into separate bins. If the two distributions were the same, we would expect the same frequency in each bin. Importantly, we need enough observations in each bin, in order for the test to be valid. Therefore, I generate bins corresponding to deciles of the distribution of &lt;code&gt;income&lt;/code&gt; in the control group.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_bins = pd.DataFrame()
+_, bins = pd.qcut(income_c, q=10, retbins=True)
+df_bins[&#39;bin&#39;] = pd.cut(income_c, bins=bins).value_counts().index
+df_bins[&#39;income_c&#39;] = pd.cut(income_c, bins=bins).value_counts().values
+df_bins[&#39;income_t&#39;] = pd.cut(income_t, bins=bins).value_counts().values
+
+df_bins
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;bin&lt;/th&gt;
+      &lt;th&gt;income_c&lt;/th&gt;
+      &lt;th&gt;income_t&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;(831.93, 1787.733]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;48&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;(1787.733, 2108.162]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;26&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;(2108.162, 2414.671]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;33&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;(2414.671, 2661.638]&lt;/td&gt;
+      &lt;td&gt;71&lt;/td&gt;
+      &lt;td&gt;13&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;(2661.638, 2893.15]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;23&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;(2893.15, 3170.632]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;19&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;(3170.632, 3531.922]&lt;/td&gt;
+      &lt;td&gt;71&lt;/td&gt;
+      &lt;td&gt;27&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;(3531.922, 3970.792]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;20&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;(3970.792, 4809.54]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;31&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;(4809.54, 9947.75]&lt;/td&gt;
+      &lt;td&gt;71&lt;/td&gt;
+      &lt;td&gt;50&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We can now perform the test by comparing the frequencies of the two distributions, across bins. To compute the test statistic and the p-value we use the &lt;code&gt;chisquare&lt;/code&gt; function from &lt;code&gt;scipy&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.stats import chisquare
+
+df_bins[&#39;income_t_norm&#39;] = df_bins[&#39;income_t&#39;] / np.sum(df_bins[&#39;income_t&#39;]) * np.sum(df_bins[&#39;income_c&#39;])
+stat, p_value = chisquare(df_bins[&#39;income_c&#39;], df_bins[&#39;income_t_norm&#39;])
+print(f&amp;quot;Chi-squared Test: statistic={stat:.4f}, p-value={p_value:.4f}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Chi-squared Test: statistic=117.2196, p-value=0.0000
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The p-value is practically zero, implying that we reject the null hypothesis of no difference between the two distributions.&lt;/p&gt;
+&lt;h3 id=&#34;kolmogorov-smirnov-test&#34;&gt;Kolmogorov-Smirnov Test&lt;/h3&gt;
+&lt;p&gt;The idea of the &lt;a href=&#34;https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Kolmogorov-Smirnov test&lt;/a&gt;, is to &lt;strong&gt;compare the cumulative distributions&lt;/strong&gt; of the two groups. In particular, the Kolmogorov-Smirnov test statistic is the maximum absolute difference between the two cumulative distributions.&lt;/p&gt;
+&lt;p&gt;$$
+ks = \sup _{x} \ \Big| \ F_1(x) - F_2(x) \ \Big|
+$$&lt;/p&gt;
+&lt;p&gt;Where $F_1$ and $F_2$ are the two cumulative distribution functions and $x$ are the values of the underlying variable.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_ks = pd.DataFrame()
+df_ks[&#39;income&#39;] = np.sort(df[&#39;income&#39;].unique())
+df_ks[&#39;F_control&#39;] = df_ks[&#39;income&#39;].apply(lambda x: np.mean(income_c&amp;lt;=x))
+df_ks[&#39;F_treatment&#39;] = df_ks[&#39;income&#39;].apply(lambda x: np.mean(income_t&amp;lt;=x))
+df_ks.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;income&lt;/th&gt;
+      &lt;th&gt;F_control&lt;/th&gt;
+      &lt;th&gt;F_treatment&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;583.88&lt;/td&gt;
+      &lt;td&gt;0.00000&lt;/td&gt;
+      &lt;td&gt;0.003378&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;670.20&lt;/td&gt;
+      &lt;td&gt;0.00000&lt;/td&gt;
+      &lt;td&gt;0.006757&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;716.56&lt;/td&gt;
+      &lt;td&gt;0.00000&lt;/td&gt;
+      &lt;td&gt;0.010135&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;831.93&lt;/td&gt;
+      &lt;td&gt;0.00142&lt;/td&gt;
+      &lt;td&gt;0.010135&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;897.77&lt;/td&gt;
+      &lt;td&gt;0.00142&lt;/td&gt;
+      &lt;td&gt;0.013514&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We now need to find the point where the absolute distance between the cumulative distribution functions is largest.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;k = np.argmax( np.abs(df_ks[&#39;F_control&#39;] - df_ks[&#39;F_treatment&#39;]))
+tstat = np.abs(df_ks[&#39;F_treatment&#39;][k] - df_ks[&#39;F_control&#39;][k])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can visualize the value of the test statistic, by plotting the two cumulative distribution functions and the value of the test statistic.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;y = (df_ks[&#39;F_treatment&#39;][k] + df_ks[&#39;F_control&#39;][k])/2
+plt.plot(&#39;income&#39;, &#39;F_control&#39;, data=df_ks, label=&#39;Control&#39;, alpha=0.5)
+plt.plot(&#39;income&#39;, &#39;F_treatment&#39;, data=df_ks, label=&#39;Treatment&#39;, alpha=0.5)
+plt.errorbar(x=df_ks[&#39;income&#39;][k], y=y, yerr=tstat/2, color=&#39;r&#39;,
+             capsize=5, mew=3, label=f&amp;quot;Test statistic: {tstat:.4f}&amp;quot;)
+plt.legend(loc=&#39;center right&#39;);
+plt.title(&amp;quot;Kolmogorov-Smirnov Test&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_compare_44_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We can now perform the actual test using the &lt;code&gt;kstest&lt;/code&gt; function from &lt;code&gt;scipy&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.stats import kstest
+
+stat, p_value = kstest(income_t, income_c)
+print(f&amp;quot; Kolmogorov-Smirnov Test: statistic={stat:.4f}, p-value={p_value:.4f}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt; Kolmogorov-Smirnov Test: statistic=0.0943, p-value=0.0454
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The p-value is just below 5%: we reject the null hypothesis that the two distributions are the same, with 95% confidence.&lt;/p&gt;
+&lt;h3 id=&#34;permutation-testing&#34;&gt;Permutation Testing&lt;/h3&gt;
+&lt;p&gt;A non-parametric alternative is permutation testing. The idea is that, under the null hypothesis, the two distributions should be the same, therefore &lt;strong&gt;shuffling&lt;/strong&gt; the observations across groups, should not matter.&lt;/p&gt;
+&lt;p&gt;We can then chose any statistic and compute how much more extreme it is for different permutations, with respect to its value in the original sample. For example, let&amp;rsquo;s use as a test statistic the sample mean of the treatment group.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;stats = [np.mean(np.random.choice(income, size=len(income_t), replace=False)) for _ in range(1000)]
+p_value = np.mean(stats &amp;gt; np.mean(income_t))
+
+print(f&amp;quot;Permutation test: p-value={p_value:.4f}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Permutation test: p-value=0.0170
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The sample mean of the treatment group in the data is larger than $98.7%$ of the sample mean of the treatment group of the permuted sample. Therefore, it&amp;rsquo;s very unlikely that the two distributions are the same.&lt;/p&gt;
+&lt;p&gt;We can &lt;strong&gt;visualize&lt;/strong&gt; the test, by plotting the distribution of the test statistic against its sample value.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.hist(stats, label=&#39;Permutation Statistics&#39;);
+plt.axvline(x=np.mean(income_t), c=&#39;r&#39;, ls=&#39;--&#39;, label=&#39;Sample Statistic&#39;);
+plt.legend();
+plt.title(&#39;Permutation Test&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_compare_52_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the sample statistic is very extreme with respect to the values in the permuted samples.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;TBD&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Omitted Variable Bias And What Can We Do About It</title>
       <link>https://matteocourthoud.github.io/post/ovb/</link>
       <pubDate>Wed, 25 May 2022 00:00:00 +0000</pubDate>
