@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sun, 29 May 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Mon, 30 May 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -27303,6 +27303,266 @@ Economic Studies&lt;/em&gt; 60 (3): 497–529.&lt;/p&gt;
 Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (5): 1006–24.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Double Debiased Machine Learning, Part 1 of 2</title>
+      <link>https://matteocourthoud.github.io/post/pretest/</link>
+      <pubDate>Mon, 30 May 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/pretest/</guid>
+      <description>&lt;p&gt;&lt;em&gt;Part 1, the issue: causal inference, machine learning and regularization bias&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;In causal inference, we often estimate causal effects by conditioning the analysis on other variables. We usually refer to these variables as &lt;strong&gt;control variables&lt;/strong&gt; or &lt;strong&gt;confounders&lt;/strong&gt;. In randomized control trials or AB tests, conditioning can increase the power of the analysis, by reducing imbalances that have emerged despite randomization. However, conditioning is even more important in observational studies, where, absent randomization, it might be essential to recover causal effects. I have written an introductory post on &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;good and bad control variables here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;When we have many control variables, we might want to &lt;strong&gt;select the most relevant ones&lt;/strong&gt;, possibly using some non-linear machine learning algorithm. However, in these cases, we are introducing a bias that is called &lt;strong&gt;regularization or pre-test, or feature selection bias&lt;/strong&gt;. In this and the next blog post, I try to explain the source of the bias and a very poweful solution called &lt;strong&gt;double debiased machine learning&lt;/strong&gt;, which has been probably one of the most relevant advancement at the intersection of machine learning and causal inference of the last decade.&lt;/p&gt;
+&lt;h2 id=&#34;pre-testing&#34;&gt;Pre-Testing&lt;/h2&gt;
+&lt;p&gt;Since this is a complex topic, let&amp;rsquo;s start with a simple example.&lt;/p&gt;
+&lt;p&gt;Suppose we were a firm and we are interested in the effect of advertisement on revenue: is advertisement worth the money? There are also a lot of other things that might influence sales, therefore, we are thinking of controlling for past sales in the analysis, in order to increase the power of our analysis.&lt;/p&gt;
+&lt;p&gt;Assume the data generating process can be represented with the following &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Directed Acyclic Graph (DAG)&lt;/strong&gt;&lt;/a&gt;. If you are not familiar with DAGs, I have written a short &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;introduction here&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+D((ad spend))
+Z((past sales))
+Y((sales))
+
+D --&amp;gt; Y
+Z -- ??? --&amp;gt; Y
+Z --&amp;gt; D
+
+class D,Y included;
+class Z excluded;
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I import the data generating process &lt;code&gt;dgp_tbd()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt; and some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp_pretest
+
+df = dgp_pretest().generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;ads&lt;/th&gt;
+      &lt;th&gt;sales&lt;/th&gt;
+      &lt;th&gt;past_sales&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;16.719800&lt;/td&gt;
+      &lt;td&gt;15.222013&lt;/td&gt;
+      &lt;td&gt;6.624345&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;7.732222&lt;/td&gt;
+      &lt;td&gt;6.654545&lt;/td&gt;
+      &lt;td&gt;4.388244&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;10.923469&lt;/td&gt;
+      &lt;td&gt;9.133809&lt;/td&gt;
+      &lt;td&gt;4.471828&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;8.457062&lt;/td&gt;
+      &lt;td&gt;6.668157&lt;/td&gt;
+      &lt;td&gt;3.927031&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;13.085146&lt;/td&gt;
+      &lt;td&gt;9.295579&lt;/td&gt;
+      &lt;td&gt;5.865408&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have data on $1000$ different markets, in which we observe current &lt;code&gt;sales&lt;/code&gt;, the amount spent in &lt;code&gt;advertisement&lt;/code&gt; and &lt;code&gt;past sales&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We want to understand &lt;code&gt;ads&lt;/code&gt; spending is effective in increasing &lt;code&gt;sales&lt;/code&gt;. One possibility is to regress the latter on the former, using the following regression model, also called the &lt;strong&gt;short model&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+\text{sales} = \alpha \cdot \text{ads} + \varepsilon
+$$&lt;/p&gt;
+&lt;p&gt;Should we also include &lt;code&gt;past sales&lt;/code&gt; in the regression? Then the regression model would be the following, also called &lt;strong&gt;long model&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+\text{sales} = \alpha \cdot \text{ads} + \beta \cdot \text{past sales} + \varepsilon
+$$&lt;/p&gt;
+&lt;p&gt;Since we are not sure whether to condition the analysis on &lt;code&gt;past sales&lt;/code&gt;, we could &lt;strong&gt;let the data decide&lt;/strong&gt;: we could run the second regression and, if the effect of &lt;code&gt;past sales&lt;/code&gt;, $\beta$, is statistically significant, we are good with the long model, otherwise we run the short model.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;sales ~ ads + past_sales&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;  &lt;td&gt;    0.1405&lt;/td&gt; &lt;td&gt;    0.185&lt;/td&gt; &lt;td&gt;    0.758&lt;/td&gt; &lt;td&gt; 0.448&lt;/td&gt; &lt;td&gt;   -0.223&lt;/td&gt; &lt;td&gt;    0.504&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;ads&lt;/th&gt;        &lt;td&gt;    0.9708&lt;/td&gt; &lt;td&gt;    0.030&lt;/td&gt; &lt;td&gt;   32.545&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.912&lt;/td&gt; &lt;td&gt;    1.029&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;past_sales&lt;/th&gt; &lt;td&gt;   -0.2619&lt;/td&gt; &lt;td&gt;    0.095&lt;/td&gt; &lt;td&gt;   -2.743&lt;/td&gt; &lt;td&gt; 0.006&lt;/td&gt; &lt;td&gt;   -0.449&lt;/td&gt; &lt;td&gt;   -0.075&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;It seems that the effect of &lt;code&gt;past sales&lt;/code&gt; on current &lt;code&gt;sales&lt;/code&gt; is positive and significant. Therefore, we are happy with our specification and we conclude that the effect of &lt;code&gt;ads&lt;/code&gt; on &lt;code&gt;sales&lt;/code&gt; is positive and significant with a 95% confidence interval of $[0.912, 1.029]$.&lt;/p&gt;
+&lt;h2 id=&#34;the-bias&#34;&gt;The Bias&lt;/h2&gt;
+&lt;p&gt;There is an &lt;strong&gt;issue&lt;/strong&gt; with this procedure: we are not taking into account the fact that we have run a test to decide whether to include &lt;code&gt;past_sales&lt;/code&gt; in the regression. The fact that we have decided to include &lt;code&gt;past_sales&lt;/code&gt; because its coefficient is significant &lt;em&gt;does&lt;/em&gt; have an effect on the inference on the effect of &lt;code&gt;ads&lt;/code&gt; on &lt;code&gt;sales&lt;/code&gt;, $\alpha$.&lt;/p&gt;
+&lt;p&gt;The best way to understand the problem is through &lt;strong&gt;simulations&lt;/strong&gt;. Since we have access to the data generating process &lt;code&gt;dgp_pretest()&lt;/code&gt; (unlike in real life), we can just test what would happen if we were repeating this procedure multiple times:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;We draw a new sample from the data generating process.&lt;/li&gt;
+&lt;li&gt;We regress &lt;code&gt;sales&lt;/code&gt; on &lt;code&gt;ads&lt;/code&gt; and &lt;code&gt;past_sales&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;If the coefficient of &lt;code&gt;past_sales&lt;/code&gt; is significant at the 95% level, we keep $\hat \alpha_{long}$ from (2).&lt;/li&gt;
+&lt;li&gt;Otherwise, we regress &lt;code&gt;sales&lt;/code&gt; on &lt;code&gt;ads&lt;/code&gt; only, and we keep that coefficient $\hat \alpha_{short}$.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;I write a &lt;code&gt;pre_test&lt;/code&gt; function to implement the procedure above. I also save the coefficients from both regressions, long and short, and the chosen one, called the &lt;strong&gt;pre-test coefficient&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Reminder&lt;/strong&gt;: we are pre-testing the effect of &lt;code&gt;past_sales&lt;/code&gt; on &lt;code&gt;sales&lt;/code&gt; but the coefficient of interest is the one of &lt;code&gt;ads&lt;/code&gt; on &lt;code&gt;sales&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def pre_testing(d=&#39;ads&#39;, y=&#39;sales&#39;, x=&#39;past_sales&#39;, K=1000, **kwargs):
+    
+    # Init
+    alpha = {&#39;Long&#39;: np.zeros(K), &#39;Short&#39;: np.zeros(K), &#39;Pre-test&#39;: np.zeros(K)}
+
+    # Loop over simulations
+    for k in range(K):
+        
+        # Generate data
+        df = dgp_pretest().generate_data(seed=k, **kwargs)
+        
+        # Compute coefficients
+        alpha[&#39;Long&#39;][k] = smf.ols(f&#39;{y} ~ {d} + {x}&#39;, df).fit().params[1]
+        alpha[&#39;Short&#39;][k] = smf.ols(f&#39;{y} ~ {d}&#39;, df).fit().params[1]
+    
+        # Compute significance of beta
+        p_value = smf.ols(f&#39;{y} ~ {d} + {x}&#39;, df).fit().pvalues[2]
+        
+        # Select specification based on p-value
+        if p_value&amp;lt;0.05:
+            alpha[&#39;Pre-test&#39;][k] = alpha[&#39;Long&#39;][k]
+        else:
+            alpha[&#39;Pre-test&#39;][k] = alpha[&#39;Short&#39;][k]
+    
+    return alpha
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;alphas = pre_testing()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can now plot the distributions (over simulations) of the estimated coefficients.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_alphas(alphas, true_alpha):
+    
+    # Init plot
+    fig, axes = plt.subplots(1, len(alphas), figsize=(4*len(alphas), 5), sharey=True, sharex=True)
+
+    # Make one plot for each set of coefficients
+    for i, key in enumerate(alphas.keys()):
+        axes[i].hist(alphas[key], bins=30, lw=.1)
+        axes[i].set_title(key)
+        axes[i].axvline(true_alpha, c=&#39;r&#39;, ls=&#39;--&#39;)
+        legend_text = [r&#39;$\alpha=%.0f$&#39; % true_alpha, r&#39;$\hat \alpha=%.4f$&#39; % np.mean(alphas[key])]
+        axes[i].legend(legend_text, prop={&#39;size&#39;: 10}, loc=&#39;upper right&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_alphas(alphas, true_alpha=1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/pretest_16_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;In the plot above, I have depicted the estimated coefficients, across simulations, for the different regression specifications.&lt;/p&gt;
+&lt;p&gt;As we can see from the first plot, if we were always running the &lt;strong&gt;long regression&lt;/strong&gt;, our estimator $\hat \alpha_{long}$ would be unbiased and normally distributed. However, if we were always running the &lt;strong&gt;short regression&lt;/strong&gt; (second plot), our estimator $\hat \alpha_{short}$ would be &lt;strong&gt;biased&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;pre-testing&lt;/strong&gt; procedure generates an estimator $\hat \alpha_{pretest}$ that is a mix of the two: most of the times we select the correct specification, but sometimes the pre-test fails to reject the null hypothesis of no effect of &lt;code&gt;past sales&lt;/code&gt; on &lt;code&gt;sales&lt;/code&gt;, $H_0 : \beta = 0$, and we select the incorrect specification, running the short regression.&lt;/p&gt;
+&lt;p&gt;Importantly, the pre-testing procedure &lt;strong&gt;does not generate a biased estimator&lt;/strong&gt;. As we can see in the last plot, the estimated coefficient is very close to the true value, 1. The reason is that most of the time, the number of times we select the &lt;em&gt;short&lt;/em&gt; regression is sufficiently small not to introduce bias, but not small enough to have valid inference.&lt;/p&gt;
+&lt;p&gt;Indeed, &lt;strong&gt;pre-testing distorts inference&lt;/strong&gt;: the distribution of the estimator $\hat \alpha_{pretest}$ is not normal anymore, but bimodal. The &lt;strong&gt;consequence&lt;/strong&gt; is that our confidence intervals for $\alpha$ are going to have the wrong coverage (contain the true effect with a different probability than the claimed one).&lt;/p&gt;
+&lt;h2 id=&#34;when-is-pre-testing-a-problem&#34;&gt;When is pre-testing a problem?&lt;/h2&gt;
+&lt;p&gt;The problem of pre-testing arises because of the bias generated by running the short regression: &lt;a href=&#34;https://towardsdatascience.com/344ac1477699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;omitted variable bias (OVB)&lt;/strong&gt;&lt;/a&gt;. In you are not familiar with OVB, I have written a &lt;a href=&#34;https://towardsdatascience.com/344ac1477699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;short introduction here&lt;/a&gt;. In general however, we can express the omitted variable bias introduced by regressing $Y$ on $D$ ignoring $X$ as&lt;/p&gt;
+&lt;p&gt;$$
+\text{OVB} = \beta \delta \qquad \text{ where } \qquad \beta := \frac{Cov(X, Y)}{Var(X)}, \quad \delta := \frac{Cov(D, X)}{Var(D)}
+$$&lt;/p&gt;
+&lt;p&gt;Where $\beta$ is the effect of $X$ (&lt;code&gt;past sales&lt;/code&gt; in our example) on $Y$ (&lt;code&gt;sales&lt;/code&gt;) and $\delta$ is the effect of $D$ (&lt;code&gt;ads&lt;/code&gt;) on $X$.&lt;/p&gt;
+&lt;p&gt;Pre-testing is a &lt;strong&gt;problem&lt;/strong&gt; if&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;We run the short regression instead of the long one &lt;em&gt;and&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;The effect of the bias is sensible&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;What can help improving (1), i.e. the probability of correctly rejecting the null hypothesis of zero effect of &lt;code&gt;past sales&lt;/code&gt;, $H_0 : \beta = 0$? The answer is simple: a &lt;strong&gt;bigger sample size&lt;/strong&gt;. If we have more observations, we can more precisely estimate $\beta$ and it is going to be less likely that we commit a &lt;a href=&#34;https://en.wikipedia.org/wiki/Type_I_and_type_II_errors&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;type 2 error&lt;/a&gt; and run the short regression instead of the long one.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s simulate the estimated coefficient $\hat \alpha$ under different sample sizes. Remember that the sample size used until now is $N=1000$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;Ns = [100,300,1000,3000]
+alphas = {f&#39;N = {n:.0f}&#39;:  pre_testing(N=n)[&#39;Pre-test&#39;] for n in Ns}
+plot_alphas(alphas, true_alpha=1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/pretest_20_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see from the plots, as the sample size increases (left to right), the bias decreases and the distribution of the estimator $\hat \alpha_{pretest}$ converges to a normal distribution.&lt;/p&gt;
+&lt;p&gt;What happens instead if the value of $\beta$ was different? It is probably going to affect point (2) in the previous paragraph, but how?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;If $\beta$ is &lt;strong&gt;very small&lt;/strong&gt;, it is going to be hard to detect it, and we will often end up running the &lt;em&gt;short&lt;/em&gt; regression, introducing a bias. However, if $\beta$ is very small, it also implies that the &lt;strong&gt;magnitude of the bias&lt;/strong&gt; is small and therefore it is not going to affect our estimate of $\alpha$ much&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;If $\beta$ is &lt;strong&gt;very big&lt;/strong&gt;, it is going to be easy to detect and we will often end up running the &lt;em&gt;long&lt;/em&gt; regression, avoiding the bias (which would have been very big though).&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Let&amp;rsquo;s simulate the estimated coefficient $\hat \alpha$ under different values of $\beta$. The true value used until now was $\beta = 0.3$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;betas = 0.3 * np.array([0.1,0.3,1,3])
+alphas = {f&#39;beta = {b:.2f}&#39;:  pre_testing(b=b)[&#39;Pre-test&#39;] for b in betas}
+plot_alphas(alphas, true_alpha=1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/pretest_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see from the plots, as the value of $\beta$ increases, the bias first appears and then disappears. When $\beta$ is small (left plot), we often choose the short regression, but the bias is small and the average estimate is very close to the true value. For intermediate values of $\beta$, the bias is sensible and it has a clear effect on inference. Lastly, for large values of $\beta$ instead (right plot), we always run the long regression and the bias disappears.&lt;/p&gt;
+&lt;p&gt;But &lt;strong&gt;when is a coefficient big or small&lt;/strong&gt;? And big or small with respect to what? The answer is simple: with respect to the &lt;strong&gt;sample size&lt;/strong&gt;, or more accurately, with respect to the inverse of the square root of the sample size, $1 / \sqrt{n}$. The reason is deeply rooted in the &lt;a href=&#34;https://en.wikipedia.org/wiki/Central_limit_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Central Limit Theorem&lt;/a&gt;, but I won&amp;rsquo;t cover it here.&lt;/p&gt;
+&lt;p&gt;The idea is easier to show than to explain, so let&amp;rsquo;s repeat the same simulation as above, but now we will increase both the coefficient and the sample size at the same time.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;betas = 0.3 * 30 / np.sqrt(Ns)
+alphas = {f&#39;N = {n:.0f}&#39;:  pre_testing(b=b, N=n)[&#39;Pre-test&#39;] for n,b in zip(Ns,betas)}
+plot_alphas(alphas, true_alpha=1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/pretest_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, now that $\beta$ is proportional to $1 / \sqrt{n}$, the distortion is not going away, not matter the sample size. Therefore, inference will always be wrong.&lt;/p&gt;
+&lt;p&gt;While a coefficient that depends on the sample size might sound &lt;strong&gt;not intuitive&lt;/strong&gt;, it captures well the idea of &lt;strong&gt;magnitude&lt;/strong&gt; in a world where we do inference relying on asymptotic results, first among all the &lt;a href=&#34;https://en.wikipedia.org/wiki/Central_limit_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Central Limit Theorem&lt;/a&gt;. In fact, the Central Limit Theorem relieas on an infinitely large sample size. However, with an infinite amount of data, no coefficient is small and any non-zero effect is detected with certainty.&lt;/p&gt;
+&lt;h2 id=&#34;pre-testing-and-machine-learning&#34;&gt;Pre-Testing and Machine Learning&lt;/h2&gt;
+&lt;p&gt;So far we talked about a linear regression with only 2 variables. Where is the &lt;strong&gt;machine learning&lt;/strong&gt; we were promised?&lt;/p&gt;
+&lt;p&gt;Usually we do not have just one control variable (or confounder), but many. Moreover, we might want to be flexible with respect to the functional form through which these control variables enter the model. In general, we will assume the following model:&lt;/p&gt;
+&lt;p&gt;$$
+Y = \alpha D + g_0(X) + u
+\newline
+D = m_0(X) + v
+$$&lt;/p&gt;
+&lt;p&gt;Where the effect of interest is still $\alpha$, $X$ is potentially high dimensional and we do not take a stand on the functional form through which $X$ influences $D$ or $Y$.&lt;/p&gt;
+&lt;p&gt;In this setting, it is natural to use a machine learning algorithm to estimate $g_0$ and $m_0$. However, machine learning algorithms usually introduce a &lt;strong&gt;regularization bias&lt;/strong&gt; that is comparable to pre-testing.&lt;/p&gt;
+&lt;p&gt;Possibly, the &amp;ldquo;simplest&amp;rdquo; way to think about it is &lt;a href=&#34;https://en.wikipedia.org/wiki/Lasso_%28statistics%29&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Lasso&lt;/a&gt;. Lasso is linear in $X$, with a penalization term that effectively just performs the variable selection we discussed above. Therefore, if we were to use Lasso of $X$ and $D$ on $Y$ we would be introducing regularization bias and inference would be distorted. The same goes for more complex algorithms.&lt;/p&gt;
+&lt;p&gt;Lastly, you might still wonder &amp;ldquo;why is the model linear in the treatment variable $D$?&amp;rdquo;. Doing inference is much easier in linear model, not only for computational reasons but also for interpretation. Moreover, if the treatment $D$ is binary, the linear functional form is without loss of generality. A stronger assumption is the additive separability of $D$ and $g(X)$.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this post, I have tried to explain how does regularization bias emerges and why it can the an issue in causal inference. This problem is inherently related to settings with many control variables or where we would like to have a model-free (i.e. non-parametric) when controlling for confounders. These are exactly the settings in which machine learning algorithms can be useful.&lt;/p&gt;
+&lt;p&gt;In the next post, I will cover a simple and yet incredibly powerful solution to this problem: double-debiased machine learning.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;p&gt;[1] A. Belloni, D. Chen, V. Chernozhukov, C. Hansen, &lt;a href=&#34;https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA9626&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Sparse Models and Methods for Optimal Instruments With an Application to Eminent Domain&lt;/a&gt;, &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] A. Belloni, V. Chernozhukov, C. Hansen, &lt;a href=&#34;https://academic.oup.com/restud/article-abstract/81/2/608/1523757&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Inference on treatment effects after selection among high-dimensional controls&lt;/a&gt;, &lt;em&gt;The Review of Economic Studies&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[3] V. Chernozhukov, D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, J. Robins, &lt;a href=&#34;https://academic.oup.com/ectj/article/21/1/C1/5056401&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double/debiased machine learning for treatment and structural parameters&lt;/a&gt;, &lt;em&gt;The Econometrics Journal&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/344ac1477699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Omitted Variable Bias And How To Deal With It&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The FWL Theorem, Or How To Make Regressions Intuitive&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/pretest.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/pretest.ipynb&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
