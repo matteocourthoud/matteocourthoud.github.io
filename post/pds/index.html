@@ -339,10 +339,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-06-04T00:00:00&#43;00:00"
+        content="2022-06-05T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-06-04T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-06-05T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/pds/featured.png"
   ],
   
-  "datePublished": "2022-06-04T00:00:00Z",
-  "dateModified": "2022-06-04T00:00:00Z",
+  "datePublished": "2022-06-05T00:00:00Z",
+  "dateModified": "2022-06-05T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -779,6 +779,7 @@
       <ul>
         <li><a href="#naive-approach">Naive approach</a></li>
         <li><a href="#orthogonalization">Orthogonalization</a></li>
+        <li><a href="#a-cautionary-tale">A Cautionary Tale</a></li>
       </ul>
     </li>
     <li><a href="#conclusion">Conclusion</a>
@@ -837,7 +838,7 @@
     
       
     
-    Jun 4, 2022
+    Jun 5, 2022
   </span>
   
 
@@ -846,7 +847,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    13 min read
+    14 min read
   </span>
   
 
@@ -1193,6 +1194,11 @@ $$</p>
 </ol>
 <p>The estimator is <strong>unbiased</strong>!</p>
 <p>However, the estimator still has a lower rate of convergence because of sample splitting. The problem is solved by inverting the split sample, re-estimating the coefficient and averaging the two estimates. Note that this procedure is valid since the two estimates are independent by the sample splitting procedure.</p>
+<h3 id="a-cautionary-tale">A Cautionary Tale</h3>
+<p>Before we conclude, I have to mention a recent research paper by <a href="https://arxiv.org/abs/2108.11294" target="_blank" rel="noopener">Hünermund, B. Louw, and Caspi (2022)</a>, in which the authors show that double-debiased machine learning can easily <strong>backfire</strong>, if we apply blindly.</p>
+<p>The problem is related to <strong>bad control variables</strong>. If you have never heard this term, I have written an introductory <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">blog post on good and bad control variables here</a>. In short, conditioning the analysis on additional features is not always good for causal inference. Depending on the setting, there might exist variables that we want to leave out of our analysis since their <strong>inclusion</strong> can bias the coefficient of interest, preventing a causal interpretation. The simplest example is variables that are common outcomes, of both the treatment $D$ and outcome variable $Y$.</p>
+<p>The double-debiased machine learning model implicitly assumes that the control variables $X$ are (weakly) <strong>common causes</strong> to both the outcome $Y$ and the treatment $D$. If this is the case, and no further mediated/indirect relationship exists between $X$ and $Y$, there is no problem. However, if, for example, some variable among the controls $X$ is a common effect instead of a common cause, its inclusion will bias the coefficient of interest. Moreover, this variable is likely to be highly correlated either with the outcome $Y$ or with the treatment $D$. In the latter case, this implies that post-double selection might include it in cases in which simple selection would have not. Therefore, in presence of bad control variables, doule-debiased machine learning might be <strong>even worse</strong> than simple pre-testing.</p>
+<p>In short, as for any method, it is <strong>crucial</strong> to have a clear understanding of the method&rsquo;s assumptions and to always check for potential violations.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this post, we have seen how to use post-double selection and, more generally, double debiased machine learning to get rid of an important source of bias: regularization bias.</p>
 <p>This contribution by Victor Chernozhukov and co-authors has been undoubtedly one of the most relevant advances in causal inferences in the last decade. It is now widely employed in the industry and included in the most used causal inference packages, such as <a href="https://econml.azurewebsites.net/" target="_blank" rel="noopener">EconML</a> (Microsoft) and <a href="https://causalml.readthedocs.io/en/latest/" target="_blank" rel="noopener">causalml</a> (Uber).</p>
@@ -1209,6 +1215,7 @@ $$</p>
 <p>[1] A. Belloni, D. Chen, V. Chernozhukov, C. Hansen, <a href="https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA9626" target="_blank" rel="noopener">Sparse Models and Methods for Optimal Instruments With an Application to Eminent Domain</a> (2012), <em>Econometrica</em>.</p>
 <p>[2] A. Belloni, V. Chernozhukov, C. Hansen, <a href="https://academic.oup.com/restud/article-abstract/81/2/608/1523757" target="_blank" rel="noopener">Inference on treatment effects after selection among high-dimensional controls</a> (2014), <em>The Review of Economic Studies</em>.</p>
 <p>[3] V. Chernozhukov, D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, J. Robins, <a href="https://academic.oup.com/ectj/article/21/1/C1/5056401" target="_blank" rel="noopener">Double/debiased machine learning for treatment and structural parameters</a> (2018), <em>The Econometrics Journal</em>.</p>
+<p>[4] P. Hünermund, B. Louw, I. Caspi, <a href="https://arxiv.org/abs/2108.11294" target="_blank" rel="noopener">Double Machine Learning and Automated Confounder Selection - A Cautionary Tale</a> (2022), <em>working paper</em>.</p>
 <h3 id="related-articles">Related Articles</h3>
 <ul>
 <li><a href="https://towardsdatascience.com/eb767a59975b" target="_blank" rel="noopener">Double Debiased Machine Learning (part 1)</a></li>
