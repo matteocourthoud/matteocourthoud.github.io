@@ -30,8 +30,7 @@
   
     
   
-  <meta name="description" content="TBD
-Multiple Treatments Example Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our checkout button. Our UX designer comes up with two alternative checkout buttons." />
+  <meta name="description" content="In many causal inference settings, we might be interested in the effect of not just one treatment, but many mutually exclusive treatments. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/cbias/" />
@@ -334,8 +333,7 @@ Multiple Treatments Example Suppose we are an online shop and we are not satisfi
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/cbias/" />
   <meta property="og:title" content="Contamination Bias | Matteo Courthoud" />
-  <meta property="og:description" content="TBD
-Multiple Treatments Example Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our checkout button. Our UX designer comes up with two alternative checkout buttons." /><meta property="og:image" content="https://matteocourthoud.github.io/post/cbias/featured.png" />
+  <meta property="og:description" content="In many causal inference settings, we might be interested in the effect of not just one treatment, but many mutually exclusive treatments. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies." /><meta property="og:image" content="https://matteocourthoud.github.io/post/cbias/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/cbias/featured.png" /><meta property="og:locale" content="en-us" />
   
     
@@ -387,7 +385,7 @@ Multiple Treatments Example Suppose we are an online shop and we are not satisfi
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "TBD\nMultiple Treatments Example Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our checkout button. Our UX designer comes up with two alternative checkout buttons."
+  "description": "In many causal inference settings, we might be interested in the effect of not just one treatment, but many mutually exclusive treatments. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies."
 }
 </script>
 
@@ -843,7 +841,7 @@ Multiple Treatments Example Suppose we are an online shop and we are not satisfi
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    11 min read
+    12 min read
   </span>
   
 
@@ -878,11 +876,14 @@ Multiple Treatments Example Suppose we are an online shop and we are not satisfi
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>TBD</p>
+            <p>In many causal inference settings, we might be interested in the effect of not just one treatment, but <strong>many mutually exclusive treatments</strong>. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies. Depending on the context, there might be many reasons why we want to test different treatments at the same time, but generally it can help <em>reducing the sample size</em>, as we need just a single control group. A simple way to recover the different treatment effects is a linear regression of the outcome of interest on the different treatment indicators.</p>
+<p>However, in causal inference, we often <strong>condition the analysis</strong> on other observable variables (often called control variables), either to increase power or, especially in quasi-experimental settings, to identify a causal parameter instead of a simple correlation. There are <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">cases in which adding control variables can backfire</a>, but otherwise, we usually think that the regression framework is still able to recover the average treatment effect.</p>
+<p>In a breakthrough paper, <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull and Kolesár (2022)</a> have recently shown that in case of <em>multiple and mutually-exclusive</em> treatments with <em>control variables</em>, the <strong>regression coefficients do not identify a causal effect</strong>. However, not everything is lost: the authors propose a simple solution to this problem that still makes use of linear regression.</p>
+<p>In this blog post, I am going to go through a <strong>simple example</strong> illustrating the nature of the problem and the solution proposed by the authors.</p>
 <h2 id="multiple-treatments-example">Multiple Treatments Example</h2>
-<p>Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our <strong>checkout button</strong>. Our UX designer comes up with two alternative checkout buttons.</p>
+<p>Suppose we are an online store and we are not satisfied with our current <em>checkout page</em>. In particular, we would like to change our <strong>checkout button</strong> to increase the probability of a purchase. Our UX designer comes up with two alternative checkout buttons, which are displayed below.</p>
 <img src="fig/buttons.png" width="800px"/>
-<p>In order to understand which button to switch to, we run an <strong>A/B test</strong>. In particular, when people arrive at the checkout page, we show them one of the three options, at random. Then, for each user, we record the revenue generated which is our Overall Evaluation Criterion (OEC).</p>
+<p>In order to understand which button to use, we run an <a href="https://en.wikipedia.org/wiki/A/B_testing" target="_blank" rel="noopener"><strong>A/B test</strong></a>, or randomized control trial. In particular, when people arrive at the checkout page, we show them one of the three options, at random. Then, for each user, we record the revenue generated which is our outcome of interest.</p>
 <p>I generate a synthetic dataset using <code>dgp_buttons()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a> as data generating process. I also import plotting functions and standard libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
@@ -951,10 +952,10 @@ df.head()
   </tbody>
 </table>
 </div>
-<p>We have information on 2000 users, for which we observe the button they observe (<code>default</code>, <code>button1</code> or <code>button2</code>), the revenue they generate and whether they connected from desktop or <code>mobile</code>.</p>
-<p>We notice too late that we have a <strong>problem with randomization</strong>. We showed alternative 1 more frequently to desktop users and alternative 2 more frequently to mobile users. The control group instead is balanced.</p>
+<p>We have information on 2000 users, for which we observe their checkout button (<code>default</code>, <code>button1</code> or <code>button2</code>), the <code>revenue</code> they generate and whether they connected from desktop or <code>mobile</code>.</p>
+<p>We notice too late that we have a <strong>problem with randomization</strong>. We showed <code>button1</code> more frequently to desktop users and <code>button2</code> more frequently to mobile users. The control group that sees the <code>default</code> button instead is balanced.</p>
 <img src="fig/randomization.png" width="600px"/>
-<p>What should we do? What happens if we simply compare <code>revenue</code> across <code>groups</code>? Let&rsquo;s do it by regressing <code>revenue</code> on <code>group</code> indicator functions.</p>
+<p>What should we do? What happens if we simply compare <code>revenue</code> across <code>groups</code>? Let&rsquo;s do it by regressing <code>revenue</code> on <code>group</code> dummy variables.</p>
 <pre><code class="language-python">smf.ols('revenue ~ group', data=df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -971,9 +972,9 @@ df.head()
   <th>group[T.button2]</th> <td>   -0.5958</td> <td>    0.218</td> <td>   -2.727</td> <td> 0.006</td> <td>   -1.024</td> <td>   -0.167</td>
 </tr>
 </table>
-<p>From the regression results we estimate a negative and significant effect for both buttons.</p>
-<p>However, it is <strong>unlikely</strong> that what we have estimated are the true treatment effects. In fact, there might be substantial revenue differences between desktop and mobile. Since we do not have a comparable number of mobile and desktop users across treatment arms, it might be that the observed differences are due to the <em>device</em> used and not the <em>button design</em>.</p>
-<p>Because of this, we decide to <strong>condition</strong> our analysis on the device used and we include the <code>mobile</code> indicator variable in the regression.</p>
+<p>From the regression results we estimate a negative and significant effect for both buttons. Should we believe these estimates? Are they <strong>causal</strong>?</p>
+<p>It is unlikely that what we have estimated are the true treatment effects. In fact, there might be substantial <strong>differences in purchase attitudes</strong> between desktop and mobile users. Since we do not have a comparable number of mobile and desktop users across treatment arms, it might be that the observed differences in <code>revenue</code> are due to the <em>device</em> used and not the <em>button design</em>.</p>
+<p>Because of this, we decide to <strong>condition</strong> our analysis on the device used and we include the <code>mobile</code> dummy variable in the regression.</p>
 <pre><code class="language-python">smf.ols('revenue ~ group + mobile', data=df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -993,20 +994,20 @@ df.head()
   <th>mobile</th>           <td>    4.7181</td> <td>    0.116</td> <td>   40.691</td> <td> 0.000</td> <td>    4.491</td> <td>    4.946</td>
 </tr>
 </table>
-<p>Now the coefficient for <code>button1</code> is positive and significant. Should we recommend its implementation?</p>
-<p>The answer is <strong>surprisingly no</strong>. <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a> show that this type of regression does not identify average treatment effect when:</p>
+<p>Now the coefficient of <code>button1</code> is positive and significant. Should we recommend its implementation?</p>
+<p>The answer is <strong>surprisingly no</strong>. <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a> show that this type of regression does not identify the average treatment effect when:</p>
 <ul>
-<li>there are mutually exclusive treatment arms (our <code>groups</code>)</li>
-<li>we are controlling for some variable $X$ (our <code>mobile</code>)</li>
-<li>there are heterogeneous treatment effects by $X$</li>
+<li>there are mutually exclusive treatment arms (in our case, <code>groups</code>)</li>
+<li>we are controlling for some variable $X$ (in our case, <code>mobile</code>)</li>
+<li>there treatment effects are heterogeneous in $X$</li>
 </ul>
 <p>This is true <strong>even if</strong> the treatment is &ldquo;as good as random&rdquo; once we condition on $X$.</p>
 <p>Indeed, in our case, the true treatment effects are the ones reported in the following table.</p>
 <img src="fig/effects.png" width="500px"/>
-<p>The first button has no effect on revenue, while the second button has a positive effect on mobile users and a negative effect. Our (wrong) regression specification instead estimates a positive effect of the first button.</p>
+<p>The first button has <strong>no effect</strong> on revenue, irrespectively of the device, while the second button has a <strong>positive effect</strong> for mobile users and a <strong>negative effect</strong> for desktop users. Our (wrong) regression specification instead estimates a positive effect of the first button.</p>
 <p>Let&rsquo;s now dig more in detail into the math, to understand why this is happening.</p>
 <h2 id="theory">Theory</h2>
-<p>This section is heavily borrowed from <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a>. For a very synthetic but precise summary of the paper, I recomment this Twitter thread by one of the authors, Paul Goldsmith-Pinkham.</p>
+<p>This section heavily borrows from <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a>. For a very synthetic but precise summary of the paper, I recommend this excellent Twitter thread by one of the authors, Paul Goldsmith-Pinkham.</p>
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Economists love using linear regression to estimate treatment effects — it turns out that there are perils to this method, but also amazing perks<br><br>Come with me in this 🧵 if you want to learn… <a href="https://t.co/eDsRLkZFZe">https://t.co/eDsRLkZFZe</a></p>&mdash; Paul Goldsmith-Pinkham (@paulgp) <a href="https://twitter.com/paulgp/status/1534169803388293120?ref_src=twsrc%5Etfw">June 7, 2022</a></blockquote>
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
@@ -1145,7 +1146,8 @@ new_results = simulate(dgp, new_estimator)
 <p>However, <strong>the problem is more general</strong> than this setting and generally concerns every setting in which</p>
 <ol>
 <li>We have multiple treatments that depend on each other</li>
-<li>We have necessary controls</li>
+<li>We need to condition the analysis on a control variable</li>
+<li>The treatment effects are heterogeneous in the control variable</li>
 </ol>
 <p>Another popular example is the case of the <a href="https://arxiv.org/abs/2201.01194" target="_blank" rel="noopener">Two-Way Fixed Effects (TWFE) estimator with staggered treatments</a>.</p>
 <h2 id="references">References</h2>
