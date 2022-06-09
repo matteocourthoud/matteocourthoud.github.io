@@ -18,7 +18,7 @@
       <pubDate>Thu, 09 Jun 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/cbias/</guid>
       <description>&lt;p&gt;TBD&lt;/p&gt;
-&lt;h2 id=&#34;multiple-treatment-arms-and-linear-regression&#34;&gt;Multiple Treatment Arms and Linear Regression&lt;/h2&gt;
+&lt;h2 id=&#34;multiple-treatments-example&#34;&gt;Multiple Treatments Example&lt;/h2&gt;
 &lt;p&gt;Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our &lt;strong&gt;checkout button&lt;/strong&gt;. Our UX designer comes up with two alternative checkout buttons.&lt;/p&gt;
 &lt;img src=&#34;fig/buttons.png&#34; width=&#34;800px&#34;/&gt;
 &lt;p&gt;In order to understand which button to switch to, we run an &lt;strong&gt;A/B test&lt;/strong&gt;. In particular, when people arrive at the checkout page, we show them one of the three options, at random. Then, for each user, we record the revenue generated which is our Overall Evaluation Criterion (OEC).&lt;/p&gt;
@@ -203,12 +203,12 @@ $$&lt;/p&gt;
 $$&lt;/p&gt;
 &lt;p&gt;In fact, the treatments are mutually exclusive. This implies that when $D_{i1}=1$, $D_{i2}$ must be zero, regardless of the value of $X$. Therefore, the last term does not cancel out and it introduces a &lt;strong&gt;contamination bias&lt;/strong&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;solution&#34;&gt;Solution&lt;/h3&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt; propose a simple and general solution that works for any control variable $X$, not only a binary one as we have considered so far.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt; show that a &lt;strong&gt;simple estimator&lt;/strong&gt;, first proposed by &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Imbens and Wooldridge (2009)&lt;/a&gt; is able to remove the bias. The procedure is the following.&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;De-mean the control variable: $\tilde X = X - \bar X$&lt;/li&gt;
-&lt;li&gt;Regress $Y$ on the interaction between the treatment indicators $D$ and the demeaned control variable $\tilde X$.&lt;/li&gt;
+&lt;li&gt;Regress $Y$ on the interaction between the treatment indicators $D$ and the demeaned control variable $\tilde X$&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;The resulting estimator is consistent and asymptotically normal.&lt;/p&gt;
+&lt;p&gt;This estimator is an &lt;strong&gt;unbiased&lt;/strong&gt; estimator of the average treatment effect. It also just requires a linear regression. Moreover, this estimator is unbiased also for continuous control variables $X$, not only for a binary one as we have considered so far.&lt;/p&gt;
 &lt;h2 id=&#34;simulations&#34;&gt;Simulations&lt;/h2&gt;
 &lt;p&gt;In order to better understand both the problem and the solution, let&amp;rsquo;s run some &lt;strong&gt;simulations&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;We run an estimator over different draws from the data generating process &lt;code&gt;dgp_buttons()&lt;/code&gt;. This is only possible with synthetic data and we do not have this luxury in reality. For each sample, we record the estimated coefficient and the corresponding &lt;a href=&#34;https://en.wikipedia.org/wiki/P-value&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;p-value&lt;/a&gt;.&lt;/p&gt;
@@ -280,12 +280,18 @@ new_results = simulate(dgp, new_estimator)
 &lt;p&gt;&lt;img src=&#34;img/cbias_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Now the distribution of the estimated coefficient for the first alternative button is centered around the true value of zeros. Moreover, we reject the null hypothesis of no effect only in 1% of the simulations, consistently with the chosen confidence level of 95%.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;In this post, we have seen the dangers of running a factor regression model with multiple mutually exclusive treatment arms and treatment effect heterogeneity across a control variable.&lt;/p&gt;
-&lt;p&gt;This problem&lt;/p&gt;
+&lt;p&gt;In this post, we have seen the dangers of running a factor regression model with multiple &lt;em&gt;mutually exclusive&lt;/em&gt; treatment arms and treatment effect heterogeneity across a control variable. In this case, because the treatments are not independent, the regression coefficient is not a convex combination of the within-group average treatment effects, but also captures the treatment effects of the other treatments introducing &lt;strong&gt;contamination bias&lt;/strong&gt;. The solution to the problem is both simple and elegant, requiring just a linear regression.&lt;/p&gt;
+&lt;p&gt;However, &lt;strong&gt;the problem is more general&lt;/strong&gt; than this setting and generally concerns every setting in which&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;We have multiple treatments that depend on each other&lt;/li&gt;
+&lt;li&gt;We have necessary controls&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Another popular example is the case of the &lt;a href=&#34;https://arxiv.org/abs/2201.01194&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Two-Way Fixed Effects (TWFE) estimator with staggered treatments&lt;/a&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
 &lt;p&gt;[1] J. Angrist, &lt;a href=&#34;https://www.jstor.org/stable/2998558&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Estimating the Labor Market Impact of Voluntary Military Service Using Social Security Data on Military Applicants&lt;/a&gt; (1998), &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[2] D. Rubin, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/016214504000001880&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Causal Inference Using Potential Outcomes&lt;/a&gt; (2005), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[3] P. Goldsmith-Pinkham, P. Hull, M. Kolesár, &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Contamination Bias in Linear Regressions&lt;/a&gt; (2022), &lt;em&gt;working paper&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[3] G. Imbens, J. Wooldridge, &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Recent Developments in the Econometrics of Program Evaluation&lt;/a&gt; (2009), &lt;em&gt;Journal of Economic Literature&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[4] P. Goldsmith-Pinkham, P. Hull, M. Kolesár, &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Contamination Bias in Linear Regressions&lt;/a&gt; (2022), &lt;em&gt;working paper&lt;/em&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/344ac1477699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Omitted Variable Bias&lt;/a&gt;&lt;/li&gt;

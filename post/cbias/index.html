@@ -31,7 +31,7 @@
     
   
   <meta name="description" content="TBD
-Multiple Treatment Arms and Linear Regression Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our checkout button." />
+Multiple Treatments Example Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our checkout button. Our UX designer comes up with two alternative checkout buttons." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/cbias/" />
@@ -335,7 +335,7 @@ Multiple Treatment Arms and Linear Regression Suppose we are an online shop and 
   <meta property="og:url" content="https://matteocourthoud.github.io/post/cbias/" />
   <meta property="og:title" content="Contamination Bias | Matteo Courthoud" />
   <meta property="og:description" content="TBD
-Multiple Treatment Arms and Linear Regression Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our checkout button." /><meta property="og:image" content="https://matteocourthoud.github.io/post/cbias/featured.png" />
+Multiple Treatments Example Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our checkout button. Our UX designer comes up with two alternative checkout buttons." /><meta property="og:image" content="https://matteocourthoud.github.io/post/cbias/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/cbias/featured.png" /><meta property="og:locale" content="en-us" />
   
     
@@ -387,7 +387,7 @@ Multiple Treatment Arms and Linear Regression Suppose we are an online shop and 
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "TBD\nMultiple Treatment Arms and Linear Regression Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our checkout button."
+  "description": "TBD\nMultiple Treatments Example Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our checkout button. Our UX designer comes up with two alternative checkout buttons."
 }
 </script>
 
@@ -769,7 +769,7 @@ Multiple Treatment Arms and Linear Regression Suppose we are an online shop and 
       </ul>
       <nav id="TableOfContents">
   <ul>
-    <li><a href="#multiple-treatment-arms-and-linear-regression">Multiple Treatment Arms and Linear Regression</a></li>
+    <li><a href="#multiple-treatments-example">Multiple Treatments Example</a></li>
     <li><a href="#theory">Theory</a>
       <ul>
         <li><a href="#single-treatment-arm">Single Treatment Arm</a></li>
@@ -843,7 +843,7 @@ Multiple Treatment Arms and Linear Regression Suppose we are an online shop and 
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    10 min read
+    11 min read
   </span>
   
 
@@ -879,7 +879,7 @@ Multiple Treatment Arms and Linear Regression Suppose we are an online shop and 
         <div class="article-container">
           <div class="article-style" align="justify">
             <p>TBD</p>
-<h2 id="multiple-treatment-arms-and-linear-regression">Multiple Treatment Arms and Linear Regression</h2>
+<h2 id="multiple-treatments-example">Multiple Treatments Example</h2>
 <p>Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our <strong>checkout button</strong>. Our UX designer comes up with two alternative checkout buttons.</p>
 <img src="fig/buttons.png" width="800px"/>
 <p>In order to understand which button to switch to, we run an <strong>A/B test</strong>. In particular, when people arrive at the checkout page, we show them one of the three options, at random. Then, for each user, we record the revenue generated which is our Overall Evaluation Criterion (OEC).</p>
@@ -1064,12 +1064,12 @@ $$</p>
 $$</p>
 <p>In fact, the treatments are mutually exclusive. This implies that when $D_{i1}=1$, $D_{i2}$ must be zero, regardless of the value of $X$. Therefore, the last term does not cancel out and it introduces a <strong>contamination bias</strong>.</p>
 <h3 id="solution">Solution</h3>
-<p><a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a> propose a simple and general solution that works for any control variable $X$, not only a binary one as we have considered so far.</p>
+<p><a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a> show that a <strong>simple estimator</strong>, first proposed by <a href="https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5" target="_blank" rel="noopener">Imbens and Wooldridge (2009)</a> is able to remove the bias. The procedure is the following.</p>
 <ol>
 <li>De-mean the control variable: $\tilde X = X - \bar X$</li>
-<li>Regress $Y$ on the interaction between the treatment indicators $D$ and the demeaned control variable $\tilde X$.</li>
+<li>Regress $Y$ on the interaction between the treatment indicators $D$ and the demeaned control variable $\tilde X$</li>
 </ol>
-<p>The resulting estimator is consistent and asymptotically normal.</p>
+<p>This estimator is an <strong>unbiased</strong> estimator of the average treatment effect. It also just requires a linear regression. Moreover, this estimator is unbiased also for continuous control variables $X$, not only for a binary one as we have considered so far.</p>
 <h2 id="simulations">Simulations</h2>
 <p>In order to better understand both the problem and the solution, let&rsquo;s run some <strong>simulations</strong>.</p>
 <p>We run an estimator over different draws from the data generating process <code>dgp_buttons()</code>. This is only possible with synthetic data and we do not have this luxury in reality. For each sample, we record the estimated coefficient and the corresponding <a href="https://en.wikipedia.org/wiki/P-value" target="_blank" rel="noopener">p-value</a>.</p>
@@ -1141,12 +1141,18 @@ new_results = simulate(dgp, new_estimator)
 <p><img src="img/cbias_38_0.png" alt="png"></p>
 <p>Now the distribution of the estimated coefficient for the first alternative button is centered around the true value of zeros. Moreover, we reject the null hypothesis of no effect only in 1% of the simulations, consistently with the chosen confidence level of 95%.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>In this post, we have seen the dangers of running a factor regression model with multiple mutually exclusive treatment arms and treatment effect heterogeneity across a control variable.</p>
-<p>This problem</p>
+<p>In this post, we have seen the dangers of running a factor regression model with multiple <em>mutually exclusive</em> treatment arms and treatment effect heterogeneity across a control variable. In this case, because the treatments are not independent, the regression coefficient is not a convex combination of the within-group average treatment effects, but also captures the treatment effects of the other treatments introducing <strong>contamination bias</strong>. The solution to the problem is both simple and elegant, requiring just a linear regression.</p>
+<p>However, <strong>the problem is more general</strong> than this setting and generally concerns every setting in which</p>
+<ol>
+<li>We have multiple treatments that depend on each other</li>
+<li>We have necessary controls</li>
+</ol>
+<p>Another popular example is the case of the <a href="https://arxiv.org/abs/2201.01194" target="_blank" rel="noopener">Two-Way Fixed Effects (TWFE) estimator with staggered treatments</a>.</p>
 <h2 id="references">References</h2>
 <p>[1] J. Angrist, <a href="https://www.jstor.org/stable/2998558" target="_blank" rel="noopener">Estimating the Labor Market Impact of Voluntary Military Service Using Social Security Data on Military Applicants</a> (1998), <em>Econometrica</em>.</p>
 <p>[2] D. Rubin, <a href="https://www.tandfonline.com/doi/abs/10.1198/016214504000001880" target="_blank" rel="noopener">Causal Inference Using Potential Outcomes</a> (2005), <em>Journal of the American Statistical Association</em>.</p>
-<p>[3] P. Goldsmith-Pinkham, P. Hull, M. Kolesár, <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Contamination Bias in Linear Regressions</a> (2022), <em>working paper</em>.</p>
+<p>[3] G. Imbens, J. Wooldridge, <a href="https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5" target="_blank" rel="noopener">Recent Developments in the Econometrics of Program Evaluation</a> (2009), <em>Journal of Economic Literature</em>.</p>
+<p>[4] P. Goldsmith-Pinkham, P. Hull, M. Kolesár, <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Contamination Bias in Linear Regressions</a> (2022), <em>working paper</em>.</p>
 <h3 id="related-articles">Related Articles</h3>
 <ul>
 <li><a href="https://towardsdatascience.com/344ac1477699" target="_blank" rel="noopener">Understanding Omitted Variable Bias</a></li>
