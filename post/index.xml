@@ -5,12 +5,272 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sun, 05 Jun 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Thu, 09 Jun 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://matteocourthoud.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>Contamination Bias</title>
+      <link>https://matteocourthoud.github.io/post/cbias/</link>
+      <pubDate>Thu, 09 Jun 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/cbias/</guid>
+      <description>&lt;p&gt;TBD&lt;/p&gt;
+&lt;h2 id=&#34;multiple-treatment-arms-and-linear-regression&#34;&gt;Multiple Treatment Arms and Linear Regression&lt;/h2&gt;
+&lt;p&gt;Suppose we are an online shop and we are not satisfied with our current checkout page. In particular, we would like to change our &lt;strong&gt;checkout button&lt;/strong&gt;. Our UX designer comes up with two alternative checkout buttons.&lt;/p&gt;
+&lt;img src=&#34;fig/buttons.png&#34; width=&#34;800px&#34;/&gt;
+&lt;p&gt;In order to understand which button to switch to, we run an &lt;strong&gt;A/B test&lt;/strong&gt;. In particular, when people arrive at the checkout page, we show them one of the three options, at random. Then, for each user, we record the revenue generated which is our Overall Evaluation Criterion (OEC).&lt;/p&gt;
+&lt;p&gt;I generate a synthetic dataset using &lt;code&gt;dgp_buttons()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt; as data generating process. I also import plotting functions and standard libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp_buttons
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_buttons()
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;group&lt;/th&gt;
+      &lt;th&gt;revenue&lt;/th&gt;
+      &lt;th&gt;mobile&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;ui1&lt;/td&gt;
+      &lt;td&gt;8.927335&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;control&lt;/td&gt;
+      &lt;td&gt;13.613456&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;ui2&lt;/td&gt;
+      &lt;td&gt;4.777628&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;control&lt;/td&gt;
+      &lt;td&gt;8.909049&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;control&lt;/td&gt;
+      &lt;td&gt;10.160347&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on 2000 users, for which we observe the button they observe (&lt;code&gt;default&lt;/code&gt;, &lt;code&gt;ui1&lt;/code&gt; or &lt;code&gt;ui2&lt;/code&gt;), the revenue they generate and whether they connected from desktop or &lt;code&gt;mobile&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We notice too late that we have a &lt;strong&gt;problem with randomization&lt;/strong&gt;. We showed alternative 1 more frequently to desktop users and alternative 2 more frequently to mobile users. The control group instead is balanced.&lt;/p&gt;
+&lt;img src=&#34;fig/randomization.png&#34; width=&#34;600px&#34;/&gt;
+&lt;p&gt;What should we do? What happens if we simply compare &lt;code&gt;revenue&lt;/code&gt; across &lt;code&gt;groups&lt;/code&gt;? Let&amp;rsquo;s do it by regressing &lt;code&gt;revenue&lt;/code&gt; on &lt;code&gt;group&lt;/code&gt; indicator functions.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ group&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;    &lt;td&gt;   11.6553&lt;/td&gt; &lt;td&gt;    0.149&lt;/td&gt; &lt;td&gt;   78.250&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   11.363&lt;/td&gt; &lt;td&gt;   11.948&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.ui1]&lt;/th&gt; &lt;td&gt;   -0.5802&lt;/td&gt; &lt;td&gt;    0.227&lt;/td&gt; &lt;td&gt;   -2.556&lt;/td&gt; &lt;td&gt; 0.011&lt;/td&gt; &lt;td&gt;   -1.026&lt;/td&gt; &lt;td&gt;   -0.135&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.ui2]&lt;/th&gt; &lt;td&gt;   -0.5958&lt;/td&gt; &lt;td&gt;    0.218&lt;/td&gt; &lt;td&gt;   -2.727&lt;/td&gt; &lt;td&gt; 0.006&lt;/td&gt; &lt;td&gt;   -1.024&lt;/td&gt; &lt;td&gt;   -0.167&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;From the regression results we estimate a negative and significant effect for both buttons.&lt;/p&gt;
+&lt;p&gt;However, it is &lt;strong&gt;unlikely&lt;/strong&gt; that what we have estimated are the true treatment effects. In fact, there might be substantial revenue differences between desktop and mobile. Since we do not have a comparable number of mobile and desktop users across treatment arms, it might be that the observed differences are due to the &lt;em&gt;device&lt;/em&gt; used and not the &lt;em&gt;button design&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Because of this, we decide to &lt;strong&gt;condition&lt;/strong&gt; our analysis on the device used and we include the &lt;code&gt;mobile&lt;/code&gt; indicator variable in the regression.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ group + mobile&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;    &lt;td&gt;    9.1414&lt;/td&gt; &lt;td&gt;    0.110&lt;/td&gt; &lt;td&gt;   82.905&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    8.925&lt;/td&gt; &lt;td&gt;    9.358&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.ui1]&lt;/th&gt; &lt;td&gt;    0.3609&lt;/td&gt; &lt;td&gt;    0.141&lt;/td&gt; &lt;td&gt;    2.558&lt;/td&gt; &lt;td&gt; 0.011&lt;/td&gt; &lt;td&gt;    0.084&lt;/td&gt; &lt;td&gt;    0.638&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.ui2]&lt;/th&gt; &lt;td&gt;   -1.0326&lt;/td&gt; &lt;td&gt;    0.134&lt;/td&gt; &lt;td&gt;   -7.684&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.296&lt;/td&gt; &lt;td&gt;   -0.769&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;mobile&lt;/th&gt;       &lt;td&gt;    4.7181&lt;/td&gt; &lt;td&gt;    0.116&lt;/td&gt; &lt;td&gt;   40.691&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.491&lt;/td&gt; &lt;td&gt;    4.946&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Now the coefficient for the first button is positive and significant. Should we recommend its implementation?&lt;/p&gt;
+&lt;p&gt;The answer is &lt;strong&gt;surprisingly no&lt;/strong&gt;. &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt; show that this type of regression does not identify average treatment effect when:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;there are mutually exclusive treatment arms (our &lt;code&gt;buttons&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;we are controlling for some variable $X$ (our &lt;code&gt;mobile&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;there are heterogeneous treatment effects by $X$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This is true &lt;strong&gt;even if&lt;/strong&gt; the treatment is &amp;ldquo;as good as random&amp;rdquo; once we condition on $X$.&lt;/p&gt;
+&lt;p&gt;Indeed, in our case, the true treatment effects are the ones reported in the following table.&lt;/p&gt;
+&lt;img src=&#34;fig/effects.png&#34; width=&#34;500px&#34;/&gt;
+&lt;p&gt;The first button has no effect on revenue, while the second button has a positive effect on mobile users and a negative effect. Our (wrong) regression specification instead estimates a positive effect of the first button.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s now dig more in detail into the math, to understand why this is happening.&lt;/p&gt;
+&lt;h2 id=&#34;theory&#34;&gt;Theory&lt;/h2&gt;
+&lt;p&gt;This section is heavily borrowed from &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;single-treatment-arm&#34;&gt;Single Treatment Arm&lt;/h3&gt;
+&lt;p&gt;Suppose we are interested in the effect of a treatment $D$ on an outcome $Y$. First, let&amp;rsquo;s consider the standard case of a &lt;strong&gt;single treatment arm&lt;/strong&gt; so that the treatment variable is binary, $D \in \lbrace 0 , 1 \rbrace$. Also consider a single &lt;strong&gt;binary control variable&lt;/strong&gt; $X \in \lbrace 0 , 1 \rbrace$. We also assume that treatment is as good as random, conditionally on $X$. This means that there might be systematic differences between the treatment and control group, however, these differences are fully accounted for by $X$. Formally we write&lt;/p&gt;
+&lt;p&gt;$$
+\left( Y_i^{(0)}, Y_i^{(1)} \right) \ \perp \ D_i \ | \ X_i
+$$&lt;/p&gt;
+&lt;p&gt;Where $Y_i^{(d)}$ denotes the potential outcome of individual $i$ when its treatment status is $d$. For example, $Y_i^{(0)}$ indicates the outcome of individual $i$ in case it is not treated. This notation comes from &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/016214504000001880&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Rubin&amp;rsquo;s potential outcomes framework&lt;/a&gt;. We can write the &lt;strong&gt;individual treatment effect&lt;/strong&gt; of individual $i$ as&lt;/p&gt;
+&lt;p&gt;$$
+\tau_i = Y_i^{(1)} - Y_i^{(0)}
+$$&lt;/p&gt;
+&lt;p&gt;In this setting, the &lt;strong&gt;regression of interest&lt;/strong&gt; is&lt;/p&gt;
+&lt;p&gt;$$
+Y = \alpha + \beta D + \gamma X + u
+$$&lt;/p&gt;
+&lt;p&gt;The coefficient of interest is $\beta$.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.jstor.org/stable/2998558&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Angrist (1998)&lt;/a&gt; shows that &lt;strong&gt;the regression coefficient identifies the average treatment effect&lt;/strong&gt;. In particular, the regression coefficient identifies a weighted average of the within-group average treatment effect with convex weights. In this particular setting, we can write it as&lt;/p&gt;
+&lt;p&gt;$$
+\beta = \lambda \tau(0) + (1 - \lambda) \tau(1) \qquad \text{where} \qquad \tau(x) = \mathbb E \big[ Y_i^{(1)} - Y_i^{(0)} \ \big| \ X_i = x \big]
+$$&lt;/p&gt;
+&lt;p&gt;The weights are&lt;/p&gt;
+&lt;p&gt;$$
+\lambda = \frac{ \text{Var} \big(D_i \ \big| \ X_i = 0 \big) \Pr \big(X_i=0 \big)}{\sum_{x \in \lbrace 0 , 1 \rbrace} \text{Var} \big(D_i \ \big| \ X_i = x \big) \Pr \big( X_i=x \big)}
+$$&lt;/p&gt;
+&lt;p&gt;And they can be derived using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;multiple-treatment-arms&#34;&gt;Multiple Treatment Arms&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s now consider the case of multiple treatment arms, $D \in \lbrace 0 , 1, 2 \rbrace$. We still assume &lt;strong&gt;conditional ignorability&lt;/strong&gt;, i.e., the treatment is as good as random, conditional on $X$.&lt;/p&gt;
+&lt;p&gt;$$
+\left( Y_i^{(0)}, Y_i^{(1)}, Y_i^{(2)} \right) \ \perp \ D_i \ | \ X_i
+$$&lt;/p&gt;
+&lt;p&gt;In this case, we have two different &lt;strong&gt;individual treatment effects&lt;/strong&gt;, one per treatment.&lt;/p&gt;
+&lt;p&gt;$$
+\tau_{i1} = Y_i^{(1)} - Y_i^{(0)} \qquad \text{and} \qquad \tau_{i2} = Y_i^{(2)} - Y_i^{(0)}
+$$&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;regression of interest&lt;/strong&gt; is&lt;/p&gt;
+&lt;p&gt;$$
+Y = \alpha + \beta_1 D_1 + \beta_2 D_2 + \gamma X + u
+$$&lt;/p&gt;
+&lt;p&gt;Does the OLS estimator &lt;strong&gt;identify&lt;/strong&gt; $\beta_1$ and $\beta_2$?&lt;/p&gt;
+&lt;p&gt;It would be very tempting to say yes. In fact, it looks like not much has changed. We just have one extra treatment, but the potential outcomes are still conditionally independent of it. Where is the &lt;strong&gt;issue&lt;/strong&gt;?&lt;/p&gt;
+&lt;h3 id=&#34;solution&#34;&gt;Solution&lt;/h3&gt;
+&lt;h2 id=&#34;simulations&#34;&gt;Simulations&lt;/h2&gt;
+&lt;p&gt;In order to better understand both the problem and the solution, let&amp;rsquo;s run some &lt;strong&gt;simulations&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;We run an estimator over different draws from the data generating process &lt;code&gt;dgp_buttons()&lt;/code&gt;. This is only possible with synthetic data and we do not have this luxury in reality. For each sample, we record the estimated coefficient and the corresponding &lt;a href=&#34;https://en.wikipedia.org/wiki/P-value&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;p-value&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def simulate(dgp, estimator, K=1000):
+    
+    # Initialize coefficients
+    results = pd.DataFrame({&#39;Coefficient&#39;: np.zeros(K), &#39;pvalue&#39;: np.zeros(K)})
+    
+    # Compute coefficients
+    for k in range(K):
+        df = dgp.generate_data(seed=k)
+        results.Coefficient[k] = estimator(df).params[1]
+        results.pvalue[k] = estimator(df).pvalues[1]
+    
+    results[&#39;Significant&#39;] = results[&#39;pvalue&#39;] &amp;lt; 0.05
+    return results
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;First, let&amp;rsquo;s try it with the old estimator that regresses &lt;code&gt;revenue&lt;/code&gt; on both &lt;code&gt;group&lt;/code&gt; and &lt;code&gt;mobile&lt;/code&gt; dummy variables.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;ols_estimator = lambda x: smf.ols(&#39;revenue ~ group + mobile&#39;, data=x).fit()
+results = simulate(dgp, ols_estimator)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I plot the distribution of the coefficient of the &lt;strong&gt;first button&lt;/strong&gt; over simulations, highlighting the statistically significant ones at the 5% level. I also highlight the true value of the coefficient, zero, with a vertical dotted bar.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_results(results):
+    p_sig = sum(results[&#39;Significant&#39;]) / len(results) * 100
+    sns.histplot(data=results, x=&amp;quot;Coefficient&amp;quot;, hue=&amp;quot;Significant&amp;quot;, multiple=&amp;quot;stack&amp;quot;, 
+                 palette = [&#39;tab:red&#39;, &#39;tab:green&#39;]);
+    plt.axvline(x=0, c=&#39;k&#39;, ls=&#39;--&#39;, label=&#39;truth&#39;)
+    plt.title(rf&amp;quot;Estimated $\beta_1$ ({p_sig:.0f}% significant)&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_results(results)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/cbias_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, we reject the null hypothesis of no effect of the first button in 45% of the simulations. Since we set a confidence level of 5%, we would have expected at most around 5% of rejections. Our estimator is &lt;strong&gt;biased&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s now try the new estimator proposed by &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt;. First, we need do de-mean our control variable, &lt;code&gt;mobile&lt;/code&gt;. Then, we regress &lt;code&gt;revenue&lt;/code&gt; on the interaction between &lt;code&gt;group&lt;/code&gt; and the de-meaned control variable, &lt;code&gt;res_mobile&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;mobile_res&#39;] = df[&#39;mobile&#39;] - np.mean(df[&#39;mobile&#39;])
+smf.ols(&#39;revenue ~ group * mobile_res&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+             &lt;td&gt;&lt;/td&gt;                &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;               &lt;td&gt;   11.5773&lt;/td&gt; &lt;td&gt;    0.067&lt;/td&gt; &lt;td&gt;  172.864&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   11.446&lt;/td&gt; &lt;td&gt;   11.709&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.ui1]&lt;/th&gt;            &lt;td&gt;    0.0281&lt;/td&gt; &lt;td&gt;    0.106&lt;/td&gt; &lt;td&gt;    0.266&lt;/td&gt; &lt;td&gt; 0.790&lt;/td&gt; &lt;td&gt;   -0.180&lt;/td&gt; &lt;td&gt;    0.236&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.ui2]&lt;/th&gt;            &lt;td&gt;   -1.5071&lt;/td&gt; &lt;td&gt;    0.100&lt;/td&gt; &lt;td&gt;  -15.112&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.703&lt;/td&gt; &lt;td&gt;   -1.311&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;mobile_res&lt;/th&gt;              &lt;td&gt;    2.9107&lt;/td&gt; &lt;td&gt;    0.134&lt;/td&gt; &lt;td&gt;   21.715&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.648&lt;/td&gt; &lt;td&gt;    3.174&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.ui1]:mobile_res&lt;/th&gt; &lt;td&gt;    0.1605&lt;/td&gt; &lt;td&gt;    0.211&lt;/td&gt; &lt;td&gt;    0.760&lt;/td&gt; &lt;td&gt; 0.448&lt;/td&gt; &lt;td&gt;   -0.254&lt;/td&gt; &lt;td&gt;    0.575&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.ui2]:mobile_res&lt;/th&gt; &lt;td&gt;    5.3771&lt;/td&gt; &lt;td&gt;    0.200&lt;/td&gt; &lt;td&gt;   26.905&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.985&lt;/td&gt; &lt;td&gt;    5.769&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The estimated coefficients are now &lt;strong&gt;close to the true values&lt;/strong&gt;. The estimated coefficient for the first alternative button is not significant, while the estimated coefficient for the second alternative is positive and significant.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s check that this results holds &lt;strong&gt;across samples&lt;/strong&gt; by running a simulation. We repeat this process 1000 times and we plot the distribution of estimated coefficients.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;new_estimator = lambda x: smf.ols(&#39;revenue ~ group * mobile&#39;, data=x).fit()
+new_results = simulate(dgp, new_estimator)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_results(new_results)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/cbias_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now the distribution of the estimated coefficient for the first alternative button is centered around the true value of zeros. Moreover, we reject the null hypothesis of no effect only in 1% of the simulations, consistently with the chosen confidence level of 95%.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;TBD&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;p&gt;[1] J. Angrist, &lt;a href=&#34;https://www.jstor.org/stable/2998558&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Estimating the Labor Market Impact of Voluntary Military Service Using Social Security Data on Military Applicants&lt;/a&gt; (1998), &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] D. Rubin, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/016214504000001880&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Causal Inference Using Potential Outcomes&lt;/a&gt; (2005), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[3] P. Goldsmith-Pinkham, P. Hull, M. Kolesár, &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Contamination Bias in Linear Regressions&lt;/a&gt; (2022), &lt;em&gt;working paper&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/344ac1477699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Omitted Variable Bias&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding The Frisch-Waugh-Lovell Theorem&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/cbias.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/cbias.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Double Debiased Machine Learning (part 2)</title>
