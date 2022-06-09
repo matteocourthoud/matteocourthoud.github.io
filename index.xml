@@ -27463,6 +27463,10 @@ $$&lt;/p&gt;
 \lambda = \frac{ \text{Var} \big(D_i \ \big| \ X_i = 0 \big) \Pr \big(X_i=0 \big)}{\sum_{x \in \lbrace 0 , 1 \rbrace} \text{Var} \big(D_i \ \big| \ X_i = x \big) \Pr \big( X_i=x \big)}
 $$&lt;/p&gt;
 &lt;p&gt;And they can be derived using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+\beta_1 = \frac{\mathbb E \big[ \tilde D_{i} Y_i \big]}{\mathbb E \big[ \tilde D_{i}^2 \big]} = \frac{\mathbb E \big[ \tilde D_{i} Y_i(0) \big]}{\mathbb E \big[ \tilde D_{i}^2 \big]} + \frac{\mathbb E \big[ \tilde D_{i} D_{i} \tau_{i} \big]}{\mathbb E \big[ \tilde D_{i}^2 \big]}
+$$&lt;/p&gt;
+&lt;p&gt;where $\tilde D_i$ are the residuals from regressing $D$ on $X$. If you are not familiar with the Frisch-Waugh-Lowell theorem, I wrote an &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;introductory blog post here&lt;/a&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;multiple-treatment-arms&#34;&gt;Multiple Treatment Arms&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s now consider the case of multiple treatment arms, $D \in \lbrace 0 , 1, 2 \rbrace$. We still assume &lt;strong&gt;conditional ignorability&lt;/strong&gt;, i.e., the treatment is as good as random, conditional on $X$.&lt;/p&gt;
 &lt;p&gt;$$
@@ -27478,6 +27482,17 @@ Y = \alpha + \beta_1 D_1 + \beta_2 D_2 + \gamma X + u
 $$&lt;/p&gt;
 &lt;p&gt;Does the OLS estimator &lt;strong&gt;identify&lt;/strong&gt; $\beta_1$ and $\beta_2$?&lt;/p&gt;
 &lt;p&gt;It would be very tempting to say yes. In fact, it looks like not much has changed. We just have one extra treatment, but the potential outcomes are still conditionally independent of it. Where is the &lt;strong&gt;issue&lt;/strong&gt;?&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s concentrate on $\beta_1$ (the same applies to $\beta_2$). We can rewrite the coefficient using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+\beta_1 = \frac{\mathbb E \big[ \tilde D_{i1} Y_i \big]}{\mathbb E \big[ \tilde D_{i1}^2 \big]} = \frac{\mathbb E \big[ \tilde D_{i1} Y_i(0) \big]}{\mathbb E \big[ \tilde D_{i1}^2 \big]} + \frac{\mathbb E \big[ \tilde D_{i1} D_{i1} \tau_{i1} \big]}{\mathbb E \big[ \tilde D_{i1}^2 \big]} + \frac{\mathbb E \big[ \tilde D_{i1} D_{i2} \color{red}{\tau_{i2}} \big]}{\mathbb E \big[ \tilde D_{i1}^2 \big]}
+$$&lt;/p&gt;
+&lt;p&gt;where $\tilde D_{i1}$ are the residuals from regressing $D_1$ on $D_2$ and $X$.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;problem&lt;/strong&gt; is the last term. Without the last term, we could still write $\beta_1$ as a convex combination of the individual treatment effects. However, the last term contaminates it by also adding a component that depends on &lt;strong&gt;the treatment effect of $D_2$&lt;/strong&gt;, $\tau_2$. Why does this term not disappear?&lt;/p&gt;
+&lt;p&gt;The problem is that $D_1$ is not mean independent of $D_2$, i.e.&lt;/p&gt;
+&lt;p&gt;$$
+\mathbb E \big[ \tilde D_{i1} D_{i2} \big] \neq 0
+$$&lt;/p&gt;
+&lt;p&gt;In fact, the treatments are mutually exclusive. This implies that when $D_{i1}=1$, $D_{i2}$ must be zeros, regardless of the value of $X$. Therefore, the last term does not cancel out and it introduces a &lt;strong&gt;bias&lt;/strong&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;solution&#34;&gt;Solution&lt;/h3&gt;
 &lt;h2 id=&#34;simulations&#34;&gt;Simulations&lt;/h2&gt;
 &lt;p&gt;In order to better understand both the problem and the solution, let&amp;rsquo;s run some &lt;strong&gt;simulations&lt;/strong&gt;.&lt;/p&gt;
