@@ -1010,7 +1010,7 @@ df.head()
 <p>The first button has <strong>no effect</strong> on revenue, irrespectively of the device, while the second button has a <strong>positive effect</strong> for mobile users and a <strong>negative effect</strong> for desktop users. Our (wrong) regression specification instead estimates a positive effect of the first button.</p>
 <p>Let&rsquo;s now dig more in detail into the math, to understand why this is happening.</p>
 <h2 id="theory">Theory</h2>
-<p>This section borrows heavily from <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a>. For a very synthetic but precise summary of the paper, I recommend this excellent Twitter thread by one of the authors, Paul Goldsmith-Pinkham.</p>
+<p>This section borrows heavily from <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a>. For a great summary of the paper, I recommend this excellent Twitter thread by one of the authors, Paul Goldsmith-Pinkham.</p>
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Economists love using linear regression to estimate treatment effects — it turns out that there are perils to this method, but also amazing perks<br><br>Come with me in this 🧵 if you want to learn… <a href="https://t.co/eDsRLkZFZe">https://t.co/eDsRLkZFZe</a></p>&mdash; Paul Goldsmith-Pinkham (@paulgp) <a href="https://twitter.com/paulgp/status/1534169803388293120?ref_src=twsrc%5Etfw">June 7, 2022</a></blockquote>
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
@@ -1109,7 +1109,7 @@ results = simulate(dgp, ols_estimator)
 <p><img src="img/cbias_34_0.png" alt="png"></p>
 <p>As we can see, we reject the null hypothesis of no effect of <code>button1</code> in 45% of the simulations. Since we set a confidence level of 5%, we would have expected at most around 5% of rejections. Our estimator is <strong>biased</strong>.</p>
 <p>As we have seen above, the problem is that the estimator is not just a convex combination of the effect of <code>button1</code> across mobile and desktop users (it&rsquo;s zero for both), but it is <strong>contaminated</strong> by the effect of <code>button2</code>.</p>
-<p>Let&rsquo;s now try the new estimator proposed by <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a>. First, we need do de-mean our control variable, <code>mobile</code>. Then, we regress <code>revenue</code> on the interaction between <code>group</code> and the de-meaned control variable, <code>res_mobile</code>.</p>
+<p>Let&rsquo;s now try the estimator proposed from <a href="https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5" target="_blank" rel="noopener">Imbens and Wooldridge (2009)</a>. First, we need do de-mean our control variable, <code>mobile</code>. Then, we regress <code>revenue</code> on the interaction between <code>group</code> and the de-meaned control variable, <code>res_mobile</code>.</p>
 <pre><code class="language-python">df['mobile_res'] = df['mobile'] - np.mean(df['mobile'])
 smf.ols('revenue ~ group * mobile_res', data=df).fit().summary().tables[1]
 </code></pre>
@@ -1147,7 +1147,7 @@ new_results = simulate(dgp, new_estimator)
 <p>Now the distribution of the estimated coefficient for <code>button1</code> is centered around the true value of zero. Moreover, we reject the null hypothesis of no effect only in 1% of the simulations, consistently with the chosen confidence level of 95%.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this post, we have seen the dangers of running a factor regression model with multiple <em>mutually exclusive</em> treatment arms and treatment effect heterogeneity across a control variable. In this case, because the treatments are not independent, the regression coefficients are not a convex combination of the within-group average treatment effects, but also capture the treatment effects of the other treatments introducing <strong>contamination bias</strong>. The solution to the problem is both simple and elegant, requiring just a linear regression.</p>
-<p>However, <strong>the problem is more general</strong> than this setting and generally concerns every setting in which</p>
+<p>However, <strong>the problem is more general</strong> than this setting and generally concerns every setting in which (all of the following)</p>
 <ol>
 <li>We have multiple treatments that depend on each other</li>
 <li>We need to condition the analysis on a control variable</li>
