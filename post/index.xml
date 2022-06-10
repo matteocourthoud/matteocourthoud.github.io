@@ -13,6 +13,288 @@
     </image>
     
     <item>
+      <title>Understanding Combinations and Permutations</title>
+      <link>https://matteocourthoud.github.io/post/combperm/</link>
+      <pubDate>Fri, 10 Jun 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/combperm/</guid>
+      <description>&lt;p&gt;How many times did you face questions starting with &amp;ldquo;&lt;em&gt;Suppose you have an urn with three red balls and five blue balls, &amp;hellip;&lt;/em&gt;&amp;rdquo;? The answer for me is, not often since high-school, but recently they popped up again in &lt;strong&gt;data science interviews&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Despite countless classes in statistics, I still take a deep breath and hope I won&amp;rsquo;t embarrass myself too much. My main problem is that I get crazy confused with binary labels, especially if the label itself is not too intuitive.&lt;/p&gt;
+&lt;p&gt;Some non-intuitive (for me) binary labels include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Sine_and_cosine&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;sine and cosine&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Concave_function&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;concavity and convexity&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Precision_and_recall&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;precision and recall&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Type_I_and_type_II_errors&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;type 1 and type 2 error rate&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;And last but not least, &lt;strong&gt;combinations and permutations&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;So this blog post is an attempt to clarify once and for all the difference between the two and get some practice.&lt;/p&gt;
+&lt;h2 id=&#34;the-math&#34;&gt;The Math&lt;/h2&gt;
+&lt;h3 id=&#34;permutations-vs-combinations&#34;&gt;Permutations vs Combinations&lt;/h3&gt;
+&lt;p&gt;The main &lt;strong&gt;difference&lt;/strong&gt; between combinations and permutations is &lt;strong&gt;order&lt;/strong&gt;. In particular:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Permutations: order matters&lt;/li&gt;
+&lt;li&gt;Combinations: order does &lt;em&gt;not&lt;/em&gt; matter&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;What does it mean &lt;strong&gt;in practice&lt;/strong&gt;?&lt;/p&gt;
+&lt;p&gt;One rule of thumb is to check whether the individual objects are &lt;strong&gt;identifiable&lt;/strong&gt;. For example:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Urn with blue and red balls: the individual ball is not identifiable, therefore we are talking about combinations&lt;/li&gt;
+&lt;li&gt;Deck of cards: individual cards are identifiable, therefore it could be either way&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Also, &lt;strong&gt;note&lt;/strong&gt; that for any problem, the number of permutations is always weakly &lt;em&gt;larger&lt;/em&gt; than the number of combinations. The intuition is simple: since in permutations order matters, AB and BA are two different outcomes, while with combinations they are grouped into a single one.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Example&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;For this section, we are going to use a simple &lt;strong&gt;example&lt;/strong&gt; in which we have to order a two-scoops ice cream cone and there are three possible flavors: amarena, chocolate and pistacchio.&lt;/p&gt;
+&lt;h3 id=&#34;permutations&#34;&gt;Permutations&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s start with permutations since they are &lt;strong&gt;mathematically simpler&lt;/strong&gt;. We have seen that in combinations &lt;strong&gt;order matters&lt;/strong&gt;. In our example, suppose we care about which flavor is on top on the ice cream. Now we are going to further distinguish between two cases:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;With replacement&lt;/li&gt;
+&lt;li&gt;Without replacement&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Where replacement means that after I draw an object, I can draw it again (e.g. I put it back in the pool).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Replacement&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;In the first case, we can order both scoops of the same flavor. Therefore, for each scoop (2) we have 3 options (the flavors).&lt;/p&gt;
+&lt;img src=&#34;fig/perm_repl.png&#34; width=&#34;800px&#34;/&gt;
+&lt;p&gt;The number of &lt;strong&gt;overall events&lt;/strong&gt; is&lt;/p&gt;
+&lt;p&gt;$$
+\text{from 3 permute 2, with replacement} = 3 * 3 = 3^2 = 9
+$$&lt;/p&gt;
+&lt;p&gt;In general, the number of possible permutations of $n$ objects in $k$ draws with replacement is $n^k$.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;No Replacement&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Alternatively, we can only order different flavors in each scoop. In this case, for the first scoop we can pick any flavor, but for the second scoop we can only pick one of the two remaining flavors.&lt;/p&gt;
+&lt;img src=&#34;fig/perm.png&#34; width=&#34;550px&#34;/&gt;
+&lt;p&gt;The number of &lt;strong&gt;overall events&lt;/strong&gt; is&lt;/p&gt;
+&lt;p&gt;$$
+\text{from 3 permute 2, without replacement} = 3 * 2 = \frac{3!}{(3-2)!} = \frac{3 * 2 * 1}{1} = 6
+$$&lt;/p&gt;
+&lt;p&gt;where ! denotes the &lt;a href=&#34;https://en.wikipedia.org/wiki/Factorial&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;factorial operation&lt;/a&gt; which can be recursively defined as $n! = n \times (n-1)!$ with $0! = 1$.&lt;/p&gt;
+&lt;p&gt;In general, the number of possible permutations of $n$ objects in $k$ draws without replacement is $\frac{n!}{(n-k)!}$.&lt;/p&gt;
+&lt;h3 id=&#34;combinations&#34;&gt;Combinations&lt;/h3&gt;
+&lt;p&gt;Combinations are usually &lt;strong&gt;more common&lt;/strong&gt; since in a lot of scenarios we do not care about the order or the identity of the objects. In our example, let&amp;rsquo;s assume we don&amp;rsquo;t care which flavor gets on top. As before, we are going to further distinguish between two cases:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;With replacement&lt;/li&gt;
+&lt;li&gt;Without replacement&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;No Replacement&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;In this case, we cannot have two scoops of the same flavor. Therefore, for each scoop (2) we have 3 options (the flavors). However, the order of the flavors does not matter, i.e. we are indifferent between getting chocolate on top or on the bottom, as long as we get it.&lt;/p&gt;
+&lt;img src=&#34;fig/comb.png&#34; width=&#34;270px&#34;/&gt;
+&lt;p&gt;The number of &lt;strong&gt;overall events&lt;/strong&gt; therefore is the number of permutations of 3 flavors among 2 scoops, divided by the permutations of 2 out of 2 scoops.&lt;/p&gt;
+&lt;p&gt;$$
+\text{from 3 choose 2, without replacement} = \frac{\text{from 3 permute 2, without replacement}}{\text{from 2 permute 2, without replacement}} = \frac{\frac{3!}{(3-2)!}}{\frac{2!}{(2-2)!}} = \frac{3!}{2!(3-2)!} = \frac{3 * 2 * 1}{2 * 1 * 1} = 3
+$$&lt;/p&gt;
+&lt;p&gt;In general, we define the mathematical operation &amp;ldquo;from $n$ choose $k$&amp;rdquo; as&lt;/p&gt;
+&lt;p&gt;$$
+\text{from n choose k} := {n \choose k} = \frac{n!}{k!(n-k)!}
+$$&lt;/p&gt;
+&lt;p&gt;Which corresponds to the number of possible combinations of $n$ objects in $k$ draws without replacement.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Replacement&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Alternatively, we can be allowed to order the same flavor for both scoops.&lt;/p&gt;
+&lt;img src=&#34;fig/comb_repl.png&#34; width=&#34;550px&#34;/&gt;
+&lt;p&gt;In this case, the number of &lt;strong&gt;overall events&lt;/strong&gt; is&lt;/p&gt;
+&lt;p&gt;$$
+\text{from 3 choose 2, with replacement} = {3 + 2 - 1 \choose 2} = \frac{(3 + 2 - 1)!}{2!(3-1)!} = \frac{4 * 3 * 2 * 1}{2 * 1 * 2 * 1} = 6
+$$&lt;/p&gt;
+&lt;p&gt;In general, the number of possible combinations of $n$ objects in $k$ draws with replacement is ${n + k - 1 \choose k}$.&lt;/p&gt;
+&lt;h3 id=&#34;summary&#34;&gt;Summary&lt;/h3&gt;
+&lt;p&gt;We can summarize all the possible scenarios in a simple table.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;With Replacement&lt;/th&gt;
+&lt;th&gt;Without Replacement&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Permutations&lt;/strong&gt; (order matters):&lt;/td&gt;
+&lt;td&gt;$n^k$&lt;/td&gt;
+&lt;td&gt;$\frac{n!}{(n-k)!} $&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;strong&gt;Combinations&lt;/strong&gt; (order doesn&amp;rsquo;t matter):&lt;/td&gt;
+&lt;td&gt;$ {n + k - 1 \choose k} \text{=}\frac{(n+k-1)!}{(n-1)!k!}  $&lt;/td&gt;
+&lt;td&gt;$ {n \choose k} = \frac{n!}{(n-k)!k!} $&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Where $n$ is the number of objects and $k$ is the number of draws.&lt;/p&gt;
+&lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s explore together a more complex example to see how we can apply permutations and combinations to compute probabilities.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;There are four people in an elevator, four floors in the building, and each person exits at random. Find the probability that:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;all people exit at different floors&lt;/li&gt;
+&lt;li&gt;all people exit at the same floor&lt;/li&gt;
+&lt;li&gt;two get off at one floor and two get off at another&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;I use the &lt;code&gt;factorial&lt;/code&gt; and &lt;code&gt;comb&lt;/code&gt; functions from the &lt;code&gt;math&lt;/code&gt; library.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from math import factorial, comb
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;practical-advice&#34;&gt;Practical Advice&lt;/h3&gt;
+&lt;p&gt;Before we start, some &lt;strong&gt;practical advice&lt;/strong&gt;. What worked best &lt;em&gt;for me&lt;/em&gt; is to approach the question in the following way:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;what are the &lt;strong&gt;overall&lt;/strong&gt; events that we are considering?&lt;/li&gt;
+&lt;li&gt;what are the &lt;strong&gt;positive&lt;/strong&gt; events that we are considering?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;And for both questions, I ask myself:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;does &lt;strong&gt;order&lt;/strong&gt; matter?&lt;/li&gt;
+&lt;li&gt;is there &lt;strong&gt;replacement&lt;/strong&gt;?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Moreover, it is also very useful to &lt;strong&gt;restate the problem&lt;/strong&gt; in terms of objects and draws. For example, in this case, I can restate the problem as: &amp;ldquo;I am drawing a floor for each person&amp;rdquo;. This makes it clear whether or not there is replacement, i.e. whether or not I can draw the same floor for different persons.&lt;/p&gt;
+&lt;h3 id=&#34;question-1&#34;&gt;Question 1&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;What is the probability that they all get off at different floors?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from floors 4 permute 4, with replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: (from floors 4 permute 4, without replacement)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;factorial(4) / 4**4
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.09375
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;question-2&#34;&gt;Question 2&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;What is the probability that they all exit at the same floor?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 4 floors permute 4, with replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: (from floors 4 choose 1)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;4 / 4**4
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.015625
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;question-3&#34;&gt;Question 3&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;What is the probability that two get off at one floor and two at another?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from floors 4 permute 4, with replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: (from 4 people choose 2, without replacement) * (from 4 floors choose 2, without replacement)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;comb(4, 2) * comb(4, 2) / 4**4 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.140625
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;practice-questions&#34;&gt;Practice Questions&lt;/h2&gt;
+&lt;p&gt;Now it&amp;rsquo;s your time to shine! Here are some practice questions with solutions&lt;/p&gt;
+&lt;h3 id=&#34;problem-1&#34;&gt;Problem 1&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Suppose that you randomly draw 4 cards from a deck of 52 cards. What is the probability of getting 2 spades and 2 clubs?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 52 cards choose 4, without replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: (from 13 cards choose 2) * (from 13 cards choose 2)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;comb(13, 2) * comb(13, 2) / comb(52, 4)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.02247298919567827
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;problem-2&#34;&gt;Problem 2&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Suppose you draw 5 cards without replacement from a standard deck of 52 playing cards. What is the probability of guessing all 5 cards in any order?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 52 cards choose 5, without replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: 1&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;1 / comb(52, 5)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;3.8476929233231754e-07
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;problem-3&#34;&gt;Problem 3&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Suppose you draw 3 cards without replacement from a standard deck of 52 playing cards. What is the probability of guessing all 3 cards in the correct order?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 52 cards permute 3, without replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: 1&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;1 / (factorial(52) / factorial(3))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;7.43879958514289e-68
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;problem-4&#34;&gt;Problem 4&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Suppose you draw 5 cards without replacement from a standard deck of 52 playing cards. What is the probability of guessing 3 of them (out of 3 guesses), in any order?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 52 cards permute 3, without replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: (from 5 cards permute 3, without replacement)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;(factorial(5) / factorial(3)) / (factorial(52) / factorial(5))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;2.9755198340571564e-65
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;problem-5&#34;&gt;Problem 5&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A 4 digit PIN is selected. What is the probability that there are no repeated digits?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 10 permute 4, with replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: (from 10 permute 4, without replacement)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;(factorial(10) / factorial(6)) / 10**4 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.504
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;problem-6&#34;&gt;Problem 6&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In a certain state’s lottery, 48 balls numbered 1 through 48 are placed in a machine and 6 of them are drawn at random. If the 6 numbers drawn match the numbers that a player had chosen, the player wins 1,000,000. In this lottery, the order the numbers are drawn in doesn’t matter. Compute the probability that you win the million-dollar prize if you purchase a single lottery ticket.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 48 choose 6, without replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: 1&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;1 / comb(48, 6)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;8.148955075788542e-08
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;problem-7&#34;&gt;Problem 7&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In a certain state’s lottery, 48 balls numbered 1 through 48 are placed in a machine and 6 of them are drawn at random. If five of the six numbers drawn match the numbers that a player has chosen, the player wins a second prize of 1,000. Compute the probability that you win the second prize if you purchase a single lottery ticket.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 48 choose 6, without replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: (from 6 choose 5, without replacement)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;comb(6, 5) / comb(48, 5)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;3.504050682589073e-06
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;problem-8&#34;&gt;Problem 8&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Compute the probability of randomly drawing five cards from a deck and getting exactly one Ace.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 52 choose 5, without replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: (from 4 aces choose 1) * (from 48 cards that are not aces choose 4)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;4 * comb(48, 4) / comb(52, 5)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.2994736356080894
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;problem-9&#34;&gt;Problem 9&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Compute the probability of randomly drawing five cards from a deck and getting exactly two Aces.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 52 choose 5, without replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: (from 4 aces choose 2) * (from 48 cards that are not aces choose 3)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;comb(4,2) * comb(48, 3) / comb(52, 5)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.03992981808107859
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;problem-10&#34;&gt;Problem 10&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Suppose you have 3 people in a room. What is the probability that there is at least one shared birthday?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 365 days permute 3, with replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Negative&lt;/strong&gt; events: (from 365 days permute 3, without replacement)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;1 - (365 * 364 * 363) / (365**3)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.008204165884781345
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;problem-11&#34;&gt;Problem 11&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Given a class of 12 girls and 10 boys, what is the probability that a committee of five, chosen at random from
+the class, consists only of girls?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Total&lt;/strong&gt; events: (from 22 choose 5, without replacement)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Positive&lt;/strong&gt; events: (from 12 choose 5, without replacement)&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;comb(12, 5) / comb(22, 5)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.03007518796992481
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Permutation and combination questions are a classic in data science questions (unfortunately).&lt;/p&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/combperm.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/combperm.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Understanding Contamination Bias</title>
       <link>https://matteocourthoud.github.io/post/cbias/</link>
       <pubDate>Fri, 10 Jun 2022 00:00:00 +0000</pubDate>
@@ -919,287 +1201,6 @@ $$&lt;/p&gt;
 &lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
 &lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/pretest.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/pretest.ipynb&lt;/a&gt;&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Understanding Combinations and Permutations</title>
-      <link>https://matteocourthoud.github.io/post/combperm/</link>
-      <pubDate>Wed, 01 Jun 2022 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/combperm/</guid>
-      <description>&lt;p&gt;How many times did you face questions starting with &amp;ldquo;&lt;em&gt;Suppose you have an urn with three red balls and five blue balls, &amp;hellip;&lt;/em&gt;&amp;rdquo;? The answer for me is, not often since high-school, but recently they popped up again in &lt;strong&gt;data science interviews&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;Despite countless classes in statistics, I still take a deep breath and hope I won&amp;rsquo;t embarrass myself too much. My main problem is that I get crazy confused with binary labels, especially if the label itself is not too intuitive.&lt;/p&gt;
-&lt;p&gt;Some non-intuitive (for me) binary labels include:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Sine_and_cosine&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;sine and cosine&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Concave_function&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;concavity and convexity&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Precision_and_recall&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;precision and recall&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Type_I_and_type_II_errors&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;type 1 and type 2 error rate&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;And last but not least, &lt;strong&gt;combinations and permutations&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;So this blog post is an attempt to clarify once and for all the difference between the two and get some practice.&lt;/p&gt;
-&lt;h2 id=&#34;the-math&#34;&gt;The Math&lt;/h2&gt;
-&lt;h3 id=&#34;permutations-vs-combinations&#34;&gt;Permutations vs Combinations&lt;/h3&gt;
-&lt;p&gt;The main &lt;strong&gt;difference&lt;/strong&gt; between combinations and permutations is &lt;strong&gt;order&lt;/strong&gt;. In particular:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Permutations: order matters&lt;/li&gt;
-&lt;li&gt;Combinations: order does &lt;em&gt;not&lt;/em&gt; matter&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;What does it mean &lt;strong&gt;in practice&lt;/strong&gt;?&lt;/p&gt;
-&lt;p&gt;One rule of thumb is to check whether the individual objects are &lt;strong&gt;identifiable&lt;/strong&gt;. For example:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Urn with blue and red balls: the individual ball is not identifiable, therefore we are talking about combinations&lt;/li&gt;
-&lt;li&gt;Deck of cards: individual cards are identifiable, therefore it could be either way&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Also, &lt;strong&gt;note&lt;/strong&gt; that for any problem, the number of permutations is always weakly &lt;em&gt;larger&lt;/em&gt; than the number of combinations. The intuition is simple: since in permutations order matters, AB and BA are two different outcomes, while with combinations they are grouped into a single one.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Example&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;For this section, we are going to use a simple &lt;strong&gt;example&lt;/strong&gt; in which we have to order a two-scoops ice cream cone and there are three possible flavors: amarena, chocolate and pistacchio.&lt;/p&gt;
-&lt;h3 id=&#34;permutations&#34;&gt;Permutations&lt;/h3&gt;
-&lt;p&gt;Let&amp;rsquo;s start with permutations since they are &lt;strong&gt;mathematically simpler&lt;/strong&gt;. We have seen that in combinations &lt;strong&gt;order matters&lt;/strong&gt;. In our example, suppose we care about which flavor is on top on the ice cream. Now we are going to further distinguish between two cases:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;With replacement&lt;/li&gt;
-&lt;li&gt;Without replacement&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Where replacement means that after I draw an object, I can draw it again (e.g. I put it back in the pool).&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Replacement&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;In the first case, we can order both scoops of the same flavor. Therefore, for each scoop (2) we have 3 options (the flavors).&lt;/p&gt;
-&lt;img src=&#34;fig/perm_repl.png&#34; width=&#34;800px&#34;/&gt;
-&lt;p&gt;The number of &lt;strong&gt;overall events&lt;/strong&gt; is&lt;/p&gt;
-&lt;p&gt;$$
-\text{from 3 permute 2, with replacement} = 3 * 3 = 3^2 = 9
-$$&lt;/p&gt;
-&lt;p&gt;In general, the number of possible permutations of $n$ objects in $k$ draws with replacement is $n^k$.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;No Replacement&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Alternatively, we can only order different flavors in each scoop. In this case, for the first scoop we can pick any flavor, but for the second scoop we can only pick one of the two remaining flavors.&lt;/p&gt;
-&lt;img src=&#34;fig/perm.png&#34; width=&#34;550px&#34;/&gt;
-&lt;p&gt;The number of &lt;strong&gt;overall events&lt;/strong&gt; is&lt;/p&gt;
-&lt;p&gt;$$
-\text{from 3 permute 2, without replacement} = 3 * 2 = \frac{3!}{(3-2)!} = \frac{3 * 2 * 1}{1} = 6
-$$&lt;/p&gt;
-&lt;p&gt;where ! denotes the &lt;a href=&#34;https://en.wikipedia.org/wiki/Factorial&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;factorial operation&lt;/a&gt; which can be recursively defined as $n! = n \times (n-1)!$ with $0! = 1$.&lt;/p&gt;
-&lt;p&gt;In general, the number of possible permutations of $n$ objects in $k$ draws without replacement is $\frac{n!}{(n-k)!}$.&lt;/p&gt;
-&lt;h3 id=&#34;combinations&#34;&gt;Combinations&lt;/h3&gt;
-&lt;p&gt;Combinations are usually &lt;strong&gt;more common&lt;/strong&gt; since in a lot of scenarios we do not care about the order or the identity of the objects. In our example, let&amp;rsquo;s assume we don&amp;rsquo;t care which flavor gets on top. As before, we are going to further distinguish between two cases:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;With replacement&lt;/li&gt;
-&lt;li&gt;Without replacement&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;No Replacement&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;In this case, we cannot have two scoops of the same flavor. Therefore, for each scoop (2) we have 3 options (the flavors). However, the order of the flavors does not matter, i.e. we are indifferent between getting chocolate on top or on the bottom, as long as we get it.&lt;/p&gt;
-&lt;img src=&#34;fig/comb.png&#34; width=&#34;270px&#34;/&gt;
-&lt;p&gt;The number of &lt;strong&gt;overall events&lt;/strong&gt; therefore is the number of permutations of 3 flavors among 2 scoops, divided by the permutations of 2 out of 2 scoops.&lt;/p&gt;
-&lt;p&gt;$$
-\text{from 3 choose 2, without replacement} = \frac{\text{from 3 permute 2, without replacement}}{\text{from 2 permute 2, without replacement}} = \frac{\frac{3!}{(3-2)!}}{\frac{2!}{(2-2)!}} = \frac{3!}{2!(3-2)!} = \frac{3 * 2 * 1}{2 * 1 * 1} = 3
-$$&lt;/p&gt;
-&lt;p&gt;In general, we define the mathematical operation &amp;ldquo;from $n$ choose $k$&amp;rdquo; as&lt;/p&gt;
-&lt;p&gt;$$
-\text{from n choose k} := {n \choose k} = \frac{n!}{k!(n-k)!}
-$$&lt;/p&gt;
-&lt;p&gt;Which corresponds to the number of possible combinations of $n$ objects in $k$ draws without replacement.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Replacement&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Alternatively, we can be allowed to order the same flavor for both scoops.&lt;/p&gt;
-&lt;img src=&#34;fig/comb_repl.png&#34; width=&#34;550px&#34;/&gt;
-&lt;p&gt;In this case, the number of &lt;strong&gt;overall events&lt;/strong&gt; is&lt;/p&gt;
-&lt;p&gt;$$
-\text{from 3 choose 2, with replacement} = {3 + 2 - 1 \choose 2} = \frac{(3 + 2 - 1)!}{2!(3-1)!} = \frac{4 * 3 * 2 * 1}{2 * 1 * 2 * 1} = 6
-$$&lt;/p&gt;
-&lt;p&gt;In general, the number of possible combinations of $n$ objects in $k$ draws with replacement is ${n + k - 1 \choose k}$.&lt;/p&gt;
-&lt;h3 id=&#34;summary&#34;&gt;Summary&lt;/h3&gt;
-&lt;p&gt;We can summarize all the possible scenarios in a simple table.&lt;/p&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;&lt;/th&gt;
-&lt;th&gt;With Replacement&lt;/th&gt;
-&lt;th&gt;Without Replacement&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;strong&gt;Permutations&lt;/strong&gt; (order matters):&lt;/td&gt;
-&lt;td&gt;$n^k$&lt;/td&gt;
-&lt;td&gt;$\frac{n!}{(n-k)!} $&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;strong&gt;Combinations&lt;/strong&gt; (order doesn&amp;rsquo;t matter):&lt;/td&gt;
-&lt;td&gt;$ {n + k - 1 \choose k} \text{=}\frac{(n+k-1)!}{(n-1)!k!}  $&lt;/td&gt;
-&lt;td&gt;$ {n \choose k} = \frac{n!}{(n-k)!k!} $&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;Where $n$ is the number of objects and $k$ is the number of draws.&lt;/p&gt;
-&lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
-&lt;p&gt;Let&amp;rsquo;s explore together a more complex example to see how we can apply permutations and combinations to compute probabilities.&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;There are four people in an elevator, four floors in the building, and each person exits at random. Find the probability that:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;all people exit at different floors&lt;/li&gt;
-&lt;li&gt;all people exit at the same floor&lt;/li&gt;
-&lt;li&gt;two get off at one floor and two get off at another&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;I use the &lt;code&gt;factorial&lt;/code&gt; and &lt;code&gt;comb&lt;/code&gt; functions from the &lt;code&gt;math&lt;/code&gt; library.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from math import factorial, comb
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;practical-advice&#34;&gt;Practical Advice&lt;/h3&gt;
-&lt;p&gt;Before we start, some &lt;strong&gt;practical advice&lt;/strong&gt;. What worked best &lt;em&gt;for me&lt;/em&gt; is to approach the question in the following way:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;what are the &lt;strong&gt;overall&lt;/strong&gt; events that we are considering?&lt;/li&gt;
-&lt;li&gt;what are the &lt;strong&gt;positive&lt;/strong&gt; events that we are considering?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;And for both questions, I ask myself:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;does &lt;strong&gt;order&lt;/strong&gt; matter?&lt;/li&gt;
-&lt;li&gt;is there &lt;strong&gt;replacement&lt;/strong&gt;?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Moreover, it is also very useful to &lt;strong&gt;restate the problem&lt;/strong&gt; in terms of objects and draws. For example, in this case, I can restate the problem as: &amp;ldquo;I am drawing a floor for each person&amp;rdquo;. This makes it clear whether or not there is replacement, i.e. whether or not I can draw the same floor for different persons.&lt;/p&gt;
-&lt;h3 id=&#34;question-1&#34;&gt;Question 1&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;What is the probability that they all get off at different floors?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from floors 4 permute 4, with replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: (from floors 4 permute 4, without replacement)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;factorial(4) / 4**4
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.09375
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;question-2&#34;&gt;Question 2&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;What is the probability that they all exit at the same floor?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 4 floors permute 4, with replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: (from floors 4 choose 1)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;4 / 4**4
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.015625
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;question-3&#34;&gt;Question 3&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;What is the probability that two get off at one floor and two at another?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from floors 4 permute 4, with replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: (from 4 people choose 2, without replacement) * (from 4 floors choose 2, without replacement)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;comb(4, 2) * comb(4, 2) / 4**4 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.140625
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;practice-questions&#34;&gt;Practice Questions&lt;/h2&gt;
-&lt;p&gt;Now it&amp;rsquo;s your time to shine! Here are some practice questions with solutions&lt;/p&gt;
-&lt;h3 id=&#34;problem-1&#34;&gt;Problem 1&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Suppose that you randomly draw 4 cards from a deck of 52 cards. What is the probability of getting 2 spades and 2 clubs?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 52 cards choose 4, without replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: (from 13 cards choose 2) * (from 13 cards choose 2)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;comb(13, 2) * comb(13, 2) / comb(52, 4)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.02247298919567827
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;problem-2&#34;&gt;Problem 2&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Suppose you draw 5 cards without replacement from a standard deck of 52 playing cards. What is the probability of guessing all 5 cards in any order?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 52 cards choose 5, without replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: 1&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;1 / comb(52, 5)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;3.8476929233231754e-07
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;problem-3&#34;&gt;Problem 3&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Suppose you draw 3 cards without replacement from a standard deck of 52 playing cards. What is the probability of guessing all 3 cards in the correct order?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 52 cards permute 3, without replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: 1&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;1 / (factorial(52) / factorial(3))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;7.43879958514289e-68
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;problem-4&#34;&gt;Problem 4&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Suppose you draw 5 cards without replacement from a standard deck of 52 playing cards. What is the probability of guessing 3 of them (out of 3 guesses), in any order?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 52 cards permute 3, without replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: (from 5 cards permute 3, without replacement)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;(factorial(5) / factorial(3)) / (factorial(52) / factorial(5))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;2.9755198340571564e-65
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;problem-5&#34;&gt;Problem 5&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;A 4 digit PIN is selected. What is the probability that there are no repeated digits?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 10 permute 4, with replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: (from 10 permute 4, without replacement)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;(factorial(10) / factorial(6)) / 10**4 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.504
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;problem-6&#34;&gt;Problem 6&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;In a certain state’s lottery, 48 balls numbered 1 through 48 are placed in a machine and 6 of them are drawn at random. If the 6 numbers drawn match the numbers that a player had chosen, the player wins 1,000,000. In this lottery, the order the numbers are drawn in doesn’t matter. Compute the probability that you win the million-dollar prize if you purchase a single lottery ticket.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 48 choose 6, without replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: 1&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;1 / comb(48, 6)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;8.148955075788542e-08
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;problem-7&#34;&gt;Problem 7&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;In a certain state’s lottery, 48 balls numbered 1 through 48 are placed in a machine and 6 of them are drawn at random. If five of the six numbers drawn match the numbers that a player has chosen, the player wins a second prize of 1,000. Compute the probability that you win the second prize if you purchase a single lottery ticket.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 48 choose 6, without replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: (from 6 choose 5, without replacement)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;comb(6, 5) / comb(48, 5)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;3.504050682589073e-06
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;problem-8&#34;&gt;Problem 8&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Compute the probability of randomly drawing five cards from a deck and getting exactly one Ace.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 52 choose 5, without replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: (from 4 aces choose 1) * (from 48 cards that are not aces choose 4)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;4 * comb(48, 4) / comb(52, 5)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.2994736356080894
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;problem-9&#34;&gt;Problem 9&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Compute the probability of randomly drawing five cards from a deck and getting exactly two Aces.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 52 choose 5, without replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: (from 4 aces choose 2) * (from 48 cards that are not aces choose 3)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;comb(4,2) * comb(48, 3) / comb(52, 5)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.03992981808107859
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;problem-10&#34;&gt;Problem 10&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Suppose you have 3 people in a room. What is the probability that there is at least one shared birthday?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 365 days permute 3, with replacement)&lt;/p&gt;
-&lt;p&gt;Negative events: (from 365 days permute 3, without replacement)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;1 - (365 * 364 * 363) / (365**3)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.008204165884781345
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;problem-11&#34;&gt;Problem 11&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Given a class of 12 girls and 10 boys, what is the probability that a committee of five, chosen at random from
-the class, consists only of girls?&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Total events: (from 22 choose 5, without replacement)&lt;/p&gt;
-&lt;p&gt;Positive events: (from 12 choose 5, without replacement)&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;comb(12, 5) / comb(22, 5)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.03007518796992481
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;Permutation and combination questions are a classic in data science questions (unfortunately).&lt;/p&gt;
-&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
-&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
 </description>
     </item>
     
