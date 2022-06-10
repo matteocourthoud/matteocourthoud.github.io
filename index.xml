@@ -27470,9 +27470,9 @@ $$&lt;/p&gt;
 $$&lt;/p&gt;
 &lt;p&gt;The weights can be derived using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt; to express $\beta_1$ as the OLS estimate of a univariate regression of $Y$ on $D_{i, \perp X}$, where $D_{i, \perp X}$ are the residuals from regressing $D$ on $X$. If you are not familiar with the Frisch-Waugh-Lowell theorem, I wrote an &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;introductory blog post here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;$$
-\beta_1 = \frac{\mathbb E \big[ D_{i, \perp X} Y_i \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} =
-\underbrace{ \frac{\mathbb E \big[ D_{i, \perp X} Y_i(0) \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} }&lt;em&gt;{=0} + \frac{\mathbb E \big[ D&lt;/em&gt;{i, \perp X} D_{i} \tau_{i} \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} =
-\frac{\mathbb E \big[ \text{Var}(D_i | X_i) \ \tau(X_i) \big]}{\mathbb E \big[ \text{Var}(D_i | X_i) \big]}
+\beta_1 = \frac{ \mathbb E \big[ D_{i, \perp X} Y_i \big] }{ \mathbb E \big[ D_{i, \perp X}^2 \big] } =
+\underbrace{ \frac{\mathbb E \big[ D_{i, \perp X} Y_i(0) \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} } _ {=0} + \frac{\mathbb E \big[ D_{i, \perp X} D_i \tau_i \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} =
+\frac{\mathbb E \big[ \text{Var} (D_i | X_i) \ \tau(X_i) \big]}{\mathbb E \big[ \text{Var}(D_i | X_i) \big]}
 $$&lt;/p&gt;
 &lt;p&gt;The second term disappears because the residual $D_{i, \perp X}$ is by construction &lt;strong&gt;mean independent&lt;/strong&gt; of the control $X_i$, i.e. $\mathbb E \big[ D_{i, \perp X} | X_i \big] = 0$. This mean independence property is crucial to obtain an unbiased estimate and its failures in the multiple-treatment case is the source of the &lt;em&gt;contamination bias&lt;/em&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;multiple-treatment-arms&#34;&gt;Multiple Treatment Arms&lt;/h3&gt;
@@ -27492,7 +27492,7 @@ $$&lt;/p&gt;
 &lt;p&gt;It would be very tempting to say yes. In fact, it looks like not much has changed. We just have one extra treatment, but the potential outcomes are still conditionally independent of it. Where is the &lt;strong&gt;issue&lt;/strong&gt;?&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s concentrate on $\beta_1$ (the same applies to $\beta_2$). As before, can rewrite $\beta_1$ using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt; as the OLS coefficient of a univariate regression of $Y_i$ on $D_{i1, \perp X, D_2}$, where $D_{i1, \perp X, D_2}$ are the residuals from regressing $D_1$ on $D_2$ and $X$.&lt;/p&gt;
 &lt;p&gt;$$
-\beta_1 = \frac{\mathbb E \big[D_{i1, \perp X, D_2} Y_i \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} = \underbrace{ \frac{\mathbb E \big[ D_{i1, \perp X, D_2} Y_i(0) \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} }&lt;em&gt;{=0} + \frac{\mathbb E \big[ D&lt;/em&gt;{i1, \perp X, D_2} D_{i1} \tau_{i1} \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} + \color{red}{ \underbrace{ \color{black}{ \frac{\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \tau_{i2} \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]}} }_{ \neq 0} }
+\beta_1 = \frac{ \mathbb E \big[D_{i1, \perp X, D_2} Y_i \big] }{ \mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} = \underbrace{ \frac{ \mathbb E \big[ D_{i1, \perp X, D_2} Y_i(0) \big] }{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} } _ {=0} + \frac{ \mathbb E \big[ D_{i1, \perp X, D_2} D_{i1} \tau_{i1} \big] }{ \mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} + \color{red}{ \underbrace{ \color{black}{ \frac{ \mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \tau_{i2} \big] }{ \mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]}} } _ { \neq 0} }
 $$&lt;/p&gt;
 &lt;p&gt;The &lt;strong&gt;problem&lt;/strong&gt; is the last term. Without the last term, we could still write $\beta_1$ as a convex combination of the individual treatment effects. However, the last term biases the estimator by adding a component that depends on &lt;strong&gt;the treatment effect of $D_2$&lt;/strong&gt;, $\tau_2$. Why does this term not disappear?&lt;/p&gt;
 &lt;p&gt;The problem is that $D_{i1, \perp X, D_2}$ is not mean independent of $D_{i2}$, i.e.&lt;/p&gt;
