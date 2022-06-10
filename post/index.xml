@@ -13,11 +13,12 @@
     </image>
     
     <item>
-      <title>Contamination Bias</title>
+      <title>Understanding Contamination Bias</title>
       <link>https://matteocourthoud.github.io/post/cbias/</link>
       <pubDate>Fri, 10 Jun 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/cbias/</guid>
-      <description>&lt;p&gt;In many causal inference settings, we might be interested in the effect of not just one treatment, but &lt;strong&gt;many mutually exclusive treatments&lt;/strong&gt;. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies. Depending on the context, there might be many reasons why we want to test different treatments at the same time, but generally it can help &lt;em&gt;reducing the sample size&lt;/em&gt;, as we need just a single control group. A simple way to recover the different treatment effects is a linear regression of the outcome of interest on the different treatment indicators.&lt;/p&gt;
+      <description>&lt;p&gt;&lt;em&gt;Problems and solutions of linear regression with multiple treatments&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;In many causal inference settings, we might be interested in the effect of not just one treatment, but &lt;strong&gt;many mutually exclusive treatments&lt;/strong&gt;. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies. Depending on the context, there might be many reasons why we want to test different treatments at the same time, but generally it can help &lt;em&gt;reducing the sample size&lt;/em&gt;, as we need just a single control group. A simple way to recover the different treatment effects is a linear regression of the outcome of interest on the different treatment indicators.&lt;/p&gt;
 &lt;p&gt;However, in causal inference, we often &lt;strong&gt;condition the analysis&lt;/strong&gt; on other observable variables (often called control variables), either to increase power or, especially in quasi-experimental settings, to identify a causal parameter instead of a simple correlation. There are &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;cases in which adding control variables can backfire&lt;/a&gt;, but otherwise, we usually think that the regression framework is still able to recover the average treatment effect.&lt;/p&gt;
 &lt;p&gt;In a breakthrough paper, &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull and Kolesár (2022)&lt;/a&gt; have recently shown that in case of &lt;em&gt;multiple and mutually-exclusive&lt;/em&gt; treatments with &lt;em&gt;control variables&lt;/em&gt;, the &lt;strong&gt;regression coefficients do not identify a causal effect&lt;/strong&gt;. However, not everything is lost: the authors propose a simple solution to this problem that still makes use of linear regression.&lt;/p&gt;
 &lt;p&gt;In this blog post, I am going to go through a &lt;strong&gt;simple example&lt;/strong&gt; illustrating the nature of the problem and the solution proposed by the authors.&lt;/p&gt;
@@ -244,7 +245,7 @@ results = simulate(dgp, ols_estimator)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_results(results)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/cbias_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/cbias_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, we reject the null hypothesis of no effect of &lt;code&gt;button1&lt;/code&gt; in 45% of the simulations. Since we set a confidence level of 5%, we would have expected at most around 5% of rejections. Our estimator is &lt;strong&gt;biased&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;As we have seen above, the problem is that the estimator is not just a convex combination of the effect of &lt;code&gt;button1&lt;/code&gt; across mobile and desktop users (it&amp;rsquo;s zero for both), but it is &lt;strong&gt;contaminated&lt;/strong&gt; by the effect of &lt;code&gt;button2&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s now try the new estimator proposed by &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt;. First, we need do de-mean our control variable, &lt;code&gt;mobile&lt;/code&gt;. Then, we regress &lt;code&gt;revenue&lt;/code&gt; on the interaction between &lt;code&gt;group&lt;/code&gt; and the de-meaned control variable, &lt;code&gt;res_mobile&lt;/code&gt;.&lt;/p&gt;
@@ -281,7 +282,7 @@ new_results = simulate(dgp, new_estimator)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_results(new_results)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/cbias_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/cbias_39_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Now the distribution of the estimated coefficient for the first alternative button is centered around the true value of zeros. Moreover, we reject the null hypothesis of no effect only in 1% of the simulations, consistently with the chosen confidence level of 95%.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;In this post, we have seen the dangers of running a factor regression model with multiple &lt;em&gt;mutually exclusive&lt;/em&gt; treatment arms and treatment effect heterogeneity across a control variable. In this case, because the treatments are not independent, the regression coefficient is not a convex combination of the within-group average treatment effects, but also captures the treatment effects of the other treatments introducing &lt;strong&gt;contamination bias&lt;/strong&gt;. The solution to the problem is both simple and elegant, requiring just a linear regression.&lt;/p&gt;
@@ -292,7 +293,7 @@ new_results = simulate(dgp, new_estimator)
 &lt;li&gt;The treatment effects are heterogeneous in the control variable&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Another popular example is the case of the &lt;a href=&#34;https://arxiv.org/abs/2201.01194&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Two-Way Fixed Effects (TWFE) estimator with staggered treatments&lt;/a&gt;.&lt;/p&gt;
-&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
 &lt;p&gt;[1] J. Angrist, &lt;a href=&#34;https://www.jstor.org/stable/2998558&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Estimating the Labor Market Impact of Voluntary Military Service Using Social Security Data on Military Applicants&lt;/a&gt; (1998), &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[2] D. Rubin, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/016214504000001880&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Causal Inference Using Potential Outcomes&lt;/a&gt; (2005), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[3] G. Imbens, J. Wooldridge, &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Recent Developments in the Econometrics of Program Evaluation&lt;/a&gt; (2009), &lt;em&gt;Journal of Economic Literature&lt;/em&gt;.&lt;/p&gt;

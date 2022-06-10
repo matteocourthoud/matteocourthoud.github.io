@@ -30,7 +30,8 @@
   
     
   
-  <meta name="description" content="In many causal inference settings, we might be interested in the effect of not just one treatment, but many mutually exclusive treatments. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies." />
+  <meta name="description" content="Problems and solutions of linear regression with multiple treatments
+In many causal inference settings, we might be interested in the effect of not just one treatment, but many mutually exclusive treatments." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/cbias/" />
@@ -332,8 +333,9 @@
   
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/cbias/" />
-  <meta property="og:title" content="Contamination Bias | Matteo Courthoud" />
-  <meta property="og:description" content="In many causal inference settings, we might be interested in the effect of not just one treatment, but many mutually exclusive treatments. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies." /><meta property="og:image" content="https://matteocourthoud.github.io/post/cbias/featured.png" />
+  <meta property="og:title" content="Understanding Contamination Bias | Matteo Courthoud" />
+  <meta property="og:description" content="Problems and solutions of linear regression with multiple treatments
+In many causal inference settings, we might be interested in the effect of not just one treatment, but many mutually exclusive treatments." /><meta property="og:image" content="https://matteocourthoud.github.io/post/cbias/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/cbias/featured.png" /><meta property="og:locale" content="en-us" />
   
     
@@ -368,7 +370,7 @@
     "@type": "WebPage",
     "@id": "https://matteocourthoud.github.io/post/cbias/"
   },
-  "headline": "Contamination Bias",
+  "headline": "Understanding Contamination Bias",
   
   "image": [
     "https://matteocourthoud.github.io/post/cbias/featured.png"
@@ -385,7 +387,7 @@
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "In many causal inference settings, we might be interested in the effect of not just one treatment, but many mutually exclusive treatments. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies."
+  "description": "Problems and solutions of linear regression with multiple treatments\nIn many causal inference settings, we might be interested in the effect of not just one treatment, but many mutually exclusive treatments."
 }
 </script>
 
@@ -431,7 +433,7 @@
 
 
 
-  <title>Contamination Bias | Matteo Courthoud</title>
+  <title>Understanding Contamination Bias | Matteo Courthoud</title>
 </head>
 
 
@@ -776,9 +778,9 @@
       </ul>
     </li>
     <li><a href="#simulations">Simulations</a></li>
-    <li><a href="#conclusion">Conclusion</a></li>
-    <li><a href="#references">References</a>
+    <li><a href="#conclusion">Conclusion</a>
       <ul>
+        <li><a href="#references">References</a></li>
         <li><a href="#related-articles">Related Articles</a></li>
         <li><a href="#code">Code</a></li>
       </ul>
@@ -814,7 +816,7 @@
 
 
 <div class="article-container pt-3">
-  <h1>Contamination Bias</h1>
+  <h1>Understanding Contamination Bias</h1>
 
   
 
@@ -876,7 +878,8 @@
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>In many causal inference settings, we might be interested in the effect of not just one treatment, but <strong>many mutually exclusive treatments</strong>. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies. Depending on the context, there might be many reasons why we want to test different treatments at the same time, but generally it can help <em>reducing the sample size</em>, as we need just a single control group. A simple way to recover the different treatment effects is a linear regression of the outcome of interest on the different treatment indicators.</p>
+            <p><em>Problems and solutions of linear regression with multiple treatments</em></p>
+<p>In many causal inference settings, we might be interested in the effect of not just one treatment, but <strong>many mutually exclusive treatments</strong>. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies. Depending on the context, there might be many reasons why we want to test different treatments at the same time, but generally it can help <em>reducing the sample size</em>, as we need just a single control group. A simple way to recover the different treatment effects is a linear regression of the outcome of interest on the different treatment indicators.</p>
 <p>However, in causal inference, we often <strong>condition the analysis</strong> on other observable variables (often called control variables), either to increase power or, especially in quasi-experimental settings, to identify a causal parameter instead of a simple correlation. There are <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">cases in which adding control variables can backfire</a>, but otherwise, we usually think that the regression framework is still able to recover the average treatment effect.</p>
 <p>In a breakthrough paper, <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull and Kolesár (2022)</a> have recently shown that in case of <em>multiple and mutually-exclusive</em> treatments with <em>control variables</em>, the <strong>regression coefficients do not identify a causal effect</strong>. However, not everything is lost: the authors propose a simple solution to this problem that still makes use of linear regression.</p>
 <p>In this blog post, I am going to go through a <strong>simple example</strong> illustrating the nature of the problem and the solution proposed by the authors.</p>
@@ -1103,7 +1106,7 @@ results = simulate(dgp, ols_estimator)
 </code></pre>
 <pre><code class="language-python">plot_results(results)
 </code></pre>
-<p><img src="img/cbias_33_0.png" alt="png"></p>
+<p><img src="img/cbias_34_0.png" alt="png"></p>
 <p>As we can see, we reject the null hypothesis of no effect of <code>button1</code> in 45% of the simulations. Since we set a confidence level of 5%, we would have expected at most around 5% of rejections. Our estimator is <strong>biased</strong>.</p>
 <p>As we have seen above, the problem is that the estimator is not just a convex combination of the effect of <code>button1</code> across mobile and desktop users (it&rsquo;s zero for both), but it is <strong>contaminated</strong> by the effect of <code>button2</code>.</p>
 <p>Let&rsquo;s now try the new estimator proposed by <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a>. First, we need do de-mean our control variable, <code>mobile</code>. Then, we regress <code>revenue</code> on the interaction between <code>group</code> and the de-meaned control variable, <code>res_mobile</code>.</p>
@@ -1140,7 +1143,7 @@ new_results = simulate(dgp, new_estimator)
 </code></pre>
 <pre><code class="language-python">plot_results(new_results)
 </code></pre>
-<p><img src="img/cbias_38_0.png" alt="png"></p>
+<p><img src="img/cbias_39_0.png" alt="png"></p>
 <p>Now the distribution of the estimated coefficient for the first alternative button is centered around the true value of zeros. Moreover, we reject the null hypothesis of no effect only in 1% of the simulations, consistently with the chosen confidence level of 95%.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this post, we have seen the dangers of running a factor regression model with multiple <em>mutually exclusive</em> treatment arms and treatment effect heterogeneity across a control variable. In this case, because the treatments are not independent, the regression coefficient is not a convex combination of the within-group average treatment effects, but also captures the treatment effects of the other treatments introducing <strong>contamination bias</strong>. The solution to the problem is both simple and elegant, requiring just a linear regression.</p>
@@ -1151,7 +1154,7 @@ new_results = simulate(dgp, new_estimator)
 <li>The treatment effects are heterogeneous in the control variable</li>
 </ol>
 <p>Another popular example is the case of the <a href="https://arxiv.org/abs/2201.01194" target="_blank" rel="noopener">Two-Way Fixed Effects (TWFE) estimator with staggered treatments</a>.</p>
-<h2 id="references">References</h2>
+<h3 id="references">References</h3>
 <p>[1] J. Angrist, <a href="https://www.jstor.org/stable/2998558" target="_blank" rel="noopener">Estimating the Labor Market Impact of Voluntary Military Service Using Social Security Data on Military Applicants</a> (1998), <em>Econometrica</em>.</p>
 <p>[2] D. Rubin, <a href="https://www.tandfonline.com/doi/abs/10.1198/016214504000001880" target="_blank" rel="noopener">Causal Inference Using Potential Outcomes</a> (2005), <em>Journal of the American Statistical Association</em>.</p>
 <p>[3] G. Imbens, J. Wooldridge, <a href="https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5" target="_blank" rel="noopener">Recent Developments in the Econometrics of Program Evaluation</a> (2009), <em>Journal of Economic Literature</em>.</p>
@@ -1187,7 +1190,7 @@ new_results = simulate(dgp, new_estimator)
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/cbias/&amp;text=Contamination%20Bias" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/cbias/&amp;text=Understanding%20Contamination%20Bias" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -1200,7 +1203,7 @@ new_results = simulate(dgp, new_estimator)
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/cbias/&amp;t=Contamination%20Bias" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/cbias/&amp;t=Understanding%20Contamination%20Bias" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook"></i>
         </a>
       </li>
@@ -1213,7 +1216,7 @@ new_results = simulate(dgp, new_estimator)
       
       
       <li>
-        <a href="mailto:?subject=Contamination%20Bias&amp;body=https://matteocourthoud.github.io/post/cbias/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=Understanding%20Contamination%20Bias&amp;body=https://matteocourthoud.github.io/post/cbias/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -1226,7 +1229,7 @@ new_results = simulate(dgp, new_estimator)
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/cbias/&amp;title=Contamination%20Bias" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/cbias/&amp;title=Understanding%20Contamination%20Bias" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -1239,7 +1242,7 @@ new_results = simulate(dgp, new_estimator)
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=Contamination%20Bias%20https://matteocourthoud.github.io/post/cbias/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=Understanding%20Contamination%20Bias%20https://matteocourthoud.github.io/post/cbias/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>
