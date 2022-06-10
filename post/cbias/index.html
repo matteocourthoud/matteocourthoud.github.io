@@ -339,10 +339,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-06-09T00:00:00&#43;00:00"
+        content="2022-06-10T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-06-09T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-06-10T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/cbias/featured.png"
   ],
   
-  "datePublished": "2022-06-09T00:00:00Z",
-  "dateModified": "2022-06-09T00:00:00Z",
+  "datePublished": "2022-06-10T00:00:00Z",
+  "dateModified": "2022-06-10T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -771,7 +771,21 @@
     <li><a href="#theory">Theory</a>
       <ul>
         <li><a href="#single-treatment-arm">Single Treatment Arm</a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul>
+    <li>
+      <ul>
         <li><a href="#multiple-treatment-arms">Multiple Treatment Arms</a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <ul>
+    <li>
+      <ul>
         <li><a href="#solution">Solution</a></li>
       </ul>
     </li>
@@ -832,7 +846,7 @@
     
       
     
-    Jun 9, 2022
+    Jun 10, 2022
   </span>
   
 
@@ -841,7 +855,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    12 min read
+    13 min read
   </span>
   
 
@@ -1027,17 +1041,20 @@ $$</p>
 <p>The coefficient of interest is $\beta$.</p>
 <p><a href="https://www.jstor.org/stable/2998558" target="_blank" rel="noopener">Angrist (1998)</a> shows that <strong>the regression coefficient identifies the average treatment effect</strong>. In particular, the regression coefficient identifies a weighted average of the within-group average treatment effect with convex weights. In this particular setting, we can write it as</p>
 <p>$$
-\beta = \lambda \tau(0) + (1 - \lambda) \tau(1) \qquad \text{where} \qquad \tau(x) = \mathbb E \big[ Y_i^{(1)} - Y_i^{(0)} \ \big| \ X_i = x \big]
+\beta = \lambda \tau(0) + (1 - \lambda) \tau(1) \qquad \text{where} \qquad \tau (x) = \mathbb E \big[ Y_i^{(1)} - Y_i^{(0)} \ \big| \ X_i = x \big]
 $$</p>
-<p>The weights are</p>
+<p>The weights are given by the within-group treatment variance. Hence, the OLS estimator gives <strong>less weight to groups where we have less treatment variance</strong>, i.e., where treatment is more imbalanced. Groups where treatment is distributed 50-50 get the most weight.</p>
 <p>$$
-\lambda = \frac{ \text{Var} \big(D_i \ \big| \ X_i = 0 \big) \Pr \big(X_i=0 \big)}{\sum_{x \in \lbrace 0 , 1 \rbrace} \text{Var} \big(D_i \ \big| \ X_i = x \big) \Pr \big( X_i=x \big)}
+\lambda = \frac{ \text{Var} \big(D_i \ \big| \ X_i = 0 \big) \Pr \big(X_i=0 \big)}{\sum_{x \in \lbrace 0 , 1 \rbrace} \text{Var} \big(D_i \ \big| \ X_i = x \big) \Pr \big( X_i=x \big)} \in [0, 1]
 $$</p>
-<p>And they can be derived using the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Frisch-Waugh-Lowell theorem</a>.</p>
-<p>$$
-\beta_1 = \frac{\mathbb E \big[ D_{i, \perp X} Y_i \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} = \frac{\mathbb E \big[ D_{i, \perp X} Y_i(0) \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} + \frac{\mathbb E \big[ D_{i, \perp X} D_{i} \tau_{i} \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]}
+<p>The weights can be derived using the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Frisch-Waugh-Lowell theorem</a> to express $\beta_1$ as the OLS estimate of a univariate regression of $Y$ on $D_{i, \perp X}$, where $D_{i, \perp X}$ are the residuals from regressing $D$ on $X$. If you are not familiar with the Frisch-Waugh-Lowell theorem, I wrote an <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">introductory blog post here</a>.</p>
+<h1 id="beta_1">$$
+\beta_1</h1>
+<h1 id="fracmathbb-e-big-d_i-perp-x-y_i-bigmathbb-e-big-d_i-perp-x2-big">\frac{\mathbb E \big[ D_{i, \perp X} Y_i \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]}</h1>
+<h1 id="underbrace-fracmathbb-e-big-d_i-perp-x-y_i0-bigmathbb-e-big-d_i-perp-x2-big-_0--fracmathbb-e-big-d_i-perp-x-d_i-tau_i-bigmathbb-e-big-d_i-perp-x2-big">\underbrace{ \frac{\mathbb E \big[ D_{i, \perp X} Y_i(0) \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} }<em>{=0} + \frac{\mathbb E \big[ D</em>{i, \perp X} D_{i} \tau_{i} \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]}</h1>
+<p>\frac{\mathbb E \big[ \text{Var}(D_i | X_i) \ \tau(X_i) \big]}{\mathbb E \big[ \text{Var}(D_i | X_i) \big]}
 $$</p>
-<p>where $D_{i, \perp X}$ are the residuals from regressing $D$ on $X$. If you are not familiar with the Frisch-Waugh-Lowell theorem, I wrote an <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">introductory blog post here</a>.</p>
+<p>The second term disappears because the residual $D_{i, \perp X}$ is by construction <strong>mean independent</strong> of the control $X_i$, i.e. $\mathbb E \big[ D_{i, \perp X} | X_i \big] = 0$. This mean independence property is crucial to obtain an unbiased estimate and its failures in the multiple-treatment case is the source of the <em>contamination bias</em>.</p>
 <h3 id="multiple-treatment-arms">Multiple Treatment Arms</h3>
 <p>Let&rsquo;s now consider the case of multiple treatment arms, $D \in \lbrace 0 , 1, 2 \rbrace$. We still assume <strong>conditional ignorability</strong>, i.e., the treatment is as good as random, conditional on $X$.</p>
 <p>$$
@@ -1053,17 +1070,22 @@ Y = \alpha + \beta_1 D_1 + \beta_2 D_2 + \gamma X + u
 $$</p>
 <p>Does the OLS estimator <strong>identify</strong> $\beta_1$ and $\beta_2$?</p>
 <p>It would be very tempting to say yes. In fact, it looks like not much has changed. We just have one extra treatment, but the potential outcomes are still conditionally independent of it. Where is the <strong>issue</strong>?</p>
-<p>Let&rsquo;s concentrate on $\beta_1$ (the same applies to $\beta_2$). We can rewrite the coefficient using the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Frisch-Waugh-Lowell theorem</a>.</p>
-<p>$$
-\beta_1 = \frac{\mathbb E \big[D_{i1, \perp X, D_2} Y_i \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} = \frac{\mathbb E \big[ D_{i1, \perp X, D_2} Y_i(0) \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} + \frac{\mathbb E \big[ D_{i1, \perp X, D_2} D_{i1} \tau_{i1} \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} + \color{red}{ \frac{\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \tau_{i2} \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} }
+<p>Let&rsquo;s concentrate on $\beta_1$ (the same applies to $\beta_2$). As before, can rewrite $\beta_1$ using the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Frisch-Waugh-Lowell theorem</a> as the OLS coefficient of a univariate regression of $Y_i$ on $D_{i1, \perp X, D_2}$, where $D_{i1, \perp X, D_2}$ are the residuals from regressing $D_1$ on $D_2$ and $X$.</p>
+<h1 id="beta_1-1">$$
+\beta_1</h1>
+<h1 id="fracmathbb-e-bigd_i1-perp-x-d_2-y_i-bigmathbb-e-big-d_i1-perp-x-d_22-big">\frac{\mathbb E \big[D_{i1, \perp X, D_2} Y_i \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]}</h1>
+<p>\underbrace{ \frac{\mathbb E \big[ D_{i1, \perp X, D_2} Y_i(0) \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} }<em>{=0}
++
+\frac{\mathbb E \big[ D</em>{i1, \perp X, D_2} D_{i1} \tau_{i1} \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]}
++
+\color{red}{ \underbrace{ \color{black}{ \frac{\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \tau_{i2} \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]}} }_{ \neq 0} }
 $$</p>
-<p>where $D_{i1, \perp X, D_2}$ are the residuals from regressing $D_1$ on $D_2$ and $X$.</p>
 <p>The <strong>problem</strong> is the last term. Without the last term, we could still write $\beta_1$ as a convex combination of the individual treatment effects. However, the last term biases the estimator by adding a component that depends on <strong>the treatment effect of $D_2$</strong>, $\tau_2$. Why does this term not disappear?</p>
-<p>The problem is that $D_1$ is not mean independent of $D_2$, i.e.</p>
+<p>The problem is that $D_{i1, \perp X, D_2}$ is not mean independent of $D_{i2}$, i.e.</p>
 <p>$$
-\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \big] \neq 0
+\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \ \big| \ X_i \big] \neq 0
 $$</p>
-<p>In fact, the treatments are mutually exclusive. This implies that when $D_{i1}=1$, $D_{i2}$ must be zero, regardless of the value of $X$. Therefore, the last term does not cancel out and it introduces a <strong>contamination bias</strong>.</p>
+<p>The reason lies in the fact that the treatments are <strong>mutually exclusive</strong>. This implies that when $D_{i1}=1$, $D_{i2}$ must be zero, regardless of the value of $X_i$. Therefore, the last term does not cancel out and it introduces a <strong>contamination bias</strong>.</p>
 <h3 id="solution">Solution</h3>
 <p><a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull, Kolesár (2022)</a> show that a <strong>simple estimator</strong>, first proposed by <a href="https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5" target="_blank" rel="noopener">Imbens and Wooldridge (2009)</a> is able to remove the bias. The procedure is the following.</p>
 <ol>

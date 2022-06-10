@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Thu, 09 Jun 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Fri, 10 Jun 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
@@ -15,7 +15,7 @@
     <item>
       <title>Contamination Bias</title>
       <link>https://matteocourthoud.github.io/post/cbias/</link>
-      <pubDate>Thu, 09 Jun 2022 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 10 Jun 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/cbias/</guid>
       <description>&lt;p&gt;In many causal inference settings, we might be interested in the effect of not just one treatment, but &lt;strong&gt;many mutually exclusive treatments&lt;/strong&gt;. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies. Depending on the context, there might be many reasons why we want to test different treatments at the same time, but generally it can help &lt;em&gt;reducing the sample size&lt;/em&gt;, as we need just a single control group. A simple way to recover the different treatment effects is a linear regression of the outcome of interest on the different treatment indicators.&lt;/p&gt;
 &lt;p&gt;However, in causal inference, we often &lt;strong&gt;condition the analysis&lt;/strong&gt; on other observable variables (often called control variables), either to increase power or, especially in quasi-experimental settings, to identify a causal parameter instead of a simple correlation. There are &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;cases in which adding control variables can backfire&lt;/a&gt;, but otherwise, we usually think that the regression framework is still able to recover the average treatment effect.&lt;/p&gt;
@@ -168,17 +168,20 @@ $$&lt;/p&gt;
 &lt;p&gt;The coefficient of interest is $\beta$.&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.jstor.org/stable/2998558&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Angrist (1998)&lt;/a&gt; shows that &lt;strong&gt;the regression coefficient identifies the average treatment effect&lt;/strong&gt;. In particular, the regression coefficient identifies a weighted average of the within-group average treatment effect with convex weights. In this particular setting, we can write it as&lt;/p&gt;
 &lt;p&gt;$$
-\beta = \lambda \tau(0) + (1 - \lambda) \tau(1) \qquad \text{where} \qquad \tau(x) = \mathbb E \big[ Y_i^{(1)} - Y_i^{(0)} \ \big| \ X_i = x \big]
+\beta = \lambda \tau(0) + (1 - \lambda) \tau(1) \qquad \text{where} \qquad \tau (x) = \mathbb E \big[ Y_i^{(1)} - Y_i^{(0)} \ \big| \ X_i = x \big]
 $$&lt;/p&gt;
-&lt;p&gt;The weights are&lt;/p&gt;
+&lt;p&gt;The weights are given by the within-group treatment variance. Hence, the OLS estimator gives &lt;strong&gt;less weight to groups where we have less treatment variance&lt;/strong&gt;, i.e., where treatment is more imbalanced. Groups where treatment is distributed 50-50 get the most weight.&lt;/p&gt;
 &lt;p&gt;$$
-\lambda = \frac{ \text{Var} \big(D_i \ \big| \ X_i = 0 \big) \Pr \big(X_i=0 \big)}{\sum_{x \in \lbrace 0 , 1 \rbrace} \text{Var} \big(D_i \ \big| \ X_i = x \big) \Pr \big( X_i=x \big)}
+\lambda = \frac{ \text{Var} \big(D_i \ \big| \ X_i = 0 \big) \Pr \big(X_i=0 \big)}{\sum_{x \in \lbrace 0 , 1 \rbrace} \text{Var} \big(D_i \ \big| \ X_i = x \big) \Pr \big( X_i=x \big)} \in [0, 1]
 $$&lt;/p&gt;
-&lt;p&gt;And they can be derived using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;$$
-\beta_1 = \frac{\mathbb E \big[ D_{i, \perp X} Y_i \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} = \frac{\mathbb E \big[ D_{i, \perp X} Y_i(0) \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} + \frac{\mathbb E \big[ D_{i, \perp X} D_{i} \tau_{i} \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]}
+&lt;p&gt;The weights can be derived using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt; to express $\beta_1$ as the OLS estimate of a univariate regression of $Y$ on $D_{i, \perp X}$, where $D_{i, \perp X}$ are the residuals from regressing $D$ on $X$. If you are not familiar with the Frisch-Waugh-Lowell theorem, I wrote an &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;introductory blog post here&lt;/a&gt;.&lt;/p&gt;
+&lt;h1 id=&#34;beta_1&#34;&gt;$$
+\beta_1&lt;/h1&gt;
+&lt;h1 id=&#34;fracmathbb-e-big-d_i-perp-x-y_i-bigmathbb-e-big-d_i-perp-x2-big&#34;&gt;\frac{\mathbb E \big[ D_{i, \perp X} Y_i \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]}&lt;/h1&gt;
+&lt;h1 id=&#34;underbrace-fracmathbb-e-big-d_i-perp-x-y_i0-bigmathbb-e-big-d_i-perp-x2-big-_0--fracmathbb-e-big-d_i-perp-x-d_i-tau_i-bigmathbb-e-big-d_i-perp-x2-big&#34;&gt;\underbrace{ \frac{\mathbb E \big[ D_{i, \perp X} Y_i(0) \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} }&lt;em&gt;{=0} + \frac{\mathbb E \big[ D&lt;/em&gt;{i, \perp X} D_{i} \tau_{i} \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]}&lt;/h1&gt;
+&lt;p&gt;\frac{\mathbb E \big[ \text{Var}(D_i | X_i) \ \tau(X_i) \big]}{\mathbb E \big[ \text{Var}(D_i | X_i) \big]}
 $$&lt;/p&gt;
-&lt;p&gt;where $D_{i, \perp X}$ are the residuals from regressing $D$ on $X$. If you are not familiar with the Frisch-Waugh-Lowell theorem, I wrote an &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;introductory blog post here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The second term disappears because the residual $D_{i, \perp X}$ is by construction &lt;strong&gt;mean independent&lt;/strong&gt; of the control $X_i$, i.e. $\mathbb E \big[ D_{i, \perp X} | X_i \big] = 0$. This mean independence property is crucial to obtain an unbiased estimate and its failures in the multiple-treatment case is the source of the &lt;em&gt;contamination bias&lt;/em&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;multiple-treatment-arms&#34;&gt;Multiple Treatment Arms&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s now consider the case of multiple treatment arms, $D \in \lbrace 0 , 1, 2 \rbrace$. We still assume &lt;strong&gt;conditional ignorability&lt;/strong&gt;, i.e., the treatment is as good as random, conditional on $X$.&lt;/p&gt;
 &lt;p&gt;$$
@@ -194,17 +197,22 @@ Y = \alpha + \beta_1 D_1 + \beta_2 D_2 + \gamma X + u
 $$&lt;/p&gt;
 &lt;p&gt;Does the OLS estimator &lt;strong&gt;identify&lt;/strong&gt; $\beta_1$ and $\beta_2$?&lt;/p&gt;
 &lt;p&gt;It would be very tempting to say yes. In fact, it looks like not much has changed. We just have one extra treatment, but the potential outcomes are still conditionally independent of it. Where is the &lt;strong&gt;issue&lt;/strong&gt;?&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s concentrate on $\beta_1$ (the same applies to $\beta_2$). We can rewrite the coefficient using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;$$
-\beta_1 = \frac{\mathbb E \big[D_{i1, \perp X, D_2} Y_i \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} = \frac{\mathbb E \big[ D_{i1, \perp X, D_2} Y_i(0) \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} + \frac{\mathbb E \big[ D_{i1, \perp X, D_2} D_{i1} \tau_{i1} \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} + \color{red}{ \frac{\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \tau_{i2} \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} }
+&lt;p&gt;Let&amp;rsquo;s concentrate on $\beta_1$ (the same applies to $\beta_2$). As before, can rewrite $\beta_1$ using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt; as the OLS coefficient of a univariate regression of $Y_i$ on $D_{i1, \perp X, D_2}$, where $D_{i1, \perp X, D_2}$ are the residuals from regressing $D_1$ on $D_2$ and $X$.&lt;/p&gt;
+&lt;h1 id=&#34;beta_1-1&#34;&gt;$$
+\beta_1&lt;/h1&gt;
+&lt;h1 id=&#34;fracmathbb-e-bigd_i1-perp-x-d_2-y_i-bigmathbb-e-big-d_i1-perp-x-d_22-big&#34;&gt;\frac{\mathbb E \big[D_{i1, \perp X, D_2} Y_i \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]}&lt;/h1&gt;
+&lt;p&gt;\underbrace{ \frac{\mathbb E \big[ D_{i1, \perp X, D_2} Y_i(0) \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} }&lt;em&gt;{=0}
++
+\frac{\mathbb E \big[ D&lt;/em&gt;{i1, \perp X, D_2} D_{i1} \tau_{i1} \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]}
++
+\color{red}{ \underbrace{ \color{black}{ \frac{\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \tau_{i2} \big]}{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]}} }_{ \neq 0} }
 $$&lt;/p&gt;
-&lt;p&gt;where $D_{i1, \perp X, D_2}$ are the residuals from regressing $D_1$ on $D_2$ and $X$.&lt;/p&gt;
 &lt;p&gt;The &lt;strong&gt;problem&lt;/strong&gt; is the last term. Without the last term, we could still write $\beta_1$ as a convex combination of the individual treatment effects. However, the last term biases the estimator by adding a component that depends on &lt;strong&gt;the treatment effect of $D_2$&lt;/strong&gt;, $\tau_2$. Why does this term not disappear?&lt;/p&gt;
-&lt;p&gt;The problem is that $D_1$ is not mean independent of $D_2$, i.e.&lt;/p&gt;
+&lt;p&gt;The problem is that $D_{i1, \perp X, D_2}$ is not mean independent of $D_{i2}$, i.e.&lt;/p&gt;
 &lt;p&gt;$$
-\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \big] \neq 0
+\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \ \big| \ X_i \big] \neq 0
 $$&lt;/p&gt;
-&lt;p&gt;In fact, the treatments are mutually exclusive. This implies that when $D_{i1}=1$, $D_{i2}$ must be zero, regardless of the value of $X$. Therefore, the last term does not cancel out and it introduces a &lt;strong&gt;contamination bias&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The reason lies in the fact that the treatments are &lt;strong&gt;mutually exclusive&lt;/strong&gt;. This implies that when $D_{i1}=1$, $D_{i2}$ must be zero, regardless of the value of $X_i$. Therefore, the last term does not cancel out and it introduces a &lt;strong&gt;contamination bias&lt;/strong&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;solution&#34;&gt;Solution&lt;/h3&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt; show that a &lt;strong&gt;simple estimator&lt;/strong&gt;, first proposed by &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Imbens and Wooldridge (2009)&lt;/a&gt; is able to remove the bias. The procedure is the following.&lt;/p&gt;
 &lt;ol&gt;
