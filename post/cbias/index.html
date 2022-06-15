@@ -341,10 +341,10 @@ In many causal inference settings, we might be interested in the effect of not j
     
       <meta
         property="article:published_time"
-        content="2022-06-10T00:00:00&#43;00:00"
+        content="2022-06-15T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-06-10T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-06-15T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@ In many causal inference settings, we might be interested in the effect of not j
     "https://matteocourthoud.github.io/post/cbias/featured.png"
   ],
   
-  "datePublished": "2022-06-10T00:00:00Z",
-  "dateModified": "2022-06-10T00:00:00Z",
+  "datePublished": "2022-06-15T00:00:00Z",
+  "dateModified": "2022-06-15T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -834,7 +834,7 @@ In many causal inference settings, we might be interested in the effect of not j
     
       
     
-    Jun 10, 2022
+    Jun 15, 2022
   </span>
   
 
@@ -843,7 +843,7 @@ In many causal inference settings, we might be interested in the effect of not j
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    13 min read
+    14 min read
   </span>
   
 
@@ -879,7 +879,7 @@ In many causal inference settings, we might be interested in the effect of not j
         <div class="article-container">
           <div class="article-style" align="justify">
             <p><em>Problems and solutions of linear regression with multiple treatments</em></p>
-<p>In many causal inference settings, we might be interested in the effect of not just one treatment, but <strong>many mutually exclusive treatments</strong>. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies. Depending on the context, there might be many reasons why we want to test different treatments at the same time, but generally it can help <em>reducing the sample size</em>, as we need just a single control group. A simple way to recover the different treatment effects is a linear regression of the outcome of interest on the different treatment indicators.</p>
+<p>In many causal inference settings, we might be interested in the effect of not just one treatment, but <strong>many mutually exclusive treatments</strong>. For example, we might want to test alternative UX designs, or drugs, or policies. Depending on the context, there might be many reasons why we want to test different treatments at the same time, but generally it can help <em>reducing the sample size</em>, as we need just a single control group. A simple way to recover the different treatment effects is a linear regression of the outcome of interest on the different treatment indicators.</p>
 <p>However, in causal inference, we often <strong>condition the analysis</strong> on other observable variables (often called control variables), either to increase power or, especially in quasi-experimental settings, to identify a causal parameter instead of a simple correlation. There are <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">cases in which adding control variables can backfire</a>, but otherwise, we usually think that the regression framework is still able to recover the average treatment effect.</p>
 <p>In a breakthrough paper, <a href="https://www.nber.org/papers/w30108" target="_blank" rel="noopener">Goldsmith-Pinkham, Hull and Kolesár (2022)</a> have recently shown that in case of <em>multiple and mutually-exclusive</em> treatments with <em>control variables</em>, the <strong>regression coefficients do not identify a causal effect</strong>. However, not everything is lost: the authors propose a simple solution to this problem that still makes use of linear regression.</p>
 <p>In this blog post, I am going to go through a <strong>simple example</strong> illustrating the nature of the problem and the solution proposed by the authors.</p>
@@ -1025,7 +1025,7 @@ $$</p>
 $$</p>
 <p>In this setting, the <strong>regression of interest</strong> is</p>
 <p>$$
-Y = \alpha + \beta D + \gamma X + u
+Y_i = \alpha + \beta D_i + \gamma X_i + u_i
 $$</p>
 <p>The coefficient of interest is $\beta$.</p>
 <p><a href="https://www.jstor.org/stable/2998558" target="_blank" rel="noopener">Angrist (1998)</a> shows that <strong>the regression coefficient $\beta$ identifies the average treatment effect</strong>. In particular, $\beta$ identifies a weighted average of the within-group $x$ average treatment effect $\tau (x)$ with convex weights. In this particular setting, we can write it as</p>
@@ -1042,7 +1042,11 @@ $$</p>
 \underbrace{ \frac{\mathbb E \big[ D_{i, \perp X} Y_i(0) \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} } _ {=0} + \frac{\mathbb E \big[ D_{i, \perp X} D_i \tau_i \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} =
 \frac{\mathbb E \big[ \text{Var} (D_i | X_i) \ \tau(X_i) \big]}{\mathbb E \big[ \text{Var}(D_i | X_i) \big]}
 $$</p>
-<p>The second term of the central expression disappears because the residual $D_{i, \perp X}$ is by construction <strong>mean independent</strong> of the control variable $X_i$, i.e. $\mathbb E \big[ D_{i, \perp X} | X_i \big] = 0$. This mean independence property is crucial to obtain an unbiased estimate and its failure in the multiple-treatment case is the source of the <em>contamination bias</em>.</p>
+<p>The second term of the central expression disappears because the residual $D_{i, \perp X}$ is by construction <strong>mean independent</strong> of the control variable $X_i$, i.e.</p>
+<p>$$
+\mathbb E \big[ D_{i, \perp X} | X_i \big] = 0
+$$</p>
+<p>This mean independence property is crucial to obtain an unbiased estimate and its failure in the multiple-treatment case is the source of the <em>contamination bias</em>.</p>
 <h3 id="multiple-treatment-arms">Multiple Treatment Arms</h3>
 <p>Let&rsquo;s now consider the case of multiple treatment arms, $D \in \lbrace 0, 1, 2 \rbrace$, where $1$ and $2$ indicate two mutually-exclusive treatments. We still assume <strong>conditional ignorability</strong>, i.e., treatment assignment is as good as random, conditional on $X$.</p>
 <p>$$
@@ -1054,7 +1058,7 @@ $$</p>
 $$</p>
 <p>The <strong>regression of interest</strong> is</p>
 <p>$$
-Y = \alpha + \beta_1 D_1 + \beta_2 D_2 + \gamma X + u
+Y_i = \alpha + \beta_1 D_{i1} + \beta_2 D_{i2} + \gamma X_i + u_i
 $$</p>
 <p>Does the OLS estimator of $\beta_1$ and $\beta_2$ <strong>identify</strong> an average treatment effect?</p>
 <p>It would be very tempting to say yes. In fact, it looks like not much has changed with respect to the previous setup. We just have one extra treatment, but the potential outcomes are still conditionally independent of it. Where is the <strong>issue</strong>?</p>
@@ -1074,7 +1078,15 @@ $$</p>
 <li>De-mean the control variable: $\tilde X = X - \bar X$</li>
 <li>Regress $Y$ on the interaction between the treatment indicators $D$ and the demeaned control variable $\tilde X$</li>
 </ol>
-<p>This estimator is an <strong>unbiased</strong> estimator of the average treatment effect. It also just requires a linear regression. Moreover, this estimator is unbiased also for continuous control variables $X$, not only for a binary one as we have considered so far.</p>
+<p>The OLS estimators of $\beta_1$ and $\beta_2$ are <strong>unbiased</strong> estimators of the average treatment effects. It also just requires a linear regression. Moreover, this estimator is unbiased also for continuous control variables $X$, not only for a binary one as we have considered so far.</p>
+<p><strong>Why</strong> was this estimator initially proposed by <a href="https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5" target="_blank" rel="noopener">Imbens and Wooldridge (2009)</a>? Let&rsquo;s analyze two parts separately: the interaction term between $D$ and $X$ and the fact that $X$ is de-meaned in the interaction term.</p>
+<p>First, the <strong>interaction term</strong> $D X$ allows us to control for different effects and/or distributions of $X$ across treatment and control group.</p>
+<p>Second, <strong>de-meaning</strong> $X$ in the interaction term allows us to <strong>interpret</strong> the estimated coefficient $\hat \beta$ as the average treatment effect. In fact, assume we were estimating the following linear model, where $X$ is <em>not</em> de-meaned in the interaction term.</p>
+<p>$$
+Y_i = \alpha + \beta D_i + \gamma X_i + \delta D_i X_i + u_i
+$$</p>
+<p>In this case, the marginal effect of $D$ on $Y$ is $\beta + \delta X_i$ so that the <em>average</em> marginal effect is $\beta + \delta \bar X$ which is different from $\beta$.</p>
+<p>If instead we use the de-meaned value of $X$ in the interaction term, the marginal effect of $D$ on $Y$ is $\beta + \delta (X_i - \bar X)$ so that the <em>average</em> marginal effect is $\beta + \delta (\bar X - \bar X) = \beta$. Now we can interpret $\beta$ as the average marginal effect of $D$ on $Y$.</p>
 <h2 id="simulations">Simulations</h2>
 <p>In order to better understand both the problem and the solution, let&rsquo;s run some <strong>simulations</strong>.</p>
 <p>We run an estimator over different draws from the data generating process <code>dgp_buttons()</code>. This is only possible with synthetic data and we do not have this luxury in reality. For each sample, we record the estimated coefficient and the corresponding <a href="https://en.wikipedia.org/wiki/P-value" target="_blank" rel="noopener">p-value</a>.</p>
@@ -1106,7 +1118,7 @@ results = simulate(dgp, ols_estimator)
 </code></pre>
 <pre><code class="language-python">plot_results(results)
 </code></pre>
-<p><img src="img/cbias_34_0.png" alt="png"></p>
+<p><img src="img/cbias_35_0.png" alt="png"></p>
 <p>As we can see, we reject the null hypothesis of no effect of <code>button1</code> in 45% of the simulations. Since we set a confidence level of 5%, we would have expected at most around 5% of rejections. Our estimator is <strong>biased</strong>.</p>
 <p>As we have seen above, the problem is that the estimator is not just a convex combination of the effect of <code>button1</code> across mobile and desktop users (it&rsquo;s zero for both), but it is <strong>contaminated</strong> by the effect of <code>button2</code>.</p>
 <p>Let&rsquo;s now try the estimator proposed from <a href="https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5" target="_blank" rel="noopener">Imbens and Wooldridge (2009)</a>. First, we need do de-mean our control variable, <code>mobile</code>. Then, we regress <code>revenue</code> on the interaction between <code>group</code> and the de-meaned control variable, <code>res_mobile</code>.</p>
@@ -1143,7 +1155,7 @@ new_results = simulate(dgp, new_estimator)
 </code></pre>
 <pre><code class="language-python">plot_results(new_results)
 </code></pre>
-<p><img src="img/cbias_39_0.png" alt="png"></p>
+<p><img src="img/cbias_40_0.png" alt="png"></p>
 <p>Now the distribution of the estimated coefficient for <code>button1</code> is centered around the true value of zero. Moreover, we reject the null hypothesis of no effect only in 1% of the simulations, consistently with the chosen confidence level of 95%.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this post, we have seen the dangers of running a factor regression model with multiple <em>mutually exclusive</em> treatment arms and treatment effect heterogeneity across a control variable. In this case, because the treatments are not independent, the regression coefficients are not a convex combination of the within-group average treatment effects, but also capture the treatment effects of the other treatments introducing <strong>contamination bias</strong>. The solution to the problem is both simple and elegant, requiring just a linear regression.</p>

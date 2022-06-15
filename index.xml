@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Fri, 10 Jun 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Wed, 15 Jun 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -27307,6 +27307,316 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     </item>
     
     <item>
+      <title>Understanding Contamination Bias</title>
+      <link>https://matteocourthoud.github.io/post/cbias/</link>
+      <pubDate>Wed, 15 Jun 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/cbias/</guid>
+      <description>&lt;p&gt;&lt;em&gt;Problems and solutions of linear regression with multiple treatments&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;In many causal inference settings, we might be interested in the effect of not just one treatment, but &lt;strong&gt;many mutually exclusive treatments&lt;/strong&gt;. For example, we might want to test alternative UX designs, or drugs, or policies. Depending on the context, there might be many reasons why we want to test different treatments at the same time, but generally it can help &lt;em&gt;reducing the sample size&lt;/em&gt;, as we need just a single control group. A simple way to recover the different treatment effects is a linear regression of the outcome of interest on the different treatment indicators.&lt;/p&gt;
+&lt;p&gt;However, in causal inference, we often &lt;strong&gt;condition the analysis&lt;/strong&gt; on other observable variables (often called control variables), either to increase power or, especially in quasi-experimental settings, to identify a causal parameter instead of a simple correlation. There are &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;cases in which adding control variables can backfire&lt;/a&gt;, but otherwise, we usually think that the regression framework is still able to recover the average treatment effect.&lt;/p&gt;
+&lt;p&gt;In a breakthrough paper, &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull and Kolesár (2022)&lt;/a&gt; have recently shown that in case of &lt;em&gt;multiple and mutually-exclusive&lt;/em&gt; treatments with &lt;em&gt;control variables&lt;/em&gt;, the &lt;strong&gt;regression coefficients do not identify a causal effect&lt;/strong&gt;. However, not everything is lost: the authors propose a simple solution to this problem that still makes use of linear regression.&lt;/p&gt;
+&lt;p&gt;In this blog post, I am going to go through a &lt;strong&gt;simple example&lt;/strong&gt; illustrating the nature of the problem and the solution proposed by the authors.&lt;/p&gt;
+&lt;h2 id=&#34;multiple-treatments-example&#34;&gt;Multiple Treatments Example&lt;/h2&gt;
+&lt;p&gt;Suppose we are an online store and we are not satisfied with our current &lt;em&gt;checkout page&lt;/em&gt;. In particular, we would like to change our &lt;strong&gt;checkout button&lt;/strong&gt; to increase the probability of a purchase. Our UX designer comes up with two alternative checkout buttons, which are displayed below.&lt;/p&gt;
+&lt;img src=&#34;fig/buttons.png&#34; width=&#34;800px&#34;/&gt;
+&lt;p&gt;In order to understand which button to use, we run an &lt;a href=&#34;https://en.wikipedia.org/wiki/A/B_testing&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;A/B test&lt;/strong&gt;&lt;/a&gt;, or randomized control trial. In particular, when people arrive at the checkout page, we show them one of the three options, at random. Then, for each user, we record the revenue generated which is our outcome of interest.&lt;/p&gt;
+&lt;p&gt;I generate a synthetic dataset using &lt;code&gt;dgp_buttons()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt; as data generating process. I also import plotting functions and standard libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp_buttons
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_buttons()
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;group&lt;/th&gt;
+      &lt;th&gt;revenue&lt;/th&gt;
+      &lt;th&gt;mobile&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;button1&lt;/td&gt;
+      &lt;td&gt;8.927335&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;default&lt;/td&gt;
+      &lt;td&gt;13.613456&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;button2&lt;/td&gt;
+      &lt;td&gt;4.777628&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;default&lt;/td&gt;
+      &lt;td&gt;8.909049&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;default&lt;/td&gt;
+      &lt;td&gt;10.160347&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on 2000 users, for which we observe their checkout button (&lt;code&gt;default&lt;/code&gt;, &lt;code&gt;button1&lt;/code&gt; or &lt;code&gt;button2&lt;/code&gt;), the &lt;code&gt;revenue&lt;/code&gt; they generate and whether they connected from desktop or &lt;code&gt;mobile&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We notice too late that we have a &lt;strong&gt;problem with randomization&lt;/strong&gt;. We showed &lt;code&gt;button1&lt;/code&gt; more frequently to desktop users and &lt;code&gt;button2&lt;/code&gt; more frequently to mobile users. The control group that sees the &lt;code&gt;default&lt;/code&gt; button instead is balanced.&lt;/p&gt;
+&lt;img src=&#34;fig/randomization.png&#34; width=&#34;600px&#34;/&gt;
+&lt;p&gt;What should we do? What happens if we simply compare &lt;code&gt;revenue&lt;/code&gt; across &lt;code&gt;groups&lt;/code&gt;? Let&amp;rsquo;s do it by regressing &lt;code&gt;revenue&lt;/code&gt; on &lt;code&gt;group&lt;/code&gt; dummy variables.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ group&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+          &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;        &lt;td&gt;   11.6553&lt;/td&gt; &lt;td&gt;    0.149&lt;/td&gt; &lt;td&gt;   78.250&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   11.363&lt;/td&gt; &lt;td&gt;   11.948&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.button1]&lt;/th&gt; &lt;td&gt;   -0.5802&lt;/td&gt; &lt;td&gt;    0.227&lt;/td&gt; &lt;td&gt;   -2.556&lt;/td&gt; &lt;td&gt; 0.011&lt;/td&gt; &lt;td&gt;   -1.026&lt;/td&gt; &lt;td&gt;   -0.135&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.button2]&lt;/th&gt; &lt;td&gt;   -0.5958&lt;/td&gt; &lt;td&gt;    0.218&lt;/td&gt; &lt;td&gt;   -2.727&lt;/td&gt; &lt;td&gt; 0.006&lt;/td&gt; &lt;td&gt;   -1.024&lt;/td&gt; &lt;td&gt;   -0.167&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;From the regression results we estimate a negative and significant effect for both buttons. Should we believe these estimates? Are they &lt;strong&gt;causal&lt;/strong&gt;?&lt;/p&gt;
+&lt;p&gt;It is unlikely that what we have estimated are the true treatment effects. In fact, there might be substantial &lt;strong&gt;differences in purchase attitudes&lt;/strong&gt; between desktop and mobile users. Since we do not have a comparable number of mobile and desktop users across treatment arms, it might be that the observed differences in &lt;code&gt;revenue&lt;/code&gt; are due to the &lt;em&gt;device&lt;/em&gt; used and not the &lt;em&gt;button design&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Because of this, we decide to &lt;strong&gt;condition&lt;/strong&gt; our analysis on the device used and we include the &lt;code&gt;mobile&lt;/code&gt; dummy variable in the regression.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ group + mobile&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+          &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;        &lt;td&gt;    9.1414&lt;/td&gt; &lt;td&gt;    0.110&lt;/td&gt; &lt;td&gt;   82.905&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    8.925&lt;/td&gt; &lt;td&gt;    9.358&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.button1]&lt;/th&gt; &lt;td&gt;    0.3609&lt;/td&gt; &lt;td&gt;    0.141&lt;/td&gt; &lt;td&gt;    2.558&lt;/td&gt; &lt;td&gt; 0.011&lt;/td&gt; &lt;td&gt;    0.084&lt;/td&gt; &lt;td&gt;    0.638&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.button2]&lt;/th&gt; &lt;td&gt;   -1.0326&lt;/td&gt; &lt;td&gt;    0.134&lt;/td&gt; &lt;td&gt;   -7.684&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.296&lt;/td&gt; &lt;td&gt;   -0.769&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;mobile&lt;/th&gt;           &lt;td&gt;    4.7181&lt;/td&gt; &lt;td&gt;    0.116&lt;/td&gt; &lt;td&gt;   40.691&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.491&lt;/td&gt; &lt;td&gt;    4.946&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Now the coefficient of &lt;code&gt;button1&lt;/code&gt; is positive and significant. Should we recommend its implementation?&lt;/p&gt;
+&lt;p&gt;The answer is &lt;strong&gt;surprisingly no&lt;/strong&gt;. &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt; show that this type of regression does not identify the average treatment effect when:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;there are mutually exclusive treatment arms (in our case, &lt;code&gt;groups&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;we are controlling for some variable $X$ (in our case, &lt;code&gt;mobile&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;there treatment effects are heterogeneous in $X$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This is true &lt;strong&gt;even if&lt;/strong&gt; the treatment is &amp;ldquo;as good as random&amp;rdquo; once we condition on $X$.&lt;/p&gt;
+&lt;p&gt;Indeed, in our case, the true treatment effects are the ones reported in the following table.&lt;/p&gt;
+&lt;img src=&#34;fig/effects.png&#34; width=&#34;500px&#34;/&gt;
+&lt;p&gt;The first button has &lt;strong&gt;no effect&lt;/strong&gt; on revenue, irrespectively of the device, while the second button has a &lt;strong&gt;positive effect&lt;/strong&gt; for mobile users and a &lt;strong&gt;negative effect&lt;/strong&gt; for desktop users. Our (wrong) regression specification instead estimates a positive effect of the first button.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s now dig more in detail into the math, to understand why this is happening.&lt;/p&gt;
+&lt;h2 id=&#34;theory&#34;&gt;Theory&lt;/h2&gt;
+&lt;p&gt;This section borrows heavily from &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt;. For a great summary of the paper, I recommend this excellent Twitter thread by one of the authors, Paul Goldsmith-Pinkham.&lt;/p&gt;
+&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;Economists love using linear regression to estimate treatment effects — it turns out that there are perils to this method, but also amazing perks&lt;br&gt;&lt;br&gt;Come with me in this 🧵 if you want to learn… &lt;a href=&#34;https://t.co/eDsRLkZFZe&#34;&gt;https://t.co/eDsRLkZFZe&lt;/a&gt;&lt;/p&gt;&amp;mdash; Paul Goldsmith-Pinkham (@paulgp) &lt;a href=&#34;https://twitter.com/paulgp/status/1534169803388293120?ref_src=twsrc%5Etfw&#34;&gt;June 7, 2022&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+
+&lt;h3 id=&#34;single-treatment-arm&#34;&gt;Single Treatment Arm&lt;/h3&gt;
+&lt;p&gt;Suppose we are interested in the effect of a treatment $D$ on an outcome $Y$. First, let&amp;rsquo;s consider the standard case of a &lt;strong&gt;single treatment arm&lt;/strong&gt; so that the treatment variable is binary, $D \in \lbrace 0 , 1 \rbrace$. Also consider a single &lt;strong&gt;binary control variable&lt;/strong&gt; $X \in \lbrace 0 , 1 \rbrace$. We also assume that treatment assignment is as good as random, conditionally on $X$. This means that there might be systematic differences between the treatment and control group, however, these differences are fully accounted for by $X$. Formally we write&lt;/p&gt;
+&lt;p&gt;$$
+\left( Y_i^{(0)}, Y_i^{(1)} \right) \ \perp \ D_i \ | \ X_i
+$$&lt;/p&gt;
+&lt;p&gt;Where $Y_i^{(d)}$ denotes the potential outcome of individual $i$ when its treatment status is $d$. For example, $Y_i^{(0)}$ indicates the outcome of individual $i$ in case it is not treated. This notation comes from &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/016214504000001880&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Rubin&amp;rsquo;s potential outcomes framework&lt;/a&gt;. We can write the &lt;strong&gt;individual treatment effect&lt;/strong&gt; of individual $i$ as&lt;/p&gt;
+&lt;p&gt;$$
+\tau_i = Y_i^{(1)} - Y_i^{(0)}
+$$&lt;/p&gt;
+&lt;p&gt;In this setting, the &lt;strong&gt;regression of interest&lt;/strong&gt; is&lt;/p&gt;
+&lt;p&gt;$$
+Y_i = \alpha + \beta D_i + \gamma X_i + u_i
+$$&lt;/p&gt;
+&lt;p&gt;The coefficient of interest is $\beta$.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.jstor.org/stable/2998558&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Angrist (1998)&lt;/a&gt; shows that &lt;strong&gt;the regression coefficient $\beta$ identifies the average treatment effect&lt;/strong&gt;. In particular, $\beta$ identifies a weighted average of the within-group $x$ average treatment effect $\tau (x)$ with convex weights. In this particular setting, we can write it as&lt;/p&gt;
+&lt;p&gt;$$
+\beta = \lambda \tau(0) + (1 - \lambda) \tau(1) \qquad \text{where} \qquad \tau (x) = \mathbb E \big[ Y_i^{(1)} - Y_i^{(0)} \ \big| \ X_i = x \big]
+$$&lt;/p&gt;
+&lt;p&gt;The weights $\lambda$ and $(1-\lambda)$ are given by the within-group treatment variance. Hence, the OLS estimator gives &lt;strong&gt;less weight to groups where we have less treatment variance&lt;/strong&gt;, i.e., where treatment is more imbalanced. Groups where treatment is distributed 50-50 get the most weight.&lt;/p&gt;
+&lt;p&gt;$$
+\lambda = \frac{ \text{Var} \big(D_i \ \big| \ X_i = 0 \big) \Pr \big(X_i=0 \big)}{\sum_{x \in \lbrace 0 , 1 \rbrace} \text{Var} \big(D_i \ \big| \ X_i = x \big) \Pr \big( X_i=x \big)} \in [0, 1]
+$$&lt;/p&gt;
+&lt;p&gt;The weights can be derived using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt; to express $\beta_1$ as the OLS coefficient of a univariate regression of $Y$ on $D_{i, \perp X}$, where $D_{i, \perp X}$ are the residuals from regressing $D$ on $X$. If you are not familiar with the Frisch-Waugh-Lowell theorem, I wrote an &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;introductory blog post here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+\beta_1 = \frac{ \mathbb E \big[ D_{i, \perp X} Y_i \big] }{ \mathbb E \big[ D_{i, \perp X}^2 \big] } =
+\underbrace{ \frac{\mathbb E \big[ D_{i, \perp X} Y_i(0) \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} } _ {=0} + \frac{\mathbb E \big[ D_{i, \perp X} D_i \tau_i \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} =
+\frac{\mathbb E \big[ \text{Var} (D_i | X_i) \ \tau(X_i) \big]}{\mathbb E \big[ \text{Var}(D_i | X_i) \big]}
+$$&lt;/p&gt;
+&lt;p&gt;The second term of the central expression disappears because the residual $D_{i, \perp X}$ is by construction &lt;strong&gt;mean independent&lt;/strong&gt; of the control variable $X_i$, i.e.&lt;/p&gt;
+&lt;p&gt;$$
+\mathbb E \big[ D_{i, \perp X} | X_i \big] = 0
+$$&lt;/p&gt;
+&lt;p&gt;This mean independence property is crucial to obtain an unbiased estimate and its failure in the multiple-treatment case is the source of the &lt;em&gt;contamination bias&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;multiple-treatment-arms&#34;&gt;Multiple Treatment Arms&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s now consider the case of multiple treatment arms, $D \in \lbrace 0, 1, 2 \rbrace$, where $1$ and $2$ indicate two mutually-exclusive treatments. We still assume &lt;strong&gt;conditional ignorability&lt;/strong&gt;, i.e., treatment assignment is as good as random, conditional on $X$.&lt;/p&gt;
+&lt;p&gt;$$
+\left( Y_i^{(0)}, Y_i^{(1)}, Y_i^{(2)} \right) \ \perp \ D_i \ | \ X_i
+$$&lt;/p&gt;
+&lt;p&gt;In this case, we have two different &lt;strong&gt;individual treatment effects&lt;/strong&gt;, one per treatment.&lt;/p&gt;
+&lt;p&gt;$$
+\tau_{i1} = Y_i^{(1)} - Y_i^{(0)} \qquad \text{and} \qquad \tau_{i2} = Y_i^{(2)} - Y_i^{(0)}
+$$&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;regression of interest&lt;/strong&gt; is&lt;/p&gt;
+&lt;p&gt;$$
+Y_i = \alpha + \beta_1 D_{i1} + \beta_2 D_{i2} + \gamma X_i + u_i
+$$&lt;/p&gt;
+&lt;p&gt;Does the OLS estimator of $\beta_1$ and $\beta_2$ &lt;strong&gt;identify&lt;/strong&gt; an average treatment effect?&lt;/p&gt;
+&lt;p&gt;It would be very tempting to say yes. In fact, it looks like not much has changed with respect to the previous setup. We just have one extra treatment, but the potential outcomes are still conditionally independent of it. Where is the &lt;strong&gt;issue&lt;/strong&gt;?&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s concentrate on $\beta_1$ (the same applies to $\beta_2$). As before, can rewrite $\beta_1$ using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt; as the OLS coefficient of a univariate regression of $Y_i$ on $D_{i1, \perp X, D_2}$, where $D_{i1, \perp X, D_2}$ are the residuals from regressing $D_1$ on $D_2$ and $X$.&lt;/p&gt;
+&lt;p&gt;$$
+\beta_1 = \frac{ \mathbb E \big[D_{i1, \perp X, D_2} Y_i \big] }{ \mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} = \underbrace{ \frac{ \mathbb E \big[ D_{i1, \perp X, D_2} Y_i(0) \big] }{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} } _ {=0} + \frac{ \mathbb E \big[ D_{i1, \perp X, D_2} D_{i1} \tau_{i1} \big] }{ \mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} + \color{red}{ \underbrace{ \color{black}{ \frac{ \mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \tau_{i2} \big] }{ \mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]}} } _ { \neq 0} }
+$$&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;problem&lt;/strong&gt; is the last term. Without the last term, we could still write $\beta_1$ as a convex combination of the individual treatment effects. However, the last term biases the estimator by adding a component that depends on &lt;strong&gt;the treatment effect of $D_2$&lt;/strong&gt;, $\tau_2$. Why does this term not disappear?&lt;/p&gt;
+&lt;p&gt;The problem is that $D_{i1, \perp X, D_2}$ is not mean independent of $D_{i2}$, i.e.&lt;/p&gt;
+&lt;p&gt;$$
+\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \ \big| \ X_i \big] \neq 0
+$$&lt;/p&gt;
+&lt;p&gt;The reason lies in the fact that the treatments are &lt;strong&gt;mutually exclusive&lt;/strong&gt;. This implies that when $D_{i1}=1$, $D_{i2}$ must be zero, regardless of the value of $X_i$. Therefore, the last term does not cancel out and it introduces a &lt;strong&gt;contamination bias&lt;/strong&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;solution&#34;&gt;Solution&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt; show that a &lt;strong&gt;simple estimator&lt;/strong&gt;, first proposed by &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Imbens and Wooldridge (2009)&lt;/a&gt;, is able to remove the bias. The procedure is the following.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;De-mean the control variable: $\tilde X = X - \bar X$&lt;/li&gt;
+&lt;li&gt;Regress $Y$ on the interaction between the treatment indicators $D$ and the demeaned control variable $\tilde X$&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The OLS estimators of $\beta_1$ and $\beta_2$ are &lt;strong&gt;unbiased&lt;/strong&gt; estimators of the average treatment effects. It also just requires a linear regression. Moreover, this estimator is unbiased also for continuous control variables $X$, not only for a binary one as we have considered so far.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Why&lt;/strong&gt; was this estimator initially proposed by &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Imbens and Wooldridge (2009)&lt;/a&gt;? Let&amp;rsquo;s analyze two parts separately: the interaction term between $D$ and $X$ and the fact that $X$ is de-meaned in the interaction term.&lt;/p&gt;
+&lt;p&gt;First, the &lt;strong&gt;interaction term&lt;/strong&gt; $D X$ allows us to control for different effects and/or distributions of $X$ across treatment and control group.&lt;/p&gt;
+&lt;p&gt;Second, &lt;strong&gt;de-meaning&lt;/strong&gt; $X$ in the interaction term allows us to &lt;strong&gt;interpret&lt;/strong&gt; the estimated coefficient $\hat \beta$ as the average treatment effect. In fact, assume we were estimating the following linear model, where $X$ is &lt;em&gt;not&lt;/em&gt; de-meaned in the interaction term.&lt;/p&gt;
+&lt;p&gt;$$
+Y_i = \alpha + \beta D_i + \gamma X_i + \delta D_i X_i + u_i
+$$&lt;/p&gt;
+&lt;p&gt;In this case, the marginal effect of $D$ on $Y$ is $\beta + \delta X_i$ so that the &lt;em&gt;average&lt;/em&gt; marginal effect is $\beta + \delta \bar X$ which is different from $\beta$.&lt;/p&gt;
+&lt;p&gt;If instead we use the de-meaned value of $X$ in the interaction term, the marginal effect of $D$ on $Y$ is $\beta + \delta (X_i - \bar X)$ so that the &lt;em&gt;average&lt;/em&gt; marginal effect is $\beta + \delta (\bar X - \bar X) = \beta$. Now we can interpret $\beta$ as the average marginal effect of $D$ on $Y$.&lt;/p&gt;
+&lt;h2 id=&#34;simulations&#34;&gt;Simulations&lt;/h2&gt;
+&lt;p&gt;In order to better understand both the problem and the solution, let&amp;rsquo;s run some &lt;strong&gt;simulations&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;We run an estimator over different draws from the data generating process &lt;code&gt;dgp_buttons()&lt;/code&gt;. This is only possible with synthetic data and we do not have this luxury in reality. For each sample, we record the estimated coefficient and the corresponding &lt;a href=&#34;https://en.wikipedia.org/wiki/P-value&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;p-value&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def simulate(dgp, estimator, K=1000):
+    
+    # Initialize coefficients
+    results = pd.DataFrame({&#39;Coefficient&#39;: np.zeros(K), &#39;pvalue&#39;: np.zeros(K)})
+    
+    # Compute coefficients
+    for k in range(K):
+        df = dgp.generate_data(seed=k)
+        results.Coefficient[k] = estimator(df).params[1]
+        results.pvalue[k] = estimator(df).pvalues[1]
+    
+    results[&#39;Significant&#39;] = results[&#39;pvalue&#39;] &amp;lt; 0.05
+    return results
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;First, let&amp;rsquo;s try it with the old estimator that regresses &lt;code&gt;revenue&lt;/code&gt; on both &lt;code&gt;group&lt;/code&gt; and &lt;code&gt;mobile&lt;/code&gt; dummy variables.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;ols_estimator = lambda x: smf.ols(&#39;revenue ~ group + mobile&#39;, data=x).fit()
+results = simulate(dgp, ols_estimator)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I &lt;strong&gt;plot&lt;/strong&gt; the distribution of the coefficient estimates of &lt;code&gt;button1&lt;/code&gt; over 1000 simulations, highlighting the statistically significant ones at the 5% level. I also highlight the true value of the coefficient, zero, with a vertical dotted bar.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_results(results):
+    p_sig = sum(results[&#39;Significant&#39;]) / len(results) * 100
+    sns.histplot(data=results, x=&amp;quot;Coefficient&amp;quot;, hue=&amp;quot;Significant&amp;quot;, multiple=&amp;quot;stack&amp;quot;, 
+                 palette = [&#39;tab:red&#39;, &#39;tab:green&#39;]);
+    plt.axvline(x=0, c=&#39;k&#39;, ls=&#39;--&#39;, label=&#39;truth&#39;)
+    plt.title(rf&amp;quot;Estimated $\beta_1$ ({p_sig:.0f}% significant)&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_results(results)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/cbias_35_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, we reject the null hypothesis of no effect of &lt;code&gt;button1&lt;/code&gt; in 45% of the simulations. Since we set a confidence level of 5%, we would have expected at most around 5% of rejections. Our estimator is &lt;strong&gt;biased&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;As we have seen above, the problem is that the estimator is not just a convex combination of the effect of &lt;code&gt;button1&lt;/code&gt; across mobile and desktop users (it&amp;rsquo;s zero for both), but it is &lt;strong&gt;contaminated&lt;/strong&gt; by the effect of &lt;code&gt;button2&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s now try the estimator proposed from &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Imbens and Wooldridge (2009)&lt;/a&gt;. First, we need do de-mean our control variable, &lt;code&gt;mobile&lt;/code&gt;. Then, we regress &lt;code&gt;revenue&lt;/code&gt; on the interaction between &lt;code&gt;group&lt;/code&gt; and the de-meaned control variable, &lt;code&gt;res_mobile&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;mobile_res&#39;] = df[&#39;mobile&#39;] - np.mean(df[&#39;mobile&#39;])
+smf.ols(&#39;revenue ~ group * mobile_res&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+               &lt;td&gt;&lt;/td&gt;                  &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;                   &lt;td&gt;   11.5773&lt;/td&gt; &lt;td&gt;    0.067&lt;/td&gt; &lt;td&gt;  172.864&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   11.446&lt;/td&gt; &lt;td&gt;   11.709&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.button1]&lt;/th&gt;            &lt;td&gt;    0.0281&lt;/td&gt; &lt;td&gt;    0.106&lt;/td&gt; &lt;td&gt;    0.266&lt;/td&gt; &lt;td&gt; 0.790&lt;/td&gt; &lt;td&gt;   -0.180&lt;/td&gt; &lt;td&gt;    0.236&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.button2]&lt;/th&gt;            &lt;td&gt;   -1.5071&lt;/td&gt; &lt;td&gt;    0.100&lt;/td&gt; &lt;td&gt;  -15.112&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.703&lt;/td&gt; &lt;td&gt;   -1.311&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;mobile_res&lt;/th&gt;                  &lt;td&gt;    2.9107&lt;/td&gt; &lt;td&gt;    0.134&lt;/td&gt; &lt;td&gt;   21.715&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.648&lt;/td&gt; &lt;td&gt;    3.174&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.button1]:mobile_res&lt;/th&gt; &lt;td&gt;    0.1605&lt;/td&gt; &lt;td&gt;    0.211&lt;/td&gt; &lt;td&gt;    0.760&lt;/td&gt; &lt;td&gt; 0.448&lt;/td&gt; &lt;td&gt;   -0.254&lt;/td&gt; &lt;td&gt;    0.575&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;group[T.button2]:mobile_res&lt;/th&gt; &lt;td&gt;    5.3771&lt;/td&gt; &lt;td&gt;    0.200&lt;/td&gt; &lt;td&gt;   26.905&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.985&lt;/td&gt; &lt;td&gt;    5.769&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The estimated coefficients are now &lt;strong&gt;close to their true values&lt;/strong&gt;. The estimated coefficient for &lt;code&gt;button1&lt;/code&gt; is not significant, while the estimated coefficient for &lt;code&gt;button2&lt;/code&gt; is negative and significant.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s check whether this results holds &lt;strong&gt;across samples&lt;/strong&gt; by running a simulation. We repeat the estimation procedure 1000 times and we plot the distribution of estimated coefficients for &lt;code&gt;button1&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;new_estimator = lambda x: smf.ols(&#39;revenue ~ group * mobile&#39;, data=x).fit()
+new_results = simulate(dgp, new_estimator)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_results(new_results)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/cbias_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now the distribution of the estimated coefficient for &lt;code&gt;button1&lt;/code&gt; is centered around the true value of zero. Moreover, we reject the null hypothesis of no effect only in 1% of the simulations, consistently with the chosen confidence level of 95%.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this post, we have seen the dangers of running a factor regression model with multiple &lt;em&gt;mutually exclusive&lt;/em&gt; treatment arms and treatment effect heterogeneity across a control variable. In this case, because the treatments are not independent, the regression coefficients are not a convex combination of the within-group average treatment effects, but also capture the treatment effects of the other treatments introducing &lt;strong&gt;contamination bias&lt;/strong&gt;. The solution to the problem is both simple and elegant, requiring just a linear regression.&lt;/p&gt;
+&lt;p&gt;However, &lt;strong&gt;the problem is more general&lt;/strong&gt; than this setting and generally concerns every setting in which (all of the following)&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;We have multiple treatments that depend on each other&lt;/li&gt;
+&lt;li&gt;We need to condition the analysis on a control variable&lt;/li&gt;
+&lt;li&gt;The treatment effects are heterogeneous in the control variable&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Another popular example is the case of the &lt;a href=&#34;https://arxiv.org/abs/2201.01194&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Two-Way Fixed Effects (TWFE) estimator with staggered treatments&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;p&gt;[1] J. Angrist, &lt;a href=&#34;https://www.jstor.org/stable/2998558&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Estimating the Labor Market Impact of Voluntary Military Service Using Social Security Data on Military Applicants&lt;/a&gt; (1998), &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] D. Rubin, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/016214504000001880&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Causal Inference Using Potential Outcomes&lt;/a&gt; (2005), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[3] G. Imbens, J. Wooldridge, &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Recent Developments in the Econometrics of Program Evaluation&lt;/a&gt; (2009), &lt;em&gt;Journal of Economic Literature&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[4] P. Goldsmith-Pinkham, P. Hull, M. Kolesár, &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Contamination Bias in Linear Regressions&lt;/a&gt; (2022), &lt;em&gt;working paper&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/344ac1477699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Omitted Variable Bias&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding The Frisch-Waugh-Lovell Theorem&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/cbias.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/cbias.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Understanding Combinations and Permutations</title>
       <link>https://matteocourthoud.github.io/post/combperm/</link>
       <pubDate>Fri, 10 Jun 2022 00:00:00 +0000</pubDate>
@@ -27585,304 +27895,6 @@ the class, consists only of girls?&lt;/p&gt;
 &lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
 &lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/combperm.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/combperm.ipynb&lt;/a&gt;&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Understanding Contamination Bias</title>
-      <link>https://matteocourthoud.github.io/post/cbias/</link>
-      <pubDate>Fri, 10 Jun 2022 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/cbias/</guid>
-      <description>&lt;p&gt;&lt;em&gt;Problems and solutions of linear regression with multiple treatments&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;In many causal inference settings, we might be interested in the effect of not just one treatment, but &lt;strong&gt;many mutually exclusive treatments&lt;/strong&gt;. For example, we might want to test different alternative UX designs, or different alternative drugs, or policies. Depending on the context, there might be many reasons why we want to test different treatments at the same time, but generally it can help &lt;em&gt;reducing the sample size&lt;/em&gt;, as we need just a single control group. A simple way to recover the different treatment effects is a linear regression of the outcome of interest on the different treatment indicators.&lt;/p&gt;
-&lt;p&gt;However, in causal inference, we often &lt;strong&gt;condition the analysis&lt;/strong&gt; on other observable variables (often called control variables), either to increase power or, especially in quasi-experimental settings, to identify a causal parameter instead of a simple correlation. There are &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;cases in which adding control variables can backfire&lt;/a&gt;, but otherwise, we usually think that the regression framework is still able to recover the average treatment effect.&lt;/p&gt;
-&lt;p&gt;In a breakthrough paper, &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull and Kolesár (2022)&lt;/a&gt; have recently shown that in case of &lt;em&gt;multiple and mutually-exclusive&lt;/em&gt; treatments with &lt;em&gt;control variables&lt;/em&gt;, the &lt;strong&gt;regression coefficients do not identify a causal effect&lt;/strong&gt;. However, not everything is lost: the authors propose a simple solution to this problem that still makes use of linear regression.&lt;/p&gt;
-&lt;p&gt;In this blog post, I am going to go through a &lt;strong&gt;simple example&lt;/strong&gt; illustrating the nature of the problem and the solution proposed by the authors.&lt;/p&gt;
-&lt;h2 id=&#34;multiple-treatments-example&#34;&gt;Multiple Treatments Example&lt;/h2&gt;
-&lt;p&gt;Suppose we are an online store and we are not satisfied with our current &lt;em&gt;checkout page&lt;/em&gt;. In particular, we would like to change our &lt;strong&gt;checkout button&lt;/strong&gt; to increase the probability of a purchase. Our UX designer comes up with two alternative checkout buttons, which are displayed below.&lt;/p&gt;
-&lt;img src=&#34;fig/buttons.png&#34; width=&#34;800px&#34;/&gt;
-&lt;p&gt;In order to understand which button to use, we run an &lt;a href=&#34;https://en.wikipedia.org/wiki/A/B_testing&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;A/B test&lt;/strong&gt;&lt;/a&gt;, or randomized control trial. In particular, when people arrive at the checkout page, we show them one of the three options, at random. Then, for each user, we record the revenue generated which is our outcome of interest.&lt;/p&gt;
-&lt;p&gt;I generate a synthetic dataset using &lt;code&gt;dgp_buttons()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt; as data generating process. I also import plotting functions and standard libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
-%config InlineBackend.figure_format = &#39;retina&#39;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
-from src.dgp import dgp_buttons
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_buttons()
-df = dgp.generate_data()
-df.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;group&lt;/th&gt;
-      &lt;th&gt;revenue&lt;/th&gt;
-      &lt;th&gt;mobile&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;button1&lt;/td&gt;
-      &lt;td&gt;8.927335&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;default&lt;/td&gt;
-      &lt;td&gt;13.613456&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;button2&lt;/td&gt;
-      &lt;td&gt;4.777628&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;default&lt;/td&gt;
-      &lt;td&gt;8.909049&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;default&lt;/td&gt;
-      &lt;td&gt;10.160347&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;We have information on 2000 users, for which we observe their checkout button (&lt;code&gt;default&lt;/code&gt;, &lt;code&gt;button1&lt;/code&gt; or &lt;code&gt;button2&lt;/code&gt;), the &lt;code&gt;revenue&lt;/code&gt; they generate and whether they connected from desktop or &lt;code&gt;mobile&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;We notice too late that we have a &lt;strong&gt;problem with randomization&lt;/strong&gt;. We showed &lt;code&gt;button1&lt;/code&gt; more frequently to desktop users and &lt;code&gt;button2&lt;/code&gt; more frequently to mobile users. The control group that sees the &lt;code&gt;default&lt;/code&gt; button instead is balanced.&lt;/p&gt;
-&lt;img src=&#34;fig/randomization.png&#34; width=&#34;600px&#34;/&gt;
-&lt;p&gt;What should we do? What happens if we simply compare &lt;code&gt;revenue&lt;/code&gt; across &lt;code&gt;groups&lt;/code&gt;? Let&amp;rsquo;s do it by regressing &lt;code&gt;revenue&lt;/code&gt; on &lt;code&gt;group&lt;/code&gt; dummy variables.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ group&#39;, data=df).fit().summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-          &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;        &lt;td&gt;   11.6553&lt;/td&gt; &lt;td&gt;    0.149&lt;/td&gt; &lt;td&gt;   78.250&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   11.363&lt;/td&gt; &lt;td&gt;   11.948&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;group[T.button1]&lt;/th&gt; &lt;td&gt;   -0.5802&lt;/td&gt; &lt;td&gt;    0.227&lt;/td&gt; &lt;td&gt;   -2.556&lt;/td&gt; &lt;td&gt; 0.011&lt;/td&gt; &lt;td&gt;   -1.026&lt;/td&gt; &lt;td&gt;   -0.135&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;group[T.button2]&lt;/th&gt; &lt;td&gt;   -0.5958&lt;/td&gt; &lt;td&gt;    0.218&lt;/td&gt; &lt;td&gt;   -2.727&lt;/td&gt; &lt;td&gt; 0.006&lt;/td&gt; &lt;td&gt;   -1.024&lt;/td&gt; &lt;td&gt;   -0.167&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;p&gt;From the regression results we estimate a negative and significant effect for both buttons. Should we believe these estimates? Are they &lt;strong&gt;causal&lt;/strong&gt;?&lt;/p&gt;
-&lt;p&gt;It is unlikely that what we have estimated are the true treatment effects. In fact, there might be substantial &lt;strong&gt;differences in purchase attitudes&lt;/strong&gt; between desktop and mobile users. Since we do not have a comparable number of mobile and desktop users across treatment arms, it might be that the observed differences in &lt;code&gt;revenue&lt;/code&gt; are due to the &lt;em&gt;device&lt;/em&gt; used and not the &lt;em&gt;button design&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Because of this, we decide to &lt;strong&gt;condition&lt;/strong&gt; our analysis on the device used and we include the &lt;code&gt;mobile&lt;/code&gt; dummy variable in the regression.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ group + mobile&#39;, data=df).fit().summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-          &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;        &lt;td&gt;    9.1414&lt;/td&gt; &lt;td&gt;    0.110&lt;/td&gt; &lt;td&gt;   82.905&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    8.925&lt;/td&gt; &lt;td&gt;    9.358&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;group[T.button1]&lt;/th&gt; &lt;td&gt;    0.3609&lt;/td&gt; &lt;td&gt;    0.141&lt;/td&gt; &lt;td&gt;    2.558&lt;/td&gt; &lt;td&gt; 0.011&lt;/td&gt; &lt;td&gt;    0.084&lt;/td&gt; &lt;td&gt;    0.638&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;group[T.button2]&lt;/th&gt; &lt;td&gt;   -1.0326&lt;/td&gt; &lt;td&gt;    0.134&lt;/td&gt; &lt;td&gt;   -7.684&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.296&lt;/td&gt; &lt;td&gt;   -0.769&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;mobile&lt;/th&gt;           &lt;td&gt;    4.7181&lt;/td&gt; &lt;td&gt;    0.116&lt;/td&gt; &lt;td&gt;   40.691&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.491&lt;/td&gt; &lt;td&gt;    4.946&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;p&gt;Now the coefficient of &lt;code&gt;button1&lt;/code&gt; is positive and significant. Should we recommend its implementation?&lt;/p&gt;
-&lt;p&gt;The answer is &lt;strong&gt;surprisingly no&lt;/strong&gt;. &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt; show that this type of regression does not identify the average treatment effect when:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;there are mutually exclusive treatment arms (in our case, &lt;code&gt;groups&lt;/code&gt;)&lt;/li&gt;
-&lt;li&gt;we are controlling for some variable $X$ (in our case, &lt;code&gt;mobile&lt;/code&gt;)&lt;/li&gt;
-&lt;li&gt;there treatment effects are heterogeneous in $X$&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;This is true &lt;strong&gt;even if&lt;/strong&gt; the treatment is &amp;ldquo;as good as random&amp;rdquo; once we condition on $X$.&lt;/p&gt;
-&lt;p&gt;Indeed, in our case, the true treatment effects are the ones reported in the following table.&lt;/p&gt;
-&lt;img src=&#34;fig/effects.png&#34; width=&#34;500px&#34;/&gt;
-&lt;p&gt;The first button has &lt;strong&gt;no effect&lt;/strong&gt; on revenue, irrespectively of the device, while the second button has a &lt;strong&gt;positive effect&lt;/strong&gt; for mobile users and a &lt;strong&gt;negative effect&lt;/strong&gt; for desktop users. Our (wrong) regression specification instead estimates a positive effect of the first button.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s now dig more in detail into the math, to understand why this is happening.&lt;/p&gt;
-&lt;h2 id=&#34;theory&#34;&gt;Theory&lt;/h2&gt;
-&lt;p&gt;This section borrows heavily from &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt;. For a great summary of the paper, I recommend this excellent Twitter thread by one of the authors, Paul Goldsmith-Pinkham.&lt;/p&gt;
-&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;Economists love using linear regression to estimate treatment effects — it turns out that there are perils to this method, but also amazing perks&lt;br&gt;&lt;br&gt;Come with me in this 🧵 if you want to learn… &lt;a href=&#34;https://t.co/eDsRLkZFZe&#34;&gt;https://t.co/eDsRLkZFZe&lt;/a&gt;&lt;/p&gt;&amp;mdash; Paul Goldsmith-Pinkham (@paulgp) &lt;a href=&#34;https://twitter.com/paulgp/status/1534169803388293120?ref_src=twsrc%5Etfw&#34;&gt;June 7, 2022&lt;/a&gt;&lt;/blockquote&gt;
-&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
-
-&lt;h3 id=&#34;single-treatment-arm&#34;&gt;Single Treatment Arm&lt;/h3&gt;
-&lt;p&gt;Suppose we are interested in the effect of a treatment $D$ on an outcome $Y$. First, let&amp;rsquo;s consider the standard case of a &lt;strong&gt;single treatment arm&lt;/strong&gt; so that the treatment variable is binary, $D \in \lbrace 0 , 1 \rbrace$. Also consider a single &lt;strong&gt;binary control variable&lt;/strong&gt; $X \in \lbrace 0 , 1 \rbrace$. We also assume that treatment assignment is as good as random, conditionally on $X$. This means that there might be systematic differences between the treatment and control group, however, these differences are fully accounted for by $X$. Formally we write&lt;/p&gt;
-&lt;p&gt;$$
-\left( Y_i^{(0)}, Y_i^{(1)} \right) \ \perp \ D_i \ | \ X_i
-$$&lt;/p&gt;
-&lt;p&gt;Where $Y_i^{(d)}$ denotes the potential outcome of individual $i$ when its treatment status is $d$. For example, $Y_i^{(0)}$ indicates the outcome of individual $i$ in case it is not treated. This notation comes from &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/016214504000001880&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Rubin&amp;rsquo;s potential outcomes framework&lt;/a&gt;. We can write the &lt;strong&gt;individual treatment effect&lt;/strong&gt; of individual $i$ as&lt;/p&gt;
-&lt;p&gt;$$
-\tau_i = Y_i^{(1)} - Y_i^{(0)}
-$$&lt;/p&gt;
-&lt;p&gt;In this setting, the &lt;strong&gt;regression of interest&lt;/strong&gt; is&lt;/p&gt;
-&lt;p&gt;$$
-Y = \alpha + \beta D + \gamma X + u
-$$&lt;/p&gt;
-&lt;p&gt;The coefficient of interest is $\beta$.&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.jstor.org/stable/2998558&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Angrist (1998)&lt;/a&gt; shows that &lt;strong&gt;the regression coefficient $\beta$ identifies the average treatment effect&lt;/strong&gt;. In particular, $\beta$ identifies a weighted average of the within-group $x$ average treatment effect $\tau (x)$ with convex weights. In this particular setting, we can write it as&lt;/p&gt;
-&lt;p&gt;$$
-\beta = \lambda \tau(0) + (1 - \lambda) \tau(1) \qquad \text{where} \qquad \tau (x) = \mathbb E \big[ Y_i^{(1)} - Y_i^{(0)} \ \big| \ X_i = x \big]
-$$&lt;/p&gt;
-&lt;p&gt;The weights $\lambda$ and $(1-\lambda)$ are given by the within-group treatment variance. Hence, the OLS estimator gives &lt;strong&gt;less weight to groups where we have less treatment variance&lt;/strong&gt;, i.e., where treatment is more imbalanced. Groups where treatment is distributed 50-50 get the most weight.&lt;/p&gt;
-&lt;p&gt;$$
-\lambda = \frac{ \text{Var} \big(D_i \ \big| \ X_i = 0 \big) \Pr \big(X_i=0 \big)}{\sum_{x \in \lbrace 0 , 1 \rbrace} \text{Var} \big(D_i \ \big| \ X_i = x \big) \Pr \big( X_i=x \big)} \in [0, 1]
-$$&lt;/p&gt;
-&lt;p&gt;The weights can be derived using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt; to express $\beta_1$ as the OLS coefficient of a univariate regression of $Y$ on $D_{i, \perp X}$, where $D_{i, \perp X}$ are the residuals from regressing $D$ on $X$. If you are not familiar with the Frisch-Waugh-Lowell theorem, I wrote an &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;introductory blog post here&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;$$
-\beta_1 = \frac{ \mathbb E \big[ D_{i, \perp X} Y_i \big] }{ \mathbb E \big[ D_{i, \perp X}^2 \big] } =
-\underbrace{ \frac{\mathbb E \big[ D_{i, \perp X} Y_i(0) \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} } _ {=0} + \frac{\mathbb E \big[ D_{i, \perp X} D_i \tau_i \big]}{\mathbb E \big[ D_{i, \perp X}^2 \big]} =
-\frac{\mathbb E \big[ \text{Var} (D_i | X_i) \ \tau(X_i) \big]}{\mathbb E \big[ \text{Var}(D_i | X_i) \big]}
-$$&lt;/p&gt;
-&lt;p&gt;The second term of the central expression disappears because the residual $D_{i, \perp X}$ is by construction &lt;strong&gt;mean independent&lt;/strong&gt; of the control variable $X_i$, i.e. $\mathbb E \big[ D_{i, \perp X} | X_i \big] = 0$. This mean independence property is crucial to obtain an unbiased estimate and its failure in the multiple-treatment case is the source of the &lt;em&gt;contamination bias&lt;/em&gt;.&lt;/p&gt;
-&lt;h3 id=&#34;multiple-treatment-arms&#34;&gt;Multiple Treatment Arms&lt;/h3&gt;
-&lt;p&gt;Let&amp;rsquo;s now consider the case of multiple treatment arms, $D \in \lbrace 0, 1, 2 \rbrace$, where $1$ and $2$ indicate two mutually-exclusive treatments. We still assume &lt;strong&gt;conditional ignorability&lt;/strong&gt;, i.e., treatment assignment is as good as random, conditional on $X$.&lt;/p&gt;
-&lt;p&gt;$$
-\left( Y_i^{(0)}, Y_i^{(1)}, Y_i^{(2)} \right) \ \perp \ D_i \ | \ X_i
-$$&lt;/p&gt;
-&lt;p&gt;In this case, we have two different &lt;strong&gt;individual treatment effects&lt;/strong&gt;, one per treatment.&lt;/p&gt;
-&lt;p&gt;$$
-\tau_{i1} = Y_i^{(1)} - Y_i^{(0)} \qquad \text{and} \qquad \tau_{i2} = Y_i^{(2)} - Y_i^{(0)}
-$$&lt;/p&gt;
-&lt;p&gt;The &lt;strong&gt;regression of interest&lt;/strong&gt; is&lt;/p&gt;
-&lt;p&gt;$$
-Y = \alpha + \beta_1 D_1 + \beta_2 D_2 + \gamma X + u
-$$&lt;/p&gt;
-&lt;p&gt;Does the OLS estimator of $\beta_1$ and $\beta_2$ &lt;strong&gt;identify&lt;/strong&gt; an average treatment effect?&lt;/p&gt;
-&lt;p&gt;It would be very tempting to say yes. In fact, it looks like not much has changed with respect to the previous setup. We just have one extra treatment, but the potential outcomes are still conditionally independent of it. Where is the &lt;strong&gt;issue&lt;/strong&gt;?&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s concentrate on $\beta_1$ (the same applies to $\beta_2$). As before, can rewrite $\beta_1$ using the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell theorem&lt;/a&gt; as the OLS coefficient of a univariate regression of $Y_i$ on $D_{i1, \perp X, D_2}$, where $D_{i1, \perp X, D_2}$ are the residuals from regressing $D_1$ on $D_2$ and $X$.&lt;/p&gt;
-&lt;p&gt;$$
-\beta_1 = \frac{ \mathbb E \big[D_{i1, \perp X, D_2} Y_i \big] }{ \mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} = \underbrace{ \frac{ \mathbb E \big[ D_{i1, \perp X, D_2} Y_i(0) \big] }{\mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} } _ {=0} + \frac{ \mathbb E \big[ D_{i1, \perp X, D_2} D_{i1} \tau_{i1} \big] }{ \mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]} + \color{red}{ \underbrace{ \color{black}{ \frac{ \mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \tau_{i2} \big] }{ \mathbb E \big[ D_{i1, \perp X, D_2}^2 \big]}} } _ { \neq 0} }
-$$&lt;/p&gt;
-&lt;p&gt;The &lt;strong&gt;problem&lt;/strong&gt; is the last term. Without the last term, we could still write $\beta_1$ as a convex combination of the individual treatment effects. However, the last term biases the estimator by adding a component that depends on &lt;strong&gt;the treatment effect of $D_2$&lt;/strong&gt;, $\tau_2$. Why does this term not disappear?&lt;/p&gt;
-&lt;p&gt;The problem is that $D_{i1, \perp X, D_2}$ is not mean independent of $D_{i2}$, i.e.&lt;/p&gt;
-&lt;p&gt;$$
-\mathbb E \big[ D_{i1, \perp X, D_2} D_{i2} \ \big| \ X_i \big] \neq 0
-$$&lt;/p&gt;
-&lt;p&gt;The reason lies in the fact that the treatments are &lt;strong&gt;mutually exclusive&lt;/strong&gt;. This implies that when $D_{i1}=1$, $D_{i2}$ must be zero, regardless of the value of $X_i$. Therefore, the last term does not cancel out and it introduces a &lt;strong&gt;contamination bias&lt;/strong&gt;.&lt;/p&gt;
-&lt;h3 id=&#34;solution&#34;&gt;Solution&lt;/h3&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goldsmith-Pinkham, Hull, Kolesár (2022)&lt;/a&gt; show that a &lt;strong&gt;simple estimator&lt;/strong&gt;, first proposed by &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Imbens and Wooldridge (2009)&lt;/a&gt;, is able to remove the bias. The procedure is the following.&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;De-mean the control variable: $\tilde X = X - \bar X$&lt;/li&gt;
-&lt;li&gt;Regress $Y$ on the interaction between the treatment indicators $D$ and the demeaned control variable $\tilde X$&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;This estimator is an &lt;strong&gt;unbiased&lt;/strong&gt; estimator of the average treatment effect. It also just requires a linear regression. Moreover, this estimator is unbiased also for continuous control variables $X$, not only for a binary one as we have considered so far.&lt;/p&gt;
-&lt;h2 id=&#34;simulations&#34;&gt;Simulations&lt;/h2&gt;
-&lt;p&gt;In order to better understand both the problem and the solution, let&amp;rsquo;s run some &lt;strong&gt;simulations&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;We run an estimator over different draws from the data generating process &lt;code&gt;dgp_buttons()&lt;/code&gt;. This is only possible with synthetic data and we do not have this luxury in reality. For each sample, we record the estimated coefficient and the corresponding &lt;a href=&#34;https://en.wikipedia.org/wiki/P-value&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;p-value&lt;/a&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def simulate(dgp, estimator, K=1000):
-    
-    # Initialize coefficients
-    results = pd.DataFrame({&#39;Coefficient&#39;: np.zeros(K), &#39;pvalue&#39;: np.zeros(K)})
-    
-    # Compute coefficients
-    for k in range(K):
-        df = dgp.generate_data(seed=k)
-        results.Coefficient[k] = estimator(df).params[1]
-        results.pvalue[k] = estimator(df).pvalues[1]
-    
-    results[&#39;Significant&#39;] = results[&#39;pvalue&#39;] &amp;lt; 0.05
-    return results
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;First, let&amp;rsquo;s try it with the old estimator that regresses &lt;code&gt;revenue&lt;/code&gt; on both &lt;code&gt;group&lt;/code&gt; and &lt;code&gt;mobile&lt;/code&gt; dummy variables.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;ols_estimator = lambda x: smf.ols(&#39;revenue ~ group + mobile&#39;, data=x).fit()
-results = simulate(dgp, ols_estimator)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;I &lt;strong&gt;plot&lt;/strong&gt; the distribution of the coefficient estimates of &lt;code&gt;button1&lt;/code&gt; over 1000 simulations, highlighting the statistically significant ones at the 5% level. I also highlight the true value of the coefficient, zero, with a vertical dotted bar.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_results(results):
-    p_sig = sum(results[&#39;Significant&#39;]) / len(results) * 100
-    sns.histplot(data=results, x=&amp;quot;Coefficient&amp;quot;, hue=&amp;quot;Significant&amp;quot;, multiple=&amp;quot;stack&amp;quot;, 
-                 palette = [&#39;tab:red&#39;, &#39;tab:green&#39;]);
-    plt.axvline(x=0, c=&#39;k&#39;, ls=&#39;--&#39;, label=&#39;truth&#39;)
-    plt.title(rf&amp;quot;Estimated $\beta_1$ ({p_sig:.0f}% significant)&amp;quot;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_results(results)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/cbias_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;As we can see, we reject the null hypothesis of no effect of &lt;code&gt;button1&lt;/code&gt; in 45% of the simulations. Since we set a confidence level of 5%, we would have expected at most around 5% of rejections. Our estimator is &lt;strong&gt;biased&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;As we have seen above, the problem is that the estimator is not just a convex combination of the effect of &lt;code&gt;button1&lt;/code&gt; across mobile and desktop users (it&amp;rsquo;s zero for both), but it is &lt;strong&gt;contaminated&lt;/strong&gt; by the effect of &lt;code&gt;button2&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s now try the estimator proposed from &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Imbens and Wooldridge (2009)&lt;/a&gt;. First, we need do de-mean our control variable, &lt;code&gt;mobile&lt;/code&gt;. Then, we regress &lt;code&gt;revenue&lt;/code&gt; on the interaction between &lt;code&gt;group&lt;/code&gt; and the de-meaned control variable, &lt;code&gt;res_mobile&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;mobile_res&#39;] = df[&#39;mobile&#39;] - np.mean(df[&#39;mobile&#39;])
-smf.ols(&#39;revenue ~ group * mobile_res&#39;, data=df).fit().summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-               &lt;td&gt;&lt;/td&gt;                  &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;                   &lt;td&gt;   11.5773&lt;/td&gt; &lt;td&gt;    0.067&lt;/td&gt; &lt;td&gt;  172.864&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   11.446&lt;/td&gt; &lt;td&gt;   11.709&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;group[T.button1]&lt;/th&gt;            &lt;td&gt;    0.0281&lt;/td&gt; &lt;td&gt;    0.106&lt;/td&gt; &lt;td&gt;    0.266&lt;/td&gt; &lt;td&gt; 0.790&lt;/td&gt; &lt;td&gt;   -0.180&lt;/td&gt; &lt;td&gt;    0.236&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;group[T.button2]&lt;/th&gt;            &lt;td&gt;   -1.5071&lt;/td&gt; &lt;td&gt;    0.100&lt;/td&gt; &lt;td&gt;  -15.112&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.703&lt;/td&gt; &lt;td&gt;   -1.311&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;mobile_res&lt;/th&gt;                  &lt;td&gt;    2.9107&lt;/td&gt; &lt;td&gt;    0.134&lt;/td&gt; &lt;td&gt;   21.715&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.648&lt;/td&gt; &lt;td&gt;    3.174&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;group[T.button1]:mobile_res&lt;/th&gt; &lt;td&gt;    0.1605&lt;/td&gt; &lt;td&gt;    0.211&lt;/td&gt; &lt;td&gt;    0.760&lt;/td&gt; &lt;td&gt; 0.448&lt;/td&gt; &lt;td&gt;   -0.254&lt;/td&gt; &lt;td&gt;    0.575&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;group[T.button2]:mobile_res&lt;/th&gt; &lt;td&gt;    5.3771&lt;/td&gt; &lt;td&gt;    0.200&lt;/td&gt; &lt;td&gt;   26.905&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.985&lt;/td&gt; &lt;td&gt;    5.769&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;p&gt;The estimated coefficients are now &lt;strong&gt;close to their true values&lt;/strong&gt;. The estimated coefficient for &lt;code&gt;button1&lt;/code&gt; is not significant, while the estimated coefficient for &lt;code&gt;button2&lt;/code&gt; is negative and significant.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s check whether this results holds &lt;strong&gt;across samples&lt;/strong&gt; by running a simulation. We repeat the estimation procedure 1000 times and we plot the distribution of estimated coefficients for &lt;code&gt;button1&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;new_estimator = lambda x: smf.ols(&#39;revenue ~ group * mobile&#39;, data=x).fit()
-new_results = simulate(dgp, new_estimator)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_results(new_results)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/cbias_39_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Now the distribution of the estimated coefficient for &lt;code&gt;button1&lt;/code&gt; is centered around the true value of zero. Moreover, we reject the null hypothesis of no effect only in 1% of the simulations, consistently with the chosen confidence level of 95%.&lt;/p&gt;
-&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;In this post, we have seen the dangers of running a factor regression model with multiple &lt;em&gt;mutually exclusive&lt;/em&gt; treatment arms and treatment effect heterogeneity across a control variable. In this case, because the treatments are not independent, the regression coefficients are not a convex combination of the within-group average treatment effects, but also capture the treatment effects of the other treatments introducing &lt;strong&gt;contamination bias&lt;/strong&gt;. The solution to the problem is both simple and elegant, requiring just a linear regression.&lt;/p&gt;
-&lt;p&gt;However, &lt;strong&gt;the problem is more general&lt;/strong&gt; than this setting and generally concerns every setting in which (all of the following)&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;We have multiple treatments that depend on each other&lt;/li&gt;
-&lt;li&gt;We need to condition the analysis on a control variable&lt;/li&gt;
-&lt;li&gt;The treatment effects are heterogeneous in the control variable&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;Another popular example is the case of the &lt;a href=&#34;https://arxiv.org/abs/2201.01194&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Two-Way Fixed Effects (TWFE) estimator with staggered treatments&lt;/a&gt;.&lt;/p&gt;
-&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
-&lt;p&gt;[1] J. Angrist, &lt;a href=&#34;https://www.jstor.org/stable/2998558&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Estimating the Labor Market Impact of Voluntary Military Service Using Social Security Data on Military Applicants&lt;/a&gt; (1998), &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[2] D. Rubin, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/016214504000001880&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Causal Inference Using Potential Outcomes&lt;/a&gt; (2005), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[3] G. Imbens, J. Wooldridge, &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.47.1.5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Recent Developments in the Econometrics of Program Evaluation&lt;/a&gt; (2009), &lt;em&gt;Journal of Economic Literature&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[4] P. Goldsmith-Pinkham, P. Hull, M. Kolesár, &lt;a href=&#34;https://www.nber.org/papers/w30108&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Contamination Bias in Linear Regressions&lt;/a&gt; (2022), &lt;em&gt;working paper&lt;/em&gt;.&lt;/p&gt;
-&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/344ac1477699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Omitted Variable Bias&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding The Frisch-Waugh-Lovell Theorem&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
-&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/cbias.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/cbias.ipynb&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
