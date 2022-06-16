@@ -27356,18 +27356,18 @@ df.head()
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
       &lt;td&gt;control&lt;/td&gt;
-      &lt;td&gt;arm2&lt;/td&gt;
+      &lt;td&gt;arm 2&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;29.0&lt;/td&gt;
-      &lt;td&gt;163016.96&lt;/td&gt;
+      &lt;td&gt;568.44&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;control&lt;/td&gt;
-      &lt;td&gt;arm4&lt;/td&gt;
+      &lt;td&gt;arm 4&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;32.0&lt;/td&gt;
-      &lt;td&gt;5404.09&lt;/td&gt;
+      &lt;td&gt;596.45&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
@@ -27375,15 +27375,15 @@ df.head()
       &lt;td&gt;NaN&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;29.0&lt;/td&gt;
-      &lt;td&gt;0.22&lt;/td&gt;
+      &lt;td&gt;380.86&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;control&lt;/td&gt;
-      &lt;td&gt;arm4&lt;/td&gt;
+      &lt;td&gt;arm 4&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;25.0&lt;/td&gt;
-      &lt;td&gt;0.22&lt;/td&gt;
+      &lt;td&gt;476.38&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
@@ -27391,7 +27391,7 @@ df.head()
       &lt;td&gt;NaN&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;32.0&lt;/td&gt;
-      &lt;td&gt;29422.71&lt;/td&gt;
+      &lt;td&gt;628.28&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -27402,155 +27402,17 @@ df.head()
 &lt;h3 id=&#34;boxplot&#34;&gt;Boxplot&lt;/h3&gt;
 &lt;p&gt;A first visual approach is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Box_plot&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;boxplot&lt;/strong&gt;&lt;/a&gt;. The boxplot is a good trade-off between summary statistics and data visualization. The center of the &lt;strong&gt;box&lt;/strong&gt; represents the &lt;em&gt;median&lt;/em&gt; while the borders represent the first (Q1) and third &lt;em&gt;quartile&lt;/em&gt; (Q3), respectively. The &lt;strong&gt;whiskers&lt;/strong&gt; instead, extend to the first data points that are more than 1.5 times the &lt;em&gt;interquartile range&lt;/em&gt; (Q3 - Q1) outside the box. The points that fall outside of the whiskers are plotted individually and are usually considered &lt;strong&gt;outliers&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;Therefore, the boxplot provides both summary statistics (the box and the whiskers) and direct data visualization (the extreme data points).&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N = 1000
-
-# Treatment assignment
-group = np.random.choice([&#39;treatment&#39;, &#39;control&#39;], N, p=[0.3, 0.7])
-arm_number = np.random.choice([1,2,3,4], N)
-arm = [f&#39;arm {n}&#39; for n in arm_number]
-
-# Covariates 
-gender = np.random.binomial(1, 0.5 + 0.1*(group==&#39;treatment&#39;), N) 
-age = 18 + np.random.beta(2 + (group==&#39;treatment&#39;), 5, N)*50 // 1
-mean_income = 6 + 0.1*arm_number
-var_income = 0.3 + 0.1*(group==&#39;treatment&#39;)
-income = np.round(np.random.lognormal(mean_income, var_income, N), 2)
-
-# Generate the dataframe
-df = pd.DataFrame({&#39;Group&#39;: group, &#39;Arm&#39;: arm, &#39;Gender&#39;: gender, &#39;Age&#39;: age, &#39;Income&#39;: income})
-df.loc[df[&#39;Group&#39;]==&#39;treatment&#39;, &#39;Arm&#39;] = np.nan
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;Group&lt;/th&gt;
-      &lt;th&gt;Arm&lt;/th&gt;
-      &lt;th&gt;Gender&lt;/th&gt;
-      &lt;th&gt;Age&lt;/th&gt;
-      &lt;th&gt;Income&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;control&lt;/td&gt;
-      &lt;td&gt;arm 1&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;45.0&lt;/td&gt;
-      &lt;td&gt;1004.39&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;control&lt;/td&gt;
-      &lt;td&gt;arm 4&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;33.0&lt;/td&gt;
-      &lt;td&gt;528.79&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;control&lt;/td&gt;
-      &lt;td&gt;arm 2&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;20.0&lt;/td&gt;
-      &lt;td&gt;397.52&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;treatment&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;28.0&lt;/td&gt;
-      &lt;td&gt;881.71&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;treatment&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;37.0&lt;/td&gt;
-      &lt;td&gt;1140.32&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;...&lt;/th&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;995&lt;/th&gt;
-      &lt;td&gt;control&lt;/td&gt;
-      &lt;td&gt;arm 3&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;27.0&lt;/td&gt;
-      &lt;td&gt;413.82&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;996&lt;/th&gt;
-      &lt;td&gt;control&lt;/td&gt;
-      &lt;td&gt;arm 2&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;20.0&lt;/td&gt;
-      &lt;td&gt;530.08&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;997&lt;/th&gt;
-      &lt;td&gt;treatment&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;57.0&lt;/td&gt;
-      &lt;td&gt;494.16&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;998&lt;/th&gt;
-      &lt;td&gt;treatment&lt;/td&gt;
-      &lt;td&gt;NaN&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;21.0&lt;/td&gt;
-      &lt;td&gt;574.17&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;999&lt;/th&gt;
-      &lt;td&gt;control&lt;/td&gt;
-      &lt;td&gt;arm 4&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;30.0&lt;/td&gt;
-      &lt;td&gt;446.58&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;1000 rows × 5 columns&lt;/p&gt;
-&lt;/div&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.boxplot(x=&#39;Group&#39;, y=&#39;Income&#39;, data=df);
 plt.title(&amp;quot;Boxplot&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_13_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_11_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;It seems that the &lt;code&gt;income&lt;/code&gt; distribution in the &lt;code&gt;treatment&lt;/code&gt; group is slightly more dispersed: the orange box is larger and its whiskers cover a longer range. However, the &lt;strong&gt;issue&lt;/strong&gt; with the boxplot is that it hides the shape of the data, telling us some summary statistics but not showing us the actual data distribution.&lt;/p&gt;
 &lt;h3 id=&#34;histogram&#34;&gt;Histogram&lt;/h3&gt;
 &lt;p&gt;The most intuitive way to plot a distribution is the &lt;strong&gt;histogram&lt;/strong&gt;. The histogram groups the data into equally spaced &lt;strong&gt;bins&lt;/strong&gt; and plots the number of observations within each bin.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(x=&#39;Income&#39;, data=df, hue=&#39;Group&#39;, bins=50);
 plt.title(&amp;quot;Histogram&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_15_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;There are multiple &lt;strong&gt;issues&lt;/strong&gt; with this plot:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;The two histograms are not comparable: we would like a density, not a count&lt;/li&gt;
@@ -27560,7 +27422,7 @@ plt.title(&amp;quot;Histogram&amp;quot;);
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(x=&#39;Income&#39;, data=df, hue=&#39;Group&#39;, bins=50, stat=&#39;density&#39;, common_norm=False);
 plt.title(&amp;quot;Density Histogram&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Now the two histograms are comparable!&lt;/p&gt;
 &lt;p&gt;However, an important &lt;strong&gt;issue&lt;/strong&gt; remains: the size of the bins is arbitrary. If we bunch the data less, we end up with bins with one observation at most, if we bunch the data more, we lose information. This is a classical &lt;a href=&#34;https://en.wikipedia.org/wiki/Bias%E2%80%93variance_tradeoff&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;bias-variance trade-off&lt;/a&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;kernel-density&#34;&gt;Kernel Density&lt;/h3&gt;
@@ -27568,7 +27430,7 @@ plt.title(&amp;quot;Density Histogram&amp;quot;);
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.kdeplot(x=&#39;Income&#39;, data=df, hue=&#39;Group&#39;, common_norm=False);
 plt.title(&amp;quot;Kernel Density Function&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;From the plot, it seems that the estimated kernel density of &lt;code&gt;income&lt;/code&gt; is very similar across treatment and control units.&lt;/p&gt;
 &lt;p&gt;However, the &lt;strong&gt;issue&lt;/strong&gt; with kernel density estimation is that it is somehow a black-box and might mask relevant features of the data.&lt;/p&gt;
 &lt;h3 id=&#34;cumulative-distribution&#34;&gt;Cumulative Distribution&lt;/h3&gt;
@@ -27581,7 +27443,7 @@ plt.title(&amp;quot;Kernel Density Function&amp;quot;);
              element=&amp;quot;step&amp;quot;, fill=False, cumulative=True, common_norm=False);
 plt.title(&amp;quot;Cumulative distribution function&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_27_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can now clearly see that there are relatively more observations with low income in the treatment group than in the control group. In fact, the blue line is above the orange line on the right and below the orange line on the left.&lt;/p&gt;
 &lt;h3 id=&#34;qq-plot&#34;&gt;QQ Plot&lt;/h3&gt;
 &lt;p&gt;A related alternative method is the &lt;strong&gt;qq-plot&lt;/strong&gt;, where &lt;em&gt;q&lt;/em&gt; stands for quantile. The qq-plot plots the quantiles of the two distributions against each other. If the distributions are the same, we should get the 45 degree line.&lt;/p&gt;
@@ -27603,7 +27465,7 @@ plt.ylabel(&#39;Quantile of income, treatment group&#39;)
 plt.legend()
 plt.title(&amp;quot;QQ plot&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The qq-plot delivers a very similar insight with respect to the cumulative distribution plot: income in the treatment group is generally lower.&lt;/p&gt;
 &lt;h2 id=&#34;two-groups---tests&#34;&gt;Two Groups - Tests&lt;/h2&gt;
 &lt;p&gt;So far, we have seen different ways to visualize differences between distributions. The main advantage of visualization is &lt;strong&gt;intuition&lt;/strong&gt;: we can eyeball the differences and intuitively assess them.&lt;/p&gt;
@@ -27621,7 +27483,7 @@ $$&lt;/p&gt;
 stat, p_value = ttest_ind(income_c, income_t)
 print(f&amp;quot;t-test: statistic={stat:.4f}, p-value={p_value:.4f}&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;t-test: statistic=-1.5799, p-value=0.1144
+&lt;pre&gt;&lt;code&gt;t-test: statistic=-1.5549, p-value=0.1203
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;In general, it is common practice to always perform this test on all variables, when we are running a randomized control trial or A/B test. The results of these tests are usually collected into a table that is called &lt;strong&gt;balance table&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;We can use the &lt;a href=&#34;https://causalml.readthedocs.io/en/latest/causalml.html#module-causalml.match&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;create_table_one&lt;/code&gt;&lt;/a&gt; function from the &lt;a href=&#34;https://causalml.readthedocs.io/en/latest/about.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;causalml&lt;/code&gt;&lt;/a&gt; library to generate the balance table. As the name of the function suggests, the balance table should always be the &lt;strong&gt;first table&lt;/strong&gt; you present when performing an A/B test.&lt;/p&gt;
@@ -27662,26 +27524,26 @@ create_table_one(df, &#39;treatment&#39;, [&#39;Gender&#39;, &#39;Age&#39;, &#39
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;n&lt;/th&gt;
-      &lt;td&gt;654&lt;/td&gt;
-      &lt;td&gt;346&lt;/td&gt;
+      &lt;td&gt;704&lt;/td&gt;
+      &lt;td&gt;296&lt;/td&gt;
       &lt;td&gt;&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;Age&lt;/th&gt;
-      &lt;td&gt;31.78 (7.95)&lt;/td&gt;
-      &lt;td&gt;36.04 (8.06)&lt;/td&gt;
-      &lt;td&gt;0.5319&lt;/td&gt;
+      &lt;td&gt;31.94 (8.53)&lt;/td&gt;
+      &lt;td&gt;35.88 (7.78)&lt;/td&gt;
+      &lt;td&gt;0.4822&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;Gender&lt;/th&gt;
-      &lt;td&gt;0.54 (0.50)&lt;/td&gt;
-      &lt;td&gt;0.61 (0.49)&lt;/td&gt;
-      &lt;td&gt;0.1452&lt;/td&gt;
+      &lt;td&gt;0.51 (0.50)&lt;/td&gt;
+      &lt;td&gt;0.58 (0.49)&lt;/td&gt;
+      &lt;td&gt;0.1419&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;Income&lt;/th&gt;
-      &lt;td&gt;542.23 (179.48)&lt;/td&gt;
-      &lt;td&gt;563.16 (232.11)&lt;/td&gt;
+      &lt;td&gt;524.59 (117.35)&lt;/td&gt;
+      &lt;td&gt;538.75 (160.15)&lt;/td&gt;
       &lt;td&gt;0.1009&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
@@ -27691,12 +27553,21 @@ create_table_one(df, &#39;treatment&#39;, [&#39;Gender&#39;, &#39;Age&#39;, &#39
 &lt;p&gt;From the table, we observe that we cannot reject the null hypothesis of zero difference in mean for any variable, at the 95% confidence level.&lt;/p&gt;
 &lt;h3 id=&#34;chi-squared-test&#34;&gt;Chi-Squared Test&lt;/h3&gt;
 &lt;p&gt;The &lt;a href=&#34;https://matteocourthoud.github.io/post/chisquared/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;chi-squared test&lt;/a&gt; is a very powerful test that can be used in many different settings. If you want to find out more about it, I have written a very comprehensive &lt;a href=&#34;https://matteocourthoud.github.io/post/chisquared/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;blog post here&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;One of the &lt;strong&gt;least known applications&lt;/strong&gt; of the chi-squared test, is testing the similarity between two distributions. The &lt;strong&gt;idea&lt;/strong&gt; is to bin the observations of the two groups. If the two distributions were the same, we would expect the same frequency of observations in each bin. Importantly, we need enough observations in each bin, in order for the test to be valid. I generate bins corresponding to deciles of the distribution of &lt;code&gt;income&lt;/code&gt; in the control group.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_bins = pd.DataFrame()
+&lt;p&gt;One of the &lt;strong&gt;least known applications&lt;/strong&gt; of the chi-squared test, is testing the similarity between two distributions. The &lt;strong&gt;idea&lt;/strong&gt; is to bin the observations of the two groups. If the two distributions were the same, we would expect the same frequency of observations in each bin. Importantly, we need enough observations in each bin, in order for the test to be valid.&lt;/p&gt;
+&lt;p&gt;I generate bins corresponding to deciles of the distribution of &lt;code&gt;income&lt;/code&gt; in the &lt;em&gt;control&lt;/em&gt; group and then I compute the expected number of observations in each bin in the &lt;em&gt;treatment&lt;/em&gt; group, if the two distributions were the same.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Init dataframe
+df_bins = pd.DataFrame()
+
+# Generate bins from control group
 _, bins = pd.qcut(income_c, q=10, retbins=True)
 df_bins[&#39;bin&#39;] = pd.cut(income_c, bins=bins).value_counts().index
-df_bins[&#39;income_c&#39;] = pd.cut(income_c, bins=bins).value_counts().values
-df_bins[&#39;income_t&#39;] = pd.cut(income_t, bins=bins).value_counts().values
+
+# Apply bins to both groups
+df_bins[&#39;income_c_observed&#39;] = pd.cut(income_c, bins=bins).value_counts().values
+df_bins[&#39;income_t_observed&#39;] = pd.cut(income_t, bins=bins).value_counts().values
+
+# Compute expected frequency
+df_bins[&#39;income_t_expected&#39;] = df_bins[&#39;income_c_observed&#39;] / np.sum(df_bins[&#39;income_c_observed&#39;]) * np.sum(df_bins[&#39;income_t_observed&#39;])
 
 df_bins
 &lt;/code&gt;&lt;/pre&gt;
@@ -27719,75 +27590,86 @@ df_bins
     &lt;tr style=&#34;text-align: right;&#34;&gt;
       &lt;th&gt;&lt;/th&gt;
       &lt;th&gt;bin&lt;/th&gt;
-      &lt;th&gt;income_c&lt;/th&gt;
-      &lt;th&gt;income_t&lt;/th&gt;
+      &lt;th&gt;income_c_observed&lt;/th&gt;
+      &lt;th&gt;income_t_observed&lt;/th&gt;
+      &lt;th&gt;income_t_expected&lt;/th&gt;
     &lt;/tr&gt;
   &lt;/thead&gt;
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;(176.03, 342.33]&lt;/td&gt;
-      &lt;td&gt;65&lt;/td&gt;
-      &lt;td&gt;48&lt;/td&gt;
+      &lt;td&gt;(232.26, 380.496]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;46&lt;/td&gt;
+      &lt;td&gt;29.075391&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;(342.33, 393.424]&lt;/td&gt;
-      &lt;td&gt;65&lt;/td&gt;
-      &lt;td&gt;27&lt;/td&gt;
+      &lt;td&gt;(380.496, 425.324]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;30&lt;/td&gt;
+      &lt;td&gt;29.075391&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;(393.424, 427.185]&lt;/td&gt;
-      &lt;td&gt;65&lt;/td&gt;
-      &lt;td&gt;22&lt;/td&gt;
+      &lt;td&gt;(425.324, 456.795]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;24&lt;/td&gt;
+      &lt;td&gt;29.075391&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;(427.185, 464.738]&lt;/td&gt;
-      &lt;td&gt;66&lt;/td&gt;
-      &lt;td&gt;29&lt;/td&gt;
+      &lt;td&gt;(456.795, 488.83]&lt;/td&gt;
+      &lt;td&gt;71&lt;/td&gt;
+      &lt;td&gt;26&lt;/td&gt;
+      &lt;td&gt;29.490754&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;(464.738, 516.77]&lt;/td&gt;
-      &lt;td&gt;65&lt;/td&gt;
-      &lt;td&gt;36&lt;/td&gt;
+      &lt;td&gt;(488.83, 513.66]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;18&lt;/td&gt;
+      &lt;td&gt;29.075391&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;5&lt;/th&gt;
-      &lt;td&gt;(516.77, 557.648]&lt;/td&gt;
-      &lt;td&gt;65&lt;/td&gt;
-      &lt;td&gt;32&lt;/td&gt;
+      &lt;td&gt;(513.66, 540.048]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;19&lt;/td&gt;
+      &lt;td&gt;29.075391&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;6&lt;/th&gt;
-      &lt;td&gt;(557.648, 613.665]&lt;/td&gt;
-      &lt;td&gt;66&lt;/td&gt;
-      &lt;td&gt;37&lt;/td&gt;
+      &lt;td&gt;(540.048, 576.664]&lt;/td&gt;
+      &lt;td&gt;71&lt;/td&gt;
+      &lt;td&gt;21&lt;/td&gt;
+      &lt;td&gt;29.490754&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;7&lt;/th&gt;
-      &lt;td&gt;(613.665, 683.24]&lt;/td&gt;
-      &lt;td&gt;65&lt;/td&gt;
-      &lt;td&gt;30&lt;/td&gt;
+      &lt;td&gt;(576.664, 621.022]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;25&lt;/td&gt;
+      &lt;td&gt;29.075391&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;8&lt;/th&gt;
-      &lt;td&gt;(683.24, 784.38]&lt;/td&gt;
-      &lt;td&gt;65&lt;/td&gt;
-      &lt;td&gt;34&lt;/td&gt;
+      &lt;td&gt;(621.022, 682.003]&lt;/td&gt;
+      &lt;td&gt;70&lt;/td&gt;
+      &lt;td&gt;42&lt;/td&gt;
+      &lt;td&gt;29.075391&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;9&lt;/th&gt;
-      &lt;td&gt;(784.38, 1375.1]&lt;/td&gt;
-      &lt;td&gt;66&lt;/td&gt;
-      &lt;td&gt;49&lt;/td&gt;
+      &lt;td&gt;(682.003, 973.46]&lt;/td&gt;
+      &lt;td&gt;71&lt;/td&gt;
+      &lt;td&gt;41&lt;/td&gt;
+      &lt;td&gt;29.490754&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;We can now perform the test by comparing the frequencies of the two distributions, across bins. The test statistic is given by:&lt;/p&gt;
+&lt;p&gt;We can now perform the test by comparing the expected (E) and observed (O) number of observations in the treatment group, across bins. The test statistic is given by:&lt;/p&gt;
 &lt;p&gt;$$
 stat = \sum _{i=1}^{n} \frac{(O_i - E_i)^{2}}{E_i}
 $$&lt;/p&gt;
@@ -27795,11 +27677,10 @@ $$&lt;/p&gt;
 &lt;p&gt;To compute the test statistic and the p-value of the test, we use the &lt;code&gt;chisquare&lt;/code&gt; function from &lt;code&gt;scipy&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.stats import chisquare
 
-df_bins[&#39;income_t_norm&#39;] = df_bins[&#39;income_t&#39;] / np.sum(df_bins[&#39;income_t&#39;]) * np.sum(df_bins[&#39;income_c&#39;])
-stat, p_value = chisquare(df_bins[&#39;income_c&#39;], df_bins[&#39;income_t_norm&#39;])
+stat, p_value = chisquare(df_bins[&#39;income_t_observed&#39;], df_bins[&#39;income_t_expected&#39;])
 print(f&amp;quot;Chi-squared Test: statistic={stat:.4f}, p-value={p_value:.4f}&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Chi-squared Test: statistic=35.9866, p-value=0.0000
+&lt;pre&gt;&lt;code&gt;Chi-squared Test: statistic=32.1432, p-value=0.0002
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The p-value is practically zero, implying that we reject the null hypothesis of no difference between the two distributions.&lt;/p&gt;
 &lt;h3 id=&#34;kolmogorov-smirnov-test&#34;&gt;Kolmogorov-Smirnov Test&lt;/h3&gt;
@@ -27841,33 +27722,33 @@ df_ks.head()
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;158.26&lt;/td&gt;
+      &lt;td&gt;216.36&lt;/td&gt;
       &lt;td&gt;0.000000&lt;/td&gt;
-      &lt;td&gt;0.002890&lt;/td&gt;
+      &lt;td&gt;0.003378&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;176.03&lt;/td&gt;
-      &lt;td&gt;0.001529&lt;/td&gt;
-      &lt;td&gt;0.002890&lt;/td&gt;
+      &lt;td&gt;232.26&lt;/td&gt;
+      &lt;td&gt;0.001420&lt;/td&gt;
+      &lt;td&gt;0.003378&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;178.76&lt;/td&gt;
-      &lt;td&gt;0.001529&lt;/td&gt;
-      &lt;td&gt;0.005780&lt;/td&gt;
+      &lt;td&gt;243.15&lt;/td&gt;
+      &lt;td&gt;0.001420&lt;/td&gt;
+      &lt;td&gt;0.006757&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;190.64&lt;/td&gt;
-      &lt;td&gt;0.001529&lt;/td&gt;
-      &lt;td&gt;0.008671&lt;/td&gt;
+      &lt;td&gt;259.88&lt;/td&gt;
+      &lt;td&gt;0.002841&lt;/td&gt;
+      &lt;td&gt;0.006757&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;193.20&lt;/td&gt;
-      &lt;td&gt;0.001529&lt;/td&gt;
-      &lt;td&gt;0.011561&lt;/td&gt;
+      &lt;td&gt;262.82&lt;/td&gt;
+      &lt;td&gt;0.002841&lt;/td&gt;
+      &lt;td&gt;0.010135&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -27885,7 +27766,7 @@ plt.errorbar(x=df_ks[&#39;Income&#39;][k], y=y, yerr=tstat/2, color=&#39;k&#39;,
 plt.legend(loc=&#39;center right&#39;);
 plt.title(&amp;quot;Kolmogorov-Smirnov Test&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_53_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;From the plot, we can see that the value of the test statistic corresponds to the distance between the two cumulative distributions at &lt;code&gt;income&lt;/code&gt;=4000. For that value of &lt;code&gt;income&lt;/code&gt;, we have the largest imbalance between the two groups.&lt;/p&gt;
 &lt;p&gt;We can now perform the actual test using the &lt;code&gt;kstest&lt;/code&gt; function from &lt;code&gt;scipy&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.stats import kstest
@@ -27893,9 +27774,39 @@ plt.title(&amp;quot;Kolmogorov-Smirnov Test&amp;quot;);
 stat, p_value = kstest(income_t, income_c)
 print(f&amp;quot; Kolmogorov-Smirnov Test: statistic={stat:.4f}, p-value={p_value:.4f}&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt; Kolmogorov-Smirnov Test: statistic=0.0661, p-value=0.2617
+&lt;pre&gt;&lt;code&gt; Kolmogorov-Smirnov Test: statistic=0.0974, p-value=0.0355
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The p-value is still above 5%: we do not reject the null hypothesis that the two distributions are the same, with 95% confidence.&lt;/p&gt;
+&lt;h3 id=&#34;mannwhitney-u-test&#34;&gt;Mann–Whitney U Test&lt;/h3&gt;
+&lt;p&gt;An alternative test is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Mann–Whitney U test&lt;/a&gt; which compares the &lt;strong&gt;median&lt;/strong&gt; of two distributions. In particular, the null hypothesis for this test is that the two groups have the same distribution, while the alternative hypothesis is that one group has larger (or smaller) values than the other.&lt;/p&gt;
+&lt;p&gt;Differently from the other tests we have seen so far, the Mann–Whitney U test is agnostic to outliers and concentrates on the center of the distribution.&lt;/p&gt;
+&lt;p&gt;The test &lt;strong&gt;procedure&lt;/strong&gt; is the following.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Combine all data points and rank them (in increasing or decreasing order)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Compute $U_1 = R_1 - n_1(n_1 + 1)/2$, where $R_1$ is the sum of the ranks for data points in the first group and $n_1$ is the number of points in the first group.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Compute $U_2$ similarly for the second group.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;The test statistic is given by $U = min(U_1, U_2)$.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Under the null hypothesis of no systematic rank differences between the two distributions (i.e. same median), the test statistic is asymptotically normally distributed with known mean and variance.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;intuition&lt;/strong&gt; behind the computation of $R$ and $U$ is the following: if the values in the first sample were all bigger than the values in the second sample, then $R_1 = n_1(n_1 + 1)/2$ and, as a consequence, $U_1$ would then be zero (minimum attainable value). Otherwise, if the two samples were similar, $U_1$ and $U_2$ would be very close to $n_1 n_2 / 2$ (maximum attainable value).&lt;/p&gt;
+&lt;p&gt;We perform the test using the &lt;code&gt;mannwhitneyu&lt;/code&gt; function from &lt;code&gt;scipy&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.stats import mannwhitneyu
+
+stat, p_value = mannwhitneyu(income_t, income_c)
+print(f&amp;quot; Mann–Whitney U Test: statistic={stat:.4f}, p-value={p_value:.4f}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt; Mann–Whitney U Test: statistic=106371.5000, p-value=0.6012
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Differently from all other tests so far, the Mann-Whitney U-test does &lt;strong&gt;not reject&lt;/strong&gt; the null hypothesis that the two distributions are the same. The reason lies in the fact that the center of the distributions is very similar and differences in one tail get compensated by differences in the other tail.&lt;/p&gt;
+&lt;p&gt;This result tells a &lt;strong&gt;cautionary tale&lt;/strong&gt;: it is very important to understand what you are actually testing before drawing blind conclusions from a p-value! Here the two distributions are different, but not in the dimension tested by the Mann–Whitney U test.&lt;/p&gt;
 &lt;h3 id=&#34;permutation-tests&#34;&gt;Permutation Tests&lt;/h3&gt;
 &lt;p&gt;A non-parametric alternative is permutation testing. The idea is that, under the null hypothesis, the two distributions should be the same, therefore &lt;strong&gt;shuffling&lt;/strong&gt; the group labels should not significantly alter any statistic.&lt;/p&gt;
 &lt;p&gt;We can then chose any statistic and compute how much more extreme it is for different permutations, with respect to its value in the original sample. For example, let&amp;rsquo;s use as a test statistic difference of &lt;strong&gt;sample mean&lt;/strong&gt; between the treatment and control group.&lt;/p&gt;
@@ -27911,7 +27822,7 @@ p_value = np.mean(stats &amp;gt; sample_stat)
 
 print(f&amp;quot;Permutation test: p-value={p_value:.4f}&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Permutation test: p-value=0.0660
+&lt;pre&gt;&lt;code&gt;Permutation test: p-value=0.0590
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The permutation test gives us a p-value very similar to the ones obtained with the other tests.&lt;/p&gt;
 &lt;p&gt;How do we &lt;strong&gt;interpret&lt;/strong&gt; the p-value? It means that he sample mean of the treatment group in the data is larger than $1 - 0.082 = 91.8%$ of the sample means of the treatment group across the permuted samples.&lt;/p&gt;
@@ -27922,7 +27833,7 @@ plt.legend();
 plt.xlabel(&#39;Income difference between treatment and control group&#39;)
 plt.title(&#39;Permutation Test&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_64_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_66_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, the sample statistic is quite extreme with respect to the values in the permuted samples, but not excessively.&lt;/p&gt;
 &lt;h2 id=&#34;multiple-groups---plots&#34;&gt;Multiple Groups - Plots&lt;/h2&gt;
 &lt;p&gt;So far we have only considered the case of two groups: treatment and control. But that if we had multiple groups? Some of the methods we have seen above scale well, while others don&amp;rsquo;t.&lt;/p&gt;
@@ -27931,14 +27842,14 @@ plt.title(&#39;Permutation Test&#39;);
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.boxplot(x=&#39;Arm&#39;, y=&#39;Income&#39;, data=df.sort_values(&#39;Arm&#39;));
 plt.title(&amp;quot;Boxplot, multiple groups&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_70_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_72_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;From the plot, it looks like the distribution of &lt;code&gt;income&lt;/code&gt; across treatment arms is quite comparable.&lt;/p&gt;
 &lt;h3 id=&#34;violin-plot&#34;&gt;Violin Plot&lt;/h3&gt;
 &lt;p&gt;A very nice extension of the boxplot that combines summary statistics and kernel density estimation is the  &lt;strong&gt;violinplot&lt;/strong&gt;. The violinplot plots separate densities along the y axis so that they don&amp;rsquo;t overlap. By default, it also adds a miniature boxplot inside.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.violinplot(x=&#39;Arm&#39;, y=&#39;Income&#39;, data=df.sort_values(&#39;Arm&#39;));
 plt.title(&amp;quot;Violin Plot, multiple groups&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_74_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_76_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;ridgeline-plot&#34;&gt;Ridgeline Plot&lt;/h3&gt;
 &lt;p&gt;Unfortunately, there is no default ridgeline plot neither in &lt;code&gt;matplotlib&lt;/code&gt; nor in &lt;code&gt;seaborn&lt;/code&gt;. We need to import it from &lt;a href=&#34;https://github.com/leotac/joypy&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;joypy&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from joypy import joyplot
@@ -27947,7 +27858,7 @@ joyplot(df, by=&#39;Arm&#39;, column=&#39;Income&#39;, colormap=sns.color_palett
 plt.xlabel(&#39;Income&#39;);
 plt.title(&amp;quot;Ridgeline Plot, multiple groups&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_77_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_79_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;multiple-groups---tests&#34;&gt;Multiple Groups - Tests&lt;/h2&gt;
 &lt;h3 id=&#34;f-test&#34;&gt;F-test&lt;/h3&gt;
 &lt;p&gt;With multiple groups, the most popular test is the &lt;a href=&#34;https://en.wikipedia.org/wiki/F-test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;F-test&lt;/strong&gt;&lt;/a&gt;. The F-test compares the variance of a variable across different groups. This analysis is also called analysis of variance, or &lt;strong&gt;ANOVA&lt;/strong&gt;.&lt;/p&gt;
@@ -27962,15 +27873,15 @@ income_groups = [df.loc[df[&#39;Arm&#39;]==arm, &#39;Income&#39;].values for arm
 stat, p_value = f_oneway(*income_groups)
 print(f&amp;quot;F Test: statistic={stat:.4f}, p-value={p_value:.4f}&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;F Test: statistic=33.5291, p-value=0.0000
+&lt;pre&gt;&lt;code&gt;F Test: statistic=59.3185, p-value=0.0000
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The p-value is larger than 0.1, so we cannot reject the null hypothesis of no difference across groups, at any sensible significance level.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;TBD&lt;/p&gt;
+&lt;p&gt;In this post we have see a ton of different ways to &lt;strong&gt;compare two or more distributions&lt;/strong&gt;, both visually and statistically. This is a primary concern in many applications, but especially in causal inference where we use randomization to make treatment and control group as comparable as possible.&lt;/p&gt;
+&lt;p&gt;We have also seen how different methods might be better suited for &lt;strong&gt;different situations&lt;/strong&gt;. Visual methods are great to build intuition, but statistical methods are essential for decision-making, since we need to be able to assess the magnitude and statistical significance of the differences.&lt;/p&gt;
 &lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Goodbye Scatterplot, Welcome Binned Scatterplot&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;&#34;&gt;Chi-Square Distribution&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
 &lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
