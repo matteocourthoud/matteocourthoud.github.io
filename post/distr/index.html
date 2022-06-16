@@ -327,17 +327,16 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
   
   
     
-    
   
   
-  <meta property="twitter:card" content="summary" />
+  <meta property="twitter:card" content="summary_large_image" />
   
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/distr/" />
   <meta property="og:title" content="Comparing Distributions, From Zero to Hero | Matteo Courthoud" />
   <meta property="og:description" content="The problem of comparing distributions often arises in causal inference when we have to assess the quality of randomization.
-When we want to assess the causal effect of a policy (or, feature, campaign, drug, &hellip;), the golden standard in causal inference are randomized control trials, also known in the industry as A/B tests." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
-    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+When we want to assess the causal effect of a policy (or, feature, campaign, drug, &hellip;), the golden standard in causal inference are randomized control trials, also known in the industry as A/B tests." /><meta property="og:image" content="https://matteocourthoud.github.io/post/distr/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/distr/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
@@ -372,6 +371,10 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
     "@id": "https://matteocourthoud.github.io/post/distr/"
   },
   "headline": "Comparing Distributions, From Zero to Hero",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/distr/featured.png"
+  ],
   
   "datePublished": "2022-06-16T00:00:00Z",
   "dateModified": "2022-06-16T00:00:00Z",
@@ -788,6 +791,7 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
       <ul>
         <li><a href="#boxplot-1">Boxplot</a></li>
         <li><a href="#violin-plot">Violin Plot</a></li>
+        <li><a href="#ridgeline-plot">Ridgeline Plot</a></li>
       </ul>
     </li>
     <li><a href="#multiple-groups---tests">Multiple Groups - Tests</a>
@@ -820,18 +824,23 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
 
 
 
-  
+
+
+
+
+
+
+
 
   
-  
-  
+
+
 <div class="article-container pt-3">
   <h1>Comparing Distributions, From Zero to Hero</h1>
 
   
 
   
-    
 
 
 <div class="article-metadata">
@@ -870,13 +879,20 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
 
 </div>
 
-    
-
-
-
-
-
   
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1331px; max-height: 752px;">
+  <div style="position: relative">
+    <img src="/post/distr/featured.png" alt="" class="featured-image">
+    
+  </div>
 </div>
 
 
@@ -927,18 +943,18 @@ df.head()
     <tr>
       <th>0</th>
       <td>control</td>
-      <td>arm 2</td>
+      <td>arm2</td>
       <td>0</td>
       <td>29.0</td>
-      <td>3967.16</td>
+      <td>163016.96</td>
     </tr>
     <tr>
       <th>1</th>
       <td>control</td>
-      <td>arm 4</td>
+      <td>arm4</td>
       <td>1</td>
       <td>32.0</td>
-      <td>2927.77</td>
+      <td>5404.09</td>
     </tr>
     <tr>
       <th>2</th>
@@ -946,15 +962,15 @@ df.head()
       <td>NaN</td>
       <td>0</td>
       <td>29.0</td>
-      <td>1642.66</td>
+      <td>0.22</td>
     </tr>
     <tr>
       <th>3</th>
       <td>control</td>
-      <td>arm 4</td>
+      <td>arm4</td>
       <td>0</td>
       <td>25.0</td>
-      <td>1867.64</td>
+      <td>0.22</td>
     </tr>
     <tr>
       <th>4</th>
@@ -962,7 +978,7 @@ df.head()
       <td>NaN</td>
       <td>1</td>
       <td>32.0</td>
-      <td>3202.35</td>
+      <td>29422.71</td>
     </tr>
   </tbody>
 </table>
@@ -973,17 +989,155 @@ df.head()
 <h3 id="boxplot">Boxplot</h3>
 <p>A first visual approach is the <a href="https://en.wikipedia.org/wiki/Box_plot" target="_blank" rel="noopener"><strong>boxplot</strong></a>. The boxplot is a good trade-off between summary statistics and data visualization. The center of the <strong>box</strong> represents the <em>median</em> while the borders represent the first (Q1) and third <em>quartile</em> (Q3), respectively. The <strong>whiskers</strong> instead, extend to the first data points that are more than 1.5 times the <em>interquartile range</em> (Q3 - Q1) outside the box. The points that fall outside of the whiskers are plotted individually and are usually considered <strong>outliers</strong>.</p>
 <p>Therefore, the boxplot provides both summary statistics (the box and the whiskers) and direct data visualization (the extreme data points).</p>
+<pre><code class="language-python">N = 1000
+
+# Treatment assignment
+group = np.random.choice(['treatment', 'control'], N, p=[0.3, 0.7])
+arm_number = np.random.choice([1,2,3,4], N)
+arm = [f'arm {n}' for n in arm_number]
+
+# Covariates 
+gender = np.random.binomial(1, 0.5 + 0.1*(group=='treatment'), N) 
+age = 18 + np.random.beta(2 + (group=='treatment'), 5, N)*50 // 1
+mean_income = 6 + 0.1*arm_number
+var_income = 0.3 + 0.1*(group=='treatment')
+income = np.round(np.random.lognormal(mean_income, var_income, N), 2)
+
+# Generate the dataframe
+df = pd.DataFrame({'Group': group, 'Arm': arm, 'Gender': gender, 'Age': age, 'Income': income})
+df.loc[df['Group']=='treatment', 'Arm'] = np.nan
+</code></pre>
+<pre><code class="language-python">df
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Group</th>
+      <th>Arm</th>
+      <th>Gender</th>
+      <th>Age</th>
+      <th>Income</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>control</td>
+      <td>arm 1</td>
+      <td>1</td>
+      <td>45.0</td>
+      <td>1004.39</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>control</td>
+      <td>arm 4</td>
+      <td>1</td>
+      <td>33.0</td>
+      <td>528.79</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>control</td>
+      <td>arm 2</td>
+      <td>0</td>
+      <td>20.0</td>
+      <td>397.52</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>treatment</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>28.0</td>
+      <td>881.71</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>treatment</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>37.0</td>
+      <td>1140.32</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>995</th>
+      <td>control</td>
+      <td>arm 3</td>
+      <td>1</td>
+      <td>27.0</td>
+      <td>413.82</td>
+    </tr>
+    <tr>
+      <th>996</th>
+      <td>control</td>
+      <td>arm 2</td>
+      <td>0</td>
+      <td>20.0</td>
+      <td>530.08</td>
+    </tr>
+    <tr>
+      <th>997</th>
+      <td>treatment</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>57.0</td>
+      <td>494.16</td>
+    </tr>
+    <tr>
+      <th>998</th>
+      <td>treatment</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>21.0</td>
+      <td>574.17</td>
+    </tr>
+    <tr>
+      <th>999</th>
+      <td>control</td>
+      <td>arm 4</td>
+      <td>1</td>
+      <td>30.0</td>
+      <td>446.58</td>
+    </tr>
+  </tbody>
+</table>
+<p>1000 rows × 5 columns</p>
+</div>
 <pre><code class="language-python">sns.boxplot(x='Group', y='Income', data=df);
 plt.title(&quot;Boxplot&quot;);
 </code></pre>
-<p><img src="img/distr_11_0.png" alt="png"></p>
+<p><img src="img/distr_13_0.png" alt="png"></p>
 <p>It seems that the <code>income</code> distribution in the <code>treatment</code> group is slightly more dispersed: the orange box is larger and its whiskers cover a longer range. However, the <strong>issue</strong> with the boxplot is that it hides the shape of the data, telling us some summary statistics but not showing us the actual data distribution.</p>
 <h3 id="histogram">Histogram</h3>
 <p>The most intuitive way to plot a distribution is the <strong>histogram</strong>. The histogram groups the data into equally spaced <strong>bins</strong> and plots the number of observations within each bin.</p>
 <pre><code class="language-python">sns.histplot(x='Income', data=df, hue='Group', bins=50);
 plt.title(&quot;Histogram&quot;);
 </code></pre>
-<p><img src="img/distr_15_0.png" alt="png"></p>
+<p><img src="img/distr_17_0.png" alt="png"></p>
 <p>There are multiple <strong>issues</strong> with this plot:</p>
 <ul>
 <li>The two histograms are not comparable: we would like a density, not a count</li>
@@ -993,7 +1147,7 @@ plt.title(&quot;Histogram&quot;);
 <pre><code class="language-python">sns.histplot(x='Income', data=df, hue='Group', bins=50, stat='density', common_norm=False);
 plt.title(&quot;Density Histogram&quot;);
 </code></pre>
-<p><img src="img/distr_17_0.png" alt="png"></p>
+<p><img src="img/distr_19_0.png" alt="png"></p>
 <p>Now the two histograms are comparable!</p>
 <p>However, an important <strong>issue</strong> remains: the size of the bins is arbitrary. If we bunch the data less, we end up with bins with one observation at most, if we bunch the data more, we lose information. This is a classical <a href="https://en.wikipedia.org/wiki/Bias%E2%80%93variance_tradeoff" target="_blank" rel="noopener">bias-variance trade-off</a>.</p>
 <h3 id="kernel-density">Kernel Density</h3>
@@ -1001,7 +1155,7 @@ plt.title(&quot;Density Histogram&quot;);
 <pre><code class="language-python">sns.kdeplot(x='Income', data=df, hue='Group', common_norm=False);
 plt.title(&quot;Kernel Density Function&quot;);
 </code></pre>
-<p><img src="img/distr_21_0.png" alt="png"></p>
+<p><img src="img/distr_23_0.png" alt="png"></p>
 <p>From the plot, it seems that the estimated kernel density of <code>income</code> is very similar across treatment and control units.</p>
 <p>However, the <strong>issue</strong> with kernel density estimation is that it is somehow a black-box and might mask relevant features of the data.</p>
 <h3 id="cumulative-distribution">Cumulative Distribution</h3>
@@ -1014,7 +1168,7 @@ plt.title(&quot;Kernel Density Function&quot;);
              element=&quot;step&quot;, fill=False, cumulative=True, common_norm=False);
 plt.title(&quot;Cumulative distribution function&quot;);
 </code></pre>
-<p><img src="img/distr_25_0.png" alt="png"></p>
+<p><img src="img/distr_27_0.png" alt="png"></p>
 <p>We can now clearly see that there are relatively more observations with low income in the treatment group than in the control group. In fact, the blue line is above the orange line on the right and below the orange line on the left.</p>
 <h3 id="qq-plot">QQ Plot</h3>
 <p>A related alternative method is the <strong>qq-plot</strong>, where <em>q</em> stands for quantile. The qq-plot plots the quantiles of the two distributions against each other. If the distributions are the same, we should get the 45 degree line.</p>
@@ -1036,7 +1190,7 @@ plt.ylabel('Quantile of income, treatment group')
 plt.legend()
 plt.title(&quot;QQ plot&quot;);
 </code></pre>
-<p><img src="img/distr_31_0.png" alt="png"></p>
+<p><img src="img/distr_33_0.png" alt="png"></p>
 <p>The qq-plot delivers a very similar insight with respect to the cumulative distribution plot: income in the treatment group is generally lower.</p>
 <h2 id="two-groups---tests">Two Groups - Tests</h2>
 <p>So far, we have seen different ways to visualize differences between distributions. The main advantage of visualization is <strong>intuition</strong>: we can eyeball the differences and intuitively assess them.</p>
@@ -1054,7 +1208,7 @@ $$</p>
 stat, p_value = ttest_ind(income_c, income_t)
 print(f&quot;t-test: statistic={stat:.4f}, p-value={p_value:.4f}&quot;)
 </code></pre>
-<pre><code>t-test: statistic=-1.3192, p-value=0.1874
+<pre><code>t-test: statistic=-1.5799, p-value=0.1144
 </code></pre>
 <p>In general, it is common practice to always perform this test on all variables, when we are running a randomized control trial or A/B test. The results of these tests are usually collected into a table that is called <strong>balance table</strong>.</p>
 <p>We can use the <a href="https://causalml.readthedocs.io/en/latest/causalml.html#module-causalml.match" target="_blank" rel="noopener"><code>create_table_one</code></a> function from the <a href="https://causalml.readthedocs.io/en/latest/about.html" target="_blank" rel="noopener"><code>causalml</code></a> library to generate the balance table. As the name of the function suggests, the balance table should always be the <strong>first table</strong> you present when performing an A/B test.</p>
@@ -1095,27 +1249,27 @@ create_table_one(df, 'treatment', ['Gender', 'Age', 'Income'])
   <tbody>
     <tr>
       <th>n</th>
-      <td>704</td>
-      <td>296</td>
+      <td>654</td>
+      <td>346</td>
       <td></td>
     </tr>
     <tr>
       <th>Age</th>
-      <td>31.94 (8.53)</td>
-      <td>35.88 (7.78)</td>
-      <td>0.4822</td>
+      <td>31.78 (7.95)</td>
+      <td>36.04 (8.06)</td>
+      <td>0.5319</td>
     </tr>
     <tr>
       <th>Gender</th>
-      <td>0.51 (0.50)</td>
-      <td>0.58 (0.49)</td>
-      <td>0.1419</td>
+      <td>0.54 (0.50)</td>
+      <td>0.61 (0.49)</td>
+      <td>0.1452</td>
     </tr>
     <tr>
       <th>Income</th>
-      <td>3166.07 (1321.89)</td>
-      <td>3296.32 (1645.58)</td>
-      <td>0.0873</td>
+      <td>542.23 (179.48)</td>
+      <td>563.16 (232.11)</td>
+      <td>0.1009</td>
     </tr>
   </tbody>
 </table>
@@ -1159,63 +1313,63 @@ df_bins
   <tbody>
     <tr>
       <th>0</th>
-      <td>(808.96, 1730.77]</td>
-      <td>70</td>
-      <td>42</td>
+      <td>(176.03, 342.33]</td>
+      <td>65</td>
+      <td>48</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>(1730.77, 2127.948]</td>
-      <td>70</td>
-      <td>36</td>
+      <td>(342.33, 393.424]</td>
+      <td>65</td>
+      <td>27</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>(2127.948, 2411.451]</td>
-      <td>70</td>
-      <td>25</td>
+      <td>(393.424, 427.185]</td>
+      <td>65</td>
+      <td>22</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>(2411.451, 2670.312]</td>
-      <td>71</td>
-      <td>20</td>
+      <td>(427.185, 464.738]</td>
+      <td>66</td>
+      <td>29</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>(2670.312, 2935.05]</td>
-      <td>70</td>
-      <td>26</td>
+      <td>(464.738, 516.77]</td>
+      <td>65</td>
+      <td>36</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>(2935.05, 3208.662]</td>
-      <td>70</td>
-      <td>13</td>
+      <td>(516.77, 557.648]</td>
+      <td>65</td>
+      <td>32</td>
     </tr>
     <tr>
       <th>6</th>
-      <td>(3208.662, 3542.805]</td>
-      <td>71</td>
-      <td>25</td>
+      <td>(557.648, 613.665]</td>
+      <td>66</td>
+      <td>37</td>
     </tr>
     <tr>
       <th>7</th>
-      <td>(3542.805, 3972.996]</td>
-      <td>70</td>
-      <td>26</td>
+      <td>(613.665, 683.24]</td>
+      <td>65</td>
+      <td>30</td>
     </tr>
     <tr>
       <th>8</th>
-      <td>(3972.996, 4912.782]</td>
-      <td>70</td>
-      <td>41</td>
+      <td>(683.24, 784.38]</td>
+      <td>65</td>
+      <td>34</td>
     </tr>
     <tr>
       <th>9</th>
-      <td>(4912.782, 11634.39]</td>
-      <td>71</td>
-      <td>42</td>
+      <td>(784.38, 1375.1]</td>
+      <td>66</td>
+      <td>49</td>
     </tr>
   </tbody>
 </table>
@@ -1232,7 +1386,7 @@ df_bins['income_t_norm'] = df_bins['income_t'] / np.sum(df_bins['income_t']) * n
 stat, p_value = chisquare(df_bins['income_c'], df_bins['income_t_norm'])
 print(f&quot;Chi-squared Test: statistic={stat:.4f}, p-value={p_value:.4f}&quot;)
 </code></pre>
-<pre><code>Chi-squared Test: statistic=95.2526, p-value=0.0000
+<pre><code>Chi-squared Test: statistic=35.9866, p-value=0.0000
 </code></pre>
 <p>The p-value is practically zero, implying that we reject the null hypothesis of no difference between the two distributions.</p>
 <h3 id="kolmogorov-smirnov-test">Kolmogorov-Smirnov Test</h3>
@@ -1274,33 +1428,33 @@ df_ks.head()
   <tbody>
     <tr>
       <th>0</th>
-      <td>808.96</td>
-      <td>0.001420</td>
+      <td>158.26</td>
       <td>0.000000</td>
+      <td>0.002890</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>831.93</td>
-      <td>0.002841</td>
-      <td>0.000000</td>
+      <td>176.03</td>
+      <td>0.001529</td>
+      <td>0.002890</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>893.28</td>
-      <td>0.002841</td>
-      <td>0.003378</td>
+      <td>178.76</td>
+      <td>0.001529</td>
+      <td>0.005780</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>925.08</td>
-      <td>0.004261</td>
-      <td>0.003378</td>
+      <td>190.64</td>
+      <td>0.001529</td>
+      <td>0.008671</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>951.21</td>
-      <td>0.004261</td>
-      <td>0.006757</td>
+      <td>193.20</td>
+      <td>0.001529</td>
+      <td>0.011561</td>
     </tr>
   </tbody>
 </table>
@@ -1311,71 +1465,22 @@ tstat = np.abs(df_ks['F_treatment'][k] - df_ks['F_control'][k])
 </code></pre>
 <p>We can visualize the value of the test statistic, by plotting the two cumulative distribution functions and the value of the test statistic.</p>
 <pre><code class="language-python">y = (df_ks['F_treatment'][k] + df_ks['F_control'][k])/2
-plt.plot('income', 'F_control', data=df_ks, label='Control')
-plt.plot('income', 'F_treatment', data=df_ks, label='Treatment')
+plt.plot('Income', 'F_control', data=df_ks, label='Control')
+plt.plot('Income', 'F_treatment', data=df_ks, label='Treatment')
 plt.errorbar(x=df_ks['Income'][k], y=y, yerr=tstat/2, color='k',
              capsize=5, mew=3, label=f&quot;Test statistic: {tstat:.4f}&quot;)
 plt.legend(loc='center right');
 plt.title(&quot;Kolmogorov-Smirnov Test&quot;);
 </code></pre>
-<pre><code>---------------------------------------------------------------------------
-
-ValueError                                Traceback (most recent call last)
-
-Input In [21], in &lt;module&gt;
-      1 y = (df_ks['F_treatment'][k] + df_ks['F_control'][k])/2
-----&gt; 2 plt.plot('income', 'F_control', data=df_ks, label='Control')
-      3 plt.plot('income', 'F_treatment', data=df_ks, label='Treatment')
-      4 plt.errorbar(x=df_ks['Income'][k], y=y, yerr=tstat/2, color='k',
-      5              capsize=5, mew=3, label=f&quot;Test statistic: {tstat:.4f}&quot;)
-
-
-File /opt/homebrew/Caskroom/miniforge/base/lib/python3.9/site-packages/matplotlib/pyplot.py:2757, in plot(scalex, scaley, data, *args, **kwargs)
-   2755 @_copy_docstring_and_deprecators(Axes.plot)
-   2756 def plot(*args, scalex=True, scaley=True, data=None, **kwargs):
--&gt; 2757     return gca().plot(
-   2758         *args, scalex=scalex, scaley=scaley,
-   2759         **({&quot;data&quot;: data} if data is not None else {}), **kwargs)
-
-
-File /opt/homebrew/Caskroom/miniforge/base/lib/python3.9/site-packages/matplotlib/axes/_axes.py:1632, in Axes.plot(self, scalex, scaley, data, *args, **kwargs)
-   1390 &quot;&quot;&quot;
-   1391 Plot y versus x as lines and/or markers.
-   1392 
-   (...)
-   1629 (``'green'``) or hex strings (``'#008000'``).
-   1630 &quot;&quot;&quot;
-   1631 kwargs = cbook.normalize_kwargs(kwargs, mlines.Line2D)
--&gt; 1632 lines = [*self._get_lines(*args, data=data, **kwargs)]
-   1633 for line in lines:
-   1634     self.add_line(line)
-
-
-File /opt/homebrew/Caskroom/miniforge/base/lib/python3.9/site-packages/matplotlib/axes/_base.py:312, in _process_plot_var_args.__call__(self, data, *args, **kwargs)
-    310     this += args[0],
-    311     args = args[1:]
---&gt; 312 yield from self._plot_args(this, kwargs)
-
-
-File /opt/homebrew/Caskroom/miniforge/base/lib/python3.9/site-packages/matplotlib/axes/_base.py:498, in _process_plot_var_args._plot_args(self, tup, kwargs, return_kwargs)
-    495     self.axes.yaxis.update_units(y)
-    497 if x.shape[0] != y.shape[0]:
---&gt; 498     raise ValueError(f&quot;x and y must have same first dimension, but &quot;
-    499                      f&quot;have shapes {x.shape} and {y.shape}&quot;)
-    500 if x.ndim &gt; 2 or y.ndim &gt; 2:
-    501     raise ValueError(f&quot;x and y can be no greater than 2D, but have &quot;
-    502                      f&quot;shapes {x.shape} and {y.shape}&quot;)
-
-
-ValueError: x and y must have same first dimension, but have shapes (1,) and (999,)
-</code></pre>
-<p><img src="img/distr_53_1.png" alt="png"></p>
+<p><img src="img/distr_55_0.png" alt="png"></p>
 <p>From the plot, we can see that the value of the test statistic corresponds to the distance between the two cumulative distributions at <code>income</code>=4000. For that value of <code>income</code>, we have the largest imbalance between the two groups.</p>
 <p>We can now perform the actual test using the <code>kstest</code> function from <code>scipy</code>.</p>
 <pre><code class="language-python">from scipy.stats import kstest
 
 stat, p_value = kstest(income_t, income_c)
 print(f&quot; Kolmogorov-Smirnov Test: statistic={stat:.4f}, p-value={p_value:.4f}&quot;)
+</code></pre>
+<pre><code> Kolmogorov-Smirnov Test: statistic=0.0661, p-value=0.2617
 </code></pre>
 <p>The p-value is still above 5%: we do not reject the null hypothesis that the two distributions are the same, with 95% confidence.</p>
 <h3 id="permutation-tests">Permutation Tests</h3>
@@ -1393,7 +1498,7 @@ p_value = np.mean(stats &gt; sample_stat)
 
 print(f&quot;Permutation test: p-value={p_value:.4f}&quot;)
 </code></pre>
-<pre><code>Permutation test: p-value=0.0910
+<pre><code>Permutation test: p-value=0.0660
 </code></pre>
 <p>The permutation test gives us a p-value very similar to the ones obtained with the other tests.</p>
 <p>How do we <strong>interpret</strong> the p-value? It means that he sample mean of the treatment group in the data is larger than $1 - 0.082 = 91.8%$ of the sample means of the treatment group across the permuted samples.</p>
@@ -1404,23 +1509,32 @@ plt.legend();
 plt.xlabel('Income difference between treatment and control group')
 plt.title('Permutation Test');
 </code></pre>
-<p><img src="img/distr_62_0.png" alt="png"></p>
+<p><img src="img/distr_64_0.png" alt="png"></p>
 <p>As we can see, the sample statistic is quite extreme with respect to the values in the permuted samples, but not excessively.</p>
 <h2 id="multiple-groups---plots">Multiple Groups - Plots</h2>
 <p>So far we have only considered the case of two groups: treatment and control. But that if we had multiple groups? Some of the methods we have seen above scale well, while others don&rsquo;t.</p>
 <h3 id="boxplot-1">Boxplot</h3>
 <p>The <strong>boxplot</strong> scales very well, when we have a number of groups in the single-digits.</p>
-<pre><code class="language-python">sns.boxplot(x='Arm', y='Income', data=df);
+<pre><code class="language-python">sns.boxplot(x='Arm', y='Income', data=df.sort_values('Arm'));
 plt.title(&quot;Boxplot, multiple groups&quot;);
 </code></pre>
-<p><img src="img/distr_68_0.png" alt="png"></p>
+<p><img src="img/distr_70_0.png" alt="png"></p>
 <p>From the plot, it looks like the distribution of <code>income</code> across treatment arms is quite comparable.</p>
 <h3 id="violin-plot">Violin Plot</h3>
 <p>A very nice extension of the boxplot that combines summary statistics and kernel density estimation is the  <strong>violinplot</strong>. The violinplot plots separate densities along the y axis so that they don&rsquo;t overlap. By default, it also adds a miniature boxplot inside.</p>
-<pre><code class="language-python">sns.violinplot(x='Arm', y='Income', data=df);
+<pre><code class="language-python">sns.violinplot(x='Arm', y='Income', data=df.sort_values('Arm'));
 plt.title(&quot;Violin Plot, multiple groups&quot;);
 </code></pre>
-<p><img src="img/distr_72_0.png" alt="png"></p>
+<p><img src="img/distr_74_0.png" alt="png"></p>
+<h3 id="ridgeline-plot">Ridgeline Plot</h3>
+<p>Unfortunately, there is no default ridgeline plot neither in <code>matplotlib</code> nor in <code>seaborn</code>. We need to import it from <a href="https://github.com/leotac/joypy" target="_blank" rel="noopener"><code>joypy</code></a>.</p>
+<pre><code class="language-python">from joypy import joyplot
+
+joyplot(df, by='Arm', column='Income', colormap=sns.color_palette(&quot;crest&quot;, as_cmap=True));
+plt.xlabel('Income');
+plt.title(&quot;Ridgeline Plot, multiple groups&quot;);
+</code></pre>
+<p><img src="img/distr_77_0.png" alt="png"></p>
 <h2 id="multiple-groups---tests">Multiple Groups - Tests</h2>
 <h3 id="f-test">F-test</h3>
 <p>With multiple groups, the most popular test is the <a href="https://en.wikipedia.org/wiki/F-test" target="_blank" rel="noopener"><strong>F-test</strong></a>. The F-test compares the variance of a variable across different groups. This analysis is also called analysis of variance, or <strong>ANOVA</strong>.</p>
@@ -1435,7 +1549,7 @@ income_groups = [df.loc[df['Arm']==arm, 'Income'].values for arm in df['Arm'].dr
 stat, p_value = f_oneway(*income_groups)
 print(f&quot;F Test: statistic={stat:.4f}, p-value={p_value:.4f}&quot;)
 </code></pre>
-<pre><code>F Test: statistic=1.2127, p-value=0.3041
+<pre><code>F Test: statistic=33.5291, p-value=0.0000
 </code></pre>
 <p>The p-value is larger than 0.1, so we cannot reject the null hypothesis of no difference across groups, at any sensible significance level.</p>
 <h2 id="conclusion">Conclusion</h2>
