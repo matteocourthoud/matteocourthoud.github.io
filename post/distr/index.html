@@ -30,8 +30,8 @@
   
     
   
-  <meta name="description" content="The problem of comparing distributions often arises in causal inference when we have to assess the quality of randomization.
-When we want to assess the causal effect of a policy (or, feature, campaign, drug, &hellip;), the golden standard in causal inference are randomized control trials, also known in the industry as A/B tests." />
+  <meta name="description" content="A complete guide to comparing distributions, from visualization to statistical tests
+Comparing the empirical distribution of a variable across different groups is a common problem in data science. In particular, in causal inference the problem often arises when we have to assess the quality of randomization." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/distr/" />
@@ -334,17 +334,17 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/distr/" />
   <meta property="og:title" content="How to Compare Two or More Distributions | Matteo Courthoud" />
-  <meta property="og:description" content="The problem of comparing distributions often arises in causal inference when we have to assess the quality of randomization.
-When we want to assess the causal effect of a policy (or, feature, campaign, drug, &hellip;), the golden standard in causal inference are randomized control trials, also known in the industry as A/B tests." /><meta property="og:image" content="https://matteocourthoud.github.io/post/distr/featured.png" />
+  <meta property="og:description" content="A complete guide to comparing distributions, from visualization to statistical tests
+Comparing the empirical distribution of a variable across different groups is a common problem in data science. In particular, in causal inference the problem often arises when we have to assess the quality of randomization." /><meta property="og:image" content="https://matteocourthoud.github.io/post/distr/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/distr/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-06-16T00:00:00&#43;00:00"
+        content="2022-06-17T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-06-16T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-06-17T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
     "https://matteocourthoud.github.io/post/distr/featured.png"
   ],
   
-  "datePublished": "2022-06-16T00:00:00Z",
-  "dateModified": "2022-06-16T00:00:00Z",
+  "datePublished": "2022-06-17T00:00:00Z",
+  "dateModified": "2022-06-17T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -387,7 +387,7 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "The problem of comparing distributions often arises in causal inference when we have to assess the quality of randomization.\nWhen we want to assess the causal effect of a policy (or, feature, campaign, drug, \u0026hellip;), the golden standard in causal inference are randomized control trials, also known in the industry as A/B tests."
+  "description": "A complete guide to comparing distributions, from visualization to statistical tests\nComparing the empirical distribution of a variable across different groups is a common problem in data science. In particular, in causal inference the problem often arises when we have to assess the quality of randomization."
 }
 </script>
 
@@ -782,6 +782,7 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
     <li><a href="#two-groups---tests">Two Groups - Tests</a>
       <ul>
         <li><a href="#t-test">T-test</a></li>
+        <li><a href="#standardized-mean-difference-smd">Standardized Mean Difference (SMD)</a></li>
         <li><a href="#chi-squared-test">Chi-Squared Test</a></li>
         <li><a href="#kolmogorov-smirnov-test">Kolmogorov-Smirnov Test</a></li>
         <li><a href="#mannwhitney-u-test">Mann–Whitney U Test</a></li>
@@ -855,7 +856,7 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
     
       
     
-    Jun 16, 2022
+    Jun 17, 2022
   </span>
   
 
@@ -864,7 +865,7 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    17 min read
+    18 min read
   </span>
   
 
@@ -899,12 +900,13 @@ When we want to assess the causal effect of a policy (or, feature, campaign, dru
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>The problem of comparing distributions often arises in causal inference when we have to <strong>assess the quality of randomization</strong>.</p>
-<p>When we want to assess the causal effect of a policy (or, feature, campaign, drug, &hellip;), the golden standard in causal inference are <a href="https://en.wikipedia.org/wiki/Randomized_controlled_trial" target="_blank" rel="noopener"><strong>randomized control trials</strong></a>, also known in the industry as <a href="https://de.wikipedia.org/wiki/A/B-Test" target="_blank" rel="noopener"><strong>A/B tests</strong></a>. In practice, we select a sample for the study and we randomly split it into a <strong>control</strong> and a <strong>treatment</strong> group, to compare the outcomes between the two groups. The idea is that randomization ensures that only difference between the two groups is the treatment, on average. Therefore, we can attribute the difference in outcomes to the treatment effect alone.</p>
-<p>The <strong>problem</strong> is that, despite randomization, the two groups are never identical. However, sometimes, they are not even &ldquo;similar&rdquo;. For example, we might have more males in one group, or older people, etc.. (we usually call these characteristics, <em>covariates</em> or <em>control variables</em>). When it happens, we cannot be certain anymore that the difference in the outcome is only due to the treatment and cannot be attributed to the <strong>inbalanced covariates</strong> instead. Therefore, it is always important, after randomization, to check whether all observed variables are balance across groups and whether there are no systematic differences. Another option, to be certain that certain covariates are balanced, is <a href="https://en.wikipedia.org/wiki/Stratified_sampling" target="_blank" rel="noopener">stratified sampling</a>.</p>
+            <p><em>A complete guide to comparing distributions, from visualization to statistical tests</em></p>
+<p>Comparing the empirical distribution of a variable across different groups is a common problem in data science. In particular, in causal inference the problem often arises when we have to <strong>assess the quality of randomization</strong>.</p>
+<p>When we want to assess the causal effect of a policy (or, feature, campaign, drug, &hellip;), the golden standard in causal inference are <a href="https://en.wikipedia.org/wiki/Randomized_controlled_trial" target="_blank" rel="noopener"><strong>randomized control trials</strong></a>, also known as <a href="https://de.wikipedia.org/wiki/A/B-Test" target="_blank" rel="noopener"><strong>A/B tests</strong></a>. In practice, we select a sample for the study and we randomly split it into a <strong>control</strong> and a <strong>treatment</strong> group, and we compare the outcomes between the two groups. Randomization ensures that only difference between the two groups is the treatment, on average, so that we can attribute outcome differences to the treatment effect.</p>
+<p>The <strong>problem</strong> is that, despite randomization, the two groups are never identical. However, sometimes, they are not even &ldquo;similar&rdquo;. For example, we might have more males in one group, or older people, etc.. (we usually call these characteristics, <em>covariates</em> or <em>control variables</em>). When it happens, we cannot be certain anymore that the difference in the outcome is only due to the treatment and cannot be attributed to the <strong>inbalanced covariates</strong> instead. Therefore, it is always important, after randomization, to check whether all observed variables are balanced across groups and whether there are no systematic differences. Another option, to be certain that certain covariates are balanced, is <a href="https://en.wikipedia.org/wiki/Stratified_sampling" target="_blank" rel="noopener">stratified sampling</a>.</p>
 <p>In this blog post, we are going to see different ways to compare two (or more) distributions and assess the magnitude and significance of their difference. We are going to consider two different approaches, <strong>visual</strong> and <strong>statistical</strong>. The two approaches generally trade-off <strong>intuition</strong> with <strong>rigor</strong>: from plots we can quickly assess and explore differences, but it&rsquo;s hard to tell whether these differences are systematic or due to noise.</p>
 <h2 id="the-data">The Data</h2>
-<p>Let&rsquo;s assume we need to perform an <strong>experiment</strong> on a group of individuals and we have <strong>randomized</strong> them into a treatment and control group. We would like them to be <strong>as comparable as possible</strong>, in order to attribute any difference between the two groups to the treatment effect alone. We also have divided the treatment group in different <em>arms</em> for testing different treatments.</p>
+<p>Let&rsquo;s assume we need to perform an <strong>experiment</strong> on a group of individuals and we have <strong>randomized</strong> them into a treatment and control group. We would like them to be <strong>as comparable as possible</strong>, in order to attribute any difference between the two groups to the treatment effect alone. We also have divided the treatment group in different <em>arms</em> for testing different treatments (e.g. slight variations of the same drug).</p>
 <p>For this example, I have simulated a dataset of 1000 individuals, for whom we observe a set of characteristics. I import the data generating process <code>dgp_rnd_assignment()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a> and some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
@@ -993,14 +995,14 @@ df.head()
 <pre><code class="language-python">sns.boxplot(x='Group', y='Income', data=df);
 plt.title(&quot;Boxplot&quot;);
 </code></pre>
-<p><img src="img/distr_11_0.png" alt="png"></p>
+<p><img src="img/distr_12_0.png" alt="png"></p>
 <p>It seems that the <code>income</code> distribution in the <code>treatment</code> group is slightly more dispersed: the orange box is larger and its whiskers cover a longer range. However, the <strong>issue</strong> with the boxplot is that it hides the shape of the data, telling us some summary statistics but not showing us the actual data distribution.</p>
 <h3 id="histogram">Histogram</h3>
 <p>The most intuitive way to plot a distribution is the <strong>histogram</strong>. The histogram groups the data into equally spaced <strong>bins</strong> and plots the number of observations within each bin.</p>
 <pre><code class="language-python">sns.histplot(x='Income', data=df, hue='Group', bins=50);
 plt.title(&quot;Histogram&quot;);
 </code></pre>
-<p><img src="img/distr_15_0.png" alt="png"></p>
+<p><img src="img/distr_16_0.png" alt="png"></p>
 <p>There are multiple <strong>issues</strong> with this plot:</p>
 <ul>
 <li>The two histograms are not comparable: we would like a density, not a count</li>
@@ -1010,7 +1012,7 @@ plt.title(&quot;Histogram&quot;);
 <pre><code class="language-python">sns.histplot(x='Income', data=df, hue='Group', bins=50, stat='density', common_norm=False);
 plt.title(&quot;Density Histogram&quot;);
 </code></pre>
-<p><img src="img/distr_17_0.png" alt="png"></p>
+<p><img src="img/distr_18_0.png" alt="png"></p>
 <p>Now the two histograms are comparable!</p>
 <p>However, an important <strong>issue</strong> remains: the size of the bins is arbitrary. If we bunch the data less, we end up with bins with one observation at most, if we bunch the data more, we lose information. This is a classical <a href="https://en.wikipedia.org/wiki/Bias%E2%80%93variance_tradeoff" target="_blank" rel="noopener">bias-variance trade-off</a>.</p>
 <h3 id="kernel-density">Kernel Density</h3>
@@ -1018,7 +1020,7 @@ plt.title(&quot;Density Histogram&quot;);
 <pre><code class="language-python">sns.kdeplot(x='Income', data=df, hue='Group', common_norm=False);
 plt.title(&quot;Kernel Density Function&quot;);
 </code></pre>
-<p><img src="img/distr_21_0.png" alt="png"></p>
+<p><img src="img/distr_22_0.png" alt="png"></p>
 <p>From the plot, it seems that the estimated kernel density of <code>income</code> is very similar across treatment and control units.</p>
 <p>However, the <strong>issue</strong> with kernel density estimation is that it is somehow a black-box and might mask relevant features of the data.</p>
 <h3 id="cumulative-distribution">Cumulative Distribution</h3>
@@ -1031,7 +1033,7 @@ plt.title(&quot;Kernel Density Function&quot;);
              element=&quot;step&quot;, fill=False, cumulative=True, common_norm=False);
 plt.title(&quot;Cumulative distribution function&quot;);
 </code></pre>
-<p><img src="img/distr_25_0.png" alt="png"></p>
+<p><img src="img/distr_26_0.png" alt="png"></p>
 <p>We can now clearly see that there are relatively more observations with low income in the treatment group than in the control group. In fact, the blue line is above the orange line on the right and below the orange line on the left.</p>
 <h3 id="qq-plot">QQ Plot</h3>
 <p>A related alternative method is the <strong>qq-plot</strong>, where <em>q</em> stands for quantile. The qq-plot plots the quantiles of the two distributions against each other. If the distributions are the same, we should get the 45 degree line.</p>
@@ -1053,7 +1055,7 @@ plt.ylabel('Quantile of income, treatment group')
 plt.legend()
 plt.title(&quot;QQ plot&quot;);
 </code></pre>
-<p><img src="img/distr_31_0.png" alt="png"></p>
+<p><img src="img/distr_32_0.png" alt="png"></p>
 <p>The qq-plot delivers a very similar insight with respect to the cumulative distribution plot: income in the treatment group is generally lower.</p>
 <h2 id="two-groups---tests">Two Groups - Tests</h2>
 <p>So far, we have seen different ways to visualize differences between distributions. The main advantage of visualization is <strong>intuition</strong>: we can eyeball the differences and intuitively assess them.</p>
@@ -1062,7 +1064,7 @@ plt.title(&quot;QQ plot&quot;);
 <h3 id="t-test">T-test</h3>
 <p>The first and most common test is the <a href="https://en.wikipedia.org/wiki/Student%27s_t-test" target="_blank" rel="noopener">student t-test</a>. T-tests are generally used to <strong>compare means</strong>. In this case, we want to test whether the means of the <code>income</code> distribution is the same across the two groups. The test statistic for the two-means comparison test is given by:</p>
 <p>$$
-stat = \frac{|\bar x_1 - \bar x_2|}{\sqrt{s_1 / n_1 + s_2 / n_2}}
+stat = \frac{|\bar x_1 - \bar x_2|}{\sqrt{s^2_1 / n_1 + s^2_2 / n_2}}
 $$</p>
 <p>Where $\bar x$ is the sample mean and $s$ is the sample standard deviation. Under mild conditions, the test statistic is asymptotically distributed as a <a href="https://en.wikipedia.org/wiki/Student%27s_t-distribution" target="_blank" rel="noopener">student t</a> distribution.</p>
 <p>We use the <code>ttest_ind</code> function from <code>scipy</code> to perform the t-test. The function returns both the test statistic and the implied <a href="https://en.wikipedia.org/wiki/P-value" target="_blank" rel="noopener">p-value</a>.</p>
@@ -1073,8 +1075,16 @@ print(f&quot;t-test: statistic={stat:.4f}, p-value={p_value:.4f}&quot;)
 </code></pre>
 <pre><code>t-test: statistic=-1.5549, p-value=0.1203
 </code></pre>
-<p>In general, it is common practice to always perform this test on all variables, when we are running a randomized control trial or A/B test. The results of these tests are usually collected into a table that is called <strong>balance table</strong>.</p>
-<p>We can use the <a href="https://causalml.readthedocs.io/en/latest/causalml.html#module-causalml.match" target="_blank" rel="noopener"><code>create_table_one</code></a> function from the <a href="https://causalml.readthedocs.io/en/latest/about.html" target="_blank" rel="noopener"><code>causalml</code></a> library to generate the balance table. As the name of the function suggests, the balance table should always be the <strong>first table</strong> you present when performing an A/B test.</p>
+<p>The p-value of the test is $0.17$, therefore we do not reject the null hypothesis of no difference in means across treatment and control groups.</p>
+<h3 id="standardized-mean-difference-smd">Standardized Mean Difference (SMD)</h3>
+<p>In general, it is common practice to <strong>always perform a test for difference in means</strong> on all variables across the treatment and control group, when we are running a randomized control trial or A/B test.</p>
+<p>However, since the denominator of the t-test statistic depends on the sample size, the t-test has been <strong>criticized</strong> for making p-values hard to compare across studies. In fact, we may obtain a significant result in an experiment with very small magnitude of difference but large sample size while we may obtain a non-significant result in an experiment with large magnitude of difference but small sample size.</p>
+<p>One solution that has been proposed is the <strong>standardized mean difference (SMD)</strong>. As the name suggests, this is not a proper test statistic, but just a standardized difference, which can be computed as:</p>
+<p>$$
+SMD = \frac{|\bar x_1 - \bar x_2|}{\sqrt{(s^2_1 + s^2_2) / 2}}
+$$</p>
+<p>Usually a value below $0.1$ is considered a &ldquo;small&rdquo; difference.</p>
+<p>It is good practice to collect average values of all variables across treatment and control group and a measure of distance between the two &ndash; either the t-test or the SMD &ndash; into a table that is called <strong>balance table</strong>. We can use the <a href="https://causalml.readthedocs.io/en/latest/causalml.html#module-causalml.match" target="_blank" rel="noopener"><code>create_table_one</code></a> function from the <a href="https://causalml.readthedocs.io/en/latest/about.html" target="_blank" rel="noopener"><code>causalml</code></a> library to generate it. As the name of the function suggests, the balance table should always be the <strong>first table</strong> you present when performing an A/B test.</p>
 <pre><code class="language-python">from causalml.match import create_table_one
 
 df['treatment'] = df['Group']=='treatment'
@@ -1137,10 +1147,9 @@ create_table_one(df, 'treatment', ['Gender', 'Age', 'Income'])
   </tbody>
 </table>
 </div>
-<p>In the first two columns, we can see the average of the different variables across the treatment and control groups, with standard errors in parenthesis. In the <strong>last column</strong>, we have the p-values of the t-test for the null hypothesis of zero difference in means.</p>
-<p>From the table, we observe that we cannot reject the null hypothesis of zero difference in mean for any variable, at the 95% confidence level.</p>
+<p>In the first two columns, we can see the average of the different variables across the treatment and control groups, with standard errors in parenthesis. In the <strong>last column</strong>, the values of the SMD indicate a standardized difference of more than $0.1$ for all variables, suggesting that the two groups are probably different.</p>
 <h3 id="chi-squared-test">Chi-Squared Test</h3>
-<p>The <a href="https://matteocourthoud.github.io/post/chisquared/" target="_blank" rel="noopener">chi-squared test</a> is a very powerful test that can be used in many different settings. If you want to find out more about it, I have written a very comprehensive <a href="https://matteocourthoud.github.io/post/chisquared/" target="_blank" rel="noopener">blog post here</a>.</p>
+<p>The <a href="https://matteocourthoud.github.io/post/chisquared/" target="_blank" rel="noopener">chi-squared test</a> is a very powerful test that is mostly used to test distributional assumptions with count data.</p>
 <p>One of the <strong>least known applications</strong> of the chi-squared test, is testing the similarity between two distributions. The <strong>idea</strong> is to bin the observations of the two groups. If the two distributions were the same, we would expect the same frequency of observations in each bin. Importantly, we need enough observations in each bin, in order for the test to be valid.</p>
 <p>I generate bins corresponding to deciles of the distribution of <code>income</code> in the <em>control</em> group and then I compute the expected number of observations in each bin in the <em>treatment</em> group, if the two distributions were the same.</p>
 <pre><code class="language-python"># Init dataframe
@@ -1154,7 +1163,7 @@ df_bins['bin'] = pd.cut(income_c, bins=bins).value_counts().index
 df_bins['income_c_observed'] = pd.cut(income_c, bins=bins).value_counts().values
 df_bins['income_t_observed'] = pd.cut(income_t, bins=bins).value_counts().values
 
-# Compute expected frequency
+# Compute expected frequency in the treatment group
 df_bins['income_t_expected'] = df_bins['income_c_observed'] / np.sum(df_bins['income_c_observed']) * np.sum(df_bins['income_t_observed'])
 
 df_bins
@@ -1257,11 +1266,11 @@ df_bins
   </tbody>
 </table>
 </div>
-<p>We can now perform the test by comparing the expected (E) and observed (O) number of observations in the treatment group, across bins. The test statistic is given by:</p>
+<p>We can now perform the test by comparing the expected (E) and observed (O) number of observations in the treatment group, across bins. The test statistic is given by</p>
 <p>$$
 stat = \sum _{i=1}^{n} \frac{(O_i - E_i)^{2}}{E_i}
 $$</p>
-<p>Where the bins are indexed by $i$ and $O$ is the observed number of data points in bin $i$ and $E$ is the expected number of data points in bin $i$. Since we generated the bins using deciles of the distribution of <code>income</code> in the control group, we expect the number of observations per bin in the treatment group to be the same across bins. Under mild assumptions, the test statistic is asymptocally distributed as a <a href="https://en.wikipedia.org/wiki/Chi-squared_distribution" target="_blank" rel="noopener">chi-squared</a> distribution.</p>
+<p>where the bins are indexed by $i$ and $O$ is the observed number of data points in bin $i$ and $E$ is the expected number of data points in bin $i$. Since we generated the bins using deciles of the distribution of <code>income</code> in the control group, we expect the number of observations per bin in the treatment group to be the same across bins. The test statistic is asymptocally distributed as a <a href="https://en.wikipedia.org/wiki/Chi-squared_distribution" target="_blank" rel="noopener">chi-squared</a> distribution.</p>
 <p>To compute the test statistic and the p-value of the test, we use the <code>chisquare</code> function from <code>scipy</code>.</p>
 <pre><code class="language-python">from scipy.stats import chisquare
 
@@ -1276,7 +1285,7 @@ print(f&quot;Chi-squared Test: statistic={stat:.4f}, p-value={p_value:.4f}&quot;
 <p>$$
 stat = \sup _{x} \ \Big| \ F_1(x) - F_2(x) \ \Big|
 $$</p>
-<p>Where $F_1$ and $F_2$ are the two cumulative distribution functions and $x$ are the values of the underlying variable. Under mild conditions, the asymptotic distribution of the Kolmogorov-Smirnov test statistic is known.</p>
+<p>Where $F_1$ and $F_2$ are the two cumulative distribution functions and $x$ are the values of the underlying variable. The asymptotic distribution of the Kolmogorov-Smirnov test statistic is <a href="https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test#Kolmogorov_distribution" target="_blank" rel="noopener">Kolmogorov distributed</a>.</p>
 <p>To better understand the test, let&rsquo;s plot the cumulative distribution functions and the test statistic. First, we compute the cumulative distribution functions.</p>
 <pre><code class="language-python">df_ks = pd.DataFrame()
 df_ks['Income'] = np.sort(df['Income'].unique())
@@ -1343,18 +1352,18 @@ df_ks.head()
 </div>
 <p>We now need to find the point where the absolute distance between the cumulative distribution functions is largest.</p>
 <pre><code class="language-python">k = np.argmax( np.abs(df_ks['F_control'] - df_ks['F_treatment']))
-tstat = np.abs(df_ks['F_treatment'][k] - df_ks['F_control'][k])
+ks_stat = np.abs(df_ks['F_treatment'][k] - df_ks['F_control'][k])
 </code></pre>
 <p>We can visualize the value of the test statistic, by plotting the two cumulative distribution functions and the value of the test statistic.</p>
 <pre><code class="language-python">y = (df_ks['F_treatment'][k] + df_ks['F_control'][k])/2
 plt.plot('Income', 'F_control', data=df_ks, label='Control')
 plt.plot('Income', 'F_treatment', data=df_ks, label='Treatment')
-plt.errorbar(x=df_ks['Income'][k], y=y, yerr=tstat/2, color='k',
+plt.errorbar(x=df_ks['Income'][k], y=y, yerr=ks_stat/2, color='k',
              capsize=5, mew=3, label=f&quot;Test statistic: {tstat:.4f}&quot;)
 plt.legend(loc='center right');
 plt.title(&quot;Kolmogorov-Smirnov Test&quot;);
 </code></pre>
-<p><img src="img/distr_53_0.png" alt="png"></p>
+<p><img src="img/distr_56_0.png" alt="png"></p>
 <p>From the plot, we can see that the value of the test statistic corresponds to the distance between the two cumulative distributions at <code>income</code>=4000. For that value of <code>income</code>, we have the largest imbalance between the two groups.</p>
 <p>We can now perform the actual test using the <code>kstest</code> function from <code>scipy</code>.</p>
 <pre><code class="language-python">from scipy.stats import kstest
@@ -1380,7 +1389,7 @@ print(f&quot; Kolmogorov-Smirnov Test: statistic={stat:.4f}, p-value={p_value:.4
 <p>Compute $U_2$ similarly for the second group.</p>
 </li>
 <li>
-<p>The test statistic is given by $U = min(U_1, U_2)$.</p>
+<p>The test statistic is given by $stat = min(U_1, U_2)$.</p>
 </li>
 </ol>
 <p>Under the null hypothesis of no systematic rank differences between the two distributions (i.e. same median), the test statistic is asymptotically normally distributed with known mean and variance.</p>
@@ -1400,20 +1409,18 @@ print(f&quot; Mann–Whitney U Test: statistic={stat:.4f}, p-value={p_value:.4f}
 <p>We can then chose any statistic and compute how much more extreme it is for different permutations, with respect to its value in the original sample. For example, let&rsquo;s use as a test statistic difference of <strong>sample mean</strong> between the treatment and control group.</p>
 <pre><code class="language-python">sample_stat = np.mean(income_t) - np.mean(income_c)
 </code></pre>
-<pre><code class="language-python">K = 1000
-stats = np.zeros(1000)
-labels = (df['Group'] == 'treatment').values
-for k in range(K):
-    np.random.shuffle(labels)
+<pre><code class="language-python">stats = np.zeros(1000)
+for k in range(1000):
+    labels = np.random.permutation((df['Group'] == 'treatment').values)
     stats[k] = np.mean(income[labels]) - np.mean(income[labels==False])
 p_value = np.mean(stats &gt; sample_stat)
 
 print(f&quot;Permutation test: p-value={p_value:.4f}&quot;)
 </code></pre>
-<pre><code>Permutation test: p-value=0.0590
+<pre><code>Permutation test: p-value=0.0560
 </code></pre>
-<p>The permutation test gives us a p-value very similar to the ones obtained with the other tests.</p>
-<p>How do we <strong>interpret</strong> the p-value? It means that he sample mean of the treatment group in the data is larger than $1 - 0.082 = 91.8%$ of the sample means of the treatment group across the permuted samples.</p>
+<p>The permutation test gives us a p-value of $0.056$, very similar to the ones obtained with the other tests.</p>
+<p>How do we <strong>interpret</strong> the p-value? It means that he sample mean of the treatment group in the data is larger than $1 - 0.0560 = 94.4%$ of the sample means of the treatment group across the permuted samples.</p>
 <p>We can <strong>visualize</strong> the test, by plotting the distribution of the test statistics against its sample value.</p>
 <pre><code class="language-python">plt.hist(stats, label='Permutation Statistics', bins=30);
 plt.axvline(x=sample_stat, c='r', ls='--', label='Sample Statistic');
@@ -1421,7 +1428,7 @@ plt.legend();
 plt.xlabel('Income difference between treatment and control group')
 plt.title('Permutation Test');
 </code></pre>
-<p><img src="img/distr_66_0.png" alt="png"></p>
+<p><img src="img/distr_69_0.png" alt="png"></p>
 <p>As we can see, the sample statistic is quite extreme with respect to the values in the permuted samples, but not excessively.</p>
 <h2 id="multiple-groups---plots">Multiple Groups - Plots</h2>
 <p>So far we have only considered the case of two groups: treatment and control. But that if we had multiple groups? Some of the methods we have seen above scale well, while others don&rsquo;t.</p>
@@ -1430,24 +1437,27 @@ plt.title('Permutation Test');
 <pre><code class="language-python">sns.boxplot(x='Arm', y='Income', data=df.sort_values('Arm'));
 plt.title(&quot;Boxplot, multiple groups&quot;);
 </code></pre>
-<p><img src="img/distr_72_0.png" alt="png"></p>
-<p>From the plot, it looks like the distribution of <code>income</code> across treatment arms is quite comparable.</p>
+<p><img src="img/distr_75_0.png" alt="png"></p>
+<p>From the plot, it looks like the distribution of <code>income</code> is different across treatment arms, with higher numbered arms having a higher average income.</p>
 <h3 id="violin-plot">Violin Plot</h3>
 <p>A very nice extension of the boxplot that combines summary statistics and kernel density estimation is the  <strong>violinplot</strong>. The violinplot plots separate densities along the y axis so that they don&rsquo;t overlap. By default, it also adds a miniature boxplot inside.</p>
 <pre><code class="language-python">sns.violinplot(x='Arm', y='Income', data=df.sort_values('Arm'));
 plt.title(&quot;Violin Plot, multiple groups&quot;);
 </code></pre>
-<p><img src="img/distr_76_0.png" alt="png"></p>
+<p><img src="img/distr_79_0.png" alt="png"></p>
+<p>As for the boxplot, the violin plot suggests that income is different across treatment arms.</p>
 <h3 id="ridgeline-plot">Ridgeline Plot</h3>
-<p>Unfortunately, there is no default ridgeline plot neither in <code>matplotlib</code> nor in <code>seaborn</code>. We need to import it from <a href="https://github.com/leotac/joypy" target="_blank" rel="noopener"><code>joypy</code></a>.</p>
+<p>Lastly, the <strong>ridgeline plot</strong> plots multiple kernel density distributions along the x-axis, making them more intuitive than the violin plot but partially overlapping them. Unfortunately, there is no default ridgeline plot neither in <code>matplotlib</code> nor in <code>seaborn</code>. We need to import it from <a href="https://github.com/leotac/joypy" target="_blank" rel="noopener"><code>joypy</code></a>.</p>
 <pre><code class="language-python">from joypy import joyplot
 
 joyplot(df, by='Arm', column='Income', colormap=sns.color_palette(&quot;crest&quot;, as_cmap=True));
 plt.xlabel('Income');
 plt.title(&quot;Ridgeline Plot, multiple groups&quot;);
 </code></pre>
-<p><img src="img/distr_79_0.png" alt="png"></p>
+<p><img src="img/distr_83_0.png" alt="png"></p>
+<p>Again, the ridgeline plot suggests that higher numbered treatment arms have higher income. From this plot it is also easier to appreciate the different shapes of the distributions.</p>
 <h2 id="multiple-groups---tests">Multiple Groups - Tests</h2>
+<p>Lastly, let&rsquo;s consider hypothesis tests to compare multiple groups. For simplicity, we will concentrate on the most popular one: the F-test.</p>
 <h3 id="f-test">F-test</h3>
 <p>With multiple groups, the most popular test is the <a href="https://en.wikipedia.org/wiki/F-test" target="_blank" rel="noopener"><strong>F-test</strong></a>. The F-test compares the variance of a variable across different groups. This analysis is also called analysis of variance, or <strong>ANOVA</strong>.</p>
 <p>In practice, the F-test statistic is</p>
