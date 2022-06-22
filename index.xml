@@ -27307,6 +27307,566 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     </item>
     
     <item>
+      <title>CUPED, or how to increase the power of AB tests</title>
+      <link>https://matteocourthoud.github.io/post/cuped/</link>
+      <pubDate>Wed, 22 Jun 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/cuped/</guid>
+      <description>&lt;p&gt;&lt;em&gt;How to use historical data to tell noise and signal apart&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;The data generating process for individual $i$ at time $t$ is the following:&lt;/p&gt;
+&lt;p&gt;$$
+Y_{it} = \alpha + \beta t + \gamma D_i + \delta t D_i + \varepsilon_i + u_{it}
+$$&lt;/p&gt;
+&lt;p&gt;where&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$\alpha = 5$&lt;/li&gt;
+&lt;li&gt;$\beta = 0$&lt;/li&gt;
+&lt;li&gt;$\gamma = 1$&lt;/li&gt;
+&lt;li&gt;$\delta = 2$&lt;/li&gt;
+&lt;li&gt;$D \sim Bern(0.5)$&lt;/li&gt;
+&lt;li&gt;$\varepsilon \sim N(0,1)$&lt;/li&gt;
+&lt;li&gt;$u \sim N(0,1)$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;So that the true treatment effect is $\delta = 1$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp_cuped
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = dgp_cuped().generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;i&lt;/th&gt;
+      &lt;th&gt;d&lt;/th&gt;
+      &lt;th&gt;y0&lt;/th&gt;
+      &lt;th&gt;y1&lt;/th&gt;
+      &lt;th&gt;x0&lt;/th&gt;
+      &lt;th&gt;x1&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5.315635&lt;/td&gt;
+      &lt;td&gt;6.359304&lt;/td&gt;
+      &lt;td&gt;7.096171&lt;/td&gt;
+      &lt;td&gt;11.373674&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;2.977799&lt;/td&gt;
+      &lt;td&gt;5.751485&lt;/td&gt;
+      &lt;td&gt;3.598911&lt;/td&gt;
+      &lt;td&gt;9.191610&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;4.693796&lt;/td&gt;
+      &lt;td&gt;7.025253&lt;/td&gt;
+      &lt;td&gt;5.599818&lt;/td&gt;
+      &lt;td&gt;12.675708&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5.827975&lt;/td&gt;
+      &lt;td&gt;6.540667&lt;/td&gt;
+      &lt;td&gt;9.974215&lt;/td&gt;
+      &lt;td&gt;9.025466&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5.230095&lt;/td&gt;
+      &lt;td&gt;6.910165&lt;/td&gt;
+      &lt;td&gt;7.590962&lt;/td&gt;
+      &lt;td&gt;8.609321&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;h2 id=&#34;difference-in-means&#34;&gt;Difference in Means&lt;/h2&gt;
+&lt;p&gt;In randomized experiments or A/B tests, randomization allows us to estimate the average treatment effect using a simple difference in means.&lt;/p&gt;
+&lt;p&gt;We can obtain the same estimate by regressing the post-treatment outcome $y_1$ on the treatment indicator $d$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;y1 ~ d&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    6.2995&lt;/td&gt; &lt;td&gt;    0.211&lt;/td&gt; &lt;td&gt;   29.904&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    5.881&lt;/td&gt; &lt;td&gt;    6.718&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;d&lt;/th&gt;         &lt;td&gt;    1.7914&lt;/td&gt; &lt;td&gt;    0.301&lt;/td&gt; &lt;td&gt;    5.953&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.194&lt;/td&gt; &lt;td&gt;    2.389&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;This estimator is unbiased, i.e. it delivers the correct value, in expectation.&lt;/p&gt;
+&lt;p&gt;Can we do &lt;strong&gt;better&lt;/strong&gt;, using the pre-treatment information?&lt;/p&gt;
+&lt;h2 id=&#34;stratification&#34;&gt;Stratification&lt;/h2&gt;
+&lt;h2 id=&#34;cuped&#34;&gt;CUPED&lt;/h2&gt;
+&lt;p&gt;The CUPED (Controlled-Experiment using Pre-Experiment Data) estimator was first introduced by &lt;a href=&#34;https://dl.acm.org/doi/abs/10.1145/2433396.2433413&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Deng, Xu, Kohavi, Walker (2013)&lt;/a&gt; and has been widely used in companies such as &lt;a href=&#34;https://www.kdd.org/kdd2016/papers/files/adp0945-xieA.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Netflix&lt;/a&gt;, &lt;a href=&#34;https://booking.ai/995d186fff1d&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Booking&lt;/a&gt;, &lt;a href=&#34;https://research.facebook.com/blog/2020/10/increasing-the-sensitivity-of-a-b-tests-by-utilizing-the-variance-estimates-of-experimental-units/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Meta&lt;/a&gt;, &lt;a href=&#34;https://www.tripadvisor.com/engineering/reducing-a-b-test-measurement-variance-by-30/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;TripAdvisor&lt;/a&gt;, and many other.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;idea&lt;/strong&gt; of CUPED is the following. Suppose you have access to another random variable $X$ which is &lt;strong&gt;not affected&lt;/strong&gt; by the treatment and has known expectation $\mathbb E[X]$. Then define&lt;/p&gt;
+&lt;p&gt;$$
+\hat Y_{cuped,1} = \bar Y_1 - \theta \bar X + \theta \mathbb E [X]
+$$&lt;/p&gt;
+&lt;p&gt;where $\theta$ is a scalar. This estimator is an &lt;strong&gt;unbiased&lt;/strong&gt; estimator for $\mathbb E[Y]$ since in expectation the two last terms cancel out. However, the variance of $\hat Y_{cuped,1}$ is&lt;/p&gt;
+&lt;p&gt;$$
+\begin{aligned}
+\text{Var} \left( \hat Y_{cuped,1} \right) &amp;amp;= \text{Var} \left( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \right) = \newline
+&amp;amp;= \text{Var} \left( Y_1 - \theta X \right) / n = \newline
+&amp;amp;= \Big( \text{Var} (Y_1) + \theta^2 \text{Var} (X) - 2 \theta \text{Cov} (X,Y) \Big) / n
+\end{aligned}
+$$&lt;/p&gt;
+&lt;p&gt;Note that the variance of $\hat Y_{cuped,1}$ is minimized for&lt;/p&gt;
+&lt;p&gt;$$
+\theta^* = \frac{\text{Cov} (X,Y)}{\text{Var} (X)}
+$$&lt;/p&gt;
+&lt;p&gt;Which is the &lt;strong&gt;OLS&lt;/strong&gt; estimator of a linear regression of $Y$ on $X$. Substituting $\theta^*$ into the formula of the variance of $\hat Y_{cuped,1}$ we obtain&lt;/p&gt;
+&lt;p&gt;$$
+\text{Var} \left( \hat Y_{cuped,1} \right) = \text{Var} (\bar Y) (1 - \rho^2)
+$$&lt;/p&gt;
+&lt;p&gt;where $\rho$ is the &lt;strong&gt;correlation&lt;/strong&gt; between $Y$ and $X$. Therefore, the higher the correlation between $Y$ and $X$, the higher the variance reduction of CUPED.&lt;/p&gt;
+&lt;p&gt;We can then &lt;strong&gt;estimate the treatment effect&lt;/strong&gt; using the difference between control and treatment group&lt;/p&gt;
+&lt;p&gt;$$
+\begin{aligned}
+\Delta_{CUPED} &amp;amp;= \hat Y_{cuped,1}(D=1) - \hat Y_{cuped,1}(D=0) = \
+&amp;amp;= \big( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \ \big| \ D = 1 \big) - \big( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \ \big| \ D = 0 \big) = \
+&amp;amp;= \big( \bar Y_1 - \theta \bar X \ \big| \ D = 1 \big) - \big( \bar Y_1 - \theta \bar X \ \big| \ D = 0 \big)
+\end{aligned}
+$$&lt;/p&gt;
+&lt;p&gt;Note that $\mathbb E[X]$ cancels out when taking the difference. Therefore, it is sufficient to compute&lt;/p&gt;
+&lt;p&gt;$$
+\hat Y_{cuped,1}&#39; = \bar Y_1 - \theta \bar X
+$$&lt;/p&gt;
+&lt;p&gt;This is not an unbiased estimator of $\mathbb E[Y]$ but still delivers an unbiased estimator of the average treatment effect.&lt;/p&gt;
+&lt;p&gt;What is the &lt;strong&gt;optimal choice&lt;/strong&gt; for the control variable $X$?&lt;/p&gt;
+&lt;p&gt;We know that $X$ should have the following properties:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;not affected by the treatment&lt;/li&gt;
+&lt;li&gt;as correlated with $Y_1$ as possible&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The authors of the paper suggest using the pre-treatment outcome $Y_{0}$ since it gives the most reduction in variance in practice.&lt;/p&gt;
+&lt;p&gt;Therefore, &lt;strong&gt;in practice&lt;/strong&gt;, we can compute the CUPED estimate of the average treatment effect as follows:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Regress $Y_1$ on $Y_0$ and estimate $\hat \theta$&lt;/li&gt;
+&lt;li&gt;Compute $\hat Y_{cuped,1} = \bar Y_1 - \hat \theta \bar Y_0$&lt;/li&gt;
+&lt;li&gt;Compute the difference of $\hat Y_{cuped,1}$ between treatment and control group&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Equivalently, we can compute $\hat Y_{cuped,1}$ at the individual level and then regress it on the treatment dummy variable $D$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;theta = smf.ols(&#39;y1 ~ y0&#39;, data=df).fit().params[1]
+theta
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;1.1458111091416718
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;y1_cuped&#39;] = df[&#39;y1&#39;] - theta * df[&#39;y0&#39;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;y1_cuped ~ d&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    0.4008&lt;/td&gt; &lt;td&gt;    0.143&lt;/td&gt; &lt;td&gt;    2.810&lt;/td&gt; &lt;td&gt; 0.006&lt;/td&gt; &lt;td&gt;    0.118&lt;/td&gt; &lt;td&gt;    0.684&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;d&lt;/th&gt;         &lt;td&gt;    1.9415&lt;/td&gt; &lt;td&gt;    0.204&lt;/td&gt; &lt;td&gt;    9.529&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.537&lt;/td&gt; &lt;td&gt;    2.346&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The standard error is 33% smaller!&lt;/p&gt;
+&lt;h3 id=&#34;no-pre-treatment-outcome&#34;&gt;No Pre-treatment Outcome&lt;/h3&gt;
+&lt;p&gt;We could use CUPED also without $Y_0$, we just need another variable that is correlated with $Y$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;theta_x = smf.ols(&#39;y1 ~ x0&#39;, data=df).fit().params[1]
+theta_x
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.49315539693983107
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;y1_cuped_x&#39;] = df[&#39;y1&#39;] - theta_x * df[&#39;x0&#39;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;y1_cuped_x ~ d&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    2.5108&lt;/td&gt; &lt;td&gt;    0.169&lt;/td&gt; &lt;td&gt;   14.847&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.175&lt;/td&gt; &lt;td&gt;    2.846&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;d&lt;/th&gt;         &lt;td&gt;    1.9000&lt;/td&gt; &lt;td&gt;    0.242&lt;/td&gt; &lt;td&gt;    7.865&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.421&lt;/td&gt; &lt;td&gt;    2.379&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Now CUPED is less efficient but still more efficient than the simple difference.&lt;/p&gt;
+&lt;h2 id=&#34;cuped-vs-other&#34;&gt;CUPED vs Other&lt;/h2&gt;
+&lt;h3 id=&#34;control-for-y0&#34;&gt;Control for Y0&lt;/h3&gt;
+&lt;p&gt;Is CUPED just the simple difference with an additional control variable?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;y1 ~ y0 + d&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;   -0.0061&lt;/td&gt; &lt;td&gt;    0.603&lt;/td&gt; &lt;td&gt;   -0.010&lt;/td&gt; &lt;td&gt; 0.992&lt;/td&gt; &lt;td&gt;   -1.204&lt;/td&gt; &lt;td&gt;    1.192&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;y0&lt;/th&gt;        &lt;td&gt;    1.2249&lt;/td&gt; &lt;td&gt;    0.114&lt;/td&gt; &lt;td&gt;   10.755&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.999&lt;/td&gt; &lt;td&gt;    1.451&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;d&lt;/th&gt;         &lt;td&gt;    1.9519&lt;/td&gt; &lt;td&gt;    0.205&lt;/td&gt; &lt;td&gt;    9.529&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.545&lt;/td&gt; &lt;td&gt;    2.358&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;What about $X_0$?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;y1 ~ x0 + d&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    2.2259&lt;/td&gt; &lt;td&gt;    0.580&lt;/td&gt; &lt;td&gt;    3.837&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.075&lt;/td&gt; &lt;td&gt;    3.377&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;x0&lt;/th&gt;        &lt;td&gt;    0.5302&lt;/td&gt; &lt;td&gt;    0.072&lt;/td&gt; &lt;td&gt;    7.343&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.387&lt;/td&gt; &lt;td&gt;    0.674&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;d&lt;/th&gt;         &lt;td&gt;    1.9082&lt;/td&gt; &lt;td&gt;    0.243&lt;/td&gt; &lt;td&gt;    7.852&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.426&lt;/td&gt; &lt;td&gt;    2.390&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;did&#34;&gt;DiD&lt;/h3&gt;
+&lt;p&gt;Is CUPED just DiD?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_long = pd.wide_to_long(df, stubnames=&#39;y&#39;, i=&#39;i&#39;, j=&#39;t&#39;).reset_index()
+df_long.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;i&lt;/th&gt;
+      &lt;th&gt;t&lt;/th&gt;
+      &lt;th&gt;x1&lt;/th&gt;
+      &lt;th&gt;d&lt;/th&gt;
+      &lt;th&gt;y1_cuped_x&lt;/th&gt;
+      &lt;th&gt;y1_cuped&lt;/th&gt;
+      &lt;th&gt;x0&lt;/th&gt;
+      &lt;th&gt;y&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;11.373674&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;2.859789&lt;/td&gt;
+      &lt;td&gt;0.268590&lt;/td&gt;
+      &lt;td&gt;7.096171&lt;/td&gt;
+      &lt;td&gt;5.315635&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;9.191610&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;3.976662&lt;/td&gt;
+      &lt;td&gt;2.339490&lt;/td&gt;
+      &lt;td&gt;3.598911&lt;/td&gt;
+      &lt;td&gt;2.977799&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;12.675708&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;4.263673&lt;/td&gt;
+      &lt;td&gt;1.647050&lt;/td&gt;
+      &lt;td&gt;5.599818&lt;/td&gt;
+      &lt;td&gt;4.693796&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;9.025466&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1.621829&lt;/td&gt;
+      &lt;td&gt;-0.137091&lt;/td&gt;
+      &lt;td&gt;9.974215&lt;/td&gt;
+      &lt;td&gt;5.827975&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;8.609321&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3.166641&lt;/td&gt;
+      &lt;td&gt;0.917464&lt;/td&gt;
+      &lt;td&gt;7.590962&lt;/td&gt;
+      &lt;td&gt;5.230095&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;y ~ t * d&#39;, data=df_long).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    5.1481&lt;/td&gt; &lt;td&gt;    0.174&lt;/td&gt; &lt;td&gt;   29.608&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.805&lt;/td&gt; &lt;td&gt;    5.491&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;t&lt;/th&gt;         &lt;td&gt;    1.1514&lt;/td&gt; &lt;td&gt;    0.246&lt;/td&gt; &lt;td&gt;    4.683&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.666&lt;/td&gt; &lt;td&gt;    1.636&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;d&lt;/th&gt;         &lt;td&gt;   -0.1310&lt;/td&gt; &lt;td&gt;    0.248&lt;/td&gt; &lt;td&gt;   -0.527&lt;/td&gt; &lt;td&gt; 0.599&lt;/td&gt; &lt;td&gt;   -0.621&lt;/td&gt; &lt;td&gt;    0.359&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;t:d&lt;/th&gt;       &lt;td&gt;    1.9224&lt;/td&gt; &lt;td&gt;    0.351&lt;/td&gt; &lt;td&gt;    5.473&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.230&lt;/td&gt; &lt;td&gt;    2.615&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Did seems the &lt;strong&gt;least efficient&lt;/strong&gt; method.&lt;/p&gt;
+&lt;h3 id=&#34;comparison&#34;&gt;Comparison&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s compare the methods.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def simulate(K=1000):
+    
+    # Initialize coefficients
+    results = pd.DataFrame(columns=[&#39;k&#39;, &#39;Estimator&#39;, &#39;Estimate&#39;])
+    
+    # Compute coefficients
+    for k in range(K):
+        temp = pd.DataFrame({&#39;k&#39;: [k] * 6, 
+                             &#39;Estimator&#39;: [&#39;Diff &#39;, &#39;DiD  &#39;, &#39;Con Y&#39;, &#39;CUPED&#39;, &#39;Con X&#39;, &#39;CUPEX&#39;], 
+                             &#39;Estimate&#39;: [0] * 6})
+        
+        # Draw data
+        df = dgp_cuped().generate_data(seed=k)
+        
+        
+        # Single diff
+        temp[&#39;Estimate&#39;][0] = smf.ols(&#39;y1 ~ d&#39;, data=df).fit().params[1]
+        
+        # Double diff
+        df_long = pd.wide_to_long(df, stubnames=&#39;y&#39;, i=&#39;i&#39;, j=&#39;t&#39;).reset_index()
+        temp[&#39;Estimate&#39;][1] = smf.ols(&#39;y ~ d * t&#39;, data=df_long).fit().params[3]
+        
+        # Autoregression
+        temp[&#39;Estimate&#39;][2] = smf.ols(&#39;y1 ~ y0 + d&#39;, data=df).fit().params[2]
+        
+        # Cuped
+        theta = smf.ols(&#39;y1 ~ y0&#39;, data=df).fit().params[1]
+        df[&#39;y_cuped&#39;] = df[&#39;y1&#39;] - theta * df[&#39;y0&#39;]
+        temp[&#39;Estimate&#39;][3] = smf.ols(&#39;y_cuped ~ d&#39;, data=df).fit().params[1]
+        
+        # Autoregression x
+        temp[&#39;Estimate&#39;][4] = smf.ols(&#39;y1 ~ x0 + d&#39;, data=df).fit().params[2]
+        
+        # Cuped x
+        theta_x = smf.ols(&#39;y1 ~ x0&#39;, data=df).fit().params[1]
+        df[&#39;y_cuped_x&#39;] = df[&#39;y1&#39;] - theta_x * df[&#39;x0&#39;]
+        temp[&#39;Estimate&#39;][5] = smf.ols(&#39;y_cuped_x ~ d&#39;, data=df).fit().params[1]
+                
+                
+        results = pd.concat((results, temp))
+    
+    return results.reset_index(drop=True)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results = simulate()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s plot the distribution of the estimated parameters.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.kdeplot(data=results, x=&amp;quot;Estimate&amp;quot;, hue=&amp;quot;Estimator&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/cuped_41_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Are the means different?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results.groupby(&#39;Estimator&#39;)[[&#39;Estimate&#39;]].mean()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Estimate&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Estimator&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;CUPED&lt;/th&gt;
+      &lt;td&gt;1.979737&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;CUPEX&lt;/th&gt;
+      &lt;td&gt;1.975514&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Con X&lt;/th&gt;
+      &lt;td&gt;1.996559&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Con Y&lt;/th&gt;
+      &lt;td&gt;2.000648&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;DiD&lt;/th&gt;
+      &lt;td&gt;2.001238&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Diff&lt;/th&gt;
+      &lt;td&gt;1.998847&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;All estimators seem &lt;strong&gt;unbiased&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;What about the standard errors?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results.groupby(&#39;Estimator&#39;)[[&#39;Estimate&#39;]].std()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Estimate&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Estimator&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;CUPED&lt;/th&gt;
+      &lt;td&gt;0.206764&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;CUPEX&lt;/th&gt;
+      &lt;td&gt;0.236497&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Con X&lt;/th&gt;
+      &lt;td&gt;0.236456&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Con Y&lt;/th&gt;
+      &lt;td&gt;0.207183&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;DiD&lt;/th&gt;
+      &lt;td&gt;0.205980&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Diff&lt;/th&gt;
+      &lt;td&gt;0.297775&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;Notes&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;All estimators seem unbiased&lt;/li&gt;
+&lt;li&gt;All estimators seem to have the same variance, a part from the simple difference&lt;/li&gt;
+&lt;li&gt;The DiD estimator has a lower variance than the OLS estimate suggested&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;CONCLUSION&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;p&gt;[1] A. Deng, Y. Xu, R. Kohavi, T. Walker, &lt;a href=&#34;https://dl.acm.org/doi/abs/10.1145/2433396.2433413&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Improving the Sensitivity of Online Controlled Experiments by Utilizing Pre-Experiment Data&lt;/a&gt; (2013), &lt;em&gt;WSDM&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] H. Xir, J. Aurisset, &lt;a href=&#34;https://dl.acm.org/doi/abs/10.1145/2939672.2939733&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Improving the sensitivity of online controlled experiments: Case studies at Netflix&lt;/a&gt; (2013), &lt;em&gt;ACM SIGKDD&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[3] Y. Guo, D. Coey, M. Konutgan, W. Li, C. Schoener, M. Goldman, &lt;a href=&#34;https://arxiv.org/abs/2106.07263&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Machine Learning for Variance Reduction in Online Experiments&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;[1] A. Belloni, D. Chen, V. Chernozhukov, C. Hansen, &lt;a href=&#34;https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA9626&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Sparse Models and Methods for Optimal Instruments With an Application to Eminent Domain&lt;/a&gt; (2012), &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] A. Belloni, V. Chernozhukov, C. Hansen, &lt;a href=&#34;https://academic.oup.com/restud/article-abstract/81/2/608/1523757&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Inference on treatment effects after selection among high-dimensional controls&lt;/a&gt; (2014), &lt;em&gt;The Review of Economic Studies&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[3] V. Chernozhukov, D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, J. Robins, &lt;a href=&#34;https://academic.oup.com/ectj/article/21/1/C1/5056401&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double/debiased machine learning for treatment and structural parameters&lt;/a&gt; (2018), &lt;em&gt;The Econometrics Journal&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[4] P. Hünermund, B. Louw, I. Caspi, &lt;a href=&#34;https://arxiv.org/abs/2108.11294&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double Machine Learning and Automated Confounder Selection - A Cautionary Tale&lt;/a&gt; (2022), &lt;em&gt;working paper&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/eb767a59975b&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double Debiased Machine Learning (part 1)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/bf990720a0b2&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double Debiased Machine Learning (part 2)&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/344ac1477699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Omitted Variable Bias&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding The Frisch-Waugh-Lovell Theorem&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/cuped.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/cuped.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>How to Compare Two or More Distributions</title>
       <link>https://matteocourthoud.github.io/post/distr/</link>
       <pubDate>Wed, 22 Jun 2022 00:00:00 +0000</pubDate>
