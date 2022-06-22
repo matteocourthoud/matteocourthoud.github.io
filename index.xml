@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sat, 18 Jun 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Wed, 22 Jun 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -27309,7 +27309,7 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     <item>
       <title>How to Compare Two or More Distributions</title>
       <link>https://matteocourthoud.github.io/post/distr/</link>
-      <pubDate>Sat, 18 Jun 2022 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 22 Jun 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/distr/</guid>
       <description>&lt;p&gt;&lt;em&gt;A complete guide to comparing distributions, from visualization to statistical tests&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;Comparing the empirical distribution of a variable across different groups is a common problem in data science. In particular, in causal inference the problem often arises when we have to &lt;strong&gt;assess the quality of randomization&lt;/strong&gt;.&lt;/p&gt;
@@ -27485,7 +27485,7 @@ plt.title(&amp;quot;QQ plot&amp;quot;);
 &lt;h3 id=&#34;t-test&#34;&gt;T-test&lt;/h3&gt;
 &lt;p&gt;The first and most common test is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Student%27s_t-test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;student t-test&lt;/a&gt;. T-tests are generally used to &lt;strong&gt;compare means&lt;/strong&gt;. In this case, we want to test whether the means of the &lt;code&gt;income&lt;/code&gt; distribution is the same across the two groups. The test statistic for the two-means comparison test is given by:&lt;/p&gt;
 &lt;p&gt;$$
-stat = \frac{|\bar x_1 - \bar x_2|}{\sqrt{s^2_1 / n_1 + s^2_2 / n_2}}
+stat = \frac{|\bar x_1 - \bar x_2|}{\sqrt{s^2 / n }}
 $$&lt;/p&gt;
 &lt;p&gt;Where $\bar x$ is the sample mean and $s$ is the sample standard deviation. Under mild conditions, the test statistic is asymptotically distributed as a &lt;a href=&#34;https://en.wikipedia.org/wiki/Student%27s_t-distribution&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;student t&lt;/a&gt; distribution.&lt;/p&gt;
 &lt;p&gt;We use the &lt;code&gt;ttest_ind&lt;/code&gt; function from &lt;code&gt;scipy&lt;/code&gt; to perform the t-test. The function returns both the test statistic and the implied &lt;a href=&#34;https://en.wikipedia.org/wiki/P-value&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;p-value&lt;/a&gt;.&lt;/p&gt;
@@ -27497,6 +27497,9 @@ print(f&amp;quot;t-test: statistic={stat:.4f}, p-value={p_value:.4f}&amp;quot;)
 &lt;pre&gt;&lt;code&gt;t-test: statistic=-1.5549, p-value=0.1203
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The p-value of the test is $0.12$, therefore we do &lt;strong&gt;not reject&lt;/strong&gt; the null hypothesis of no difference in &lt;em&gt;means&lt;/em&gt; across treatment and control groups.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: the t-test assumes that the variance in the two samples is the same so that its estimate is computed on the joint sample. &lt;a href=&#34;https://en.wikipedia.org/wiki/Welch%27s_t-test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Welch’s t-test&lt;/a&gt; allows for unequal variances in the two samples.&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;standardized-mean-difference-smd&#34;&gt;Standardized Mean Difference (SMD)&lt;/h3&gt;
 &lt;p&gt;In general, it is good practice to always perform a test for difference in means on &lt;strong&gt;all variables&lt;/strong&gt; across the treatment and control group, when we are running a randomized control trial or A/B test.&lt;/p&gt;
 &lt;p&gt;However, since the denominator of the t-test statistic depends on the sample size, the t-test has been &lt;strong&gt;criticized&lt;/strong&gt; for making p-values hard to compare across studies. In fact, we may obtain a significant result in an experiment with very small magnitude of difference but large sample size while we may obtain a non-significant result in an experiment with large magnitude of difference but small sample size.&lt;/p&gt;
@@ -27570,7 +27573,7 @@ create_table_one(df, &#39;treatment&#39;, [&#39;Gender&#39;, &#39;Age&#39;, &#39
 &lt;/div&gt;
 &lt;p&gt;In the first two columns, we can see the average of the different variables across the treatment and control groups, with standard errors in parenthesis. In the &lt;strong&gt;last column&lt;/strong&gt;, the values of the SMD indicate a standardized difference of more than $0.1$ for all variables, suggesting that the two groups are probably different.&lt;/p&gt;
 &lt;h3 id=&#34;mannwhitney-u-test&#34;&gt;Mann–Whitney U Test&lt;/h3&gt;
-&lt;p&gt;An alternative test is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Mann–Whitney U test&lt;/a&gt; which compares the &lt;strong&gt;median&lt;/strong&gt; of two distributions. In particular, the null hypothesis for this test is that the two groups have the same distribution, while the alternative hypothesis is that one group has larger (or smaller) values than the other.&lt;/p&gt;
+&lt;p&gt;An alternative test is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Mann–Whitney U test&lt;/a&gt;. The null hypothesis for this test is that the two groups have the same distribution, while the alternative hypothesis is that one group has larger (or smaller) values than the other.&lt;/p&gt;
 &lt;p&gt;Differently from the other tests we have seen so far, the Mann–Whitney U test is agnostic to outliers and concentrates on the center of the distribution.&lt;/p&gt;
 &lt;p&gt;The test &lt;strong&gt;procedure&lt;/strong&gt; is the following.&lt;/p&gt;
 &lt;ol&gt;
@@ -27597,7 +27600,10 @@ print(f&amp;quot; Mann–Whitney U Test: statistic={stat:.4f}, p-value={p_value:
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt; Mann–Whitney U Test: statistic=106371.5000, p-value=0.6012
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We get a p-value of 0.6 which implies that we do &lt;strong&gt;not reject&lt;/strong&gt; the null hypothesis of no difference in &lt;em&gt;medians&lt;/em&gt; across treatment and control groups.&lt;/p&gt;
+&lt;p&gt;We get a p-value of 0.6 which implies that we do &lt;strong&gt;not reject&lt;/strong&gt; the null hypothesis of no difference between the two distributions.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt;: as for the t-test, there exists a version of the Mann–Whitney U test for unequal variances in the two samples, the &lt;a href=&#34;https://www.statisticshowto.com/brunner-munzel-test-generalized-wilcoxon-test/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Brunner-Munzel test&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h3 id=&#34;permutation-tests&#34;&gt;Permutation Tests&lt;/h3&gt;
 &lt;p&gt;A non-parametric alternative is permutation testing. The idea is that, under the null hypothesis, the two distributions should be the same, therefore &lt;strong&gt;shuffling&lt;/strong&gt; the &lt;code&gt;group&lt;/code&gt; labels should not significantly alter any statistic.&lt;/p&gt;
 &lt;p&gt;We can chose any statistic and check how its value in the original sample compares with its distribution across &lt;code&gt;group&lt;/code&gt; label permutations. For example, let&amp;rsquo;s use as a test statistic the &lt;strong&gt;difference of sample means&lt;/strong&gt; between the treatment and control group.&lt;/p&gt;
@@ -27622,7 +27628,7 @@ plt.legend();
 plt.xlabel(&#39;Income difference between treatment and control group&#39;)
 plt.title(&#39;Permutation Test&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_53_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, the sample statistic is quite extreme with respect to the values in the permuted samples, but not excessively.&lt;/p&gt;
 &lt;h3 id=&#34;chi-squared-test&#34;&gt;Chi-Squared Test&lt;/h3&gt;
 &lt;p&gt;The &lt;a href=&#34;https://matteocourthoud.github.io/post/chisquared/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;chi-squared test&lt;/a&gt; is a very powerful test that is mostly used to test differences in frequencies.&lt;/p&gt;
@@ -27841,7 +27847,7 @@ plt.errorbar(x=df_ks[&#39;Income&#39;][k], y=y, yerr=ks_stat/2, color=&#39;k&#39
 plt.legend(loc=&#39;center right&#39;);
 plt.title(&amp;quot;Kolmogorov-Smirnov Test&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_67_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_69_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;From the plot, we can see that the value of the test statistic corresponds to the distance between the two cumulative distributions at &lt;code&gt;income&lt;/code&gt;~650. For that value of &lt;code&gt;income&lt;/code&gt;, we have the largest imbalance between the two groups.&lt;/p&gt;
 &lt;p&gt;We can now perform the actual test using the &lt;code&gt;kstest&lt;/code&gt; function from &lt;code&gt;scipy&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.stats import kstest
@@ -27852,6 +27858,12 @@ print(f&amp;quot; Kolmogorov-Smirnov Test: statistic={stat:.4f}, p-value={p_valu
 &lt;pre&gt;&lt;code&gt; Kolmogorov-Smirnov Test: statistic=0.0974, p-value=0.0355
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The p-value is below 5%: we &lt;strong&gt;reject&lt;/strong&gt; the null hypothesis that the two distributions are the same, with 95% confidence.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Note 1&lt;/strong&gt;: The KS test is too conservative and rejects the null hypothesis too rarely. Lilliefors test corrects this bias using a different distribution for the test statistic, the Lilliefors distribution.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Note 2&lt;/strong&gt;: the KS test uses very little information since it only compares the two cumulative distributions at one point: the one of maximum distance. The &lt;a href=&#34;https://en.wikipedia.org/wiki/Anderson%E2%80%93Darling_test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Anderson-Darling test&lt;/a&gt; and the &lt;a href=&#34;https://en.wikipedia.org/wiki/Cram%C3%A9r%E2%80%93von_Mises_criterion&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Cramér-von Mises test&lt;/a&gt; instead compare the two distributions along the whole domain, by integration (the difference between the two lies in the weighting of the squared distances).&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h2 id=&#34;multiple-groups---plots&#34;&gt;Multiple Groups - Plots&lt;/h2&gt;
 &lt;p&gt;So far we have only considered the case of two groups: treatment and control. But that if we had &lt;strong&gt;multiple groups&lt;/strong&gt;? Some of the methods we have seen above scale well, while others don&amp;rsquo;t.&lt;/p&gt;
 &lt;p&gt;As a working example, we are now going to check whether the distribution of &lt;code&gt;income&lt;/code&gt; is the same across treatment &lt;code&gt;arms&lt;/code&gt;.&lt;/p&gt;
@@ -27860,14 +27872,14 @@ print(f&amp;quot; Kolmogorov-Smirnov Test: statistic={stat:.4f}, p-value={p_valu
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.boxplot(x=&#39;Arm&#39;, y=&#39;Income&#39;, data=df.sort_values(&#39;Arm&#39;));
 plt.title(&amp;quot;Boxplot, multiple groups&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_75_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_78_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;From the plot, it looks like the distribution of &lt;code&gt;income&lt;/code&gt; is different across treatment arms, with higher numbered arms having a higher average income.&lt;/p&gt;
 &lt;h3 id=&#34;violin-plot&#34;&gt;Violin Plot&lt;/h3&gt;
 &lt;p&gt;A very nice extension of the boxplot that combines summary statistics and kernel density estimation is the  &lt;strong&gt;violinplot&lt;/strong&gt;. The violinplot plots separate densities along the y axis so that they don&amp;rsquo;t overlap. By default, it also adds a miniature boxplot inside.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.violinplot(x=&#39;Arm&#39;, y=&#39;Income&#39;, data=df.sort_values(&#39;Arm&#39;));
 plt.title(&amp;quot;Violin Plot, multiple groups&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_79_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_82_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As for the boxplot, the violin plot suggests that income is different across treatment arms.&lt;/p&gt;
 &lt;h3 id=&#34;ridgeline-plot&#34;&gt;Ridgeline Plot&lt;/h3&gt;
 &lt;p&gt;Lastly, the &lt;strong&gt;ridgeline plot&lt;/strong&gt; plots multiple kernel density distributions along the x-axis, making them more intuitive than the violin plot but partially overlapping them. Unfortunately, there is no default ridgeline plot neither in &lt;code&gt;matplotlib&lt;/code&gt; nor in &lt;code&gt;seaborn&lt;/code&gt;. We need to import it from &lt;a href=&#34;https://github.com/leotac/joypy&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;joypy&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
@@ -27877,7 +27889,7 @@ joyplot(df, by=&#39;Arm&#39;, column=&#39;Income&#39;, colormap=sns.color_palett
 plt.xlabel(&#39;Income&#39;);
 plt.title(&amp;quot;Ridgeline Plot, multiple groups&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/distr_83_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/distr_86_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Again, the ridgeline plot suggests that higher numbered treatment arms have higher income. From this plot it is also easier to appreciate the different shapes of the distributions.&lt;/p&gt;
 &lt;h2 id=&#34;multiple-groups---tests&#34;&gt;Multiple Groups - Tests&lt;/h2&gt;
 &lt;p&gt;Lastly, let&amp;rsquo;s consider hypothesis tests to compare multiple groups. For simplicity, we will concentrate on the most popular one: the F-test.&lt;/p&gt;
