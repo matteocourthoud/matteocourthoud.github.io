@@ -23,24 +23,6 @@
 &lt;p&gt;In this post, I will present CUPED and try to compare it against other causal inference methods.&lt;/p&gt;
 &lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
 &lt;p&gt;Let&amp;rsquo;s assume we are a firm that is testing an &lt;strong&gt;ad campaign&lt;/strong&gt; and we are interested in understanding whether it increases revenue or not. We randomly split a set of users into a treatment and control group and we show the ad campaign to the treatment group. Differently from the standard A/B test setting, assume we observe users also before the test.&lt;/p&gt;
-&lt;p&gt;The following &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Directed Acyclic Graph (DAG)&lt;/strong&gt;&lt;/a&gt; summarizes the data generating process.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
-classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
-classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
-classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
-
-D((ad spend))
-Y0((pre revenue))
-Y1((post revenue))
-
-D --&amp;gt; Y1
-Y0 --&amp;gt; Y1
-
-class Y1,D included;
-class Y0 excluded;
-
-linkStyle 0 stroke:#00ff00,stroke-width:4px;
-&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We can now generate the simulated data, using the data generating process &lt;code&gt;dgp_cuped()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
@@ -81,35 +63,35 @@ df.head()
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;5.315635&lt;/td&gt;
-      &lt;td&gt;6.359304&lt;/td&gt;
+      &lt;td&gt;8.359304&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;2&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;2.977799&lt;/td&gt;
-      &lt;td&gt;5.751485&lt;/td&gt;
+      &lt;td&gt;7.751485&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;3&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;4.693796&lt;/td&gt;
-      &lt;td&gt;7.025253&lt;/td&gt;
+      &lt;td&gt;9.025253&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;4&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;5.827975&lt;/td&gt;
-      &lt;td&gt;6.540667&lt;/td&gt;
+      &lt;td&gt;8.540667&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;5&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;5.230095&lt;/td&gt;
-      &lt;td&gt;6.910165&lt;/td&gt;
+      &lt;td&gt;8.910165&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -123,7 +105,7 @@ $$&lt;/p&gt;
 &lt;p&gt;Where the bar indicates an average. In our case, we compute the average revenue post ad campaign in the treatment group, minus the average revenue post ad campaign in the control group.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.mean(df.loc[df.ad_campaign==True, &#39;revenue1&#39;]) - np.mean(df.loc[df.ad_campaign==False, &#39;revenue1&#39;])
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;1.7914301325347415
+&lt;pre&gt;&lt;code&gt;1.7914301325347406
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;The estimated treatment effect is 1.79, very close to the &lt;strong&gt;true value&lt;/strong&gt; of 2. We can obtain the same estimate by regressing the post-treatment outcome &lt;code&gt;revenue1&lt;/code&gt; on the treatment indicator &lt;code&gt;ad_campaign&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;$$
@@ -137,7 +119,7 @@ $$&lt;/p&gt;
        &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    6.2995&lt;/td&gt; &lt;td&gt;    0.211&lt;/td&gt; &lt;td&gt;   29.904&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    5.881&lt;/td&gt; &lt;td&gt;    6.718&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    8.2995&lt;/td&gt; &lt;td&gt;    0.211&lt;/td&gt; &lt;td&gt;   39.398&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    7.881&lt;/td&gt; &lt;td&gt;    8.718&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
   &lt;th&gt;ad_campaign&lt;/th&gt; &lt;td&gt;    1.7914&lt;/td&gt; &lt;td&gt;    0.301&lt;/td&gt; &lt;td&gt;    5.953&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.194&lt;/td&gt; &lt;td&gt;    2.389&lt;/td&gt;
@@ -156,10 +138,10 @@ $$&lt;/p&gt;
 &lt;p&gt;$$
 \hat Y^{cuped}_{1} = \bar Y_1 - \theta \bar X + \theta \mathbb E [X]
 $$&lt;/p&gt;
-&lt;p&gt;where $\theta$ is a scalar. This estimator is an &lt;strong&gt;unbiased&lt;/strong&gt; estimator for $\mathbb E[Y]$ since in expectation the two last terms cancel out. However, the variance of $Y^{cuped}_{1}$ is&lt;/p&gt;
+&lt;p&gt;where $\theta$ is a scalar. This estimator is an &lt;strong&gt;unbiased&lt;/strong&gt; estimator for $\mathbb E[Y]$ since in expectation the two last terms cancel out. However, the variance of $\hat Y^{cuped}_{1}$ is&lt;/p&gt;
 &lt;p&gt;$$
 \begin{aligned}
-\text{Var} \left( Y^{cuped}_{1} \right) &amp;amp;= \text{Var} \left( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \right) = \newline
+\text{Var} \left( \hat Y^{cuped}_{1} \right) &amp;amp;= \text{Var} \left( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \right) = \newline
 &amp;amp;= \text{Var} \left( Y_1 - \theta X \right) / n = \newline
 &amp;amp;= \Big( \text{Var} (Y_1) + \theta^2 \text{Var} (X) - 2 \theta \text{Cov} (X,Y) \Big) / n
 \end{aligned}
@@ -176,8 +158,8 @@ $$&lt;/p&gt;
 &lt;p&gt;We can then &lt;strong&gt;estimate the average treatment effect&lt;/strong&gt; using the difference between control and treatment group&lt;/p&gt;
 &lt;p&gt;$$
 \begin{aligned}
-\widehat {ATE}^{cuped} &amp;amp;= \hat Y^{cuped}&lt;em&gt;{1}(D=1) - \hat Y^{cuped}&lt;/em&gt;{1}(D=0) = \
-&amp;amp;= \big( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \ \big| \ D = 1 \big) - \big( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \ \big| \ D = 0 \big) = \
+\widehat {ATE}^{cuped} &amp;amp;= \hat Y^{cuped}&lt;em&gt;{1} (D=1) - \hat Y^{cuped}&lt;/em&gt;{1}(D=0) = \newline
+&amp;amp;= \big( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \ \big| \ D = 1 \big) - \big( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \ \big| \ D = 0 \big) = \newline
 &amp;amp;= \big( \bar Y_1 - \theta \bar X \ \big| \ D = 1 \big) - \big( \bar Y_1 - \theta \bar X \ \big| \ D = 0 \big)
 \end{aligned}
 $$&lt;/p&gt;
@@ -216,7 +198,7 @@ $$&lt;/p&gt;
        &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    6.2259&lt;/td&gt; &lt;td&gt;    0.143&lt;/td&gt; &lt;td&gt;   43.654&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    5.943&lt;/td&gt; &lt;td&gt;    6.509&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    8.2259&lt;/td&gt; &lt;td&gt;    0.143&lt;/td&gt; &lt;td&gt;   57.677&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    7.943&lt;/td&gt; &lt;td&gt;    8.509&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
   &lt;th&gt;ad_campaign&lt;/th&gt; &lt;td&gt;    1.9415&lt;/td&gt; &lt;td&gt;    0.204&lt;/td&gt; &lt;td&gt;    9.529&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.537&lt;/td&gt; &lt;td&gt;    2.346&lt;/td&gt;
@@ -230,7 +212,7 @@ $$&lt;/p&gt;
 &lt;li&gt;Compute $\hat Y^{cuped}_{1} = \tilde Y_1 + \bar Y_1$&lt;/li&gt;
 &lt;li&gt;Compute the difference of $\hat Y^{cuped}_{1}$ between treatment and control group&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;Step (3) is the same as before but (1) and (2) are different.&lt;/p&gt;
+&lt;p&gt;Step (3) is the same as before but (1) and (2) are different. This procedure is called &lt;strong&gt;partialling out&lt;/strong&gt; ad the algebraic equivalence is guaranteed by the &lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Frisch-Waugh-Lowell Theorem&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s check if we indeed obtain the same result.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;revenue1_tilde&#39;] = smf.ols(&#39;revenue1 ~ revenue0&#39;, data=df).fit().resid + np.mean(df[&#39;revenue1&#39;])
 &lt;/code&gt;&lt;/pre&gt;
@@ -241,7 +223,7 @@ $$&lt;/p&gt;
        &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    6.2259&lt;/td&gt; &lt;td&gt;    0.143&lt;/td&gt; &lt;td&gt;   43.654&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    5.943&lt;/td&gt; &lt;td&gt;    6.509&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    8.2259&lt;/td&gt; &lt;td&gt;    0.143&lt;/td&gt; &lt;td&gt;   57.677&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    7.943&lt;/td&gt; &lt;td&gt;    8.509&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
   &lt;th&gt;ad_campaign&lt;/th&gt; &lt;td&gt;    1.9415&lt;/td&gt; &lt;td&gt;    0.204&lt;/td&gt; &lt;td&gt;    9.529&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.537&lt;/td&gt; &lt;td&gt;    2.346&lt;/td&gt;
@@ -268,7 +250,7 @@ $$&lt;/p&gt;
        &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;   -0.0061&lt;/td&gt; &lt;td&gt;    0.603&lt;/td&gt; &lt;td&gt;   -0.010&lt;/td&gt; &lt;td&gt; 0.992&lt;/td&gt; &lt;td&gt;   -1.204&lt;/td&gt; &lt;td&gt;    1.192&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;   &lt;td&gt;    1.9939&lt;/td&gt; &lt;td&gt;    0.603&lt;/td&gt; &lt;td&gt;    3.304&lt;/td&gt; &lt;td&gt; 0.001&lt;/td&gt; &lt;td&gt;    0.796&lt;/td&gt; &lt;td&gt;    3.192&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
   &lt;th&gt;revenue0&lt;/th&gt;    &lt;td&gt;    1.2249&lt;/td&gt; &lt;td&gt;    0.114&lt;/td&gt; &lt;td&gt;   10.755&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.999&lt;/td&gt; &lt;td&gt;    1.451&lt;/td&gt;
@@ -286,7 +268,7 @@ $$&lt;/p&gt;
 &lt;p&gt;This method was initially introduced in the 19th century to estimate the causes of a Cholera epidemic in London. The main advantage of diff-in-diff is that it allows to estimate the average treatment effect also when randomization is not perfect and the treatment and control group are not comparable. The &lt;strong&gt;key assumption&lt;/strong&gt; that is needed is that these difference between the treatment and control group is constant over time. By taking a double difference, we difference it out.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s check how diff-in-diff works empirically. The most common way to compute the diff-in-diff estiamtor is to first reshape the data in a &lt;strong&gt;long format&lt;/strong&gt; or &lt;strong&gt;panel format&lt;/strong&gt; (one observation is an individual $i$ at time period $t$) and then to regress the outcome $Y$ on the full interaction between the post-treatment dummy $T$ and the treatment dummy $D$.&lt;/p&gt;
 &lt;p&gt;$$
-Y_i = \alpha + \beta D_i + \gamma \mathbb I_i (t=1) + \delta D_i * \mathbb I_i (t=1) + \varepsilon_i
+Y_{i,t} = \alpha + \beta D_i + \gamma \mathbb I (t=1) + \delta D_i * \mathbb I (t=1) + \varepsilon_{i,t}
 $$&lt;/p&gt;
 &lt;p&gt;The estimator of the average treatment effect is the coefficient of the interaction coefficient, $\delta$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_long = pd.wide_to_long(df, stubnames=&#39;revenue&#39;, i=&#39;i&#39;, j=&#39;t&#39;).reset_index()
@@ -312,9 +294,9 @@ df_long.head()
       &lt;th&gt;&lt;/th&gt;
       &lt;th&gt;i&lt;/th&gt;
       &lt;th&gt;t&lt;/th&gt;
-      &lt;th&gt;revenue1_cuped&lt;/th&gt;
-      &lt;th&gt;revenue1_tilde&lt;/th&gt;
       &lt;th&gt;ad_campaign&lt;/th&gt;
+      &lt;th&gt;revenue1_tilde&lt;/th&gt;
+      &lt;th&gt;revenue1_cuped&lt;/th&gt;
       &lt;th&gt;revenue&lt;/th&gt;
     &lt;/tr&gt;
   &lt;/thead&gt;
@@ -323,45 +305,45 @@ df_long.head()
       &lt;th&gt;0&lt;/th&gt;
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;6.093744&lt;/td&gt;
-      &lt;td&gt;6.093744&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;8.093744&lt;/td&gt;
+      &lt;td&gt;8.093744&lt;/td&gt;
       &lt;td&gt;5.315635&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;2&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;8.164644&lt;/td&gt;
-      &lt;td&gt;8.164644&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;10.164644&lt;/td&gt;
+      &lt;td&gt;10.164644&lt;/td&gt;
       &lt;td&gt;2.977799&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;3&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;7.472203&lt;/td&gt;
-      &lt;td&gt;7.472203&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;9.472203&lt;/td&gt;
+      &lt;td&gt;9.472203&lt;/td&gt;
       &lt;td&gt;4.693796&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;4&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;5.688063&lt;/td&gt;
-      &lt;td&gt;5.688063&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;7.688063&lt;/td&gt;
+      &lt;td&gt;7.688063&lt;/td&gt;
       &lt;td&gt;5.827975&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;5&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;6.742618&lt;/td&gt;
-      &lt;td&gt;6.742618&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;8.742618&lt;/td&gt;
+      &lt;td&gt;8.742618&lt;/td&gt;
       &lt;td&gt;5.230095&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
@@ -378,7 +360,7 @@ df_long.head()
   &lt;th&gt;Intercept&lt;/th&gt;     &lt;td&gt;    5.1481&lt;/td&gt; &lt;td&gt;    0.174&lt;/td&gt; &lt;td&gt;   29.608&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.805&lt;/td&gt; &lt;td&gt;    5.491&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;t&lt;/th&gt;             &lt;td&gt;    1.1514&lt;/td&gt; &lt;td&gt;    0.246&lt;/td&gt; &lt;td&gt;    4.683&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.666&lt;/td&gt; &lt;td&gt;    1.636&lt;/td&gt;
+  &lt;th&gt;t&lt;/th&gt;             &lt;td&gt;    3.1514&lt;/td&gt; &lt;td&gt;    0.246&lt;/td&gt; &lt;td&gt;   12.816&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.666&lt;/td&gt; &lt;td&gt;    3.636&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
   &lt;th&gt;ad_campaign&lt;/th&gt;   &lt;td&gt;   -0.1310&lt;/td&gt; &lt;td&gt;    0.248&lt;/td&gt; &lt;td&gt;   -0.527&lt;/td&gt; &lt;td&gt; 0.599&lt;/td&gt; &lt;td&gt;   -0.621&lt;/td&gt; &lt;td&gt;    0.359&lt;/td&gt;
@@ -401,7 +383,7 @@ df_long.head()
   &lt;th&gt;Intercept&lt;/th&gt;     &lt;td&gt;    5.1481&lt;/td&gt; &lt;td&gt;    0.139&lt;/td&gt; &lt;td&gt;   37.056&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.876&lt;/td&gt; &lt;td&gt;    5.420&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;t&lt;/th&gt;             &lt;td&gt;    1.1514&lt;/td&gt; &lt;td&gt;    0.128&lt;/td&gt; &lt;td&gt;    9.027&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.901&lt;/td&gt; &lt;td&gt;    1.401&lt;/td&gt;
+  &lt;th&gt;t&lt;/th&gt;             &lt;td&gt;    3.1514&lt;/td&gt; &lt;td&gt;    0.128&lt;/td&gt; &lt;td&gt;   24.707&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.901&lt;/td&gt; &lt;td&gt;    3.401&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
   &lt;th&gt;ad_campaign&lt;/th&gt;   &lt;td&gt;   -0.1310&lt;/td&gt; &lt;td&gt;    0.181&lt;/td&gt; &lt;td&gt;   -0.724&lt;/td&gt; &lt;td&gt; 0.469&lt;/td&gt; &lt;td&gt;   -0.486&lt;/td&gt; &lt;td&gt;    0.224&lt;/td&gt;
@@ -410,7 +392,7 @@ df_long.head()
   &lt;th&gt;t:ad_campaign&lt;/th&gt; &lt;td&gt;    1.9224&lt;/td&gt; &lt;td&gt;    0.209&lt;/td&gt; &lt;td&gt;    9.208&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.513&lt;/td&gt; &lt;td&gt;    2.332&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
-&lt;p&gt;Clustering standard errors at the individual level we obtain standard errors that are comparable to the previous estimates.&lt;/p&gt;
+&lt;p&gt;Clustering standard errors at the individual level we obtain standard errors that are comparable to the previous estimates ($\sim 0.2$).&lt;/p&gt;
 &lt;h3 id=&#34;comparison&#34;&gt;Comparison&lt;/h3&gt;
 &lt;p&gt;Which method is better? From what we have seen so far, all methods seem to deliver an accurate estimate, but the simple difference has a larger standard deviation.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s now compare all the methods we have seen so far via &lt;strong&gt;simulation&lt;/strong&gt;. We simulate the data generating process &lt;code&gt;dgp_cuped()&lt;/code&gt; 1000 times and we save the estimated coefficient of the following methods:&lt;/p&gt;
@@ -523,18 +505,24 @@ plt.title(&#39;Simulated Distributions&#39;);
 &lt;ul&gt;
 &lt;li&gt;pre-treatment missing values:&lt;/li&gt;
 &lt;li&gt;additional covariates / control variables&lt;/li&gt;
-&lt;li&gt;&lt;/li&gt;
+&lt;li&gt;multiple pre-treatment periods&lt;/li&gt;
+&lt;li&gt;heterogeneous treatment effects&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Suppose now that randomization was not perfect and two groups are not identical. In the model, assume $\beta \neq 0$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results_unob = simulate(dgp=dgp_cuped(beta=1))
+&lt;p&gt;and combinations of them. However, I found imperfect randomization to be the most informative example.&lt;/p&gt;
+&lt;p&gt;Suppose now that &lt;strong&gt;randomization was not perfect&lt;/strong&gt; and two groups are not identical. In particular, if the data generating process is&lt;/p&gt;
+&lt;p&gt;$$
+Y_{i,t} = \alpha + \beta D_i + \gamma \mathbb I (t=1) + \delta D_i * \mathbb I (t=1) + u_i + \varepsilon_{i,t}
+$$&lt;/p&gt;
+&lt;p&gt;assume that $\beta \neq 0$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results_beta1 = simulate(dgp=dgp_cuped(beta=1))
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Let&amp;rsquo;s plot the distribution of the estimated parameters.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.kdeplot(data=results_unob, x=&amp;quot;Estimate&amp;quot;, hue=&amp;quot;Estimator&amp;quot;);
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.kdeplot(data=results_beta1, x=&amp;quot;Estimate&amp;quot;, hue=&amp;quot;Estimator&amp;quot;);
 plt.axvline(x=2, c=&#39;k&#39;, ls=&#39;--&#39;);
 plt.title(&#39;Simulated Distributions&#39;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/cuped_59_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results_unob.groupby(&#39;Estimator&#39;).agg(mean=(&amp;quot;Estimate&amp;quot;, &amp;quot;mean&amp;quot;), std=(&amp;quot;Estimate&amp;quot;, &amp;quot;std&amp;quot;))
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results_beta1.groupby(&#39;Estimator&#39;).agg(mean=(&amp;quot;Estimate&amp;quot;, &amp;quot;mean&amp;quot;), std=(&amp;quot;Estimate&amp;quot;, &amp;quot;std&amp;quot;))
 &lt;/code&gt;&lt;/pre&gt;
 &lt;div&gt;
 &lt;style scoped&gt;
@@ -587,24 +575,23 @@ plt.title(&#39;Simulated Distributions&#39;);
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;With imperfect treatment assignment, both difference-in-differences and autoregression are unbiased for the true treatment effect, however diff-in-diffs is more efficient. Both CUPED and simple difference are biased instead.&lt;/p&gt;
+&lt;p&gt;With imperfect treatment assignment, both difference-in-differences and autoregression are unbiased for the true treatment effect, however diff-in-diffs is more efficient. Both CUPED and simple difference are &lt;strong&gt;biased&lt;/strong&gt; instead. Why?&lt;/p&gt;
+&lt;p&gt;Diff-in-diffs explicily controls for &lt;strong&gt;systematic differences&lt;/strong&gt; between treatment and control group that are &lt;strong&gt;constant over time&lt;/strong&gt;. This is exactly what this estimator was built for. Autoregression performs some sort of matching on the additional covariate, $Y_{t=0}$, effectively controlling for these systematic differences as well, but less efficiently (if you want to know more, I wrote related posts on control variables &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt; and &lt;a href=&#34;https://towardsdatascience.com/58b63d25d2ef&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;). CUPED controls for persistent heterogeneity at the individual level, but not at the treatment assignment level. Lastly, the simple difference estimator does not control for anything.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;CONCLUSION&lt;/p&gt;
+&lt;p&gt;In this post I have analyzed an estimator of average treatment effects in AB testing, very popular in the industry: CUPED. The key idea is that, by exploiting pre-treatment data, CUPED can decrease the variance of the estimator controlling for individual-level variation that is persistent over time. We have also seen that CUPED is closely related but not equivalent to autoregression and difference-in-differences.&lt;/p&gt;
+&lt;p&gt;An interesting avenue of future research is what happens when we have a lot of pre-treatment information, either in terms of time periods or observable characteristics. Scientists from Meta, &lt;a href=&#34;https://arxiv.org/abs/2106.07263&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Guo, Coey, Konutgan, Li, Schoener, Goldman (2021)&lt;/a&gt;, have analyzed this problem in a very recent paper that exploits machine learning techniques to efficiently use this extra information. This approach is closely related to the &lt;a href=&#34;https://academic.oup.com/ectj/article/21/1/C1/5056401&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double/Debiased Machine Learning&lt;/a&gt; literature. If you are interested, I wrote two articles on the topic (&lt;a href=&#34;https://towardsdatascience.com/eb767a59975b&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;part 1&lt;/a&gt; and &lt;a href=&#34;https://towardsdatascience.com/bf990720a0b2&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;part 2&lt;/a&gt;).&lt;/p&gt;
 &lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
 &lt;p&gt;[1] A. Deng, Y. Xu, R. Kohavi, T. Walker, &lt;a href=&#34;https://dl.acm.org/doi/abs/10.1145/2433396.2433413&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Improving the Sensitivity of Online Controlled Experiments by Utilizing Pre-Experiment Data&lt;/a&gt; (2013), &lt;em&gt;WSDM&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[2] H. Xir, J. Aurisset, &lt;a href=&#34;https://dl.acm.org/doi/abs/10.1145/2939672.2939733&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Improving the sensitivity of online controlled experiments: Case studies at Netflix&lt;/a&gt; (2013), &lt;em&gt;ACM SIGKDD&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[3] Y. Guo, D. Coey, M. Konutgan, W. Li, C. Schoener, M. Goldman, &lt;a href=&#34;https://arxiv.org/abs/2106.07263&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Machine Learning for Variance Reduction in Online Experiments&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;[1] A. Belloni, D. Chen, V. Chernozhukov, C. Hansen, &lt;a href=&#34;https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA9626&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Sparse Models and Methods for Optimal Instruments With an Application to Eminent Domain&lt;/a&gt; (2012), &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[2] A. Belloni, V. Chernozhukov, C. Hansen, &lt;a href=&#34;https://academic.oup.com/restud/article-abstract/81/2/608/1523757&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Inference on treatment effects after selection among high-dimensional controls&lt;/a&gt; (2014), &lt;em&gt;The Review of Economic Studies&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[3] V. Chernozhukov, D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, J. Robins, &lt;a href=&#34;https://academic.oup.com/ectj/article/21/1/C1/5056401&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double/debiased machine learning for treatment and structural parameters&lt;/a&gt; (2018), &lt;em&gt;The Econometrics Journal&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[4] P. Hünermund, B. Louw, I. Caspi, &lt;a href=&#34;https://arxiv.org/abs/2108.11294&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double Machine Learning and Automated Confounder Selection - A Cautionary Tale&lt;/a&gt; (2022), &lt;em&gt;working paper&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[X] M. Bertrand, E. Duflo, S. Mullainathan &lt;a href=&#34;https://academic.oup.com/qje/article/119/1/249/1876068&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;How Much Should We Trust Differences-In-Differences Estimates?&lt;/a&gt; (2012), &lt;em&gt;The Quarterly Journal of Economics&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[4] V. Chernozhukov, D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, J. Robins, &lt;a href=&#34;https://academic.oup.com/ectj/article/21/1/C1/5056401&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double/debiased machine learning for treatment and structural parameters&lt;/a&gt; (2018), &lt;em&gt;The Econometrics Journal&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[5] M. Bertrand, E. Duflo, S. Mullainathan, &lt;a href=&#34;https://academic.oup.com/qje/article/119/1/249/1876068&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;How Much Should We Trust Differences-In-Differences Estimates?&lt;/a&gt; (2012), &lt;em&gt;The Quarterly Journal of Economics&lt;/em&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/eb767a59975b&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double Debiased Machine Learning (part 1)&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/bf990720a0b2&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Double Debiased Machine Learning (part 2)&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/344ac1477699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Omitted Variable Bias&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding The Frisch-Waugh-Lovell Theorem&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/58b63d25d2ef&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Contamination Bias&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
