@@ -30,9 +30,8 @@
   
     
   
-  <meta name="description" content="How to use historical data to tell noise and signal apart
-The data generating process for individual $i$ at time $t$ is the following:
-$$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \varepsilon_i &#43; u_{it} $$" />
+  <meta name="description" content="An in depth guide to the state-of-the art variance reduction technique in A/B tests
+During my PhD, I spent a lot of time learning and applying causal inference methods to experimental and observational data." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/cuped/" />
@@ -334,19 +333,18 @@ $$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \vare
   
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/cuped/" />
-  <meta property="og:title" content="CUPED, or how to increase the power of AB tests | Matteo Courthoud" />
-  <meta property="og:description" content="How to use historical data to tell noise and signal apart
-The data generating process for individual $i$ at time $t$ is the following:
-$$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \varepsilon_i &#43; u_{it} $$" /><meta property="og:image" content="https://matteocourthoud.github.io/post/cuped/featured.png" />
+  <meta property="og:title" content="Understanding CUPED | Matteo Courthoud" />
+  <meta property="og:description" content="An in depth guide to the state-of-the art variance reduction technique in A/B tests
+During my PhD, I spent a lot of time learning and applying causal inference methods to experimental and observational data." /><meta property="og:image" content="https://matteocourthoud.github.io/post/cuped/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/cuped/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-06-22T00:00:00&#43;00:00"
+        content="2022-06-28T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-06-22T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-06-28T00:00:00&#43;00:00">
   
 
   
@@ -372,14 +370,14 @@ $$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \vare
     "@type": "WebPage",
     "@id": "https://matteocourthoud.github.io/post/cuped/"
   },
-  "headline": "CUPED, or how to increase the power of AB tests",
+  "headline": "Understanding CUPED",
   
   "image": [
     "https://matteocourthoud.github.io/post/cuped/featured.png"
   ],
   
-  "datePublished": "2022-06-22T00:00:00Z",
-  "dateModified": "2022-06-22T00:00:00Z",
+  "datePublished": "2022-06-28T00:00:00Z",
+  "dateModified": "2022-06-28T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -389,7 +387,7 @@ $$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \vare
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "How to use historical data to tell noise and signal apart\nThe data generating process for individual $i$ at time $t$ is the following:\n$$ Y_{it} = \\alpha + \\beta t + \\gamma D_i + \\delta t D_i + \\varepsilon_i + u_{it} $$"
+  "description": "An in depth guide to the state-of-the art variance reduction technique in A/B tests\nDuring my PhD, I spent a lot of time learning and applying causal inference methods to experimental and observational data."
 }
 </script>
 
@@ -435,7 +433,7 @@ $$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \vare
 
 
 
-  <title>CUPED, or how to increase the power of AB tests | Matteo Courthoud</title>
+  <title>Understanding CUPED | Matteo Courthoud</title>
 </head>
 
 
@@ -771,18 +769,24 @@ $$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \vare
       </ul>
       <nav id="TableOfContents">
   <ul>
-    <li><a href="#difference-in-means">Difference in Means</a></li>
-    <li><a href="#stratification">Stratification</a></li>
+    <li><a href="#example">Example</a>
+      <ul>
+        <li><a href="#difference-in-means">Difference in Means</a></li>
+      </ul>
+    </li>
     <li><a href="#cuped">CUPED</a>
       <ul>
-        <li><a href="#no-pre-treatment-outcome">No Pre-treatment Outcome</a></li>
+        <li><a href="#optimal-x">Optimal X</a></li>
+        <li><a href="#back-to-the-data">Back to the Data</a></li>
+        <li><a href="#equivalent-formulation">Equivalent Formulation</a></li>
       </ul>
     </li>
     <li><a href="#cuped-vs-other">CUPED vs Other</a>
       <ul>
-        <li><a href="#control-for-y0">Control for Y0</a></li>
-        <li><a href="#did">DiD</a></li>
+        <li><a href="#autoregression">Autoregression</a></li>
+        <li><a href="#diff-in-diffs">Diff-in-Diffs</a></li>
         <li><a href="#comparison">Comparison</a></li>
+        <li><a href="#always-identical">Always Identical?</a></li>
       </ul>
     </li>
     <li><a href="#conclusion">Conclusion</a>
@@ -823,7 +827,7 @@ $$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \vare
 
 
 <div class="article-container pt-3">
-  <h1>CUPED, or how to increase the power of AB tests</h1>
+  <h1>Understanding CUPED</h1>
 
   
 
@@ -841,7 +845,7 @@ $$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \vare
     
       
     
-    Jun 22, 2022
+    Jun 28, 2022
   </span>
   
 
@@ -850,7 +854,7 @@ $$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \vare
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    8 min read
+    13 min read
   </span>
   
 
@@ -885,22 +889,31 @@ $$ Y_{it} = \alpha &#43; \beta t &#43; \gamma D_i &#43; \delta t D_i &#43; \vare
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p><em>How to use historical data to tell noise and signal apart</em></p>
-<p>The data generating process for individual $i$ at time $t$ is the following:</p>
-<p>$$
-Y_{it} = \alpha + \beta t + \gamma D_i + \delta t D_i + \varepsilon_i + u_{it}
-$$</p>
-<p>where</p>
-<ul>
-<li>$\alpha = 5$</li>
-<li>$\beta = 0$</li>
-<li>$\gamma = 1$</li>
-<li>$\delta = 2$</li>
-<li>$D \sim Bern(0.5)$</li>
-<li>$\varepsilon \sim N(0,1)$</li>
-<li>$u \sim N(0,1)$</li>
-</ul>
-<p>So that the true treatment effect is $\delta = 1$.</p>
+            <p><em>An in depth guide to the state-of-the art variance reduction technique in A/B tests</em></p>
+<p>During my PhD, I spent a lot of time learning and applying causal inference methods to experimental and observational data. However, I was completely clueless when I first heard of <strong>CUPED</strong> (Controlled-Experiment using Pre-Experiment Data), a technique to increase the power of randomized controlled trials in A/B tests.</p>
+<p>What really amazed me was the popularity of the algorithm in the industry. CUPED was first introduced by Microsoft researchers <a href="https://dl.acm.org/doi/abs/10.1145/2433396.2433413" target="_blank" rel="noopener">Deng, Xu, Kohavi, Walker (2013)</a> and has been widely used in companies such as <a href="https://www.kdd.org/kdd2016/papers/files/adp0945-xieA.pdf" target="_blank" rel="noopener">Netflix</a>, <a href="https://booking.ai/995d186fff1d" target="_blank" rel="noopener">Booking</a>, <a href="https://research.facebook.com/blog/2020/10/increasing-the-sensitivity-of-a-b-tests-by-utilizing-the-variance-estimates-of-experimental-units/" target="_blank" rel="noopener">Meta</a>, <a href="https://arxiv.org/abs/2112.13299" target="_blank" rel="noopener">Airbnb</a>, <a href="https://www.tripadvisor.com/engineering/reducing-a-b-test-measurement-variance-by-30/" target="_blank" rel="noopener">TripAdvisor</a>, <a href="https://doordash.engineering/2020/10/07/improving-experiment-capacity-by-4x/" target="_blank" rel="noopener">DoorDash</a>, <a href="https://craft.faire.com/how-to-speed-up-your-a-b-test-outlier-capping-and-cuped-8c9df21c76b" target="_blank" rel="noopener">Faire</a>, and many others. While digging deeper into it, I noticed a similarity with some causal inference methods I was familiar with, such as <a href="https://diff.healthpolicydatascience.org/" target="_blank" rel="noopener">Difference-in-Differences</a>. I was curious and decided to dig deeper.</p>
+<p>In this post, I will present CUPED and try to compare it against other causal inference methods.</p>
+<h2 id="example">Example</h2>
+<p>Let&rsquo;s assume we are a firm that is testing an <strong>ad campaign</strong> and we are interested in understanding whether it increases revenue or not. We randomly split a set of users into a treatment and control group and we show the ad campaign to the treatment group. Differently from the standard A/B test setting, assume we observe users also before the test.</p>
+<p>The following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a> summarizes the data generating process.</p>
+<pre><code class="language-mermaid">flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+D((ad spend))
+Y0((pre revenue))
+Y1((post revenue))
+
+D --&gt; Y1
+Y0 --&gt; Y1
+
+class Y1,D included;
+class Y0 excluded;
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+</code></pre>
+<p>We can now generate the simulated data, using the data generating process <code>dgp_cuped()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
 </code></pre>
@@ -929,11 +942,9 @@ df.head()
     <tr style="text-align: right;">
       <th></th>
       <th>i</th>
-      <th>d</th>
-      <th>y0</th>
-      <th>y1</th>
-      <th>x0</th>
-      <th>x1</th>
+      <th>ad_campaign</th>
+      <th>revenue0</th>
+      <th>revenue1</th>
     </tr>
   </thead>
   <tbody>
@@ -943,8 +954,6 @@ df.head()
       <td>0</td>
       <td>5.315635</td>
       <td>6.359304</td>
-      <td>7.096171</td>
-      <td>11.373674</td>
     </tr>
     <tr>
       <th>1</th>
@@ -952,8 +961,6 @@ df.head()
       <td>1</td>
       <td>2.977799</td>
       <td>5.751485</td>
-      <td>3.598911</td>
-      <td>9.191610</td>
     </tr>
     <tr>
       <th>2</th>
@@ -961,8 +968,6 @@ df.head()
       <td>0</td>
       <td>4.693796</td>
       <td>7.025253</td>
-      <td>5.599818</td>
-      <td>12.675708</td>
     </tr>
     <tr>
       <th>3</th>
@@ -970,8 +975,6 @@ df.head()
       <td>0</td>
       <td>5.827975</td>
       <td>6.540667</td>
-      <td>9.974215</td>
-      <td>9.025466</td>
     </tr>
     <tr>
       <th>4</th>
@@ -979,58 +982,73 @@ df.head()
       <td>0</td>
       <td>5.230095</td>
       <td>6.910165</td>
-      <td>7.590962</td>
-      <td>8.609321</td>
     </tr>
   </tbody>
 </table>
 </div>
-<h2 id="difference-in-means">Difference in Means</h2>
-<p>In randomized experiments or A/B tests, randomization allows us to estimate the average treatment effect using a simple difference in means.</p>
-<p>We can obtain the same estimate by regressing the post-treatment outcome $y_1$ on the treatment indicator $d$.</p>
-<pre><code class="language-python">smf.ols('y1 ~ d', data=df).fit().summary().tables[1]
+<p>We have informations on 1000 individuals indexed by <code>i</code> for whom we observe the revenue generated pre and post treatment, <code>revenue0</code> and <code>revenue1</code> respectively, and whether they have been exposed to the <code>ad_campaign</code>.</p>
+<h3 id="difference-in-means">Difference in Means</h3>
+<p>In randomized experiments or A/B tests, <strong>randomization</strong> allows us to estimate the average treatment effect using a simple difference in means. We can just compare the average outcome (<code>revenue</code>) across control and treated units and randomization guarantees that this difference is due to the treatment alone, in expectation.</p>
+<p>$$
+\widehat {ATE}^{simple} = \bar Y_{t=1, d=1} - \bar Y_{t=1, d=0}
+$$</p>
+<p>Where the bar indicates an average. In our case, we compute the average revenue post ad campaign in the treatment group, minus the average revenue post ad campaign in the control group.</p>
+<pre><code class="language-python">np.mean(df.loc[df.ad_campaign==True, 'revenue1']) - np.mean(df.loc[df.ad_campaign==False, 'revenue1'])
+</code></pre>
+<pre><code>1.7914301325347415
+</code></pre>
+<p>The estimated treatment effect is 1.79, very close to the <strong>true value</strong> of 2. We can obtain the same estimate by regressing the post-treatment outcome <code>revenue1</code> on the treatment indicator <code>ad_campaign</code>.</p>
+<p>$$
+Y_{i, t=1} = \alpha + \beta D_i
+$$</p>
+<p>Where $\beta$ is the coefficient of interest.</p>
+<pre><code class="language-python">smf.ols('revenue1 ~ ad_campaign', data=df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>    6.2995</td> <td>    0.211</td> <td>   29.904</td> <td> 0.000</td> <td>    5.881</td> <td>    6.718</td>
+  <th>Intercept</th>   <td>    6.2995</td> <td>    0.211</td> <td>   29.904</td> <td> 0.000</td> <td>    5.881</td> <td>    6.718</td>
 </tr>
 <tr>
-  <th>d</th>         <td>    1.7914</td> <td>    0.301</td> <td>    5.953</td> <td> 0.000</td> <td>    1.194</td> <td>    2.389</td>
+  <th>ad_campaign</th> <td>    1.7914</td> <td>    0.301</td> <td>    5.953</td> <td> 0.000</td> <td>    1.194</td> <td>    2.389</td>
 </tr>
 </table>
-<p>This estimator is unbiased, i.e. it delivers the correct value, in expectation.</p>
-<p>Can we do <strong>better</strong>, using the pre-treatment information?</p>
-<h2 id="stratification">Stratification</h2>
+<p>This estimator is <strong>unbiased</strong>, which means it delivers the correct estimate, on average. However, it can still be improved: we could <strong>decrease its variance</strong>. Decreasing the variance of an estimator is extremely important since it allows us to</p>
+<ul>
+<li><strong>detect smaller effects</strong></li>
+<li>detect the same effect, but with a <strong>smaller sample size</strong></li>
+</ul>
+<p>In general, an estimator with a smaller variance allows us to run tests with higher <a href="https://en.wikipedia.org/wiki/Power_of_a_test" target="_blank" rel="noopener"><strong>power</strong></a>, i.e. ability to detect smaller effects.</p>
+<p>Can we improve the power of our AB test? Yes, with CUPED (among other methods).</p>
 <h2 id="cuped">CUPED</h2>
-<p>The CUPED (Controlled-Experiment using Pre-Experiment Data) estimator was first introduced by <a href="https://dl.acm.org/doi/abs/10.1145/2433396.2433413" target="_blank" rel="noopener">Deng, Xu, Kohavi, Walker (2013)</a> and has been widely used in companies such as <a href="https://www.kdd.org/kdd2016/papers/files/adp0945-xieA.pdf" target="_blank" rel="noopener">Netflix</a>, <a href="https://booking.ai/995d186fff1d" target="_blank" rel="noopener">Booking</a>, <a href="https://research.facebook.com/blog/2020/10/increasing-the-sensitivity-of-a-b-tests-by-utilizing-the-variance-estimates-of-experimental-units/" target="_blank" rel="noopener">Meta</a>, <a href="https://www.tripadvisor.com/engineering/reducing-a-b-test-measurement-variance-by-30/" target="_blank" rel="noopener">TripAdvisor</a>, and many other.</p>
-<p>The <strong>idea</strong> of CUPED is the following. Suppose you have access to another random variable $X$ which is <strong>not affected</strong> by the treatment and has known expectation $\mathbb E[X]$. Then define</p>
+<p>The <strong>idea</strong> of CUPED is the following. Suppose you are running an AB test and $Y$ is the outcome of interest (<code>revenue</code> in our example) and the binary variable $D$ indicates whether a single individual has been treated or not (<code>ad_campaign</code> in our example).</p>
+<p>Suppose you have access to another random variable $X$ which is <strong>not affected</strong> by the treatment and has known expectation $\mathbb E[X]$. Then define</p>
 <p>$$
-\hat Y_{cuped,1} = \bar Y_1 - \theta \bar X + \theta \mathbb E [X]
+\hat Y^{cuped}_{1} = \bar Y_1 - \theta \bar X + \theta \mathbb E [X]
 $$</p>
-<p>where $\theta$ is a scalar. This estimator is an <strong>unbiased</strong> estimator for $\mathbb E[Y]$ since in expectation the two last terms cancel out. However, the variance of $\hat Y_{cuped,1}$ is</p>
+<p>where $\theta$ is a scalar. This estimator is an <strong>unbiased</strong> estimator for $\mathbb E[Y]$ since in expectation the two last terms cancel out. However, the variance of $Y^{cuped}_{1}$ is</p>
 <p>$$
 \begin{aligned}
-\text{Var} \left( \hat Y_{cuped,1} \right) &amp;= \text{Var} \left( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \right) = \newline
+\text{Var} \left( Y^{cuped}_{1} \right) &amp;= \text{Var} \left( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \right) = \newline
 &amp;= \text{Var} \left( Y_1 - \theta X \right) / n = \newline
 &amp;= \Big( \text{Var} (Y_1) + \theta^2 \text{Var} (X) - 2 \theta \text{Cov} (X,Y) \Big) / n
 \end{aligned}
 $$</p>
-<p>Note that the variance of $\hat Y_{cuped,1}$ is minimized for</p>
+<p>Note that the variance of $\hat Y^{cuped}_{1}$ is minimized for</p>
 <p>$$
 \theta^* = \frac{\text{Cov} (X,Y)}{\text{Var} (X)}
 $$</p>
-<p>Which is the <strong>OLS</strong> estimator of a linear regression of $Y$ on $X$. Substituting $\theta^*$ into the formula of the variance of $\hat Y_{cuped,1}$ we obtain</p>
+<p>Which is the <strong>OLS</strong> estimator of a linear regression of $Y$ on $X$. Substituting $\theta^*$ into the formula of the variance of $\hat Y^{cuped}_{1}$ we obtain</p>
 <p>$$
-\text{Var} \left( \hat Y_{cuped,1} \right) = \text{Var} (\bar Y) (1 - \rho^2)
+\text{Var} \left( \hat Y^{cuped}_{1} \right) = \text{Var} (\bar Y) (1 - \rho^2)
 $$</p>
 <p>where $\rho$ is the <strong>correlation</strong> between $Y$ and $X$. Therefore, the higher the correlation between $Y$ and $X$, the higher the variance reduction of CUPED.</p>
-<p>We can then <strong>estimate the treatment effect</strong> using the difference between control and treatment group</p>
+<p>We can then <strong>estimate the average treatment effect</strong> using the difference between control and treatment group</p>
 <p>$$
 \begin{aligned}
-\Delta_{CUPED} &amp;= \hat Y_{cuped,1}(D=1) - \hat Y_{cuped,1}(D=0) = \
+\widehat {ATE}^{cuped} &amp;= \hat Y^{cuped}<em>{1}(D=1) - \hat Y^{cuped}</em>{1}(D=0) = \
 &amp;= \big( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \ \big| \ D = 1 \big) - \big( \bar Y_1 - \theta \bar X + \theta \mathbb E [X] \ \big| \ D = 0 \big) = \
 &amp;= \big( \bar Y_1 - \theta \bar X \ \big| \ D = 1 \big) - \big( \bar Y_1 - \theta \bar X \ \big| \ D = 0 \big)
 \end{aligned}
@@ -1040,6 +1058,7 @@ $$</p>
 \hat Y_{cuped,1}' = \bar Y_1 - \theta \bar X
 $$</p>
 <p>This is not an unbiased estimator of $\mathbb E[Y]$ but still delivers an unbiased estimator of the average treatment effect.</p>
+<h3 id="optimal-x">Optimal X</h3>
 <p>What is the <strong>optimal choice</strong> for the control variable $X$?</p>
 <p>We know that $X$ should have the following properties:</p>
 <ul>
@@ -1050,93 +1069,99 @@ $$</p>
 <p>Therefore, <strong>in practice</strong>, we can compute the CUPED estimate of the average treatment effect as follows:</p>
 <ol>
 <li>Regress $Y_1$ on $Y_0$ and estimate $\hat \theta$</li>
-<li>Compute $\hat Y_{cuped,1} = \bar Y_1 - \hat \theta \bar Y_0$</li>
-<li>Compute the difference of $\hat Y_{cuped,1}$ between treatment and control group</li>
+<li>Compute $\hat Y^{cuped}_{1} = \bar Y_1 - \hat \theta \bar Y_0$</li>
+<li>Compute the difference of $\hat Y^{cuped}_{1}$ between treatment and control group</li>
 </ol>
-<p>Equivalently, we can compute $\hat Y_{cuped,1}$ at the individual level and then regress it on the treatment dummy variable $D$.</p>
-<pre><code class="language-python">theta = smf.ols('y1 ~ y0', data=df).fit().params[1]
-theta
+<p>Equivalently, we can compute $\hat Y^{cuped}_{1}$ at the individual level and then regress it on the treatment dummy variable $D$.</p>
+<h3 id="back-to-the-data">Back to the Data</h3>
+<p>Let&rsquo;s compute the CUPED estimate for the treatment effect, one step at the time. First, let&rsquo;s estimate $\theta$.</p>
+<pre><code class="language-python">theta = smf.ols('revenue1 ~ revenue0', data=df).fit().params[1]
 </code></pre>
-<pre><code>1.1458111091416718
+<p>Now we can compute the transformed outcome $\hat Y^{cuped}_{1}$.</p>
+<pre><code class="language-python">df['revenue1_cuped'] = df['revenue1'] - theta * (df['revenue0'] - np.mean(df['revenue0']))
 </code></pre>
-<pre><code class="language-python">df['y1_cuped'] = df['y1'] - theta * df['y0']
-</code></pre>
-<pre><code class="language-python">smf.ols('y1_cuped ~ d', data=df).fit().summary().tables[1]
+<p>Lastly, we estimate the treatment effect as a difference in means, with the transformed outcome $\hat Y^{cuped}_{1}$.</p>
+<pre><code class="language-python">smf.ols('revenue1_cuped ~ ad_campaign', data=df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>    0.4008</td> <td>    0.143</td> <td>    2.810</td> <td> 0.006</td> <td>    0.118</td> <td>    0.684</td>
+  <th>Intercept</th>   <td>    6.2259</td> <td>    0.143</td> <td>   43.654</td> <td> 0.000</td> <td>    5.943</td> <td>    6.509</td>
 </tr>
 <tr>
-  <th>d</th>         <td>    1.9415</td> <td>    0.204</td> <td>    9.529</td> <td> 0.000</td> <td>    1.537</td> <td>    2.346</td>
+  <th>ad_campaign</th> <td>    1.9415</td> <td>    0.204</td> <td>    9.529</td> <td> 0.000</td> <td>    1.537</td> <td>    2.346</td>
 </tr>
 </table>
 <p>The standard error is 33% smaller!</p>
-<h3 id="no-pre-treatment-outcome">No Pre-treatment Outcome</h3>
-<p>We could use CUPED also without $Y_0$, we just need another variable that is correlated with $Y$.</p>
-<pre><code class="language-python">theta_x = smf.ols('y1 ~ x0', data=df).fit().params[1]
-theta_x
+<h3 id="equivalent-formulation">Equivalent Formulation</h3>
+<p>An alternative but algebraically <strong>equivalent</strong> way of obtaining the CUPED estimate is the folowing</p>
+<ol>
+<li>Regress $Y_1$ on $Y_0$ and compute the residuals $\tilde Y_1$</li>
+<li>Compute $\hat Y^{cuped}_{1} = \tilde Y_1 + \bar Y_1$</li>
+<li>Compute the difference of $\hat Y^{cuped}_{1}$ between treatment and control group</li>
+</ol>
+<p>Step (3) is the same as before but (1) and (2) are different.</p>
+<p>Let&rsquo;s check if we indeed obtain the same result.</p>
+<pre><code class="language-python">df['revenue1_tilde'] = smf.ols('revenue1 ~ revenue0', data=df).fit().resid + np.mean(df['revenue1'])
 </code></pre>
-<pre><code>0.49315539693983107
-</code></pre>
-<pre><code class="language-python">df['y1_cuped_x'] = df['y1'] - theta_x * df['x0']
-</code></pre>
-<pre><code class="language-python">smf.ols('y1_cuped_x ~ d', data=df).fit().summary().tables[1]
+<pre><code class="language-python">smf.ols('revenue1_tilde ~ ad_campaign', data=df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>    2.5108</td> <td>    0.169</td> <td>   14.847</td> <td> 0.000</td> <td>    2.175</td> <td>    2.846</td>
+  <th>Intercept</th>   <td>    6.2259</td> <td>    0.143</td> <td>   43.654</td> <td> 0.000</td> <td>    5.943</td> <td>    6.509</td>
 </tr>
 <tr>
-  <th>d</th>         <td>    1.9000</td> <td>    0.242</td> <td>    7.865</td> <td> 0.000</td> <td>    1.421</td> <td>    2.379</td>
+  <th>ad_campaign</th> <td>    1.9415</td> <td>    0.204</td> <td>    9.529</td> <td> 0.000</td> <td>    1.537</td> <td>    2.346</td>
 </tr>
 </table>
-<p>Now CUPED is less efficient but still more efficient than the simple difference.</p>
+<p>Yes! The regression table is exactly identical.</p>
 <h2 id="cuped-vs-other">CUPED vs Other</h2>
-<h3 id="control-for-y0">Control for Y0</h3>
-<p>Is CUPED just the simple difference with an additional control variable?</p>
-<pre><code class="language-python">smf.ols('y1 ~ y0 + d', data=df).fit().summary().tables[1]
+<p>CUPED seems to be a very powerful procedure but it is remindful of at least a couple of other methods.</p>
+<ol>
+<li>Autoregression or regression with control variables</li>
+<li><a href="https://diff.healthpolicydatascience.org/" target="_blank" rel="noopener">Difference-in-Differences</a></li>
+</ol>
+<p>Are these methods the same or is there a difference? Let&rsquo;s check.</p>
+<h3 id="autoregression">Autoregression</h3>
+<p>The <strong>first question</strong> that came to my mind when I first saw CUPED was &ldquo;<em>is CUPED just the simple difference with an additional control variable?</em>&rdquo;. Or equivalently, is CUPED equivalent to running the following regression</p>
+<p>$$
+Y_{i, t=1} = \alpha + \beta D_i + \gamma Y_{i, t=0} + \varepsilon_i
+$$</p>
+<p>and estimating $\gamma$ via least squares?</p>
+<pre><code class="language-python">smf.ols('revenue1 ~ revenue0 + ad_campaign', data=df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>   -0.0061</td> <td>    0.603</td> <td>   -0.010</td> <td> 0.992</td> <td>   -1.204</td> <td>    1.192</td>
+  <th>Intercept</th>   <td>   -0.0061</td> <td>    0.603</td> <td>   -0.010</td> <td> 0.992</td> <td>   -1.204</td> <td>    1.192</td>
 </tr>
 <tr>
-  <th>y0</th>        <td>    1.2249</td> <td>    0.114</td> <td>   10.755</td> <td> 0.000</td> <td>    0.999</td> <td>    1.451</td>
+  <th>revenue0</th>    <td>    1.2249</td> <td>    0.114</td> <td>   10.755</td> <td> 0.000</td> <td>    0.999</td> <td>    1.451</td>
 </tr>
 <tr>
-  <th>d</th>         <td>    1.9519</td> <td>    0.205</td> <td>    9.529</td> <td> 0.000</td> <td>    1.545</td> <td>    2.358</td>
+  <th>ad_campaign</th> <td>    1.9519</td> <td>    0.205</td> <td>    9.529</td> <td> 0.000</td> <td>    1.545</td> <td>    2.358</td>
 </tr>
 </table>
-<p>What about $X_0$?</p>
-<pre><code class="language-python">smf.ols('y1 ~ x0 + d', data=df).fit().summary().tables[1]
-</code></pre>
-<table class="simpletable">
-<tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th> <td>    2.2259</td> <td>    0.580</td> <td>    3.837</td> <td> 0.000</td> <td>    1.075</td> <td>    3.377</td>
-</tr>
-<tr>
-  <th>x0</th>        <td>    0.5302</td> <td>    0.072</td> <td>    7.343</td> <td> 0.000</td> <td>    0.387</td> <td>    0.674</td>
-</tr>
-<tr>
-  <th>d</th>         <td>    1.9082</td> <td>    0.243</td> <td>    7.852</td> <td> 0.000</td> <td>    1.426</td> <td>    2.390</td>
-</tr>
-</table>
-<h3 id="did">DiD</h3>
-<p>Is CUPED just DiD?</p>
-<pre><code class="language-python">df_long = pd.wide_to_long(df, stubnames='y', i='i', j='t').reset_index()
+<p>The estimated coefficient is very similar to the one we obtained with CUPED and also the standard error is very close. However, they are not exactly the same.</p>
+<h3 id="diff-in-diffs">Diff-in-Diffs</h3>
+<p>The <strong>second question</strong> that came to my mind was &ldquo;i<em>s CUPED just difference-in-differences?</em>&rdquo;. <a href="https://diff.healthpolicydatascience.org/" target="_blank" rel="noopener">Difference-in-Differences</a> (or diff-in-diffs, or DiD) is an estimator that computes the treatment effect as a <strong>double-difference</strong> instead of a single one: pre-post and treatment-control instead of just treatment-control.</p>
+<p>$$
+\widehat {ATE}^{DiD} = \big( \bar Y_{t=1, d=1} - \bar Y_{t=1, d=0} \big) - \big( \bar Y_{t=0, d=1} - \bar Y_{t=0, d=0} \big)
+$$</p>
+<p>This method was initially introduced in the 19th century to estimate the causes of a Cholera epidemic in London. The main advantage of diff-in-diff is that it allows to estimate the average treatment effect also when randomization is not perfect and the treatment and control group are not comparable. The <strong>key assumption</strong> that is needed is that these difference between the treatment and control group is constant over time. By taking a double difference, we difference it out.</p>
+<p>Let&rsquo;s check how diff-in-diff works empirically. The most common way to compute the diff-in-diff estiamtor is to first reshape the data in a <strong>long format</strong> or <strong>panel format</strong> (one observation is an individual $i$ at time period $t$) and then to regress the outcome $Y$ on the full interaction between the post-treatment dummy $T$ and the treatment dummy $D$.</p>
+<p>$$
+Y_i = \alpha + \beta D_i + \gamma \mathbb I_i (t=1) + \delta D_i * \mathbb I_i (t=1) + \varepsilon_i
+$$</p>
+<p>The estimator of the average treatment effect is the coefficient of the interaction coefficient, $\delta$.</p>
+<pre><code class="language-python">df_long = pd.wide_to_long(df, stubnames='revenue', i='i', j='t').reset_index()
 df_long.head()
 </code></pre>
 <div>
@@ -1159,12 +1184,10 @@ df_long.head()
       <th></th>
       <th>i</th>
       <th>t</th>
-      <th>x1</th>
-      <th>d</th>
-      <th>y1_cuped_x</th>
-      <th>y1_cuped</th>
-      <th>x0</th>
-      <th>y</th>
+      <th>revenue1_cuped</th>
+      <th>revenue1_tilde</th>
+      <th>ad_campaign</th>
+      <th>revenue</th>
     </tr>
   </thead>
   <tbody>
@@ -1172,190 +1195,147 @@ df_long.head()
       <th>0</th>
       <td>1</td>
       <td>0</td>
-      <td>11.373674</td>
+      <td>6.093744</td>
+      <td>6.093744</td>
       <td>0</td>
-      <td>2.859789</td>
-      <td>0.268590</td>
-      <td>7.096171</td>
       <td>5.315635</td>
     </tr>
     <tr>
       <th>1</th>
       <td>2</td>
       <td>0</td>
-      <td>9.191610</td>
+      <td>8.164644</td>
+      <td>8.164644</td>
       <td>1</td>
-      <td>3.976662</td>
-      <td>2.339490</td>
-      <td>3.598911</td>
       <td>2.977799</td>
     </tr>
     <tr>
       <th>2</th>
       <td>3</td>
       <td>0</td>
-      <td>12.675708</td>
+      <td>7.472203</td>
+      <td>7.472203</td>
       <td>0</td>
-      <td>4.263673</td>
-      <td>1.647050</td>
-      <td>5.599818</td>
       <td>4.693796</td>
     </tr>
     <tr>
       <th>3</th>
       <td>4</td>
       <td>0</td>
-      <td>9.025466</td>
+      <td>5.688063</td>
+      <td>5.688063</td>
       <td>0</td>
-      <td>1.621829</td>
-      <td>-0.137091</td>
-      <td>9.974215</td>
       <td>5.827975</td>
     </tr>
     <tr>
       <th>4</th>
       <td>5</td>
       <td>0</td>
-      <td>8.609321</td>
+      <td>6.742618</td>
+      <td>6.742618</td>
       <td>0</td>
-      <td>3.166641</td>
-      <td>0.917464</td>
-      <td>7.590962</td>
       <td>5.230095</td>
     </tr>
   </tbody>
 </table>
 </div>
-<pre><code class="language-python">smf.ols('y ~ t * d', data=df_long).fit().summary().tables[1]
+<p>The long dataset is now indexed by individuals $i$ and time $t$. We can now run the diff-in-diffs regression.</p>
+<pre><code class="language-python">smf.ols('revenue ~ t * ad_campaign', data=df_long).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+        <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>    5.1481</td> <td>    0.174</td> <td>   29.608</td> <td> 0.000</td> <td>    4.805</td> <td>    5.491</td>
+  <th>Intercept</th>     <td>    5.1481</td> <td>    0.174</td> <td>   29.608</td> <td> 0.000</td> <td>    4.805</td> <td>    5.491</td>
 </tr>
 <tr>
-  <th>t</th>         <td>    1.1514</td> <td>    0.246</td> <td>    4.683</td> <td> 0.000</td> <td>    0.666</td> <td>    1.636</td>
+  <th>t</th>             <td>    1.1514</td> <td>    0.246</td> <td>    4.683</td> <td> 0.000</td> <td>    0.666</td> <td>    1.636</td>
 </tr>
 <tr>
-  <th>d</th>         <td>   -0.1310</td> <td>    0.248</td> <td>   -0.527</td> <td> 0.599</td> <td>   -0.621</td> <td>    0.359</td>
+  <th>ad_campaign</th>   <td>   -0.1310</td> <td>    0.248</td> <td>   -0.527</td> <td> 0.599</td> <td>   -0.621</td> <td>    0.359</td>
 </tr>
 <tr>
-  <th>t:d</th>       <td>    1.9224</td> <td>    0.351</td> <td>    5.473</td> <td> 0.000</td> <td>    1.230</td> <td>    2.615</td>
+  <th>t:ad_campaign</th> <td>    1.9224</td> <td>    0.351</td> <td>    5.473</td> <td> 0.000</td> <td>    1.230</td> <td>    2.615</td>
 </tr>
 </table>
-<p>Did seems the <strong>least efficient</strong> method.</p>
+<p>The estimated coefficient is close to the true value, 2, but the standard errors are bigger than the ones obtained with all other methods. What did we miss? We didn&rsquo;t <strong>cluster the standard errors</strong>!</p>
+<p>I won&rsquo;t go in detail here on what standard error clustering means, but the intuition is the following. Many softwares by default compute the standard errors assuming that outcomes are <strong>independent</strong> across observations. This assumption is unlikely to be true in this setting where we observe individuals over time and we are trying to exploit this information. Clustering allows for <strong>correlation</strong> of the outcome variable within clusters. In our case, it makes sense (even without knowing the data generating process) to cluster the standard errors at the individual levels, allowing the outcome to be correlated over time for an individual $i$.</p>
+<pre><code class="language-python">smf.ols('revenue ~ t * ad_campaign', data=df_long)\
+    .fit(cov_type='cluster', cov_kwds={'groups': df_long['i']})\
+    .summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+        <td></td>           <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>     <td>    5.1481</td> <td>    0.139</td> <td>   37.056</td> <td> 0.000</td> <td>    4.876</td> <td>    5.420</td>
+</tr>
+<tr>
+  <th>t</th>             <td>    1.1514</td> <td>    0.128</td> <td>    9.027</td> <td> 0.000</td> <td>    0.901</td> <td>    1.401</td>
+</tr>
+<tr>
+  <th>ad_campaign</th>   <td>   -0.1310</td> <td>    0.181</td> <td>   -0.724</td> <td> 0.469</td> <td>   -0.486</td> <td>    0.224</td>
+</tr>
+<tr>
+  <th>t:ad_campaign</th> <td>    1.9224</td> <td>    0.209</td> <td>    9.208</td> <td> 0.000</td> <td>    1.513</td> <td>    2.332</td>
+</tr>
+</table>
+<p>Clustering standard errors at the individual level we obtain standard errors that are comparable to the previous estimates.</p>
 <h3 id="comparison">Comparison</h3>
-<p>Let&rsquo;s compare the methods.</p>
-<pre><code class="language-python">def simulate(K=1000):
+<p>Which method is better? From what we have seen so far, all methods seem to deliver an accurate estimate, but the simple difference has a larger standard deviation.</p>
+<p>Let&rsquo;s now compare all the methods we have seen so far via <strong>simulation</strong>. We simulate the data generating process <code>dgp_cuped()</code> 1000 times and we save the estimated coefficient of the following methods:</p>
+<ol>
+<li>Simple difference</li>
+<li>Autoregression</li>
+<li>Diff-in-diffs</li>
+<li>CUPED</li>
+</ol>
+<pre><code class="language-python">def simulate(dgp, K=300, x='revenue0'):
     
     # Initialize coefficients
     results = pd.DataFrame(columns=['k', 'Estimator', 'Estimate'])
     
     # Compute coefficients
     for k in range(K):
-        temp = pd.DataFrame({'k': [k] * 6, 
-                             'Estimator': ['Diff ', 'DiD  ', 'Con Y', 'CUPED', 'Con X', 'CUPEX'], 
-                             'Estimate': [0] * 6})
+        temp = pd.DataFrame({'k': [k] * 4, 
+                             'Estimator': ['1. Diff ', '2. Areg ', '3. DiD  ', '4. CUPED'], 
+                             'Estimate': [0] * 4})
         
         # Draw data
-        df = dgp_cuped().generate_data(seed=k)
-        
-        
+        df = dgp.generate_data(seed=k)
+
         # Single diff
-        temp['Estimate'][0] = smf.ols('y1 ~ d', data=df).fit().params[1]
-        
-        # Double diff
-        df_long = pd.wide_to_long(df, stubnames='y', i='i', j='t').reset_index()
-        temp['Estimate'][1] = smf.ols('y ~ d * t', data=df_long).fit().params[3]
+        temp['Estimate'][0] = smf.ols('revenue1 ~ ad_campaign', data=df).fit().params[1]
         
         # Autoregression
-        temp['Estimate'][2] = smf.ols('y1 ~ y0 + d', data=df).fit().params[2]
+        temp['Estimate'][1] = smf.ols(f'revenue1 ~ ad_campaign + {x}', data=df).fit().params[1]
+        
+        # Double diff
+        df_long = pd.wide_to_long(df.dropna(), stubnames='revenue', i='i', j='t').reset_index()
+        temp['Estimate'][2] = smf.ols('revenue ~ ad_campaign * t', data=df_long)\
+            .fit(cov_type='cluster', cov_kwds={'groups': df_long['i']}).params[3]
         
         # Cuped
-        theta = smf.ols('y1 ~ y0', data=df).fit().params[1]
-        df['y_cuped'] = df['y1'] - theta * df['y0']
-        temp['Estimate'][3] = smf.ols('y_cuped ~ d', data=df).fit().params[1]
-        
-        # Autoregression x
-        temp['Estimate'][4] = smf.ols('y1 ~ x0 + d', data=df).fit().params[2]
-        
-        # Cuped x
-        theta_x = smf.ols('y1 ~ x0', data=df).fit().params[1]
-        df['y_cuped_x'] = df['y1'] - theta_x * df['x0']
-        temp['Estimate'][5] = smf.ols('y_cuped_x ~ d', data=df).fit().params[1]
+        df['revenue1_tilde'] = smf.ols(f'revenue1 ~ {x}', data=df).fit().resid + np.mean(df['revenue1'])
+        temp['Estimate'][3] = smf.ols('revenue1_tilde ~ ad_campaign', data=df).fit().params[1]
                 
-                
+        # Combine estimates
         results = pd.concat((results, temp))
     
     return results.reset_index(drop=True)
 </code></pre>
-<pre><code class="language-python">results = simulate()
+<pre><code class="language-python">results = simulate(dgp=dgp_cuped())
 </code></pre>
 <p>Let&rsquo;s plot the distribution of the estimated parameters.</p>
 <pre><code class="language-python">sns.kdeplot(data=results, x=&quot;Estimate&quot;, hue=&quot;Estimator&quot;);
+plt.axvline(x=2, c='k', ls='--');
+plt.title('Simulated Distributions');
 </code></pre>
-<p><img src="img/cuped_41_0.png" alt="png"></p>
-<p>Are the means different?</p>
-<pre><code class="language-python">results.groupby('Estimator')[['Estimate']].mean()
-</code></pre>
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-<pre><code>.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-</code></pre>
-<p></style></p>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Estimate</th>
-    </tr>
-    <tr>
-      <th>Estimator</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>CUPED</th>
-      <td>1.979737</td>
-    </tr>
-    <tr>
-      <th>CUPEX</th>
-      <td>1.975514</td>
-    </tr>
-    <tr>
-      <th>Con X</th>
-      <td>1.996559</td>
-    </tr>
-    <tr>
-      <th>Con Y</th>
-      <td>2.000648</td>
-    </tr>
-    <tr>
-      <th>DiD</th>
-      <td>2.001238</td>
-    </tr>
-    <tr>
-      <th>Diff</th>
-      <td>1.998847</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-<p>All estimators seem <strong>unbiased</strong>.</p>
-<p>What about the standard errors?</p>
-<pre><code class="language-python">results.groupby('Estimator')[['Estimate']].std()
+<p><img src="img/cuped_51_0.png" alt="png"></p>
+<p>We can also tabulate the simulated mean and standard deviation of each estimator.</p>
+<pre><code class="language-python">results.groupby('Estimator').agg(mean=(&quot;Estimate&quot;, &quot;mean&quot;), std=(&quot;Estimate&quot;, &quot;std&quot;))
 </code></pre>
 <div>
 <style scoped>
@@ -1375,47 +1355,111 @@ df_long.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Estimate</th>
+      <th>mean</th>
+      <th>std</th>
     </tr>
     <tr>
       <th>Estimator</th>
+      <th></th>
       <th></th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>CUPED</th>
-      <td>0.206764</td>
+      <th>1. Diff</th>
+      <td>1.999626</td>
+      <td>0.291497</td>
     </tr>
     <tr>
-      <th>CUPEX</th>
-      <td>0.236497</td>
+      <th>2. Areg</th>
+      <td>1.993343</td>
+      <td>0.198337</td>
     </tr>
     <tr>
-      <th>Con X</th>
-      <td>0.236456</td>
+      <th>3. DiD</th>
+      <td>1.993494</td>
+      <td>0.197638</td>
     </tr>
     <tr>
-      <th>Con Y</th>
-      <td>0.207183</td>
-    </tr>
-    <tr>
-      <th>DiD</th>
-      <td>0.205980</td>
-    </tr>
-    <tr>
-      <th>Diff</th>
-      <td>0.297775</td>
+      <th>4. CUPED</th>
+      <td>1.971853</td>
+      <td>0.198145</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p><strong>Notes</strong></p>
-<ol>
-<li>All estimators seem unbiased</li>
-<li>All estimators seem to have the same variance, a part from the simple difference</li>
-<li>The DiD estimator has a lower variance than the OLS estimate suggested</li>
-</ol>
+<p>All estimators seem <strong>unbiased</strong>: the average values are all close to the true value of 2. Moreover, all estimators have a very similar standard deviation, a part for the single-difference estimator!</p>
+<h3 id="always-identical">Always Identical?</h3>
+<p>Are the estimators always identical, or is there some difference among them?</p>
+<p>We could check many different departures from the original data generating process. For simplicity, I will consider only one here: imperfect randomization. Other tweaks of the data generating process that I considered are:</p>
+<ul>
+<li>pre-treatment missing values:</li>
+<li>additional covariates / control variables</li>
+<li></li>
+</ul>
+<p>Suppose now that randomization was not perfect and two groups are not identical. In the model, assume $\beta \neq 0$.</p>
+<pre><code class="language-python">results_unob = simulate(dgp=dgp_cuped(beta=1))
+</code></pre>
+<p>Let&rsquo;s plot the distribution of the estimated parameters.</p>
+<pre><code class="language-python">sns.kdeplot(data=results_unob, x=&quot;Estimate&quot;, hue=&quot;Estimator&quot;);
+plt.axvline(x=2, c='k', ls='--');
+plt.title('Simulated Distributions');
+</code></pre>
+<p><img src="img/cuped_59_0.png" alt="png"></p>
+<pre><code class="language-python">results_unob.groupby('Estimator').agg(mean=(&quot;Estimate&quot;, &quot;mean&quot;), std=(&quot;Estimate&quot;, &quot;std&quot;))
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mean</th>
+      <th>std</th>
+    </tr>
+    <tr>
+      <th>Estimator</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1. Diff</th>
+      <td>2.999626</td>
+      <td>0.291497</td>
+    </tr>
+    <tr>
+      <th>2. Areg</th>
+      <td>1.991508</td>
+      <td>0.227065</td>
+    </tr>
+    <tr>
+      <th>3. DiD</th>
+      <td>1.993494</td>
+      <td>0.197638</td>
+    </tr>
+    <tr>
+      <th>4. CUPED</th>
+      <td>1.577712</td>
+      <td>0.221448</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>With imperfect treatment assignment, both difference-in-differences and autoregression are unbiased for the true treatment effect, however diff-in-diffs is more efficient. Both CUPED and simple difference are biased instead.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>CONCLUSION</p>
 <h3 id="references">References</h3>
@@ -1426,6 +1470,7 @@ df_long.head()
 <p>[2] A. Belloni, V. Chernozhukov, C. Hansen, <a href="https://academic.oup.com/restud/article-abstract/81/2/608/1523757" target="_blank" rel="noopener">Inference on treatment effects after selection among high-dimensional controls</a> (2014), <em>The Review of Economic Studies</em>.</p>
 <p>[3] V. Chernozhukov, D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, J. Robins, <a href="https://academic.oup.com/ectj/article/21/1/C1/5056401" target="_blank" rel="noopener">Double/debiased machine learning for treatment and structural parameters</a> (2018), <em>The Econometrics Journal</em>.</p>
 <p>[4] P. Hünermund, B. Louw, I. Caspi, <a href="https://arxiv.org/abs/2108.11294" target="_blank" rel="noopener">Double Machine Learning and Automated Confounder Selection - A Cautionary Tale</a> (2022), <em>working paper</em>.</p>
+<p>[X] M. Bertrand, E. Duflo, S. Mullainathan <a href="https://academic.oup.com/qje/article/119/1/249/1876068" target="_blank" rel="noopener">How Much Should We Trust Differences-In-Differences Estimates?</a> (2012), <em>The Quarterly Journal of Economics</em>.</p>
 <h3 id="related-articles">Related Articles</h3>
 <ul>
 <li><a href="https://towardsdatascience.com/eb767a59975b" target="_blank" rel="noopener">Double Debiased Machine Learning (part 1)</a></li>
@@ -1459,7 +1504,7 @@ df_long.head()
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/cuped/&amp;text=CUPED,%20or%20how%20to%20increase%20the%20power%20of%20AB%20tests" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/cuped/&amp;text=Understanding%20CUPED" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -1472,7 +1517,7 @@ df_long.head()
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/cuped/&amp;t=CUPED,%20or%20how%20to%20increase%20the%20power%20of%20AB%20tests" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/cuped/&amp;t=Understanding%20CUPED" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook"></i>
         </a>
       </li>
@@ -1485,7 +1530,7 @@ df_long.head()
       
       
       <li>
-        <a href="mailto:?subject=CUPED,%20or%20how%20to%20increase%20the%20power%20of%20AB%20tests&amp;body=https://matteocourthoud.github.io/post/cuped/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=Understanding%20CUPED&amp;body=https://matteocourthoud.github.io/post/cuped/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -1498,7 +1543,7 @@ df_long.head()
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/cuped/&amp;title=CUPED,%20or%20how%20to%20increase%20the%20power%20of%20AB%20tests" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/cuped/&amp;title=Understanding%20CUPED" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -1511,7 +1556,7 @@ df_long.head()
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=CUPED,%20or%20how%20to%20increase%20the%20power%20of%20AB%20tests%20https://matteocourthoud.github.io/post/cuped/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=Understanding%20CUPED%20https://matteocourthoud.github.io/post/cuped/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>
