@@ -341,10 +341,10 @@ During my PhD, I spent a lot of time learning and applying causal inference meth
     
       <meta
         property="article:published_time"
-        content="2022-06-28T00:00:00&#43;00:00"
+        content="2022-06-29T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-06-28T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-06-29T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@ During my PhD, I spent a lot of time learning and applying causal inference meth
     "https://matteocourthoud.github.io/post/cuped/featured.png"
   ],
   
-  "datePublished": "2022-06-28T00:00:00Z",
-  "dateModified": "2022-06-28T00:00:00Z",
+  "datePublished": "2022-06-29T00:00:00Z",
+  "dateModified": "2022-06-29T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -777,7 +777,7 @@ During my PhD, I spent a lot of time learning and applying causal inference meth
     <li><a href="#cuped">CUPED</a>
       <ul>
         <li><a href="#optimal-x">Optimal X</a></li>
-        <li><a href="#back-to-the-data">Back to the Data</a></li>
+        <li><a href="#back-to-the-data">Back To The Data</a></li>
         <li><a href="#equivalent-formulation">Equivalent Formulation</a></li>
       </ul>
     </li>
@@ -845,7 +845,7 @@ During my PhD, I spent a lot of time learning and applying causal inference meth
     
       
     
-    Jun 28, 2022
+    Jun 29, 2022
   </span>
   
 
@@ -854,7 +854,7 @@ During my PhD, I spent a lot of time learning and applying causal inference meth
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    14 min read
+    15 min read
   </span>
   
 
@@ -970,18 +970,18 @@ df.head()
 </div>
 <p>We have informations on 1000 individuals indexed by <code>i</code> for whom we observe the revenue generated pre and post treatment, <code>revenue0</code> and <code>revenue1</code> respectively, and whether they have been exposed to the <code>ad_campaign</code>.</p>
 <h3 id="difference-in-means">Difference in Means</h3>
-<p>In randomized experiments or A/B tests, <strong>randomization</strong> allows us to estimate the average treatment effect using a simple difference in means. We can just compare the average outcome (<code>revenue</code>) across control and treated units and randomization guarantees that this difference is due to the treatment alone, in expectation.</p>
+<p>In randomized experiments or A/B tests, <strong>randomization</strong> allows us to estimate the average treatment effect using a simple difference in means. We can just compare the average outcome post-treatment $Y_1$ (<code>revenue</code>) across control and treated units and randomization guarantees that this difference is due to the treatment alone, in expectation.</p>
 <p>$$
 \widehat {ATE}^{simple} = \bar Y_{t=1, d=1} - \bar Y_{t=1, d=0}
 $$</p>
-<p>Where the bar indicates an average. In our case, we compute the average revenue post ad campaign in the treatment group, minus the average revenue post ad campaign in the control group.</p>
+<p>Where the bar indicates the average over individuals. In our case, we compute the average revenue post ad campaign in the treatment group, minus the average revenue post ad campaign in the control group.</p>
 <pre><code class="language-python">np.mean(df.loc[df.ad_campaign==True, 'revenue1']) - np.mean(df.loc[df.ad_campaign==False, 'revenue1'])
 </code></pre>
 <pre><code>1.7914301325347406
 </code></pre>
 <p>The estimated treatment effect is 1.79, very close to the <strong>true value</strong> of 2. We can obtain the same estimate by regressing the post-treatment outcome <code>revenue1</code> on the treatment indicator <code>ad_campaign</code>.</p>
 <p>$$
-Y_{i, t=1} = \alpha + \beta D_i
+Y_{i, t=1} = \alpha + \beta D_i + \varepsilon_i
 $$</p>
 <p>Where $\beta$ is the coefficient of interest.</p>
 <pre><code class="language-python">smf.ols('revenue1 ~ ad_campaign', data=df).fit().summary().tables[1]
@@ -1027,7 +1027,7 @@ $$</p>
 \text{Var} \left( \hat Y^{cuped}_{1} \right) = \text{Var} (\bar Y) (1 - \rho^2)
 $$</p>
 <p>where $\rho$ is the <strong>correlation</strong> between $Y$ and $X$. Therefore, the higher the correlation between $Y$ and $X$, the higher the variance reduction of CUPED.</p>
-<p>We can then <strong>estimate the average treatment effect</strong> using the difference between control and treatment group</p>
+<p>We can then <strong>estimate the average treatment effect</strong>as the average difference in the transformed outcome between the control and treatment group.</p>
 <p>$$
 \begin{aligned}
 \widehat {ATE}^{cuped} &amp;= \hat Y^{cuped}<em>{1} (D=1) - \hat Y^{cuped}</em>{1}(D=0) = \newline
@@ -1042,12 +1042,12 @@ $$</p>
 <p>This is not an unbiased estimator of $\mathbb E[Y]$ but still delivers an unbiased estimator of the average treatment effect.</p>
 <h3 id="optimal-x">Optimal X</h3>
 <p>What is the <strong>optimal choice</strong> for the control variable $X$?</p>
-<p>We know that $X$ should have the following properties:</p>
+<p>We know that $X$ should have the following <strong>properties</strong>:</p>
 <ul>
 <li>not affected by the treatment</li>
 <li>as correlated with $Y_1$ as possible</li>
 </ul>
-<p>The authors of the paper suggest using the pre-treatment outcome $Y_{0}$ since it gives the most reduction in variance in practice.</p>
+<p>The authors of the paper suggest using the <strong>pre-treatment outcome</strong> $Y_{0}$ since it gives the most reduction in variance in practice.</p>
 <p>Therefore, <strong>in practice</strong>, we can compute the CUPED estimate of the average treatment effect as follows:</p>
 <ol>
 <li>Regress $Y_1$ on $Y_0$ and estimate $\hat \theta$</li>
@@ -1055,7 +1055,7 @@ $$</p>
 <li>Compute the difference of $\hat Y^{cuped}_{1}$ between treatment and control group</li>
 </ol>
 <p>Equivalently, we can compute $\hat Y^{cuped}_{1}$ at the individual level and then regress it on the treatment dummy variable $D$.</p>
-<h3 id="back-to-the-data">Back to the Data</h3>
+<h3 id="back-to-the-data">Back To The Data</h3>
 <p>Let&rsquo;s compute the CUPED estimate for the treatment effect, one step at the time. First, let&rsquo;s estimate $\theta$.</p>
 <pre><code class="language-python">theta = smf.ols('revenue1 ~ revenue0', data=df).fit().params[1]
 </code></pre>
@@ -1084,7 +1084,7 @@ $$</p>
 <li>Compute $\hat Y^{cuped}_{1} = \tilde Y_1 + \bar Y_1$</li>
 <li>Compute the difference of $\hat Y^{cuped}_{1}$ between treatment and control group</li>
 </ol>
-<p>Step (3) is the same as before but (1) and (2) are different. This procedure is called <strong>partialling out</strong> ad the algebraic equivalence is guaranteed by the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Frisch-Waugh-Lowell Theorem</a>.</p>
+<p>Step (3) is the same as before but (1) and (2) are different. This procedure is called <strong>partialling out</strong> and the algebraic equivalence is guaranteed by the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Frisch-Waugh-Lowell Theorem</a>.</p>
 <p>Let&rsquo;s check if we indeed obtain the same result.</p>
 <pre><code class="language-python">df['revenue1_tilde'] = smf.ols('revenue1 ~ revenue0', data=df).fit().resid + np.mean(df['revenue1'])
 </code></pre>
@@ -1241,8 +1241,8 @@ df_long.head()
   <th>t:ad_campaign</th> <td>    1.9224</td> <td>    0.351</td> <td>    5.473</td> <td> 0.000</td> <td>    1.230</td> <td>    2.615</td>
 </tr>
 </table>
-<p>The estimated coefficient is close to the true value, 2, but the standard errors are bigger than the ones obtained with all other methods. What did we miss? We didn&rsquo;t <strong>cluster the standard errors</strong>!</p>
-<p>I won&rsquo;t go in detail here on what standard error clustering means, but the intuition is the following. Many softwares by default compute the standard errors assuming that outcomes are <strong>independent</strong> across observations. This assumption is unlikely to be true in this setting where we observe individuals over time and we are trying to exploit this information. Clustering allows for <strong>correlation</strong> of the outcome variable within clusters. In our case, it makes sense (even without knowing the data generating process) to cluster the standard errors at the individual levels, allowing the outcome to be correlated over time for an individual $i$.</p>
+<p>The estimated coefficient is close to the true value, 2, but the standard errors are bigger than the ones obtained with all other methods (0.35 &raquo; 0.2). What did we miss? We didn&rsquo;t <strong>cluster the standard errors</strong>!</p>
+<p>I won&rsquo;t go in detail here on what standard error clustering means, but the intuition is the following. The <code>statsmodels</code> package by default computes the standard errors assuming that outcomes are <strong>independent</strong> across observations. This assumption is unlikely to be true in this setting where we observe individuals over time and we are trying to exploit this information. Clustering allows for <strong>correlation</strong> of the outcome variable within clusters. In our case, it makes sense (even without knowing the data generating process) to cluster the standard errors at the individual levels, allowing the outcome to be correlated over time for an individual $i$.</p>
 <pre><code class="language-python">smf.ols('revenue ~ t * ad_campaign', data=df_long)\
     .fit(cov_type='cluster', cov_kwds={'groups': df_long['i']})\
     .summary().tables[1]
@@ -1370,12 +1370,12 @@ plt.title('Simulated Distributions');
   </tbody>
 </table>
 </div>
-<p>All estimators seem <strong>unbiased</strong>: the average values are all close to the true value of 2. Moreover, all estimators have a very similar standard deviation, a part for the single-difference estimator!</p>
+<p>All estimators seem <strong>unbiased</strong>: the average values are all close to the true value of 2. Moreover, all estimators have a very similar standard deviation, apart from the single-difference estimator!</p>
 <h3 id="always-identical">Always Identical?</h3>
 <p>Are the estimators always identical, or is there some difference among them?</p>
-<p>We could check many different departures from the original data generating process. For simplicity, I will consider only one here: imperfect randomization. Other tweaks of the data generating process that I considered are:</p>
+<p>We could check many different departures from the original data generating process. For simplicity, I will consider only one here: <strong>imperfect randomization</strong>. Other tweaks of the data generating process that I considered are:</p>
 <ul>
-<li>pre-treatment missing values:</li>
+<li>pre-treatment missing values</li>
 <li>additional covariates / control variables</li>
 <li>multiple pre-treatment periods</li>
 <li>heterogeneous treatment effects</li>
@@ -1450,12 +1450,12 @@ plt.title('Simulated Distributions');
 <p>With imperfect treatment assignment, both difference-in-differences and autoregression are unbiased for the true treatment effect, however diff-in-diffs is more efficient. Both CUPED and simple difference are <strong>biased</strong> instead. Why?</p>
 <p>Diff-in-diffs explicily controls for <strong>systematic differences</strong> between treatment and control group that are <strong>constant over time</strong>. This is exactly what this estimator was built for. Autoregression performs some sort of matching on the additional covariate, $Y_{t=0}$, effectively controlling for these systematic differences as well, but less efficiently (if you want to know more, I wrote related posts on control variables <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">here</a> and <a href="https://towardsdatascience.com/58b63d25d2ef" target="_blank" rel="noopener">here</a>). CUPED controls for persistent heterogeneity at the individual level, but not at the treatment assignment level. Lastly, the simple difference estimator does not control for anything.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>In this post I have analyzed an estimator of average treatment effects in AB testing, very popular in the industry: CUPED. The key idea is that, by exploiting pre-treatment data, CUPED can decrease the variance of the estimator controlling for individual-level variation that is persistent over time. We have also seen that CUPED is closely related but not equivalent to autoregression and difference-in-differences.</p>
-<p>An interesting avenue of future research is what happens when we have a lot of pre-treatment information, either in terms of time periods or observable characteristics. Scientists from Meta, <a href="https://arxiv.org/abs/2106.07263" target="_blank" rel="noopener">Guo, Coey, Konutgan, Li, Schoener, Goldman (2021)</a>, have analyzed this problem in a very recent paper that exploits machine learning techniques to efficiently use this extra information. This approach is closely related to the <a href="https://academic.oup.com/ectj/article/21/1/C1/5056401" target="_blank" rel="noopener">Double/Debiased Machine Learning</a> literature. If you are interested, I wrote two articles on the topic (<a href="https://towardsdatascience.com/eb767a59975b" target="_blank" rel="noopener">part 1</a> and <a href="https://towardsdatascience.com/bf990720a0b2" target="_blank" rel="noopener">part 2</a>).</p>
+<p>In this post, I have analyzed an estimator of average treatment effects in AB testing, very popular in the industry: CUPED. The key idea is that, by exploiting pre-treatment data, CUPED can <strong>achieve a lower variance</strong> by controlling for individual-level variation that is persistent over time. We have also seen that CUPED is closely related but not equivalent to autoregression and difference-in-differences. The differences among the methods clearly emerge when we have imperfect randomization.</p>
+<p>An interesting avenue of future research is what happens when we have <strong>a lot of pre-treatment information</strong>, either in terms of time periods or observable characteristics. Scientists from Meta, <a href="https://proceedings.neurips.cc/paper/2021/hash/488b084119a1c7a4950f00706ec7ea16-Abstract.html" target="_blank" rel="noopener">Guo, Coey, Konutgan, Li, Schoener, Goldman (2021)</a>, have analyzed this problem in a very recent paper that exploits machine learning techniques to efficiently use this extra information. This approach is closely related to the <a href="https://academic.oup.com/ectj/article/21/1/C1/5056401" target="_blank" rel="noopener">Double/Debiased Machine Learning</a> literature. If you are interested, I wrote two articles on the topic (<a href="https://towardsdatascience.com/eb767a59975b" target="_blank" rel="noopener">part 1</a> and <a href="https://towardsdatascience.com/bf990720a0b2" target="_blank" rel="noopener">part 2</a>) and I might write more in the future.</p>
 <h3 id="references">References</h3>
 <p>[1] A. Deng, Y. Xu, R. Kohavi, T. Walker, <a href="https://dl.acm.org/doi/abs/10.1145/2433396.2433413" target="_blank" rel="noopener">Improving the Sensitivity of Online Controlled Experiments by Utilizing Pre-Experiment Data</a> (2013), <em>WSDM</em>.</p>
 <p>[2] H. Xir, J. Aurisset, <a href="https://dl.acm.org/doi/abs/10.1145/2939672.2939733" target="_blank" rel="noopener">Improving the sensitivity of online controlled experiments: Case studies at Netflix</a> (2013), <em>ACM SIGKDD</em>.</p>
-<p>[3] Y. Guo, D. Coey, M. Konutgan, W. Li, C. Schoener, M. Goldman, <a href="https://arxiv.org/abs/2106.07263" target="_blank" rel="noopener">Machine Learning for Variance Reduction in Online Experiments</a></p>
+<p>[3] Y. Guo, D. Coey, M. Konutgan, W. Li, C. Schoener, M. Goldman, <a href="https://proceedings.neurips.cc/paper/2021/hash/488b084119a1c7a4950f00706ec7ea16-Abstract.html" target="_blank" rel="noopener">Machine Learning for Variance Reduction in Online Experiments</a> (2021), <em>NeurIPS</em>.</p>
 <p>[4] V. Chernozhukov, D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, J. Robins, <a href="https://academic.oup.com/ectj/article/21/1/C1/5056401" target="_blank" rel="noopener">Double/debiased machine learning for treatment and structural parameters</a> (2018), <em>The Econometrics Journal</em>.</p>
 <p>[5] M. Bertrand, E. Duflo, S. Mullainathan, <a href="https://academic.oup.com/qje/article/119/1/249/1876068" target="_blank" rel="noopener">How Much Should We Trust Differences-In-Differences Estimates?</a> (2012), <em>The Quarterly Journal of Economics</em>.</p>
 <h3 id="related-articles">Related Articles</h3>
