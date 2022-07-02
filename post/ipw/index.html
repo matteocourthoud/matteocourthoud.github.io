@@ -30,9 +30,9 @@
   
     
   
-  <meta name="description" content="Comparing different methods to condition causal inference on covariates
+  <meta name="description" content="Understanding and comparing different methods for conditional causal inference analysis
 INTRO
-Example Assume we were writing on a blog and we consider releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog." />
+Example Assume we had blog on statistics and causal inference. To improve user experience, we are considering releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/ipw/" />
@@ -336,9 +336,9 @@ Example Assume we were writing on a blog and we consider releasing a dark mode, 
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/ipw/" />
   <meta property="og:title" content="Weighting, Matching, or Regression? | Matteo Courthoud" />
-  <meta property="og:description" content="Comparing different methods to condition causal inference on covariates
+  <meta property="og:description" content="Understanding and comparing different methods for conditional causal inference analysis
 INTRO
-Example Assume we were writing on a blog and we consider releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+Example Assume we had blog on statistics and causal inference. To improve user experience, we are considering releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
   
     
@@ -386,7 +386,7 @@ Example Assume we were writing on a blog and we consider releasing a dark mode, 
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "Comparing different methods to condition causal inference on covariates\nINTRO\nExample Assume we were writing on a blog and we consider releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog."
+  "description": "Understanding and comparing different methods for conditional causal inference analysis\nINTRO\nExample Assume we had blog on statistics and causal inference. To improve user experience, we are considering releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog."
 }
 </script>
 
@@ -836,7 +836,7 @@ Example Assume we were writing on a blog and we consider releasing a dark mode, 
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    7 min read
+    8 min read
   </span>
   
 
@@ -864,12 +864,12 @@ Example Assume we were writing on a blog and we consider releasing a dark mode, 
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p><em>Comparing different methods to condition causal inference on covariates</em></p>
+            <p><em>Understanding and comparing different methods for conditional causal inference analysis</em></p>
 <p>INTRO</p>
 <h2 id="example">Example</h2>
-<p>Assume we were writing on a blog and we consider releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog.</p>
+<p>Assume we had blog on statistics and causal inference. To improve user experience, we are considering <strong>releasing a dark mode</strong>, and we would like to understand whether this new feature increases the time users spend on our blog.</p>
 <img src="fig/modes.png" width="600px"/>
-<p>We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users use it or not and the time they spend on th blog.</p>
+<p>We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users use it or not and the time they spend on th blog. We know that there might be <strong>selection</strong>:  users that prefer the dark mode could have different reading preferences and this might complicate our causal analysis.</p>
 <p>We can represent the data generating process with the following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a>. If you are not familiar with DAGs, I have written a short <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">introduction here</a>.</p>
 <pre><code class="language-mermaid">flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
@@ -893,7 +893,7 @@ X3 --&gt; Y
 class D,Y included;
 class X1,X2,X3 excluded;
 </code></pre>
-<p>We can now generate the simulated data, using the data generating process <code>dgp_ipw()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
+<p>We generate the simulated data using the data generating process <code>dgp_darkmode()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
 </code></pre>
@@ -931,53 +931,51 @@ df.head()
   <tbody>
     <tr>
       <th>0</th>
-      <td>13.88</td>
+      <td>9.25</td>
       <td>True</td>
       <td>0</td>
       <td>43.0</td>
-      <td>5.40</td>
+      <td>79.17</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>21.16</td>
-      <td>True</td>
+      <td>15.03</td>
+      <td>False</td>
       <td>1</td>
       <td>55.0</td>
-      <td>6.92</td>
+      <td>130.35</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>15.28</td>
+      <td>12.41</td>
       <td>False</td>
       <td>0</td>
       <td>23.0</td>
-      <td>12.98</td>
+      <td>458.21</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>19.81</td>
+      <td>15.70</td>
       <td>True</td>
       <td>0</td>
       <td>41.0</td>
-      <td>7.00</td>
+      <td>133.30</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>17.61</td>
-      <td>False</td>
+      <td>15.80</td>
+      <td>True</td>
       <td>0</td>
       <td>29.0</td>
-      <td>8.13</td>
+      <td>179.65</td>
     </tr>
   </tbody>
 </table>
 </div>
-<pre><code class="language-python">np.mean(df[&quot;dark_mode&quot;])
-</code></pre>
-<pre><code>0.5633333333333334
-</code></pre>
-<p>We have informations on 1000 individuals indexed by <code>i</code> for whom we observe the revenue generated pre and post treatment, <code>revenue0</code> and <code>revenue1</code> respectively, and whether they have been exposed to the <code>ad_campaign</code>.</p>
-<p>Are the covariates balanced?</p>
+<p>We have informations on 300 individuals for whom we observe whether they use the <code>dark_mode</code> (the treatment), their weekly <code>read_time</code> (the outcome of interest) and some characteristics like <code>gender</code>, <code>age</code> and total <code>hours</code> spend on the blog.</p>
+<p>We would like to estimate the effect of the new <code>dark_mode</code> on users' <code>read_time</code>. If we were runnig an <strong>AB test</strong> or randomized control trial, we could just compare users with and without the dark mode and we could attribute difference in average reading time to the <code>dark_mode</code>.</p>
+<p>However, we did not randomize the <code>dark_mode</code> so that users that use it might not be directly <strong>comparable</strong> with users that don&rsquo;t. Can we check this concern? Partially. We can only check it for characteristics that we observe, <code>gender</code>, <code>age</code> and total <code>hours</code> in our setting. We cannot check if users differ along other dimensions that we don&rsquo;t observe.</p>
+<p>Let&rsquo;s use the <code>create_table_one</code> function from Uber&rsquo;s <a href="https://causalml.readthedocs.io/" target="_blank" rel="noopener"><code>causalml</code></a> package to produce a <strong>covariate balance table</strong>, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.</p>
 <pre><code class="language-python">from causalml.match import create_table_one
 
 X = ['male', 'age', 'hours']
@@ -1016,27 +1014,27 @@ table1
   <tbody>
     <tr>
       <th>n</th>
-      <td>131</td>
-      <td>169</td>
+      <td>146</td>
+      <td>154</td>
       <td></td>
     </tr>
     <tr>
       <th>age</th>
-      <td>40.68 (11.74)</td>
-      <td>44.05 (10.60)</td>
-      <td>0.3011</td>
+      <td>40.09 (10.97)</td>
+      <td>44.94 (10.98)</td>
+      <td>0.4416</td>
     </tr>
     <tr>
       <th>hours</th>
-      <td>10.25 (4.89)</td>
-      <td>7.44 (3.81)</td>
-      <td>-0.6406</td>
+      <td>326.97 (380.29)</td>
+      <td>196.12 (211.75)</td>
+      <td>-0.4251</td>
     </tr>
     <tr>
       <th>male</th>
-      <td>0.62 (0.49)</td>
-      <td>0.47 (0.50)</td>
-      <td>-0.2933</td>
+      <td>0.60 (0.49)</td>
+      <td>0.40 (0.49)</td>
+      <td>-0.421</td>
     </tr>
   </tbody>
 </table>
@@ -1051,7 +1049,7 @@ table1
 </code></pre>
 <pre><code class="language-python">plot_distributions(df, X, &quot;dark_mode&quot;)
 </code></pre>
-<p><img src="img/ipw_15_0.png" alt="png"></p>
+<p><img src="img/ipw_14_0.png" alt="png"></p>
 <p>If we do not control for the observable characteristics, we are unable to estimate the true treatment effect.</p>
 <pre><code class="language-mermaid">flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
@@ -1159,43 +1157,43 @@ df_matched.head()
   <tbody>
     <tr>
       <th>0</th>
-      <td>13.88</td>
+      <td>9.25</td>
       <td>True</td>
       <td>0</td>
       <td>43.0</td>
-      <td>5.40</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>21.16</td>
-      <td>True</td>
-      <td>1</td>
-      <td>55.0</td>
-      <td>6.92</td>
+      <td>79.17</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>19.81</td>
+      <td>15.70</td>
       <td>True</td>
       <td>0</td>
       <td>41.0</td>
-      <td>7.00</td>
+      <td>133.30</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>15.80</td>
+      <td>True</td>
+      <td>0</td>
+      <td>29.0</td>
+      <td>179.65</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>16.94</td>
+      <td>13.11</td>
       <td>True</td>
       <td>0</td>
       <td>64.0</td>
-      <td>8.05</td>
+      <td>176.05</td>
     </tr>
     <tr>
       <th>7</th>
-      <td>14.34</td>
+      <td>10.83</td>
       <td>True</td>
       <td>0</td>
       <td>53.0</td>
-      <td>9.42</td>
+      <td>241.40</td>
     </tr>
   </tbody>
 </table>
@@ -1235,26 +1233,26 @@ table1_matched
   <tbody>
     <tr>
       <th>n</th>
-      <td>122</td>
-      <td>122</td>
+      <td>134</td>
+      <td>134</td>
       <td></td>
     </tr>
     <tr>
       <th>age</th>
-      <td>43.65 (10.23)</td>
-      <td>43.53 (10.44)</td>
-      <td>-0.0111</td>
+      <td>44.54 (10.98)</td>
+      <td>44.57 (11.06)</td>
+      <td>0.0034</td>
     </tr>
     <tr>
       <th>hours</th>
-      <td>7.38 (2.51)</td>
-      <td>7.29 (2.75)</td>
-      <td>-0.0348</td>
+      <td>147.78 (111.68)</td>
+      <td>147.94 (120.86)</td>
+      <td>0.0014</td>
     </tr>
     <tr>
       <th>male</th>
-      <td>0.54 (0.50)</td>
-      <td>0.54 (0.50)</td>
+      <td>0.43 (0.50)</td>
+      <td>0.43 (0.50)</td>
       <td>0.0</td>
     </tr>
   </tbody>
@@ -1262,7 +1260,7 @@ table1_matched
 </div>
 <pre><code class="language-python">plot_distributions(df_matched, X, &quot;dark_mode&quot;)
 </code></pre>
-<p><img src="img/ipw_22_0.png" alt="png"></p>
+<p><img src="img/ipw_21_0.png" alt="png"></p>
 <p>We can also compare the balancedness before and after matching by plotting the standardized mean differences.</p>
 <pre><code class="language-python">def plot_balance(t1, t2, X):
     df_smd = pd.DataFrame({&quot;Variable&quot;: X + X,
@@ -1276,7 +1274,7 @@ table1_matched
 </code></pre>
 <pre><code class="language-python">plot_balance(table1, table1_matched, X)
 </code></pre>
-<p><img src="img/ipw_25_0.png" alt="png"></p>
+<p><img src="img/ipw_24_0.png" alt="png"></p>
 <p>We can now estimate the treatment effect as a difference in means.</p>
 <pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode&quot;, data=df_matched).fit().summary().tables[1]
 </code></pre>
@@ -1285,10 +1283,10 @@ table1_matched
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   19.1136</td> <td>    0.487</td> <td>   39.224</td> <td> 0.000</td> <td>   18.154</td> <td>   20.073</td>
+  <th>Intercept</th>         <td>   15.1301</td> <td>    0.437</td> <td>   34.623</td> <td> 0.000</td> <td>   14.270</td> <td>   15.991</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    1.4230</td> <td>    0.689</td> <td>    2.065</td> <td> 0.040</td> <td>    0.066</td> <td>    2.780</td>
+  <th>dark_mode[T.True]</th> <td>    0.7602</td> <td>    0.618</td> <td>    1.230</td> <td> 0.220</td> <td>   -0.457</td> <td>    1.977</td>
 </tr>
 </table>
 <h3 id="propensity-score">Propensity Score</h3>
@@ -1322,7 +1320,7 @@ $$</p>
 <pre><code class="language-python">sns.histplot(data=df, x='pscore', hue='dark_mode', bins=30, stat='density', common_norm=False).\
     set(ylabel=&quot;&quot;, title=&quot;Distribution of Propensity Scores&quot;);
 </code></pre>
-<p><img src="img/ipw_32_0.png" alt="png"></p>
+<p><img src="img/ipw_31_0.png" alt="png"></p>
 <p>As we can see, the distribution of propensity scores between the treatment and control group is <strong>significantly different</strong>.</p>
 <p>We can now estimate the treatment effect as a weighted difference in means.</p>
 <pre><code class="language-python">w = 1 / (df[&quot;pscore&quot;] * df[&quot;dark_mode&quot;] + (1-df[&quot;pscore&quot;]) * (1-df[&quot;dark_mode&quot;]))
@@ -1333,10 +1331,10 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   18.9187</td> <td>    0.423</td> <td>   44.685</td> <td> 0.000</td> <td>   18.086</td> <td>   19.752</td>
+  <th>Intercept</th>         <td>   14.9446</td> <td>    0.434</td> <td>   34.397</td> <td> 0.000</td> <td>   14.090</td> <td>   15.800</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    2.4315</td> <td>    0.591</td> <td>    4.114</td> <td> 0.000</td> <td>    1.268</td> <td>    3.595</td>
+  <th>dark_mode[T.True]</th> <td>    1.9734</td> <td>    0.613</td> <td>    3.219</td> <td> 0.001</td> <td>    0.767</td> <td>    3.180</td>
 </tr>
 </table>
 <p>Lastly, an extremely interesting result from</p>
@@ -1348,19 +1346,19 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   16.2752</td> <td>    1.330</td> <td>   12.240</td> <td> 0.000</td> <td>   13.658</td> <td>   18.892</td>
+  <th>Intercept</th>         <td>   12.9298</td> <td>    1.183</td> <td>   10.931</td> <td> 0.000</td> <td>   10.602</td> <td>   15.258</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    2.3623</td> <td>    0.607</td> <td>    3.894</td> <td> 0.000</td> <td>    1.168</td> <td>    3.556</td>
+  <th>dark_mode[T.True]</th> <td>    1.8801</td> <td>    0.610</td> <td>    3.081</td> <td> 0.002</td> <td>    0.679</td> <td>    3.081</td>
 </tr>
 <tr>
-  <th>male</th>              <td>    2.5953</td> <td>    0.570</td> <td>    4.551</td> <td> 0.000</td> <td>    1.473</td> <td>    3.718</td>
+  <th>male</th>              <td>    2.1708</td> <td>    0.584</td> <td>    3.718</td> <td> 0.000</td> <td>    1.022</td> <td>    3.320</td>
 </tr>
 <tr>
-  <th>age</th>               <td>   -0.0120</td> <td>    0.025</td> <td>   -0.477</td> <td> 0.634</td> <td>   -0.062</td> <td>    0.038</td>
+  <th>age</th>               <td>   -0.0063</td> <td>    0.026</td> <td>   -0.243</td> <td> 0.808</td> <td>   -0.058</td> <td>    0.045</td>
 </tr>
 <tr>
-  <th>hours</th>             <td>    0.1810</td> <td>    0.065</td> <td>    2.774</td> <td> 0.006</td> <td>    0.053</td> <td>    0.309</td>
+  <th>hours</th>             <td>    0.0047</td> <td>    0.001</td> <td>    5.009</td> <td> 0.000</td> <td>    0.003</td> <td>    0.007</td>
 </tr>
 </table>
 <p>What is the connection between regression and propensity score weighting?</p>

@@ -17,12 +17,12 @@
       <link>https://matteocourthoud.github.io/post/ipw/</link>
       <pubDate>Sat, 02 Jul 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/ipw/</guid>
-      <description>&lt;p&gt;&lt;em&gt;Comparing different methods to condition causal inference on covariates&lt;/em&gt;&lt;/p&gt;
+      <description>&lt;p&gt;&lt;em&gt;Understanding and comparing different methods for conditional causal inference analysis&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;INTRO&lt;/p&gt;
 &lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
-&lt;p&gt;Assume we were writing on a blog and we consider releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog.&lt;/p&gt;
+&lt;p&gt;Assume we had blog on statistics and causal inference. To improve user experience, we are considering &lt;strong&gt;releasing a dark mode&lt;/strong&gt;, and we would like to understand whether this new feature increases the time users spend on our blog.&lt;/p&gt;
 &lt;img src=&#34;fig/modes.png&#34; width=&#34;600px&#34;/&gt;
-&lt;p&gt;We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users use it or not and the time they spend on th blog.&lt;/p&gt;
+&lt;p&gt;We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users use it or not and the time they spend on th blog. We know that there might be &lt;strong&gt;selection&lt;/strong&gt;:  users that prefer the dark mode could have different reading preferences and this might complicate our causal analysis.&lt;/p&gt;
 &lt;p&gt;We can represent the data generating process with the following &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Directed Acyclic Graph (DAG)&lt;/strong&gt;&lt;/a&gt;. If you are not familiar with DAGs, I have written a short &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;introduction here&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
@@ -46,7 +46,7 @@ X3 --&amp;gt; Y
 class D,Y included;
 class X1,X2,X3 excluded;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can now generate the simulated data, using the data generating process &lt;code&gt;dgp_ipw()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;We generate the simulated data using the data generating process &lt;code&gt;dgp_darkmode()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
 &lt;/code&gt;&lt;/pre&gt;
@@ -84,53 +84,51 @@ df.head()
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;13.88&lt;/td&gt;
+      &lt;td&gt;9.25&lt;/td&gt;
       &lt;td&gt;True&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;43.0&lt;/td&gt;
-      &lt;td&gt;5.40&lt;/td&gt;
+      &lt;td&gt;79.17&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;21.16&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
+      &lt;td&gt;15.03&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;55.0&lt;/td&gt;
-      &lt;td&gt;6.92&lt;/td&gt;
+      &lt;td&gt;130.35&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;15.28&lt;/td&gt;
+      &lt;td&gt;12.41&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;23.0&lt;/td&gt;
-      &lt;td&gt;12.98&lt;/td&gt;
+      &lt;td&gt;458.21&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;19.81&lt;/td&gt;
+      &lt;td&gt;15.70&lt;/td&gt;
       &lt;td&gt;True&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;41.0&lt;/td&gt;
-      &lt;td&gt;7.00&lt;/td&gt;
+      &lt;td&gt;133.30&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;17.61&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;15.80&lt;/td&gt;
+      &lt;td&gt;True&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;29.0&lt;/td&gt;
-      &lt;td&gt;8.13&lt;/td&gt;
+      &lt;td&gt;179.65&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.mean(df[&amp;quot;dark_mode&amp;quot;])
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.5633333333333334
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We have informations on 1000 individuals indexed by &lt;code&gt;i&lt;/code&gt; for whom we observe the revenue generated pre and post treatment, &lt;code&gt;revenue0&lt;/code&gt; and &lt;code&gt;revenue1&lt;/code&gt; respectively, and whether they have been exposed to the &lt;code&gt;ad_campaign&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Are the covariates balanced?&lt;/p&gt;
+&lt;p&gt;We have informations on 300 individuals for whom we observe whether they use the &lt;code&gt;dark_mode&lt;/code&gt; (the treatment), their weekly &lt;code&gt;read_time&lt;/code&gt; (the outcome of interest) and some characteristics like &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; spend on the blog.&lt;/p&gt;
+&lt;p&gt;We would like to estimate the effect of the new &lt;code&gt;dark_mode&lt;/code&gt; on users&#39; &lt;code&gt;read_time&lt;/code&gt;. If we were runnig an &lt;strong&gt;AB test&lt;/strong&gt; or randomized control trial, we could just compare users with and without the dark mode and we could attribute difference in average reading time to the &lt;code&gt;dark_mode&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;However, we did not randomize the &lt;code&gt;dark_mode&lt;/code&gt; so that users that use it might not be directly &lt;strong&gt;comparable&lt;/strong&gt; with users that don&amp;rsquo;t. Can we check this concern? Partially. We can only check it for characteristics that we observe, &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; in our setting. We cannot check if users differ along other dimensions that we don&amp;rsquo;t observe.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s use the &lt;code&gt;create_table_one&lt;/code&gt; function from Uber&amp;rsquo;s &lt;a href=&#34;https://causalml.readthedocs.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;causalml&lt;/code&gt;&lt;/a&gt; package to produce a &lt;strong&gt;covariate balance table&lt;/strong&gt;, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import create_table_one
 
 X = [&#39;male&#39;, &#39;age&#39;, &#39;hours&#39;]
@@ -169,27 +167,27 @@ table1
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;n&lt;/th&gt;
-      &lt;td&gt;131&lt;/td&gt;
-      &lt;td&gt;169&lt;/td&gt;
+      &lt;td&gt;146&lt;/td&gt;
+      &lt;td&gt;154&lt;/td&gt;
       &lt;td&gt;&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;age&lt;/th&gt;
-      &lt;td&gt;40.68 (11.74)&lt;/td&gt;
-      &lt;td&gt;44.05 (10.60)&lt;/td&gt;
-      &lt;td&gt;0.3011&lt;/td&gt;
+      &lt;td&gt;40.09 (10.97)&lt;/td&gt;
+      &lt;td&gt;44.94 (10.98)&lt;/td&gt;
+      &lt;td&gt;0.4416&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;hours&lt;/th&gt;
-      &lt;td&gt;10.25 (4.89)&lt;/td&gt;
-      &lt;td&gt;7.44 (3.81)&lt;/td&gt;
-      &lt;td&gt;-0.6406&lt;/td&gt;
+      &lt;td&gt;326.97 (380.29)&lt;/td&gt;
+      &lt;td&gt;196.12 (211.75)&lt;/td&gt;
+      &lt;td&gt;-0.4251&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;male&lt;/th&gt;
-      &lt;td&gt;0.62 (0.49)&lt;/td&gt;
-      &lt;td&gt;0.47 (0.50)&lt;/td&gt;
-      &lt;td&gt;-0.2933&lt;/td&gt;
+      &lt;td&gt;0.60 (0.49)&lt;/td&gt;
+      &lt;td&gt;0.40 (0.49)&lt;/td&gt;
+      &lt;td&gt;-0.421&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -204,7 +202,7 @@ table1
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_distributions(df, X, &amp;quot;dark_mode&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/ipw_15_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/ipw_14_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;If we do not control for the observable characteristics, we are unable to estimate the true treatment effect.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
@@ -312,43 +310,43 @@ df_matched.head()
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;13.88&lt;/td&gt;
+      &lt;td&gt;9.25&lt;/td&gt;
       &lt;td&gt;True&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;43.0&lt;/td&gt;
-      &lt;td&gt;5.40&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;21.16&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;55.0&lt;/td&gt;
-      &lt;td&gt;6.92&lt;/td&gt;
+      &lt;td&gt;79.17&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;19.81&lt;/td&gt;
+      &lt;td&gt;15.70&lt;/td&gt;
       &lt;td&gt;True&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;41.0&lt;/td&gt;
-      &lt;td&gt;7.00&lt;/td&gt;
+      &lt;td&gt;133.30&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;15.80&lt;/td&gt;
+      &lt;td&gt;True&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;29.0&lt;/td&gt;
+      &lt;td&gt;179.65&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;5&lt;/th&gt;
-      &lt;td&gt;16.94&lt;/td&gt;
+      &lt;td&gt;13.11&lt;/td&gt;
       &lt;td&gt;True&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;64.0&lt;/td&gt;
-      &lt;td&gt;8.05&lt;/td&gt;
+      &lt;td&gt;176.05&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;7&lt;/th&gt;
-      &lt;td&gt;14.34&lt;/td&gt;
+      &lt;td&gt;10.83&lt;/td&gt;
       &lt;td&gt;True&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;53.0&lt;/td&gt;
-      &lt;td&gt;9.42&lt;/td&gt;
+      &lt;td&gt;241.40&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -388,26 +386,26 @@ table1_matched
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;n&lt;/th&gt;
-      &lt;td&gt;122&lt;/td&gt;
-      &lt;td&gt;122&lt;/td&gt;
+      &lt;td&gt;134&lt;/td&gt;
+      &lt;td&gt;134&lt;/td&gt;
       &lt;td&gt;&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;age&lt;/th&gt;
-      &lt;td&gt;43.65 (10.23)&lt;/td&gt;
-      &lt;td&gt;43.53 (10.44)&lt;/td&gt;
-      &lt;td&gt;-0.0111&lt;/td&gt;
+      &lt;td&gt;44.54 (10.98)&lt;/td&gt;
+      &lt;td&gt;44.57 (11.06)&lt;/td&gt;
+      &lt;td&gt;0.0034&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;hours&lt;/th&gt;
-      &lt;td&gt;7.38 (2.51)&lt;/td&gt;
-      &lt;td&gt;7.29 (2.75)&lt;/td&gt;
-      &lt;td&gt;-0.0348&lt;/td&gt;
+      &lt;td&gt;147.78 (111.68)&lt;/td&gt;
+      &lt;td&gt;147.94 (120.86)&lt;/td&gt;
+      &lt;td&gt;0.0014&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;male&lt;/th&gt;
-      &lt;td&gt;0.54 (0.50)&lt;/td&gt;
-      &lt;td&gt;0.54 (0.50)&lt;/td&gt;
+      &lt;td&gt;0.43 (0.50)&lt;/td&gt;
+      &lt;td&gt;0.43 (0.50)&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
@@ -415,7 +413,7 @@ table1_matched
 &lt;/div&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_distributions(df_matched, X, &amp;quot;dark_mode&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/ipw_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/ipw_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can also compare the balancedness before and after matching by plotting the standardized mean differences.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_balance(t1, t2, X):
     df_smd = pd.DataFrame({&amp;quot;Variable&amp;quot;: X + X,
@@ -429,7 +427,7 @@ table1_matched
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_balance(table1, table1_matched, X)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/ipw_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/ipw_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can now estimate the treatment effect as a difference in means.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;read_time ~ dark_mode&amp;quot;, data=df_matched).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
@@ -438,10 +436,10 @@ table1_matched
           &lt;td&gt;&lt;/td&gt;             &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   19.1136&lt;/td&gt; &lt;td&gt;    0.487&lt;/td&gt; &lt;td&gt;   39.224&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   18.154&lt;/td&gt; &lt;td&gt;   20.073&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   15.1301&lt;/td&gt; &lt;td&gt;    0.437&lt;/td&gt; &lt;td&gt;   34.623&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   14.270&lt;/td&gt; &lt;td&gt;   15.991&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    1.4230&lt;/td&gt; &lt;td&gt;    0.689&lt;/td&gt; &lt;td&gt;    2.065&lt;/td&gt; &lt;td&gt; 0.040&lt;/td&gt; &lt;td&gt;    0.066&lt;/td&gt; &lt;td&gt;    2.780&lt;/td&gt;
+  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    0.7602&lt;/td&gt; &lt;td&gt;    0.618&lt;/td&gt; &lt;td&gt;    1.230&lt;/td&gt; &lt;td&gt; 0.220&lt;/td&gt; &lt;td&gt;   -0.457&lt;/td&gt; &lt;td&gt;    1.977&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;h3 id=&#34;propensity-score&#34;&gt;Propensity Score&lt;/h3&gt;
@@ -475,7 +473,7 @@ $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(data=df, x=&#39;pscore&#39;, hue=&#39;dark_mode&#39;, bins=30, stat=&#39;density&#39;, common_norm=False).\
     set(ylabel=&amp;quot;&amp;quot;, title=&amp;quot;Distribution of Propensity Scores&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/ipw_32_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/ipw_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, the distribution of propensity scores between the treatment and control group is &lt;strong&gt;significantly different&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;We can now estimate the treatment effect as a weighted difference in means.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;w = 1 / (df[&amp;quot;pscore&amp;quot;] * df[&amp;quot;dark_mode&amp;quot;] + (1-df[&amp;quot;pscore&amp;quot;]) * (1-df[&amp;quot;dark_mode&amp;quot;]))
@@ -486,10 +484,10 @@ smf.wls(&amp;quot;read_time ~ dark_mode&amp;quot;, weights=w, data=df).fit().sum
           &lt;td&gt;&lt;/td&gt;             &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   18.9187&lt;/td&gt; &lt;td&gt;    0.423&lt;/td&gt; &lt;td&gt;   44.685&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   18.086&lt;/td&gt; &lt;td&gt;   19.752&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   14.9446&lt;/td&gt; &lt;td&gt;    0.434&lt;/td&gt; &lt;td&gt;   34.397&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   14.090&lt;/td&gt; &lt;td&gt;   15.800&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    2.4315&lt;/td&gt; &lt;td&gt;    0.591&lt;/td&gt; &lt;td&gt;    4.114&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.268&lt;/td&gt; &lt;td&gt;    3.595&lt;/td&gt;
+  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    1.9734&lt;/td&gt; &lt;td&gt;    0.613&lt;/td&gt; &lt;td&gt;    3.219&lt;/td&gt; &lt;td&gt; 0.001&lt;/td&gt; &lt;td&gt;    0.767&lt;/td&gt; &lt;td&gt;    3.180&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;Lastly, an extremely interesting result from&lt;/p&gt;
@@ -501,19 +499,19 @@ smf.wls(&amp;quot;read_time ~ dark_mode&amp;quot;, weights=w, data=df).fit().sum
           &lt;td&gt;&lt;/td&gt;             &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   16.2752&lt;/td&gt; &lt;td&gt;    1.330&lt;/td&gt; &lt;td&gt;   12.240&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   13.658&lt;/td&gt; &lt;td&gt;   18.892&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   12.9298&lt;/td&gt; &lt;td&gt;    1.183&lt;/td&gt; &lt;td&gt;   10.931&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   10.602&lt;/td&gt; &lt;td&gt;   15.258&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    2.3623&lt;/td&gt; &lt;td&gt;    0.607&lt;/td&gt; &lt;td&gt;    3.894&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.168&lt;/td&gt; &lt;td&gt;    3.556&lt;/td&gt;
+  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    1.8801&lt;/td&gt; &lt;td&gt;    0.610&lt;/td&gt; &lt;td&gt;    3.081&lt;/td&gt; &lt;td&gt; 0.002&lt;/td&gt; &lt;td&gt;    0.679&lt;/td&gt; &lt;td&gt;    3.081&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;male&lt;/th&gt;              &lt;td&gt;    2.5953&lt;/td&gt; &lt;td&gt;    0.570&lt;/td&gt; &lt;td&gt;    4.551&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.473&lt;/td&gt; &lt;td&gt;    3.718&lt;/td&gt;
+  &lt;th&gt;male&lt;/th&gt;              &lt;td&gt;    2.1708&lt;/td&gt; &lt;td&gt;    0.584&lt;/td&gt; &lt;td&gt;    3.718&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.022&lt;/td&gt; &lt;td&gt;    3.320&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;age&lt;/th&gt;               &lt;td&gt;   -0.0120&lt;/td&gt; &lt;td&gt;    0.025&lt;/td&gt; &lt;td&gt;   -0.477&lt;/td&gt; &lt;td&gt; 0.634&lt;/td&gt; &lt;td&gt;   -0.062&lt;/td&gt; &lt;td&gt;    0.038&lt;/td&gt;
+  &lt;th&gt;age&lt;/th&gt;               &lt;td&gt;   -0.0063&lt;/td&gt; &lt;td&gt;    0.026&lt;/td&gt; &lt;td&gt;   -0.243&lt;/td&gt; &lt;td&gt; 0.808&lt;/td&gt; &lt;td&gt;   -0.058&lt;/td&gt; &lt;td&gt;    0.045&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;hours&lt;/th&gt;             &lt;td&gt;    0.1810&lt;/td&gt; &lt;td&gt;    0.065&lt;/td&gt; &lt;td&gt;    2.774&lt;/td&gt; &lt;td&gt; 0.006&lt;/td&gt; &lt;td&gt;    0.053&lt;/td&gt; &lt;td&gt;    0.309&lt;/td&gt;
+  &lt;th&gt;hours&lt;/th&gt;             &lt;td&gt;    0.0047&lt;/td&gt; &lt;td&gt;    0.001&lt;/td&gt; &lt;td&gt;    5.009&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.003&lt;/td&gt; &lt;td&gt;    0.007&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;What is the connection between regression and propensity score weighting?&lt;/p&gt;
