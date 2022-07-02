@@ -776,6 +776,7 @@ Example Assume we had blog on statistics and causal inference. To improve user e
         <li><a href="#regression-with-control-variables">Regression with Control Variables</a></li>
       </ul>
     </li>
+    <li><a href="#comparison">Comparison</a></li>
     <li><a href="#conclusion">Conclusion</a>
       <ul>
         <li><a href="#references">References</a></li>
@@ -836,7 +837,7 @@ Example Assume we had blog on statistics and causal inference. To improve user e
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    10 min read
+    11 min read
   </span>
   
 
@@ -869,8 +870,8 @@ Example Assume we had blog on statistics and causal inference. To improve user e
 <h2 id="example">Example</h2>
 <p>Assume we had blog on statistics and causal inference. To improve user experience, we are considering <strong>releasing a dark mode</strong>, and we would like to understand whether this new feature increases the time users spend on our blog.</p>
 <img src="fig/modes.png" width="600px"/>
-<p>We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users use it or not and the time they spend on th blog. We know that there might be <strong>selection</strong>:  users that prefer the dark mode could have different reading preferences and this might complicate our causal analysis.</p>
-<p>We can represent the data generating process with the following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a>. If you are not familiar with DAGs, I have written a short <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">introduction here</a>.</p>
+<p>We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users select it or not and the time they spend on the blog. We know that there might be <strong>selection</strong>:  users that prefer the dark mode could have different reading preferences and this might complicate our causal analysis.</p>
+<p>We can represent the data generating process with the following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a>.</p>
 <pre><code class="language-mermaid">flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -931,7 +932,7 @@ df.head()
   <tbody>
     <tr>
       <th>0</th>
-      <td>9.44</td>
+      <td>10.42</td>
       <td>False</td>
       <td>0</td>
       <td>43.0</td>
@@ -939,7 +940,7 @@ df.head()
     </tr>
     <tr>
       <th>1</th>
-      <td>11.35</td>
+      <td>11.41</td>
       <td>True</td>
       <td>1</td>
       <td>55.0</td>
@@ -947,7 +948,7 @@ df.head()
     </tr>
     <tr>
       <th>2</th>
-      <td>19.87</td>
+      <td>20.88</td>
       <td>False</td>
       <td>0</td>
       <td>23.0</td>
@@ -955,7 +956,7 @@ df.head()
     </tr>
     <tr>
       <th>3</th>
-      <td>17.08</td>
+      <td>17.02</td>
       <td>False</td>
       <td>0</td>
       <td>41.0</td>
@@ -963,7 +964,7 @@ df.head()
     </tr>
     <tr>
       <th>4</th>
-      <td>20.80</td>
+      <td>21.04</td>
       <td>True</td>
       <td>0</td>
       <td>29.0</td>
@@ -972,14 +973,14 @@ df.head()
   </tbody>
 </table>
 </div>
-<p>We have informations on 300 individuals for whom we observe whether they use the <code>dark_mode</code> (the treatment), their weekly <code>read_time</code> (the outcome of interest) and some characteristics like <code>gender</code>, <code>age</code> and total <code>hours</code> spend on the blog.</p>
-<p>We would like to estimate the effect of the new <code>dark_mode</code> on users' <code>read_time</code>. If we were runnig an <strong>AB test</strong> or randomized control trial, we could just compare users with and without the dark mode and we could attribute difference in average reading time to the <code>dark_mode</code>.</p>
+<p>We have informations on 300 users for whom we observe whether they select the <code>dark_mode</code> (the treatment), their weekly <code>read_time</code> (the outcome of interest) and some characteristics like <code>gender</code>, <code>age</code> and total <code>hours</code> previously spend on the blog.</p>
+<p>We would like to estimate the effect of the new <code>dark_mode</code> on users' <code>read_time</code>. If we were runnig an <a href="https://de.wikipedia.org/wiki/A/B-Test" target="_blank" rel="noopener"><strong>AB test</strong></a> or randomized control trial, we could just compare users with and without the dark mode and we could attribute the difference in average reading time to the <code>dark_mode</code>. Let&rsquo;s check what number we would get.</p>
 <pre><code class="language-python">np.mean(df.loc[df.dark_mode==True, 'read_time']) - np.mean(df.loc[df.dark_mode==False, 'read_time'])
 </code></pre>
-<pre><code>-1.2753317748606374
+<pre><code>-1.3702904153929154
 </code></pre>
-<p>Individuals that select the <code>dark_mode</code> spend on average 1.27 hours per week less on the blog. Should we conclude that <code>dark_mode</code> is a <strong>bad idea</strong>? Is this a causal effect?</p>
-<p>We did not randomize the <code>dark_mode</code> so that users that use it might not be directly <strong>comparable</strong> with users that don&rsquo;t. Can we check this concern? Partially. We can only check it for characteristics that we observe, <code>gender</code>, <code>age</code> and total <code>hours</code> in our setting. We cannot check if users differ along other dimensions that we don&rsquo;t observe.</p>
+<p>Individuals that select the <code>dark_mode</code> spend on average 1.37 hours less on the blog, per week. Should we conclude that <code>dark_mode</code> is a <strong>bad idea</strong>? Is this a causal effect?</p>
+<p>We did not randomize the <code>dark_mode</code> so that users that selected it might not be directly <strong>comparable</strong> with users that don&rsquo;t. Can we check this concern? Partially. We can only check it for characteristics that we observe, <code>gender</code>, <code>age</code> and total <code>hours</code> in our setting. We cannot check if users differ along other dimensions that we don&rsquo;t observe.</p>
 <p>Let&rsquo;s use the <code>create_table_one</code> function from Uber&rsquo;s <a href="https://causalml.readthedocs.io/" target="_blank" rel="noopener"><code>causalml</code></a> package to produce a <strong>covariate balance table</strong>, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.</p>
 <pre><code class="language-python">from causalml.match import create_table_one
 
@@ -1044,7 +1045,7 @@ table1
   </tbody>
 </table>
 </div>
-<p>There seems to be <strong>some difference</strong> between treatment (<code>dark_mode</code>) and control group. In particular, users that use the <code>dark_mode</code> are older, have spend less hours on the blog and they are more likely to be males.</p>
+<p>There seems to be <strong>some difference</strong> between treatment (<code>dark_mode</code>) and control group. In particular, users that select the <code>dark_mode</code> are older, have spend less hours on the blog and they are more likely to be males.</p>
 <p>Another way to visually observe all the differences at once is with a <strong>paired violinplot</strong>. The advantage of the paired violinplot is that it allows us to observe the full distribution of the variable (approximated via <a href="https://en.wikipedia.org/wiki/Kernel_density_estimation" target="_blank" rel="noopener">kernel density estimation</a>).</p>
 <pre><code class="language-python">def plot_distributions(df, X, d):
     df_long = df.copy()[X + [d]]
@@ -1059,7 +1060,7 @@ table1
 <p>The insight of the violinplot is very similar: it seems that users that select the <code>dark_mode</code> are different from users that don&rsquo;t.</p>
 <p><strong>Why do we care?</strong></p>
 <p>If we do not control for the observable characteristics, we are unable to estimate the true treatment effect. In short, we cannot be certain that the difference in outcome, <code>read_time</code>, can be attributed to the treatment, <code>dark_mode</code>, instead of other characteristics. For example, it could be that males read more and also prefer the <code>dark_mode</code>, therefore we observe a positive correlation even though <code>dark_mode</code> has no effect on <code>read_time</code>.</p>
-<p>In terms of Dyrected Acyclic Graphs, this means that we have several <a href="">backdoor paths</a> that we need to <strong>block</strong> in order for our analysis to be <strong>causal</strong>.</p>
+<p>In terms of Dyrected Acyclic Graphs, this means that we have several <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>backdoor path</strong></a> that we need to <strong>block</strong> in order for our analysis to be <strong>causal</strong>.</p>
 <pre><code class="language-mermaid">flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -1109,9 +1110,9 @@ class D,Y,X1,X2,X3 included;
 </code></pre>
 <p>How do we <strong>condition the analysis</strong> on <code>gender</code>, <code>age</code> and <code>hours</code>? We have some options:</p>
 <ul>
-<li>Matching</li>
-<li>Propensity score weighting</li>
-<li>Regression with control variables</li>
+<li><strong>Matching</strong></li>
+<li><strong>Propensity score</strong> weighting</li>
+<li><strong>Regression</strong> with control variables</li>
 </ul>
 <p>Let&rsquo;s explore and compare them!</p>
 <h2 id="conditional-analysis">Conditional Analysis</h2>
@@ -1170,15 +1171,15 @@ df_gender
   <tbody>
     <tr>
       <th>0</th>
-      <td>17.790000</td>
-      <td>19.385870</td>
-      <td>1.59587</td>
+      <td>17.856857</td>
+      <td>19.241739</td>
+      <td>1.384882</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>13.128525</td>
-      <td>12.405455</td>
-      <td>-0.72307</td>
+      <td>13.291148</td>
+      <td>12.491591</td>
+      <td>-0.799557</td>
     </tr>
   </tbody>
 </table>
@@ -1270,7 +1271,7 @@ table1_matched
 <pre><code class="language-python">plot_balance(table1, table1_matched, X)
 </code></pre>
 <p><img src="img/ipw_31_0.png" alt="png"></p>
-<p>As we can see, now all differences in observable characteristics between the two groups are essentially zero.</p>
+<p>As we can see, now all differences in observable characteristics between the two groups are essentially zero. We could also compare the distributions using other metrics or test statistics, such as the <a href="https://towardsdatascience.com/9b06ee4d30bf" target="_blank" rel="noopener">Kolmogorov-Smirnov test statistic</a>.</p>
 <p>How do we <strong>estimate the average treatment effect</strong>? We can simply do a difference in means. An equivalent way that automatically provides standard errors is to run a linear regression of the outcome, <code>read_time</code>, on the treatment, <code>dark_mode</code>.</p>
 <pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode&quot;, data=df_matched).fit().summary().tables[1]
 </code></pre>
@@ -1279,47 +1280,40 @@ table1_matched
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   13.6237</td> <td>    0.575</td> <td>   23.675</td> <td> 0.000</td> <td>   12.490</td> <td>   14.757</td>
+  <th>Intercept</th>         <td>   13.4627</td> <td>    0.513</td> <td>   26.262</td> <td> 0.000</td> <td>   12.453</td> <td>   14.472</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    0.7593</td> <td>    0.814</td> <td>    0.933</td> <td> 0.352</td> <td>   -0.844</td> <td>    2.362</td>
+  <th>dark_mode[T.True]</th> <td>    0.9148</td> <td>    0.725</td> <td>    1.262</td> <td> 0.208</td> <td>   -0.513</td> <td>    2.343</td>
 </tr>
 </table>
 <p>The effect is now positive, but not statistically significant.</p>
 <h3 id="propensity-score">Propensity Score</h3>
-<p>We want to estimate the <strong>average treatment effect</strong></p>
+<p>Under <strong>unconfoundedness</strong> assumption introduced above, we can rewrite the average treatment effect as</p>
 <p>$$
-\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right]
-$$</p>
-<p>We would like to obtain an unbiased estimator that satifies a central limit theorem of the form</p>
-<p>$$
-\sqrt{n} ( \hat \tau - \tau) \ \overset{d}{\to} \ N(0, V)
-$$</p>
-<p>thus enabling us to construct <strong>confidence intervals</strong>.</p>
-<p>Under <strong>unconfoundedness</strong>, we can rewrite the average treatment effect as</p>
-<p>$$
-\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{T_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right]
+\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{D_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right]
 $$</p>
 <p>where $e(X_i)$ is the <strong>propensity score</strong> of observation $i$,</p>
 <p>$$
-e(x) = \mathbb P \left[ T_i = 1 \ \big | \ X_i = x \right]
+e(x) = \mathbb P \left[ D_i = 1 \ \big | \ X_i = x \right]
 $$</p>
 <p>i.e. its probability of being treated.</p>
 <p>Note that this formulation of the average treatment effect does not depend on the potential outcomes $Y_i^{(1)}$ and $Y_i^{(0)}$, but only on the observed outcomes $Y_i$.</p>
 <p>This formulation of the average treatment effect implies the <strong>Inverse Propensity Weighted</strong> estimator which is an unbiased estimator for the average treatment effect $\tau$</p>
 <p>$$
-\hat \tau^{*}_{IPW} = \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{T_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right)
+\hat \tau^{*}_{IPW} = \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{D_i Y_i}{e(X_i)} - \frac{(1-D_i) Y_i}{1-e(X_i)} \right)
 $$</p>
-<p>However, this estimator is <strong>unfeasible</strong> since we do not observe the propensity scores $e(X_i)$.</p>
+<p>However, this estimator is <strong>unfeasible</strong> since we do not observe the propensity scores $e(X_i)$. However, we can estimate.</p>
+<p>There are several possible ways to estimate a probability, the simplest and most common on is <a href="https://en.wikipedia.org/wiki/Logistic_regression" target="_blank" rel="noopener"><strong>logistic regression</strong></a>.</p>
 <pre><code class="language-python">df[&quot;pscore&quot;] = smf.logit(&quot;np.rint(dark_mode) ~ male + age + hours&quot;, data=df).fit(disp=False).predict()
 </code></pre>
-<p>Is the sample balanced?</p>
+<p>An <strong>important check</strong> to perform after estimating propensity scores is plotting them, across treatment and control groups. First of all, we can then observe whether the two groups are balanced or not, depending on how close the two distributions are. Moreover, we can also check how likely it is that the <strong>overlap assumption</strong> is satisfied. Ideally both distributions should span the same interval.</p>
 <pre><code class="language-python">sns.histplot(data=df, x='pscore', hue='dark_mode', bins=30, stat='density', common_norm=False).\
     set(ylabel=&quot;&quot;, title=&quot;Distribution of Propensity Scores&quot;);
 </code></pre>
 <p><img src="img/ipw_39_0.png" alt="png"></p>
-<p>As we can see, the distribution of propensity scores between the treatment and control group is <strong>significantly different</strong>.</p>
-<p>We can now estimate the treatment effect as a weighted difference in means.</p>
+<p>As expected, the distribution of propensity scores between the treatment and control group is <strong>significantly different</strong>, suggesting that the two groups are hardly comparable. Moreover, there is significant overlap in the support of the distributions, suggesting that the overlap assumption is likely to be satisfied.</p>
+<p>Howe do we estimate the average treatment effect?</p>
+<p>Once we have computed the propensity scores, we just need to re-weight observations by their respective propensity score. We can then either compute a difference between the weighted <code>read_time</code> averages, or run a weighted regression of <code>read_time</code> on <code>dark_mode</code>.</p>
 <pre><code class="language-python">w = 1 / (df[&quot;pscore&quot;] * df[&quot;dark_mode&quot;] + (1-df[&quot;pscore&quot;]) * (1-df[&quot;dark_mode&quot;]))
 smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().tables[1]
 </code></pre>
@@ -1328,14 +1322,15 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   15.0144</td> <td>    0.551</td> <td>   27.239</td> <td> 0.000</td> <td>   13.930</td> <td>   16.099</td>
+  <th>Intercept</th>         <td>   15.0908</td> <td>    0.501</td> <td>   30.132</td> <td> 0.000</td> <td>   14.105</td> <td>   16.076</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    1.6587</td> <td>    0.778</td> <td>    2.132</td> <td> 0.034</td> <td>    0.127</td> <td>    3.190</td>
+  <th>dark_mode[T.True]</th> <td>    1.5609</td> <td>    0.707</td> <td>    2.208</td> <td> 0.028</td> <td>    0.170</td> <td>    2.952</td>
 </tr>
 </table>
-<p>Lastly, an extremely interesting result from</p>
+<p>The effect of the <code>dark_mode</code> is now positive and statistically significant, at the 5% level!</p>
 <h3 id="regression-with-control-variables">Regression with Control Variables</h3>
+<p>The last method we are going to review today is <strong>linear regression with control variables</strong>. This estimator is extremely easy to implement, since we just need to add the user characteristics - <code>gender</code>, <code>age</code> and <code>hours</code> - to the regression of <code>read_time</code> on <code>dark_mode</code>.</p>
 <pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode + male + age + hours&quot;, data=df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -1343,22 +1338,24 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   18.6144</td> <td>    1.253</td> <td>   14.852</td> <td> 0.000</td> <td>   16.148</td> <td>   21.081</td>
+  <th>Intercept</th>         <td>   19.1829</td> <td>    1.048</td> <td>   18.299</td> <td> 0.000</td> <td>   17.120</td> <td>   21.246</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    1.5973</td> <td>    0.647</td> <td>    2.469</td> <td> 0.014</td> <td>    0.324</td> <td>    2.871</td>
+  <th>dark_mode[T.True]</th> <td>    1.4987</td> <td>    0.541</td> <td>    2.769</td> <td> 0.006</td> <td>    0.434</td> <td>    2.564</td>
 </tr>
 <tr>
-  <th>male</th>              <td>   -5.8191</td> <td>    0.632</td> <td>   -9.208</td> <td> 0.000</td> <td>   -7.063</td> <td>   -4.575</td>
+  <th>male</th>              <td>   -5.6579</td> <td>    0.529</td> <td>  -10.704</td> <td> 0.000</td> <td>   -6.698</td> <td>   -4.618</td>
 </tr>
 <tr>
-  <th>age</th>               <td>   -0.0813</td> <td>    0.027</td> <td>   -2.986</td> <td> 0.003</td> <td>   -0.135</td> <td>   -0.028</td>
+  <th>age</th>               <td>   -0.0944</td> <td>    0.023</td> <td>   -4.149</td> <td> 0.000</td> <td>   -0.139</td> <td>   -0.050</td>
 </tr>
 <tr>
-  <th>hours</th>             <td>    0.0097</td> <td>    0.001</td> <td>    9.901</td> <td> 0.000</td> <td>    0.008</td> <td>    0.012</td>
+  <th>hours</th>             <td>    0.0098</td> <td>    0.001</td> <td>   11.911</td> <td> 0.000</td> <td>    0.008</td> <td>    0.011</td>
 </tr>
 </table>
-<p>What is the connection between regression and propensity score weighting?</p>
+<p>The average treatment effect is again positive and statistically significant at the 1% level!</p>
+<h2 id="comparison">Comparison</h2>
+<p>How do the different methods compare to each other?</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>TBD</p>
 <h3 id="references">References</h3>
