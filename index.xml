@@ -27378,23 +27378,23 @@ df.head()
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;9.25&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
+      &lt;td&gt;9.44&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;43.0&lt;/td&gt;
       &lt;td&gt;79.17&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;15.03&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;11.35&lt;/td&gt;
+      &lt;td&gt;True&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;55.0&lt;/td&gt;
       &lt;td&gt;130.35&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;12.41&lt;/td&gt;
+      &lt;td&gt;19.87&lt;/td&gt;
       &lt;td&gt;False&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;23.0&lt;/td&gt;
@@ -27402,15 +27402,15 @@ df.head()
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;15.70&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
+      &lt;td&gt;17.08&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;41.0&lt;/td&gt;
       &lt;td&gt;133.30&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;15.80&lt;/td&gt;
+      &lt;td&gt;20.80&lt;/td&gt;
       &lt;td&gt;True&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;29.0&lt;/td&gt;
@@ -27421,7 +27421,12 @@ df.head()
 &lt;/div&gt;
 &lt;p&gt;We have informations on 300 individuals for whom we observe whether they use the &lt;code&gt;dark_mode&lt;/code&gt; (the treatment), their weekly &lt;code&gt;read_time&lt;/code&gt; (the outcome of interest) and some characteristics like &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; spend on the blog.&lt;/p&gt;
 &lt;p&gt;We would like to estimate the effect of the new &lt;code&gt;dark_mode&lt;/code&gt; on users&#39; &lt;code&gt;read_time&lt;/code&gt;. If we were runnig an &lt;strong&gt;AB test&lt;/strong&gt; or randomized control trial, we could just compare users with and without the dark mode and we could attribute difference in average reading time to the &lt;code&gt;dark_mode&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;However, we did not randomize the &lt;code&gt;dark_mode&lt;/code&gt; so that users that use it might not be directly &lt;strong&gt;comparable&lt;/strong&gt; with users that don&amp;rsquo;t. Can we check this concern? Partially. We can only check it for characteristics that we observe, &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; in our setting. We cannot check if users differ along other dimensions that we don&amp;rsquo;t observe.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.mean(df.loc[df.dark_mode==True, &#39;read_time&#39;]) - np.mean(df.loc[df.dark_mode==False, &#39;read_time&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;-1.2753317748606374
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Individuals that select the &lt;code&gt;dark_mode&lt;/code&gt; spend on average 1.27 hours per week less on the blog. Should we conclude that &lt;code&gt;dark_mode&lt;/code&gt; is a &lt;strong&gt;bad idea&lt;/strong&gt;? Is this a causal effect?&lt;/p&gt;
+&lt;p&gt;We did not randomize the &lt;code&gt;dark_mode&lt;/code&gt; so that users that use it might not be directly &lt;strong&gt;comparable&lt;/strong&gt; with users that don&amp;rsquo;t. Can we check this concern? Partially. We can only check it for characteristics that we observe, &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; in our setting. We cannot check if users differ along other dimensions that we don&amp;rsquo;t observe.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s use the &lt;code&gt;create_table_one&lt;/code&gt; function from Uber&amp;rsquo;s &lt;a href=&#34;https://causalml.readthedocs.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;causalml&lt;/code&gt;&lt;/a&gt; package to produce a &lt;strong&gt;covariate balance table&lt;/strong&gt;, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import create_table_one
 
@@ -27461,32 +27466,33 @@ table1
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;n&lt;/th&gt;
-      &lt;td&gt;146&lt;/td&gt;
-      &lt;td&gt;154&lt;/td&gt;
+      &lt;td&gt;166&lt;/td&gt;
+      &lt;td&gt;134&lt;/td&gt;
       &lt;td&gt;&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;age&lt;/th&gt;
-      &lt;td&gt;40.09 (10.97)&lt;/td&gt;
-      &lt;td&gt;44.94 (10.98)&lt;/td&gt;
-      &lt;td&gt;0.4416&lt;/td&gt;
+      &lt;td&gt;41.33 (11.60)&lt;/td&gt;
+      &lt;td&gt;44.13 (10.57)&lt;/td&gt;
+      &lt;td&gt;0.2524&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;hours&lt;/th&gt;
-      &lt;td&gt;326.97 (380.29)&lt;/td&gt;
-      &lt;td&gt;196.12 (211.75)&lt;/td&gt;
-      &lt;td&gt;-0.4251&lt;/td&gt;
+      &lt;td&gt;303.91 (330.20)&lt;/td&gt;
+      &lt;td&gt;205.16 (279.63)&lt;/td&gt;
+      &lt;td&gt;-0.3228&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;male&lt;/th&gt;
-      &lt;td&gt;0.60 (0.49)&lt;/td&gt;
-      &lt;td&gt;0.40 (0.49)&lt;/td&gt;
-      &lt;td&gt;-0.421&lt;/td&gt;
+      &lt;td&gt;0.37 (0.48)&lt;/td&gt;
+      &lt;td&gt;0.66 (0.48)&lt;/td&gt;
+      &lt;td&gt;0.6025&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;Another way to visually observe all the differences at once is with a paired violinplot.&lt;/p&gt;
+&lt;p&gt;There seems to be &lt;strong&gt;some difference&lt;/strong&gt; between treatment (&lt;code&gt;dark_mode&lt;/code&gt;) and control group. In particular, users that use the &lt;code&gt;dark_mode&lt;/code&gt; are older, have spend less hours on the blog and they are more likely to be males.&lt;/p&gt;
+&lt;p&gt;Another way to visually observe all the differences at once is with a &lt;strong&gt;paired violinplot&lt;/strong&gt;. The advantage of the paired violinplot is that it allows us to observe the full distribution of the variable (approximated via &lt;a href=&#34;https://en.wikipedia.org/wiki/Kernel_density_estimation&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;kernel density estimation&lt;/a&gt;).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_distributions(df, X, d):
     df_long = df.copy()[X + [d]]
     df_long[X] =(df_long[X] - df_long[X].mean()) / df_long[X].std()
@@ -27496,8 +27502,11 @@ table1
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_distributions(df, X, &amp;quot;dark_mode&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/ipw_14_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;If we do not control for the observable characteristics, we are unable to estimate the true treatment effect.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/ipw_16_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The insight of the violinplot is very similar: it seems that users that select the &lt;code&gt;dark_mode&lt;/code&gt; are different from users that don&amp;rsquo;t.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Why do we care?&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;If we do not control for the observable characteristics, we are unable to estimate the true treatment effect. In short, we cannot be certain that the difference in outcome, &lt;code&gt;read_time&lt;/code&gt;, can be attributed to the treatment, &lt;code&gt;dark_mode&lt;/code&gt;, instead of other characteristics. For example, it could be that males read more and also prefer the &lt;code&gt;dark_mode&lt;/code&gt;, therefore we observe a positive correlation even though &lt;code&gt;dark_mode&lt;/code&gt; has no effect on &lt;code&gt;read_time&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;In terms of Dyrected Acyclic Graphs, this means that we have several &lt;a href=&#34;&#34;&gt;backdoor paths&lt;/a&gt; that we need to &lt;strong&gt;block&lt;/strong&gt; in order for our analysis to be &lt;strong&gt;causal&lt;/strong&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -27522,7 +27531,7 @@ linkStyle 1,2,3,4,5,6 stroke:#ff0000,stroke-width:4px;
 class D,Y included;
 class X1,X2,X3 excluded;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;By controlling for observable characteristics, we &amp;ldquo;block&amp;rdquo; the backdoor paths and we are able to recover the causal effect of $D$ on $Y$.&lt;/p&gt;
+&lt;p&gt;How do we &lt;strong&gt;block backdoor paths&lt;/strong&gt;? By conditioning the analysis on those intermediate variables. The conditional analysis allows us to recover the average treatment effect of the &lt;code&gt;dark_mode&lt;/code&gt; on &lt;code&gt;read_time&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -27545,36 +27554,36 @@ X3 -.-&amp;gt; Y
 linkStyle 0 stroke:#00ff00,stroke-width:4px;
 class D,Y,X1,X2,X3 included;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;How do we do it? We have some options:&lt;/p&gt;
+&lt;p&gt;How do we &lt;strong&gt;condition the analysis&lt;/strong&gt; on &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;hours&lt;/code&gt;? We have some options:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Matching&lt;/li&gt;
 &lt;li&gt;Propensity score weighting&lt;/li&gt;
 &lt;li&gt;Regression with control variables&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;How do the methods work and what are the differences?&lt;/p&gt;
-&lt;h2 id=&#34;methods&#34;&gt;Methods&lt;/h2&gt;
-&lt;p&gt;We assume that for a set of i.i.d. subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(X_i, T_i, Y_i)$ comprised of&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s explore and compare them!&lt;/p&gt;
+&lt;h2 id=&#34;conditional-analysis&#34;&gt;Conditional Analysis&lt;/h2&gt;
+&lt;p&gt;We assume that for a set of subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(D_i, Y_i, X_i)$ comprised of&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;a feature vector $X_i \in \mathbb R^n$&lt;/li&gt;
-&lt;li&gt;a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
-&lt;li&gt;a response $Y_i \in \mathbb R$&lt;/li&gt;
+&lt;li&gt;a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$ (&lt;code&gt;dark_mode&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;a response $Y_i \in \mathbb R$ (&lt;code&gt;read_time&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;a feature vector $X_i \in \mathbb R^n$ (&lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;hours&lt;/code&gt;)&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;Assumption 1 : unconfoundedness&lt;/strong&gt; (or ignorability, or selection on observables)&lt;/p&gt;
 &lt;p&gt;$$
-\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ X_i
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i
 $$&lt;/p&gt;
-&lt;p&gt;i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random.&lt;/p&gt;
+&lt;p&gt;i.e. conditional on observable characteristics $X$, the treatment assignment $D$ is as good as random. What we are effectively assuming is that there is no other characteristics that we do not observe that could impact both whether a user selects the &lt;code&gt;dark_mode&lt;/code&gt; and their &lt;code&gt;read_time&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Assumption 2: overlap&lt;/strong&gt; (or bounded support)&lt;/p&gt;
 &lt;p&gt;$$
 \exists \eta &amp;gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
 $$&lt;/p&gt;
-&lt;p&gt;i.e. no observation is deterministically assigned to the treatment or control group.&lt;/p&gt;
+&lt;p&gt;i.e. no observation is deterministically assigned to the treatment or control group. This is a more technical assumption that basically means that for any level of &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; or &lt;code&gt;hours&lt;/code&gt;, there could exist an individual that select the &lt;code&gt;dark_mode&lt;/code&gt; and one that doesn&amp;rsquo;t.&lt;/p&gt;
 &lt;h3 id=&#34;matching&#34;&gt;Matching&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import NearestNeighborMatch, create_table_one
-
-psm = NearestNeighborMatch(replace=True, ratio=1, random_state=42)
-df_matched = psm.match(data=df, treatment_col=&amp;quot;dark_mode&amp;quot;, score_cols=X)
-df_matched.head()
+&lt;p&gt;The first and most intuitive method to perform &lt;strong&gt;conditional analysis&lt;/strong&gt; is matching.&lt;/p&gt;
+&lt;p&gt;The idea of matching is very simple. Since we are not sure whether, for example, male and female users are directly comparable, we do the analysis within gender. Instead of comparing &lt;code&gt;read_time&lt;/code&gt; across &lt;code&gt;dark_mode&lt;/code&gt; in the whole sample, we do it separately for male and female users.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_gender = pd.pivot_table(df, values=&#39;read_time&#39;, index=&#39;male&#39;, columns=&#39;dark_mode&#39;, aggfunc=np.mean)
+df_gender[&#39;diff&#39;] = df_gender[1] - df_gender[0] 
+df_gender
 &lt;/code&gt;&lt;/pre&gt;
 &lt;div&gt;
 &lt;style scoped&gt;
@@ -27593,58 +27602,43 @@ df_matched.head()
 &lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
   &lt;thead&gt;
     &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;read_time&lt;/th&gt;
       &lt;th&gt;dark_mode&lt;/th&gt;
+      &lt;th&gt;False&lt;/th&gt;
+      &lt;th&gt;True&lt;/th&gt;
+      &lt;th&gt;diff&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
       &lt;th&gt;male&lt;/th&gt;
-      &lt;th&gt;age&lt;/th&gt;
-      &lt;th&gt;hours&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
     &lt;/tr&gt;
   &lt;/thead&gt;
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;9.25&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;43.0&lt;/td&gt;
-      &lt;td&gt;79.17&lt;/td&gt;
+      &lt;td&gt;17.790000&lt;/td&gt;
+      &lt;td&gt;19.385870&lt;/td&gt;
+      &lt;td&gt;1.59587&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;15.70&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;41.0&lt;/td&gt;
-      &lt;td&gt;133.30&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;15.80&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;29.0&lt;/td&gt;
-      &lt;td&gt;179.65&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;5&lt;/th&gt;
-      &lt;td&gt;13.11&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;64.0&lt;/td&gt;
-      &lt;td&gt;176.05&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;7&lt;/th&gt;
-      &lt;td&gt;10.83&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;53.0&lt;/td&gt;
-      &lt;td&gt;241.40&lt;/td&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;13.128525&lt;/td&gt;
+      &lt;td&gt;12.405455&lt;/td&gt;
+      &lt;td&gt;-0.72307&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
+&lt;p&gt;Now the effect of &lt;code&gt;dark_mode&lt;/code&gt; seems reversed: it is negative for male users but bigger and positive for female users, suggesting a positive aggregate effect (assuming equal proportion of genders)!&lt;/p&gt;
+&lt;p&gt;This comparison was easy for &lt;code&gt;gender&lt;/code&gt; since it is a binary variable. With multiple variables, potentially continuous, matching becomes much more difficult. One common strategy is to match users in the treatment group with the most similar user in the control group, using some sort of &lt;a href=&#34;https://en.wikipedia.org/wiki/Nearest_neighbour_algorithm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;neirest neighbor algorithm&lt;/a&gt;. I won&amp;rsquo;t go into the algorithm details here, but we can perform the matching with the &lt;code&gt;NearestNeighborMatch&lt;/code&gt; function from the &lt;code&gt;causalml&lt;/code&gt; package.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;NearestNeighborMatch&lt;/code&gt; function generates a new dataset where users in the treatment group have been matched 1:1 (option &lt;code&gt;ratio=1&lt;/code&gt;) to users in the control group.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import NearestNeighborMatch
+
+psm = NearestNeighborMatch(replace=True, ratio=1, random_state=1)
+df_matched = psm.match(data=df, treatment_col=&amp;quot;dark_mode&amp;quot;, score_cols=X)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Are the two groups more comparable now? We can produce a new version of the &lt;strong&gt;balance table&lt;/strong&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;table1_matched = create_table_one(df_matched, &amp;quot;dark_mode&amp;quot;, X)
 table1_matched
 &lt;/code&gt;&lt;/pre&gt;
@@ -27680,49 +27674,51 @@ table1_matched
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;n&lt;/th&gt;
-      &lt;td&gt;134&lt;/td&gt;
-      &lt;td&gt;134&lt;/td&gt;
+      &lt;td&gt;123&lt;/td&gt;
+      &lt;td&gt;123&lt;/td&gt;
       &lt;td&gt;&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;age&lt;/th&gt;
-      &lt;td&gt;44.54 (10.98)&lt;/td&gt;
-      &lt;td&gt;44.57 (11.06)&lt;/td&gt;
-      &lt;td&gt;0.0034&lt;/td&gt;
+      &lt;td&gt;43.89 (10.38)&lt;/td&gt;
+      &lt;td&gt;43.94 (10.40)&lt;/td&gt;
+      &lt;td&gt;0.0047&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;hours&lt;/th&gt;
-      &lt;td&gt;147.78 (111.68)&lt;/td&gt;
-      &lt;td&gt;147.94 (120.86)&lt;/td&gt;
-      &lt;td&gt;0.0014&lt;/td&gt;
+      &lt;td&gt;158.59 (154.46)&lt;/td&gt;
+      &lt;td&gt;152.27 (154.70)&lt;/td&gt;
+      &lt;td&gt;-0.0408&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;male&lt;/th&gt;
-      &lt;td&gt;0.43 (0.50)&lt;/td&gt;
-      &lt;td&gt;0.43 (0.50)&lt;/td&gt;
+      &lt;td&gt;0.65 (0.48)&lt;/td&gt;
+      &lt;td&gt;0.65 (0.48)&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
+&lt;p&gt;Now the average differences between the two groups have shrunk by at least a couple of orders of magnitude. We can visually inspect distributional differences with the paired violinplot.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_distributions(df_matched, X, &amp;quot;dark_mode&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/ipw_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;We can also compare the balancedness before and after matching by plotting the standardized mean differences.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/ipw_28_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;A popular way to visualize pre- and post-matching covariate balance is the &lt;strong&gt;balance plot&lt;/strong&gt; that essentially displays the standardized mean differences before and after matching, for each control variable.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_balance(t1, t2, X):
     df_smd = pd.DataFrame({&amp;quot;Variable&amp;quot;: X + X,
-                           &amp;quot;Data&amp;quot;: [&amp;quot;Original&amp;quot; for _ in range(len(X))] + [&amp;quot;Matched&amp;quot; for _ in range(len(X))],
+                           &amp;quot;Sample&amp;quot;: [&amp;quot;Unadjusted&amp;quot; for _ in range(len(X))] + [&amp;quot;Adjusted&amp;quot; for _ in range(len(X))],
                            &amp;quot;Standardized Mean Difference&amp;quot;: t1[&amp;quot;SMD&amp;quot;][1:].to_list() + 
                                                            t2[&amp;quot;SMD&amp;quot;][1:].to_list()})
 
-    sns.scatterplot(x=&amp;quot;Standardized Mean Difference&amp;quot;, y=&amp;quot;Variable&amp;quot;, hue=&amp;quot;Data&amp;quot;, data=df_smd).\
+    sns.scatterplot(x=&amp;quot;Standardized Mean Difference&amp;quot;, y=&amp;quot;Variable&amp;quot;, hue=&amp;quot;Sample&amp;quot;, data=df_smd).\
         set(title=&amp;quot;Balance Plot&amp;quot;)
     plt.axvline(x=0, color=&#39;k&#39;, ls=&#39;--&#39;, zorder=-1, alpha=0.3);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_balance(table1, table1_matched, X)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/ipw_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;We can now estimate the treatment effect as a difference in means.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/ipw_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, now all differences in observable characteristics between the two groups are essentially zero.&lt;/p&gt;
+&lt;p&gt;How do we &lt;strong&gt;estimate the average treatment effect&lt;/strong&gt;? We can simply do a difference in means. An equivalent way that automatically provides standard errors is to run a linear regression of the outcome, &lt;code&gt;read_time&lt;/code&gt;, on the treatment, &lt;code&gt;dark_mode&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;read_time ~ dark_mode&amp;quot;, data=df_matched).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -27730,12 +27726,13 @@ table1_matched
           &lt;td&gt;&lt;/td&gt;             &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   15.1301&lt;/td&gt; &lt;td&gt;    0.437&lt;/td&gt; &lt;td&gt;   34.623&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   14.270&lt;/td&gt; &lt;td&gt;   15.991&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   13.6237&lt;/td&gt; &lt;td&gt;    0.575&lt;/td&gt; &lt;td&gt;   23.675&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   12.490&lt;/td&gt; &lt;td&gt;   14.757&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    0.7602&lt;/td&gt; &lt;td&gt;    0.618&lt;/td&gt; &lt;td&gt;    1.230&lt;/td&gt; &lt;td&gt; 0.220&lt;/td&gt; &lt;td&gt;   -0.457&lt;/td&gt; &lt;td&gt;    1.977&lt;/td&gt;
+  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    0.7593&lt;/td&gt; &lt;td&gt;    0.814&lt;/td&gt; &lt;td&gt;    0.933&lt;/td&gt; &lt;td&gt; 0.352&lt;/td&gt; &lt;td&gt;   -0.844&lt;/td&gt; &lt;td&gt;    2.362&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
+&lt;p&gt;The effect is now positive, but not statistically significant.&lt;/p&gt;
 &lt;h3 id=&#34;propensity-score&#34;&gt;Propensity Score&lt;/h3&gt;
 &lt;p&gt;We want to estimate the &lt;strong&gt;average treatment effect&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;$$
@@ -27767,7 +27764,7 @@ $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(data=df, x=&#39;pscore&#39;, hue=&#39;dark_mode&#39;, bins=30, stat=&#39;density&#39;, common_norm=False).\
     set(ylabel=&amp;quot;&amp;quot;, title=&amp;quot;Distribution of Propensity Scores&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/ipw_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/ipw_39_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, the distribution of propensity scores between the treatment and control group is &lt;strong&gt;significantly different&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;We can now estimate the treatment effect as a weighted difference in means.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;w = 1 / (df[&amp;quot;pscore&amp;quot;] * df[&amp;quot;dark_mode&amp;quot;] + (1-df[&amp;quot;pscore&amp;quot;]) * (1-df[&amp;quot;dark_mode&amp;quot;]))
@@ -27778,10 +27775,10 @@ smf.wls(&amp;quot;read_time ~ dark_mode&amp;quot;, weights=w, data=df).fit().sum
           &lt;td&gt;&lt;/td&gt;             &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   14.9446&lt;/td&gt; &lt;td&gt;    0.434&lt;/td&gt; &lt;td&gt;   34.397&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   14.090&lt;/td&gt; &lt;td&gt;   15.800&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   15.0144&lt;/td&gt; &lt;td&gt;    0.551&lt;/td&gt; &lt;td&gt;   27.239&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   13.930&lt;/td&gt; &lt;td&gt;   16.099&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    1.9734&lt;/td&gt; &lt;td&gt;    0.613&lt;/td&gt; &lt;td&gt;    3.219&lt;/td&gt; &lt;td&gt; 0.001&lt;/td&gt; &lt;td&gt;    0.767&lt;/td&gt; &lt;td&gt;    3.180&lt;/td&gt;
+  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    1.6587&lt;/td&gt; &lt;td&gt;    0.778&lt;/td&gt; &lt;td&gt;    2.132&lt;/td&gt; &lt;td&gt; 0.034&lt;/td&gt; &lt;td&gt;    0.127&lt;/td&gt; &lt;td&gt;    3.190&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;Lastly, an extremely interesting result from&lt;/p&gt;
@@ -27793,19 +27790,19 @@ smf.wls(&amp;quot;read_time ~ dark_mode&amp;quot;, weights=w, data=df).fit().sum
           &lt;td&gt;&lt;/td&gt;             &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   12.9298&lt;/td&gt; &lt;td&gt;    1.183&lt;/td&gt; &lt;td&gt;   10.931&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   10.602&lt;/td&gt; &lt;td&gt;   15.258&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   18.6144&lt;/td&gt; &lt;td&gt;    1.253&lt;/td&gt; &lt;td&gt;   14.852&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   16.148&lt;/td&gt; &lt;td&gt;   21.081&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    1.8801&lt;/td&gt; &lt;td&gt;    0.610&lt;/td&gt; &lt;td&gt;    3.081&lt;/td&gt; &lt;td&gt; 0.002&lt;/td&gt; &lt;td&gt;    0.679&lt;/td&gt; &lt;td&gt;    3.081&lt;/td&gt;
+  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    1.5973&lt;/td&gt; &lt;td&gt;    0.647&lt;/td&gt; &lt;td&gt;    2.469&lt;/td&gt; &lt;td&gt; 0.014&lt;/td&gt; &lt;td&gt;    0.324&lt;/td&gt; &lt;td&gt;    2.871&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;male&lt;/th&gt;              &lt;td&gt;    2.1708&lt;/td&gt; &lt;td&gt;    0.584&lt;/td&gt; &lt;td&gt;    3.718&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.022&lt;/td&gt; &lt;td&gt;    3.320&lt;/td&gt;
+  &lt;th&gt;male&lt;/th&gt;              &lt;td&gt;   -5.8191&lt;/td&gt; &lt;td&gt;    0.632&lt;/td&gt; &lt;td&gt;   -9.208&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -7.063&lt;/td&gt; &lt;td&gt;   -4.575&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;age&lt;/th&gt;               &lt;td&gt;   -0.0063&lt;/td&gt; &lt;td&gt;    0.026&lt;/td&gt; &lt;td&gt;   -0.243&lt;/td&gt; &lt;td&gt; 0.808&lt;/td&gt; &lt;td&gt;   -0.058&lt;/td&gt; &lt;td&gt;    0.045&lt;/td&gt;
+  &lt;th&gt;age&lt;/th&gt;               &lt;td&gt;   -0.0813&lt;/td&gt; &lt;td&gt;    0.027&lt;/td&gt; &lt;td&gt;   -2.986&lt;/td&gt; &lt;td&gt; 0.003&lt;/td&gt; &lt;td&gt;   -0.135&lt;/td&gt; &lt;td&gt;   -0.028&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;hours&lt;/th&gt;             &lt;td&gt;    0.0047&lt;/td&gt; &lt;td&gt;    0.001&lt;/td&gt; &lt;td&gt;    5.009&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.003&lt;/td&gt; &lt;td&gt;    0.007&lt;/td&gt;
+  &lt;th&gt;hours&lt;/th&gt;             &lt;td&gt;    0.0097&lt;/td&gt; &lt;td&gt;    0.001&lt;/td&gt; &lt;td&gt;    9.901&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.008&lt;/td&gt; &lt;td&gt;    0.012&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;What is the connection between regression and propensity score weighting?&lt;/p&gt;

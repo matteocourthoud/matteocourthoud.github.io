@@ -769,7 +769,7 @@ Example Assume we had blog on statistics and causal inference. To improve user e
       <nav id="TableOfContents">
   <ul>
     <li><a href="#example">Example</a></li>
-    <li><a href="#methods">Methods</a>
+    <li><a href="#conditional-analysis">Conditional Analysis</a>
       <ul>
         <li><a href="#matching">Matching</a></li>
         <li><a href="#propensity-score">Propensity Score</a></li>
@@ -836,7 +836,7 @@ Example Assume we had blog on statistics and causal inference. To improve user e
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    8 min read
+    10 min read
   </span>
   
 
@@ -931,23 +931,23 @@ df.head()
   <tbody>
     <tr>
       <th>0</th>
-      <td>9.25</td>
-      <td>True</td>
+      <td>9.44</td>
+      <td>False</td>
       <td>0</td>
       <td>43.0</td>
       <td>79.17</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>15.03</td>
-      <td>False</td>
+      <td>11.35</td>
+      <td>True</td>
       <td>1</td>
       <td>55.0</td>
       <td>130.35</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>12.41</td>
+      <td>19.87</td>
       <td>False</td>
       <td>0</td>
       <td>23.0</td>
@@ -955,15 +955,15 @@ df.head()
     </tr>
     <tr>
       <th>3</th>
-      <td>15.70</td>
-      <td>True</td>
+      <td>17.08</td>
+      <td>False</td>
       <td>0</td>
       <td>41.0</td>
       <td>133.30</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>15.80</td>
+      <td>20.80</td>
       <td>True</td>
       <td>0</td>
       <td>29.0</td>
@@ -974,7 +974,12 @@ df.head()
 </div>
 <p>We have informations on 300 individuals for whom we observe whether they use the <code>dark_mode</code> (the treatment), their weekly <code>read_time</code> (the outcome of interest) and some characteristics like <code>gender</code>, <code>age</code> and total <code>hours</code> spend on the blog.</p>
 <p>We would like to estimate the effect of the new <code>dark_mode</code> on users' <code>read_time</code>. If we were runnig an <strong>AB test</strong> or randomized control trial, we could just compare users with and without the dark mode and we could attribute difference in average reading time to the <code>dark_mode</code>.</p>
-<p>However, we did not randomize the <code>dark_mode</code> so that users that use it might not be directly <strong>comparable</strong> with users that don&rsquo;t. Can we check this concern? Partially. We can only check it for characteristics that we observe, <code>gender</code>, <code>age</code> and total <code>hours</code> in our setting. We cannot check if users differ along other dimensions that we don&rsquo;t observe.</p>
+<pre><code class="language-python">np.mean(df.loc[df.dark_mode==True, 'read_time']) - np.mean(df.loc[df.dark_mode==False, 'read_time'])
+</code></pre>
+<pre><code>-1.2753317748606374
+</code></pre>
+<p>Individuals that select the <code>dark_mode</code> spend on average 1.27 hours per week less on the blog. Should we conclude that <code>dark_mode</code> is a <strong>bad idea</strong>? Is this a causal effect?</p>
+<p>We did not randomize the <code>dark_mode</code> so that users that use it might not be directly <strong>comparable</strong> with users that don&rsquo;t. Can we check this concern? Partially. We can only check it for characteristics that we observe, <code>gender</code>, <code>age</code> and total <code>hours</code> in our setting. We cannot check if users differ along other dimensions that we don&rsquo;t observe.</p>
 <p>Let&rsquo;s use the <code>create_table_one</code> function from Uber&rsquo;s <a href="https://causalml.readthedocs.io/" target="_blank" rel="noopener"><code>causalml</code></a> package to produce a <strong>covariate balance table</strong>, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.</p>
 <pre><code class="language-python">from causalml.match import create_table_one
 
@@ -1014,32 +1019,33 @@ table1
   <tbody>
     <tr>
       <th>n</th>
-      <td>146</td>
-      <td>154</td>
+      <td>166</td>
+      <td>134</td>
       <td></td>
     </tr>
     <tr>
       <th>age</th>
-      <td>40.09 (10.97)</td>
-      <td>44.94 (10.98)</td>
-      <td>0.4416</td>
+      <td>41.33 (11.60)</td>
+      <td>44.13 (10.57)</td>
+      <td>0.2524</td>
     </tr>
     <tr>
       <th>hours</th>
-      <td>326.97 (380.29)</td>
-      <td>196.12 (211.75)</td>
-      <td>-0.4251</td>
+      <td>303.91 (330.20)</td>
+      <td>205.16 (279.63)</td>
+      <td>-0.3228</td>
     </tr>
     <tr>
       <th>male</th>
-      <td>0.60 (0.49)</td>
-      <td>0.40 (0.49)</td>
-      <td>-0.421</td>
+      <td>0.37 (0.48)</td>
+      <td>0.66 (0.48)</td>
+      <td>0.6025</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>Another way to visually observe all the differences at once is with a paired violinplot.</p>
+<p>There seems to be <strong>some difference</strong> between treatment (<code>dark_mode</code>) and control group. In particular, users that use the <code>dark_mode</code> are older, have spend less hours on the blog and they are more likely to be males.</p>
+<p>Another way to visually observe all the differences at once is with a <strong>paired violinplot</strong>. The advantage of the paired violinplot is that it allows us to observe the full distribution of the variable (approximated via <a href="https://en.wikipedia.org/wiki/Kernel_density_estimation" target="_blank" rel="noopener">kernel density estimation</a>).</p>
 <pre><code class="language-python">def plot_distributions(df, X, d):
     df_long = df.copy()[X + [d]]
     df_long[X] =(df_long[X] - df_long[X].mean()) / df_long[X].std()
@@ -1049,8 +1055,11 @@ table1
 </code></pre>
 <pre><code class="language-python">plot_distributions(df, X, &quot;dark_mode&quot;)
 </code></pre>
-<p><img src="img/ipw_14_0.png" alt="png"></p>
-<p>If we do not control for the observable characteristics, we are unable to estimate the true treatment effect.</p>
+<p><img src="img/ipw_16_0.png" alt="png"></p>
+<p>The insight of the violinplot is very similar: it seems that users that select the <code>dark_mode</code> are different from users that don&rsquo;t.</p>
+<p><strong>Why do we care?</strong></p>
+<p>If we do not control for the observable characteristics, we are unable to estimate the true treatment effect. In short, we cannot be certain that the difference in outcome, <code>read_time</code>, can be attributed to the treatment, <code>dark_mode</code>, instead of other characteristics. For example, it could be that males read more and also prefer the <code>dark_mode</code>, therefore we observe a positive correlation even though <code>dark_mode</code> has no effect on <code>read_time</code>.</p>
+<p>In terms of Dyrected Acyclic Graphs, this means that we have several <a href="">backdoor paths</a> that we need to <strong>block</strong> in order for our analysis to be <strong>causal</strong>.</p>
 <pre><code class="language-mermaid">flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -1075,7 +1084,7 @@ linkStyle 1,2,3,4,5,6 stroke:#ff0000,stroke-width:4px;
 class D,Y included;
 class X1,X2,X3 excluded;
 </code></pre>
-<p>By controlling for observable characteristics, we &ldquo;block&rdquo; the backdoor paths and we are able to recover the causal effect of $D$ on $Y$.</p>
+<p>How do we <strong>block backdoor paths</strong>? By conditioning the analysis on those intermediate variables. The conditional analysis allows us to recover the average treatment effect of the <code>dark_mode</code> on <code>read_time</code>.</p>
 <pre><code class="language-mermaid">flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -1098,36 +1107,36 @@ X3 -.-&gt; Y
 linkStyle 0 stroke:#00ff00,stroke-width:4px;
 class D,Y,X1,X2,X3 included;
 </code></pre>
-<p>How do we do it? We have some options:</p>
+<p>How do we <strong>condition the analysis</strong> on <code>gender</code>, <code>age</code> and <code>hours</code>? We have some options:</p>
 <ul>
 <li>Matching</li>
 <li>Propensity score weighting</li>
 <li>Regression with control variables</li>
 </ul>
-<p>How do the methods work and what are the differences?</p>
-<h2 id="methods">Methods</h2>
-<p>We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, T_i, Y_i)$ comprised of</p>
+<p>Let&rsquo;s explore and compare them!</p>
+<h2 id="conditional-analysis">Conditional Analysis</h2>
+<p>We assume that for a set of subjects $i = 1, &hellip;, n$ we observed a tuple $(D_i, Y_i, X_i)$ comprised of</p>
 <ul>
-<li>a feature vector $X_i \in \mathbb R^n$</li>
-<li>a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$</li>
-<li>a response $Y_i \in \mathbb R$</li>
+<li>a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$ (<code>dark_mode</code>)</li>
+<li>a response $Y_i \in \mathbb R$ (<code>read_time</code>)</li>
+<li>a feature vector $X_i \in \mathbb R^n$ (<code>gender</code>, <code>age</code> and <code>hours</code>)</li>
 </ul>
 <p><strong>Assumption 1 : unconfoundedness</strong> (or ignorability, or selection on observables)</p>
 <p>$$
-\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ X_i
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i
 $$</p>
-<p>i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random.</p>
+<p>i.e. conditional on observable characteristics $X$, the treatment assignment $D$ is as good as random. What we are effectively assuming is that there is no other characteristics that we do not observe that could impact both whether a user selects the <code>dark_mode</code> and their <code>read_time</code>.</p>
 <p><strong>Assumption 2: overlap</strong> (or bounded support)</p>
 <p>$$
 \exists \eta &gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
 $$</p>
-<p>i.e. no observation is deterministically assigned to the treatment or control group.</p>
+<p>i.e. no observation is deterministically assigned to the treatment or control group. This is a more technical assumption that basically means that for any level of <code>gender</code>, <code>age</code> or <code>hours</code>, there could exist an individual that select the <code>dark_mode</code> and one that doesn&rsquo;t.</p>
 <h3 id="matching">Matching</h3>
-<pre><code class="language-python">from causalml.match import NearestNeighborMatch, create_table_one
-
-psm = NearestNeighborMatch(replace=True, ratio=1, random_state=42)
-df_matched = psm.match(data=df, treatment_col=&quot;dark_mode&quot;, score_cols=X)
-df_matched.head()
+<p>The first and most intuitive method to perform <strong>conditional analysis</strong> is matching.</p>
+<p>The idea of matching is very simple. Since we are not sure whether, for example, male and female users are directly comparable, we do the analysis within gender. Instead of comparing <code>read_time</code> across <code>dark_mode</code> in the whole sample, we do it separately for male and female users.</p>
+<pre><code class="language-python">df_gender = pd.pivot_table(df, values='read_time', index='male', columns='dark_mode', aggfunc=np.mean)
+df_gender['diff'] = df_gender[1] - df_gender[0] 
+df_gender
 </code></pre>
 <div>
 <style scoped>
@@ -1146,58 +1155,43 @@ df_matched.head()
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
-      <th></th>
-      <th>read_time</th>
       <th>dark_mode</th>
+      <th>False</th>
+      <th>True</th>
+      <th>diff</th>
+    </tr>
+    <tr>
       <th>male</th>
-      <th>age</th>
-      <th>hours</th>
+      <th></th>
+      <th></th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>9.25</td>
-      <td>True</td>
-      <td>0</td>
-      <td>43.0</td>
-      <td>79.17</td>
+      <td>17.790000</td>
+      <td>19.385870</td>
+      <td>1.59587</td>
     </tr>
     <tr>
-      <th>3</th>
-      <td>15.70</td>
-      <td>True</td>
-      <td>0</td>
-      <td>41.0</td>
-      <td>133.30</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>15.80</td>
-      <td>True</td>
-      <td>0</td>
-      <td>29.0</td>
-      <td>179.65</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>13.11</td>
-      <td>True</td>
-      <td>0</td>
-      <td>64.0</td>
-      <td>176.05</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>10.83</td>
-      <td>True</td>
-      <td>0</td>
-      <td>53.0</td>
-      <td>241.40</td>
+      <th>1</th>
+      <td>13.128525</td>
+      <td>12.405455</td>
+      <td>-0.72307</td>
     </tr>
   </tbody>
 </table>
 </div>
+<p>Now the effect of <code>dark_mode</code> seems reversed: it is negative for male users but bigger and positive for female users, suggesting a positive aggregate effect (assuming equal proportion of genders)!</p>
+<p>This comparison was easy for <code>gender</code> since it is a binary variable. With multiple variables, potentially continuous, matching becomes much more difficult. One common strategy is to match users in the treatment group with the most similar user in the control group, using some sort of <a href="https://en.wikipedia.org/wiki/Nearest_neighbour_algorithm" target="_blank" rel="noopener">neirest neighbor algorithm</a>. I won&rsquo;t go into the algorithm details here, but we can perform the matching with the <code>NearestNeighborMatch</code> function from the <code>causalml</code> package.</p>
+<p>The <code>NearestNeighborMatch</code> function generates a new dataset where users in the treatment group have been matched 1:1 (option <code>ratio=1</code>) to users in the control group.</p>
+<pre><code class="language-python">from causalml.match import NearestNeighborMatch
+
+psm = NearestNeighborMatch(replace=True, ratio=1, random_state=1)
+df_matched = psm.match(data=df, treatment_col=&quot;dark_mode&quot;, score_cols=X)
+</code></pre>
+<p>Are the two groups more comparable now? We can produce a new version of the <strong>balance table</strong>.</p>
 <pre><code class="language-python">table1_matched = create_table_one(df_matched, &quot;dark_mode&quot;, X)
 table1_matched
 </code></pre>
@@ -1233,49 +1227,51 @@ table1_matched
   <tbody>
     <tr>
       <th>n</th>
-      <td>134</td>
-      <td>134</td>
+      <td>123</td>
+      <td>123</td>
       <td></td>
     </tr>
     <tr>
       <th>age</th>
-      <td>44.54 (10.98)</td>
-      <td>44.57 (11.06)</td>
-      <td>0.0034</td>
+      <td>43.89 (10.38)</td>
+      <td>43.94 (10.40)</td>
+      <td>0.0047</td>
     </tr>
     <tr>
       <th>hours</th>
-      <td>147.78 (111.68)</td>
-      <td>147.94 (120.86)</td>
-      <td>0.0014</td>
+      <td>158.59 (154.46)</td>
+      <td>152.27 (154.70)</td>
+      <td>-0.0408</td>
     </tr>
     <tr>
       <th>male</th>
-      <td>0.43 (0.50)</td>
-      <td>0.43 (0.50)</td>
+      <td>0.65 (0.48)</td>
+      <td>0.65 (0.48)</td>
       <td>0.0</td>
     </tr>
   </tbody>
 </table>
 </div>
+<p>Now the average differences between the two groups have shrunk by at least a couple of orders of magnitude. We can visually inspect distributional differences with the paired violinplot.</p>
 <pre><code class="language-python">plot_distributions(df_matched, X, &quot;dark_mode&quot;)
 </code></pre>
-<p><img src="img/ipw_21_0.png" alt="png"></p>
-<p>We can also compare the balancedness before and after matching by plotting the standardized mean differences.</p>
+<p><img src="img/ipw_28_0.png" alt="png"></p>
+<p>A popular way to visualize pre- and post-matching covariate balance is the <strong>balance plot</strong> that essentially displays the standardized mean differences before and after matching, for each control variable.</p>
 <pre><code class="language-python">def plot_balance(t1, t2, X):
     df_smd = pd.DataFrame({&quot;Variable&quot;: X + X,
-                           &quot;Data&quot;: [&quot;Original&quot; for _ in range(len(X))] + [&quot;Matched&quot; for _ in range(len(X))],
+                           &quot;Sample&quot;: [&quot;Unadjusted&quot; for _ in range(len(X))] + [&quot;Adjusted&quot; for _ in range(len(X))],
                            &quot;Standardized Mean Difference&quot;: t1[&quot;SMD&quot;][1:].to_list() + 
                                                            t2[&quot;SMD&quot;][1:].to_list()})
 
-    sns.scatterplot(x=&quot;Standardized Mean Difference&quot;, y=&quot;Variable&quot;, hue=&quot;Data&quot;, data=df_smd).\
+    sns.scatterplot(x=&quot;Standardized Mean Difference&quot;, y=&quot;Variable&quot;, hue=&quot;Sample&quot;, data=df_smd).\
         set(title=&quot;Balance Plot&quot;)
     plt.axvline(x=0, color='k', ls='--', zorder=-1, alpha=0.3);
 </code></pre>
 <pre><code class="language-python">plot_balance(table1, table1_matched, X)
 </code></pre>
-<p><img src="img/ipw_24_0.png" alt="png"></p>
-<p>We can now estimate the treatment effect as a difference in means.</p>
+<p><img src="img/ipw_31_0.png" alt="png"></p>
+<p>As we can see, now all differences in observable characteristics between the two groups are essentially zero.</p>
+<p>How do we <strong>estimate the average treatment effect</strong>? We can simply do a difference in means. An equivalent way that automatically provides standard errors is to run a linear regression of the outcome, <code>read_time</code>, on the treatment, <code>dark_mode</code>.</p>
 <pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode&quot;, data=df_matched).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -1283,12 +1279,13 @@ table1_matched
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   15.1301</td> <td>    0.437</td> <td>   34.623</td> <td> 0.000</td> <td>   14.270</td> <td>   15.991</td>
+  <th>Intercept</th>         <td>   13.6237</td> <td>    0.575</td> <td>   23.675</td> <td> 0.000</td> <td>   12.490</td> <td>   14.757</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    0.7602</td> <td>    0.618</td> <td>    1.230</td> <td> 0.220</td> <td>   -0.457</td> <td>    1.977</td>
+  <th>dark_mode[T.True]</th> <td>    0.7593</td> <td>    0.814</td> <td>    0.933</td> <td> 0.352</td> <td>   -0.844</td> <td>    2.362</td>
 </tr>
 </table>
+<p>The effect is now positive, but not statistically significant.</p>
 <h3 id="propensity-score">Propensity Score</h3>
 <p>We want to estimate the <strong>average treatment effect</strong></p>
 <p>$$
@@ -1320,7 +1317,7 @@ $$</p>
 <pre><code class="language-python">sns.histplot(data=df, x='pscore', hue='dark_mode', bins=30, stat='density', common_norm=False).\
     set(ylabel=&quot;&quot;, title=&quot;Distribution of Propensity Scores&quot;);
 </code></pre>
-<p><img src="img/ipw_31_0.png" alt="png"></p>
+<p><img src="img/ipw_39_0.png" alt="png"></p>
 <p>As we can see, the distribution of propensity scores between the treatment and control group is <strong>significantly different</strong>.</p>
 <p>We can now estimate the treatment effect as a weighted difference in means.</p>
 <pre><code class="language-python">w = 1 / (df[&quot;pscore&quot;] * df[&quot;dark_mode&quot;] + (1-df[&quot;pscore&quot;]) * (1-df[&quot;dark_mode&quot;]))
@@ -1331,10 +1328,10 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   14.9446</td> <td>    0.434</td> <td>   34.397</td> <td> 0.000</td> <td>   14.090</td> <td>   15.800</td>
+  <th>Intercept</th>         <td>   15.0144</td> <td>    0.551</td> <td>   27.239</td> <td> 0.000</td> <td>   13.930</td> <td>   16.099</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    1.9734</td> <td>    0.613</td> <td>    3.219</td> <td> 0.001</td> <td>    0.767</td> <td>    3.180</td>
+  <th>dark_mode[T.True]</th> <td>    1.6587</td> <td>    0.778</td> <td>    2.132</td> <td> 0.034</td> <td>    0.127</td> <td>    3.190</td>
 </tr>
 </table>
 <p>Lastly, an extremely interesting result from</p>
@@ -1346,19 +1343,19 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   12.9298</td> <td>    1.183</td> <td>   10.931</td> <td> 0.000</td> <td>   10.602</td> <td>   15.258</td>
+  <th>Intercept</th>         <td>   18.6144</td> <td>    1.253</td> <td>   14.852</td> <td> 0.000</td> <td>   16.148</td> <td>   21.081</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    1.8801</td> <td>    0.610</td> <td>    3.081</td> <td> 0.002</td> <td>    0.679</td> <td>    3.081</td>
+  <th>dark_mode[T.True]</th> <td>    1.5973</td> <td>    0.647</td> <td>    2.469</td> <td> 0.014</td> <td>    0.324</td> <td>    2.871</td>
 </tr>
 <tr>
-  <th>male</th>              <td>    2.1708</td> <td>    0.584</td> <td>    3.718</td> <td> 0.000</td> <td>    1.022</td> <td>    3.320</td>
+  <th>male</th>              <td>   -5.8191</td> <td>    0.632</td> <td>   -9.208</td> <td> 0.000</td> <td>   -7.063</td> <td>   -4.575</td>
 </tr>
 <tr>
-  <th>age</th>               <td>   -0.0063</td> <td>    0.026</td> <td>   -0.243</td> <td> 0.808</td> <td>   -0.058</td> <td>    0.045</td>
+  <th>age</th>               <td>   -0.0813</td> <td>    0.027</td> <td>   -2.986</td> <td> 0.003</td> <td>   -0.135</td> <td>   -0.028</td>
 </tr>
 <tr>
-  <th>hours</th>             <td>    0.0047</td> <td>    0.001</td> <td>    5.009</td> <td> 0.000</td> <td>    0.003</td> <td>    0.007</td>
+  <th>hours</th>             <td>    0.0097</td> <td>    0.001</td> <td>    9.901</td> <td> 0.000</td> <td>    0.008</td> <td>    0.012</td>
 </tr>
 </table>
 <p>What is the connection between regression and propensity score weighting?</p>
