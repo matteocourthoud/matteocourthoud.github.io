@@ -20,7 +20,7 @@
       <description>&lt;p&gt;&lt;em&gt;Understanding and comparing different methods for conditional causal inference analysis&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;INTRO&lt;/p&gt;
 &lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
-&lt;p&gt;Assume we had blog on statistics and causal inference. To improve user experience, we are considering &lt;strong&gt;releasing a dark mode&lt;/strong&gt;, and we would like to understand whether this new feature increases the time users spend on our blog.&lt;/p&gt;
+&lt;p&gt;Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering &lt;strong&gt;releasing a dark mode&lt;/strong&gt;, and we would like to understand whether this new feature increases the time users spend on our blog.&lt;/p&gt;
 &lt;img src=&#34;fig/modes.png&#34; width=&#34;600px&#34;/&gt;
 &lt;p&gt;We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users select it or not and the time they spend on the blog. We know that there might be &lt;strong&gt;selection&lt;/strong&gt;:  users that prefer the dark mode could have different reading preferences and this might complicate our causal analysis.&lt;/p&gt;
 &lt;p&gt;We can represent the data generating process with the following &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Directed Acyclic Graph (DAG)&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
@@ -132,7 +132,7 @@ df.head()
 &lt;pre&gt;&lt;code&gt;-1.3702904153929154
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Individuals that select the &lt;code&gt;dark_mode&lt;/code&gt; spend on average 1.37 hours less on the blog, per week. Should we conclude that &lt;code&gt;dark_mode&lt;/code&gt; is a &lt;strong&gt;bad idea&lt;/strong&gt;? Is this a causal effect?&lt;/p&gt;
-&lt;p&gt;We did not randomize the &lt;code&gt;dark_mode&lt;/code&gt; so that users that selected it might not be directly &lt;strong&gt;comparable&lt;/strong&gt; with users that don&amp;rsquo;t. Can we check this concern? Partially. We can only check it for characteristics that we observe, &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; in our setting. We cannot check if users differ along other dimensions that we don&amp;rsquo;t observe.&lt;/p&gt;
+&lt;p&gt;We did not randomize the &lt;code&gt;dark_mode&lt;/code&gt; so that users that selected it might not be directly &lt;strong&gt;comparable&lt;/strong&gt; with users that didn&amp;rsquo;t. Can we verify this concern? Partially. We can only check characteristics that we observe, &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; in our setting. We cannot check if users differ along other dimensions that we don&amp;rsquo;t observe.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s use the &lt;code&gt;create_table_one&lt;/code&gt; function from Uber&amp;rsquo;s &lt;a href=&#34;https://causalml.readthedocs.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;causalml&lt;/code&gt;&lt;/a&gt; package to produce a &lt;strong&gt;covariate balance table&lt;/strong&gt;, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import create_table_one
 
@@ -197,7 +197,7 @@ table1
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;There seems to be &lt;strong&gt;some difference&lt;/strong&gt; between treatment (&lt;code&gt;dark_mode&lt;/code&gt;) and control group. In particular, users that select the &lt;code&gt;dark_mode&lt;/code&gt; are older, have spend less hours on the blog and they are more likely to be males.&lt;/p&gt;
+&lt;p&gt;There seems to be &lt;strong&gt;some difference&lt;/strong&gt; between treatment (&lt;code&gt;dark_mode&lt;/code&gt;) and control group. In particular, users that select the &lt;code&gt;dark_mode&lt;/code&gt; are older, have spent less hours on the blog and they are more likely to be males.&lt;/p&gt;
 &lt;p&gt;Another way to visually observe all the differences at once is with a &lt;strong&gt;paired violinplot&lt;/strong&gt;. The advantage of the paired violinplot is that it allows us to observe the full distribution of the variable (approximated via &lt;a href=&#34;https://en.wikipedia.org/wiki/Kernel_density_estimation&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;kernel density estimation&lt;/a&gt;).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_distributions(df, X, d):
     df_long = df.copy()[X + [d]]
@@ -211,8 +211,8 @@ table1
 &lt;p&gt;&lt;img src=&#34;img/ipw_16_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The insight of the violinplot is very similar: it seems that users that select the &lt;code&gt;dark_mode&lt;/code&gt; are different from users that don&amp;rsquo;t.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Why do we care?&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;If we do not control for the observable characteristics, we are unable to estimate the true treatment effect. In short, we cannot be certain that the difference in outcome, &lt;code&gt;read_time&lt;/code&gt;, can be attributed to the treatment, &lt;code&gt;dark_mode&lt;/code&gt;, instead of other characteristics. For example, it could be that males read more and also prefer the &lt;code&gt;dark_mode&lt;/code&gt;, therefore we observe a positive correlation even though &lt;code&gt;dark_mode&lt;/code&gt; has no effect on &lt;code&gt;read_time&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;In terms of Dyrected Acyclic Graphs, this means that we have several &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;backdoor path&lt;/strong&gt;&lt;/a&gt; that we need to &lt;strong&gt;block&lt;/strong&gt; in order for our analysis to be &lt;strong&gt;causal&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;If we do not control for the observable characteristics, we are unable to estimate the true treatment effect. In short, we cannot be certain that the difference in outcome, &lt;code&gt;read_time&lt;/code&gt;, can be attributed to the treatment, &lt;code&gt;dark_mode&lt;/code&gt;, instead of other characteristics. For example, it could be that males read less and also prefer the &lt;code&gt;dark_mode&lt;/code&gt;, therefore we observe a negative correlation even though &lt;code&gt;dark_mode&lt;/code&gt; has no effect on &lt;code&gt;read_time&lt;/code&gt; (or even positive).&lt;/p&gt;
+&lt;p&gt;In terms of Dyrected Acyclic Graphs, this means that we have several &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;backdoor paths&lt;/strong&gt;&lt;/a&gt; that we need to &lt;strong&gt;block&lt;/strong&gt; in order for our analysis to be &lt;strong&gt;causal&lt;/strong&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -278,15 +278,15 @@ class D,Y,X1,X2,X3 included;
 &lt;p&gt;$$
 \big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i
 $$&lt;/p&gt;
-&lt;p&gt;i.e. conditional on observable characteristics $X$, the treatment assignment $D$ is as good as random. What we are effectively assuming is that there is no other characteristics that we do not observe that could impact both whether a user selects the &lt;code&gt;dark_mode&lt;/code&gt; and their &lt;code&gt;read_time&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Assumption 2: overlap&lt;/strong&gt; (or bounded support)&lt;/p&gt;
+&lt;p&gt;i.e. conditional on observable characteristics $X$, the treatment assignment $D$ is as good as random. What we are effectively assuming is that there is no other characteristics that we do not observe that could impact both whether a user selects the &lt;code&gt;dark_mode&lt;/code&gt; and their &lt;code&gt;read_time&lt;/code&gt;. This is a &lt;strong&gt;strong assumption&lt;/strong&gt; that is more likely to be satisfied the more individual characteristics we observe.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 2: overlap&lt;/strong&gt; (or common support)&lt;/p&gt;
 &lt;p&gt;$$
 \exists \eta &amp;gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
 $$&lt;/p&gt;
-&lt;p&gt;i.e. no observation is deterministically assigned to the treatment or control group. This is a more technical assumption that basically means that for any level of &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; or &lt;code&gt;hours&lt;/code&gt;, there could exist an individual that select the &lt;code&gt;dark_mode&lt;/code&gt; and one that doesn&amp;rsquo;t.&lt;/p&gt;
+&lt;p&gt;i.e. no observation is deterministically assigned to the treatment or control group. This is a more technical assumption that basically means that for any level of &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; or &lt;code&gt;hours&lt;/code&gt;, there could exist an individual that select the &lt;code&gt;dark_mode&lt;/code&gt; and one that doesn&amp;rsquo;t. Differently from the unconfoundedness assumption, the overal assumption is &lt;strong&gt;testable&lt;/strong&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;matching&#34;&gt;Matching&lt;/h3&gt;
-&lt;p&gt;The first and most intuitive method to perform &lt;strong&gt;conditional analysis&lt;/strong&gt; is matching.&lt;/p&gt;
-&lt;p&gt;The idea of matching is very simple. Since we are not sure whether, for example, male and female users are directly comparable, we do the analysis within gender. Instead of comparing &lt;code&gt;read_time&lt;/code&gt; across &lt;code&gt;dark_mode&lt;/code&gt; in the whole sample, we do it separately for male and female users.&lt;/p&gt;
+&lt;p&gt;The first and most intuitive method to perform conditional analysis is &lt;strong&gt;matching&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;idea&lt;/strong&gt; of matching is very simple. Since we are not sure whether, for example, male and female users are directly comparable, we do the analysis within gender. Instead of comparing &lt;code&gt;read_time&lt;/code&gt; across &lt;code&gt;dark_mode&lt;/code&gt; in the whole sample, we do it separately for male and female users.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_gender = pd.pivot_table(df, values=&#39;read_time&#39;, index=&#39;male&#39;, columns=&#39;dark_mode&#39;, aggfunc=np.mean)
 df_gender[&#39;diff&#39;] = df_gender[1] - df_gender[0] 
 df_gender
@@ -336,8 +336,8 @@ df_gender
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;Now the effect of &lt;code&gt;dark_mode&lt;/code&gt; seems reversed: it is negative for male users (-0.79) but bigger and positive for female users (+1.38), suggesting a positive aggregate effect, 1.38 - 0.79 = 0.59 (assuming equal proportion of genders)!&lt;/p&gt;
-&lt;p&gt;This comparison was easy for &lt;code&gt;gender&lt;/code&gt; since it is a binary variable. With multiple variables, potentially continuous, matching becomes much more difficult. One common strategy is to &lt;strong&gt;match users&lt;/strong&gt; in the treatment group with the most similar user in the control group, using some sort of &lt;a href=&#34;https://en.wikipedia.org/wiki/Nearest_neighbour_algorithm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;nearest neighbor algorithm&lt;/a&gt;. I won&amp;rsquo;t go into the algorithm details here, but we can perform the matching with the &lt;code&gt;NearestNeighborMatch&lt;/code&gt; function from the &lt;code&gt;causalml&lt;/code&gt; package.&lt;/p&gt;
+&lt;p&gt;Now the effect of &lt;code&gt;dark_mode&lt;/code&gt; seems reversed: it is negative for male users (-0.79) but bigger and positive for female users (+1.38), suggesting a positive aggregate effect, 1.38 - 0.79 = 0.59 (assuming equal proportion of genders)! This sign reversal is a very classical example of the &lt;a href=&#34;https://en.wikipedia.org/wiki/Simpson%27s_paradox&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Simpson&amp;rsquo;s Paradox&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This comparison was easy to perform for &lt;code&gt;gender&lt;/code&gt;, since it is a binary variable. With multiple variables, potentially continuous, matching becomes much more difficult. One common strategy is to &lt;strong&gt;match users&lt;/strong&gt; in the treatment group with the most similar user in the control group, using some sort of &lt;a href=&#34;https://en.wikipedia.org/wiki/Nearest_neighbour_algorithm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;nearest neighbor algorithm&lt;/a&gt;. I won&amp;rsquo;t go into the algorithm details here, but we can perform the matching with the &lt;code&gt;NearestNeighborMatch&lt;/code&gt; function from the &lt;code&gt;causalml&lt;/code&gt; package.&lt;/p&gt;
 &lt;p&gt;The &lt;code&gt;NearestNeighborMatch&lt;/code&gt; function generates a new dataset where users in the treatment group have been matched 1:1 (option &lt;code&gt;ratio=1&lt;/code&gt;) to users in the control group.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import NearestNeighborMatch
 
@@ -405,7 +405,7 @@ table1_matched
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;Now the average differences between the two groups have shrunk by at least a couple of orders of magnitude. We can visually inspect distributional differences with the paired violinplot.&lt;/p&gt;
+&lt;p&gt;Now the average differences between the two groups have &lt;strong&gt;shrunk&lt;/strong&gt; by at least a couple of orders of magnitude. We can visually inspect distributional differences with the paired violinplot.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_distributions(df_matched, X, &amp;quot;dark_mode&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/ipw_28_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
@@ -440,35 +440,36 @@ table1_matched
 &lt;/table&gt;
 &lt;p&gt;The effect is now positive, but not statistically significant.&lt;/p&gt;
 &lt;h3 id=&#34;propensity-score&#34;&gt;Propensity Score&lt;/h3&gt;
-&lt;p&gt;&lt;a href=&#34;https://academic.oup.com/biomet/article/70/1/41/240879&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Rosenbaum and Rubin (1983)&lt;/a&gt; prove a very powerful result: if the &lt;strong&gt;strong ingorability assumption&lt;/strong&gt; holds, it is sufficient to condition your analysis on the probability ot treatment, the &lt;strong&gt;propensity score&lt;/strong&gt;, in order to obtain conditional independence.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://academic.oup.com/biomet/article/70/1/41/240879&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Rosenbaum and Rubin (1983)&lt;/a&gt; proved a very powerful result: if the &lt;strong&gt;strong ignorability assumption&lt;/strong&gt; holds, it is sufficient to condition the analysis on the probability ot treatment, the &lt;strong&gt;propensity score&lt;/strong&gt;, in order to have conditional independence.&lt;/p&gt;
 &lt;p&gt;$$
 \big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i \quad \leftrightarrow \quad \big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ e(X_i)
 $$&lt;/p&gt;
-&lt;p&gt;Where $e(X_i)$ is the probability of treatment of individual $i$, given the observable characteristics $X$,&lt;/p&gt;
+&lt;p&gt;Where $e(X_i)$ is the probability of treatment of individual $i$, given the observable characteristics $X_i$.&lt;/p&gt;
 &lt;p&gt;$$
-e(x) = \mathbb P \left[ D_i = 1 \ \big | \ X_i = x \right]
+e(x) = \Pr \left( D_i = 1 \ \big | \ X_i = x \right)
 $$&lt;/p&gt;
-&lt;p&gt;This is an incredibly &lt;strong&gt;powerful and practical result&lt;/strong&gt; since the propensity score is a &lt;strong&gt;one dimensional&lt;/strong&gt; variable, while $X$ might be very high dimensional.&lt;/p&gt;
-&lt;p&gt;Under &lt;strong&gt;unconfoundedness&lt;/strong&gt; assumption introduced above, we can rewrite the average treatment effect as&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt; that in an AB test the propensity score is constant across individuals.&lt;/p&gt;
+&lt;p&gt;The result from Rosenbaum and Rubin (1983) is incredibly &lt;strong&gt;powerful and practical&lt;/strong&gt;, since the propensity score is a &lt;strong&gt;one dimensional&lt;/strong&gt; variable, while $X$ might be very high dimensional.&lt;/p&gt;
+&lt;p&gt;Under the &lt;strong&gt;unconfoundedness&lt;/strong&gt; assumption introduced above, we can rewrite the average treatment effect as&lt;/p&gt;
 &lt;p&gt;$$
 \tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{D_i Y_i}{e(X_i)} - \frac{(1-D_i) Y_i}{1-e(X_i)} \right]
 $$&lt;/p&gt;
 &lt;p&gt;Note that this formulation of the average treatment effect does not depend on the potential outcomes $Y_i^{(1)}$ and $Y_i^{(0)}$, but only on the observed outcomes $Y_i$.&lt;/p&gt;
-&lt;p&gt;This formulation of the average treatment effect implies the &lt;strong&gt;Inverse Propensity Weighted (IPW)&lt;/strong&gt; estimator which is an unbiased estimator for the average treatment effect $\tau$&lt;/p&gt;
+&lt;p&gt;This formulation of the average treatment effect implies the &lt;strong&gt;Inverse Propensity Weighted (IPW)&lt;/strong&gt; estimator which is an unbiased estimator for the average treatment effect $\tau$.&lt;/p&gt;
 &lt;p&gt;$$
-\hat \tau^{*}_{IPW} = \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{D_i Y_i}{e(X_i)} - \frac{(1-D_i) Y_i}{1-e(X_i)} \right)
+\hat \tau^{IPW} = \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{D_i Y_i}{e(X_i)} - \frac{(1-D_i) Y_i}{1-e(X_i)} \right)
 $$&lt;/p&gt;
-&lt;p&gt;However, this estimator is &lt;strong&gt;unfeasible&lt;/strong&gt; since we do not observe the propensity scores $e(X_i)$. However, we can estimate it. Actually, &lt;a href=&#34;https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00442&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Imbens, Hirano, Ridder (2003)&lt;/a&gt; show that you &lt;strong&gt;should&lt;/strong&gt; use the estimated propensity score even if we knew the true values (for example because you know the sampling procedure). The idea is that if the estimated propensity scores are different from the true ones, this can be informative in the estimation.&lt;/p&gt;
-&lt;p&gt;There are several possible ways to estimate a probability, the simplest and most common one is &lt;a href=&#34;https://en.wikipedia.org/wiki/Logistic_regression&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;logistic regression&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This estimator is &lt;strong&gt;unfeasible&lt;/strong&gt; since we do not observe the propensity scores $e(X_i)$. However, we can estimate them. Actually, &lt;a href=&#34;https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00442&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Imbens, Hirano, Ridder (2003)&lt;/a&gt; show that you &lt;strong&gt;should&lt;/strong&gt; use the estimated propensity scores even if you knew the true values (for example because you know the sampling procedure). The idea is that if the estimated propensity scores are different from the true ones, this can be informative in the estimation.&lt;/p&gt;
+&lt;p&gt;There are several possible ways to estimate a probability, the simplest and most common one being &lt;a href=&#34;https://en.wikipedia.org/wiki/Logistic_regression&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;logistic regression&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&amp;quot;pscore&amp;quot;] = smf.logit(&amp;quot;np.rint(dark_mode) ~ male + age + hours&amp;quot;, data=df).fit(disp=False).predict()
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;An &lt;strong&gt;important check&lt;/strong&gt; to perform after estimating propensity scores is plotting them, across treatment and control groups. First of all, we can then observe whether the two groups are balanced or not, depending on how close the two distributions are. Moreover, we can also check how likely it is that the &lt;strong&gt;overlap assumption&lt;/strong&gt; is satisfied. Ideally both distributions should span the same interval.&lt;/p&gt;
+&lt;p&gt;An &lt;strong&gt;important check&lt;/strong&gt; to perform after estimating propensity scores is plotting them, across the treatment and control groups. First of all, we can then observe whether the two groups are balanced or not, depending on how close the two distributions are. Moreover, we can also check how likely it is that the &lt;strong&gt;overlap assumption&lt;/strong&gt; is satisfied. Ideally both distributions should span the same interval.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(data=df, x=&#39;pscore&#39;, hue=&#39;dark_mode&#39;, bins=30, stat=&#39;density&#39;, common_norm=False).\
     set(ylabel=&amp;quot;&amp;quot;, title=&amp;quot;Distribution of Propensity Scores&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/ipw_39_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;As expected, the distribution of propensity scores between the treatment and control group is &lt;strong&gt;significantly different&lt;/strong&gt;, suggesting that the two groups are hardly comparable. Moreover, there is significant overlap in the support of the distributions, suggesting that the overlap assumption is likely to be satisfied.&lt;/p&gt;
-&lt;p&gt;Howe do we estimate the average treatment effect?&lt;/p&gt;
+&lt;p&gt;As expected, the distribution of propensity scores between the treatment and control group is &lt;strong&gt;significantly different&lt;/strong&gt;, suggesting that the two groups are hardly comparable. However, there is significant overlap in the support of the distributions, suggesting that the overlap assumption is likely to be satisfied.&lt;/p&gt;
+&lt;p&gt;How do we estimate the average treatment effect?&lt;/p&gt;
 &lt;p&gt;Once we have computed the propensity scores, we just need to re-weight observations by their respective propensity score. We can then either compute a difference between the weighted &lt;code&gt;read_time&lt;/code&gt; averages, or run a weighted regression of &lt;code&gt;read_time&lt;/code&gt; on &lt;code&gt;dark_mode&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;w = 1 / (df[&amp;quot;pscore&amp;quot;] * df[&amp;quot;dark_mode&amp;quot;] + (1-df[&amp;quot;pscore&amp;quot;]) * (1-df[&amp;quot;dark_mode&amp;quot;]))
 smf.wls(&amp;quot;read_time ~ dark_mode&amp;quot;, weights=w, data=df).fit().summary().tables[1]
@@ -512,17 +513,17 @@ smf.wls(&amp;quot;read_time ~ dark_mode&amp;quot;, weights=w, data=df).fit().sum
 &lt;p&gt;The average treatment effect is again positive and statistically significant at the 1% level!&lt;/p&gt;
 &lt;h2 id=&#34;comparison&#34;&gt;Comparison&lt;/h2&gt;
 &lt;p&gt;How do the different methods compare to each other?&lt;/p&gt;
-&lt;p&gt;There is a tight connection between the &lt;strong&gt;IPW&lt;/strong&gt; estimator and linear regression with covariates. This is particularly evident when we have a single, binary covariate $X$.&lt;/p&gt;
+&lt;p&gt;There is a &lt;strong&gt;tight connection&lt;/strong&gt; between the IPW estimator and linear regression with covariates. This is particularly evident when we have a one-dimensional, discrete covariate $X$.&lt;/p&gt;
 &lt;p&gt;In this case, the estimand of IPW (i.e. the quantity that IPW estimates) is given by&lt;/p&gt;
 &lt;p&gt;$$
-\beta^{IPW} = \frac{ \sum_x \color{red}{\beta_x} \color{blue}{\Pr(D_i | X_i = x)} \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)} \Pr(X_i = x)}
+\tau^{IPW} = \frac{ \sum_x \color{red}{\tau_x} \color{blue}{\Pr(D_i | X_i = x)} \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)} \Pr(X_i = x)}
 $$&lt;/p&gt;
-&lt;p&gt;The IPW estimand is a weighted average of the treatment effects $\beta_x$, where the weights are given by the &lt;strong&gt;treatment probabilities&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The IPW estimand is a weighted average of the treatment effects $\tau_x$, where the weights are given by the &lt;strong&gt;treatment probabilities&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;On the other hand, the estimand of linear regression with control variables is&lt;/p&gt;
 &lt;p&gt;$$
-\beta^{OLS} = \frac{ \sum_x \color{red}{\beta_x} \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}
+\tau^{OLS} = \frac{ \sum_x \color{red}{\tau_x} \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}
 $$&lt;/p&gt;
-&lt;p&gt;The OLS estimand is a weighted average of the treatment effects $\beta_x$, where the weights are given by the &lt;strong&gt;variance of the treatment probabilities&lt;/strong&gt;. This means that linear regression is a weighted estimator, that gives more weight to observations that have characteristics for which we observe more treatment variability. Since a binary random variable has the highest variance when its expected value is 0.5, &lt;strong&gt;OLS gives the most weight to observations that have characteristics for which we observe 50/50 split between treatment and control group&lt;/strong&gt;. On the other hand, if for some characteristics we only observe treated or untreated individuals, those are going to receive zero weight. I recommend Chapter 3 of &lt;a href=&#34;https://www.mostlyharmlesseconometrics.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Angrist and Pischke (2009)&lt;/a&gt; for more details.&lt;/p&gt;
+&lt;p&gt;The OLS estimand is a weighted average of the treatment effects $\tau_x$, where the weights are given by the &lt;strong&gt;variances of the treatment probabilities&lt;/strong&gt;. This means that linear regression is a weighted estimator, that gives more weight to observations that have characteristics for which we observe more treatment variability. Since a binary random variable has the highest variance when its expected value is 0.5, &lt;strong&gt;OLS gives the most weight to observations that have characteristics for which we observe a 50/50 split between treatment and control group&lt;/strong&gt;. On the other hand, if for some characteristics we only observe treated or untreated individuals, those observations are going to receive zero weight. I recommend Chapter 3 of &lt;a href=&#34;https://www.mostlyharmlesseconometrics.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Angrist and Pischke (2009)&lt;/a&gt; for more details.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;Last but not least, if you want to know more, I strongly recommend this &lt;strong&gt;video lecture&lt;/strong&gt; on propensity scores from &lt;a href=&#34;https://paulgp.github.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Paul Goldsmith-Pinkham&lt;/a&gt; that is freely available online.&lt;/p&gt;
 &lt;br&gt;
