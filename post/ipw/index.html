@@ -328,26 +328,25 @@ Example Assume we had blog on statistics and causal inference. To improve user e
   
   
     
-    
   
   
-  <meta property="twitter:card" content="summary" />
+  <meta property="twitter:card" content="summary_large_image" />
   
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/ipw/" />
   <meta property="og:title" content="Weighting, Matching, or Regression? | Matteo Courthoud" />
   <meta property="og:description" content="Understanding and comparing different methods for conditional causal inference analysis
 INTRO
-Example Assume we had blog on statistics and causal inference. To improve user experience, we are considering releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
-    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+Example Assume we had blog on statistics and causal inference. To improve user experience, we are considering releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog." /><meta property="og:image" content="https://matteocourthoud.github.io/post/ipw/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/ipw/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-07-02T00:00:00&#43;00:00"
+        content="2022-07-03T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-07-02T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-07-03T00:00:00&#43;00:00">
   
 
   
@@ -375,8 +374,12 @@ Example Assume we had blog on statistics and causal inference. To improve user e
   },
   "headline": "Weighting, Matching, or Regression?",
   
-  "datePublished": "2022-07-02T00:00:00Z",
-  "dateModified": "2022-07-02T00:00:00Z",
+  "image": [
+    "https://matteocourthoud.github.io/post/ipw/featured.png"
+  ],
+  
+  "datePublished": "2022-07-03T00:00:00Z",
+  "dateModified": "2022-07-03T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -803,18 +806,23 @@ Example Assume we had blog on statistics and causal inference. To improve user e
 
 
 
-  
+
+
+
+
+
+
+
 
   
-  
-  
+
+
 <div class="article-container pt-3">
   <h1>Weighting, Matching, or Regression?</h1>
 
   
 
   
-    
 
 
 <div class="article-metadata">
@@ -828,7 +836,7 @@ Example Assume we had blog on statistics and causal inference. To improve user e
     
       
     
-    Jul 2, 2022
+    Jul 3, 2022
   </span>
   
 
@@ -837,7 +845,7 @@ Example Assume we had blog on statistics and causal inference. To improve user e
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    11 min read
+    13 min read
   </span>
   
 
@@ -853,13 +861,20 @@ Example Assume we had blog on statistics and causal inference. To improve user e
 
 </div>
 
-    
-
-
-
-
-
   
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1280px; max-height: 853px;">
+  <div style="position: relative">
+    <img src="/post/ipw/featured.png" alt="" class="featured-image">
+    
+  </div>
 </div>
 
 
@@ -1184,8 +1199,8 @@ df_gender
   </tbody>
 </table>
 </div>
-<p>Now the effect of <code>dark_mode</code> seems reversed: it is negative for male users but bigger and positive for female users, suggesting a positive aggregate effect (assuming equal proportion of genders)!</p>
-<p>This comparison was easy for <code>gender</code> since it is a binary variable. With multiple variables, potentially continuous, matching becomes much more difficult. One common strategy is to match users in the treatment group with the most similar user in the control group, using some sort of <a href="https://en.wikipedia.org/wiki/Nearest_neighbour_algorithm" target="_blank" rel="noopener">neirest neighbor algorithm</a>. I won&rsquo;t go into the algorithm details here, but we can perform the matching with the <code>NearestNeighborMatch</code> function from the <code>causalml</code> package.</p>
+<p>Now the effect of <code>dark_mode</code> seems reversed: it is negative for male users (-0.79) but bigger and positive for female users (+1.38), suggesting a positive aggregate effect, 1.38 - 0.79 = 0.59 (assuming equal proportion of genders)!</p>
+<p>This comparison was easy for <code>gender</code> since it is a binary variable. With multiple variables, potentially continuous, matching becomes much more difficult. One common strategy is to <strong>match users</strong> in the treatment group with the most similar user in the control group, using some sort of <a href="https://en.wikipedia.org/wiki/Nearest_neighbour_algorithm" target="_blank" rel="noopener">nearest neighbor algorithm</a>. I won&rsquo;t go into the algorithm details here, but we can perform the matching with the <code>NearestNeighborMatch</code> function from the <code>causalml</code> package.</p>
 <p>The <code>NearestNeighborMatch</code> function generates a new dataset where users in the treatment group have been matched 1:1 (option <code>ratio=1</code>) to users in the control group.</p>
 <pre><code class="language-python">from causalml.match import NearestNeighborMatch
 
@@ -1288,22 +1303,26 @@ table1_matched
 </table>
 <p>The effect is now positive, but not statistically significant.</p>
 <h3 id="propensity-score">Propensity Score</h3>
-<p>Under <strong>unconfoundedness</strong> assumption introduced above, we can rewrite the average treatment effect as</p>
+<p><a href="https://academic.oup.com/biomet/article/70/1/41/240879" target="_blank" rel="noopener">Rosenbaum and Rubin (1983)</a> prove a very powerful result: if the <strong>strong ingorability assumption</strong> holds, it is sufficient to condition your analysis on the probability ot treatment, the <strong>propensity score</strong>, in order to obtain conditional independence.</p>
 <p>$$
-\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{D_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right]
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i \quad \leftrightarrow \quad \big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ e(X_i)
 $$</p>
-<p>where $e(X_i)$ is the <strong>propensity score</strong> of observation $i$,</p>
+<p>Where $e(X_i)$ is the probability of treatment of individual $i$, given the observable characteristics $X$,</p>
 <p>$$
 e(x) = \mathbb P \left[ D_i = 1 \ \big | \ X_i = x \right]
 $$</p>
-<p>i.e. its probability of being treated.</p>
+<p>This is an incredibly <strong>powerful and practical result</strong> since the propensity score is a <strong>one dimensional</strong> variable, while $X$ might be very high dimensional.</p>
+<p>Under <strong>unconfoundedness</strong> assumption introduced above, we can rewrite the average treatment effect as</p>
+<p>$$
+\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{D_i Y_i}{e(X_i)} - \frac{(1-D_i) Y_i}{1-e(X_i)} \right]
+$$</p>
 <p>Note that this formulation of the average treatment effect does not depend on the potential outcomes $Y_i^{(1)}$ and $Y_i^{(0)}$, but only on the observed outcomes $Y_i$.</p>
-<p>This formulation of the average treatment effect implies the <strong>Inverse Propensity Weighted</strong> estimator which is an unbiased estimator for the average treatment effect $\tau$</p>
+<p>This formulation of the average treatment effect implies the <strong>Inverse Propensity Weighted (IPW)</strong> estimator which is an unbiased estimator for the average treatment effect $\tau$</p>
 <p>$$
 \hat \tau^{*}_{IPW} = \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{D_i Y_i}{e(X_i)} - \frac{(1-D_i) Y_i}{1-e(X_i)} \right)
 $$</p>
-<p>However, this estimator is <strong>unfeasible</strong> since we do not observe the propensity scores $e(X_i)$. However, we can estimate.</p>
-<p>There are several possible ways to estimate a probability, the simplest and most common on is <a href="https://en.wikipedia.org/wiki/Logistic_regression" target="_blank" rel="noopener"><strong>logistic regression</strong></a>.</p>
+<p>However, this estimator is <strong>unfeasible</strong> since we do not observe the propensity scores $e(X_i)$. However, we can estimate it. Actually, <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00442" target="_blank" rel="noopener">Imbens, Hirano, Ridder (2003)</a> show that you <strong>should</strong> use the estimated propensity score even if we knew the true values (for example because you know the sampling procedure). The idea is that if the estimated propensity scores are different from the true ones, this can be informative in the estimation.</p>
+<p>There are several possible ways to estimate a probability, the simplest and most common one is <a href="https://en.wikipedia.org/wiki/Logistic_regression" target="_blank" rel="noopener"><strong>logistic regression</strong></a>.</p>
 <pre><code class="language-python">df[&quot;pscore&quot;] = smf.logit(&quot;np.rint(dark_mode) ~ male + age + hours&quot;, data=df).fit(disp=False).predict()
 </code></pre>
 <p>An <strong>important check</strong> to perform after estimating propensity scores is plotting them, across treatment and control groups. First of all, we can then observe whether the two groups are balanced or not, depending on how close the two distributions are. Moreover, we can also check how likely it is that the <strong>overlap assumption</strong> is satisfied. Ideally both distributions should span the same interval.</p>
@@ -1356,10 +1375,31 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
 <p>The average treatment effect is again positive and statistically significant at the 1% level!</p>
 <h2 id="comparison">Comparison</h2>
 <p>How do the different methods compare to each other?</p>
+<p>There is a tight connection between the <strong>IPW</strong> estimator and linear regression with covariates. This is particularly evident when we have a single, binary covariate $X$.</p>
+<p>In this case, the estimand of IPW (i.e. the quantity that IPW estimates) is given by</p>
+<p>$$
+\beta^{IPW} = \frac{ \sum_x \color{red}{\beta_x} \color{blue}{\Pr(D_i | X_i = x)} \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)} \Pr(X_i = x)}
+$$</p>
+<p>The IPW estimand is a weighted average of the treatment effects $\beta_x$, where the weights are given by the <strong>treatment probabilities</strong>.</p>
+<p>On the other hand, the estimand of linear regression with control variables is</p>
+<p>$$
+\beta^{OLS} = \frac{ \sum_x \color{red}{\beta_x} \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}
+$$</p>
+<p>The OLS estimand is a weighted average of the treatment effects $\beta_x$, where the weights are given by the <strong>variance of the treatment probabilities</strong>. This means that linear regression is a weighted estimator, that gives more weight to observations that have characteristics for which we observe more treatment variability. Since a binary random variable has the highest variance when its expected value is 0.5, <strong>OLS gives the most weight to observations that have characteristics for which we observe 50/50 split between treatment and control group</strong>. On the other hand, if for some characteristics we only observe treated or untreated individuals, those are going to receive zero weight. I recommend Chapter 3 of <a href="https://www.mostlyharmlesseconometrics.com/" target="_blank" rel="noopener">Angrist and Pischke (2009)</a> for more details.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>TBD</p>
+<p>Last but not least, if you want to know more, I strongly recommend this <strong>video lecture</strong> on propensity scores from <a href="https://paulgp.github.io/" target="_blank" rel="noopener">Paul Goldsmith-Pinkham</a> that is freely available online.</p>
+<br>
+
+<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+  <iframe src="https://www.youtube.com/embed/8gWctYvRzk4" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen title="YouTube Video"></iframe>
+</div>
+
+<br>
+<p>The whole course is a gem and it is an incredible privilege to have such high quality material available online for free.</p>
 <h3 id="references">References</h3>
-<p>TBD</p>
+<p>[1] P. Rosenbaum, D. Rubin, <a href="https://academic.oup.com/biomet/article/70/1/41/240879" target="_blank" rel="noopener">The central role of the propensity score in observational studies for causal effects</a> (1983), <em>Biometrika</em>.</p>
+<p>[2] G. Imbens, K. Hirano, G. Ridder, <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00442" target="_blank" rel="noopener">Efficient Estimation of Average Treatment Effects Using the Estimated Propensity Score</a> (2003), <em>Econometrica</em>.</p>
+<p>[3] J. Angrist, J. S. Pischke, <a href="https://www.mostlyharmlesseconometrics.com/" target="_blank" rel="noopener">Mostly harmless econometrics: An Empiricist&rsquo;s Companion</a> (2009), <em>Princeton University Press</em>.</p>
 <h3 id="related-articles">Related Articles</h3>
 <ul>
 <li><a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Understanding The Frisch-Waugh-Lovell Theorem</a></li>

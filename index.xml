@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sat, 02 Jul 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sun, 03 Jul 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -27309,7 +27309,7 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     <item>
       <title>Weighting, Matching, or Regression?</title>
       <link>https://matteocourthoud.github.io/post/ipw/</link>
-      <pubDate>Sat, 02 Jul 2022 00:00:00 +0000</pubDate>
+      <pubDate>Sun, 03 Jul 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/ipw/</guid>
       <description>&lt;p&gt;&lt;em&gt;Understanding and comparing different methods for conditional causal inference analysis&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;INTRO&lt;/p&gt;
@@ -27630,8 +27630,8 @@ df_gender
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;Now the effect of &lt;code&gt;dark_mode&lt;/code&gt; seems reversed: it is negative for male users but bigger and positive for female users, suggesting a positive aggregate effect (assuming equal proportion of genders)!&lt;/p&gt;
-&lt;p&gt;This comparison was easy for &lt;code&gt;gender&lt;/code&gt; since it is a binary variable. With multiple variables, potentially continuous, matching becomes much more difficult. One common strategy is to match users in the treatment group with the most similar user in the control group, using some sort of &lt;a href=&#34;https://en.wikipedia.org/wiki/Nearest_neighbour_algorithm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;neirest neighbor algorithm&lt;/a&gt;. I won&amp;rsquo;t go into the algorithm details here, but we can perform the matching with the &lt;code&gt;NearestNeighborMatch&lt;/code&gt; function from the &lt;code&gt;causalml&lt;/code&gt; package.&lt;/p&gt;
+&lt;p&gt;Now the effect of &lt;code&gt;dark_mode&lt;/code&gt; seems reversed: it is negative for male users (-0.79) but bigger and positive for female users (+1.38), suggesting a positive aggregate effect, 1.38 - 0.79 = 0.59 (assuming equal proportion of genders)!&lt;/p&gt;
+&lt;p&gt;This comparison was easy for &lt;code&gt;gender&lt;/code&gt; since it is a binary variable. With multiple variables, potentially continuous, matching becomes much more difficult. One common strategy is to &lt;strong&gt;match users&lt;/strong&gt; in the treatment group with the most similar user in the control group, using some sort of &lt;a href=&#34;https://en.wikipedia.org/wiki/Nearest_neighbour_algorithm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;nearest neighbor algorithm&lt;/a&gt;. I won&amp;rsquo;t go into the algorithm details here, but we can perform the matching with the &lt;code&gt;NearestNeighborMatch&lt;/code&gt; function from the &lt;code&gt;causalml&lt;/code&gt; package.&lt;/p&gt;
 &lt;p&gt;The &lt;code&gt;NearestNeighborMatch&lt;/code&gt; function generates a new dataset where users in the treatment group have been matched 1:1 (option &lt;code&gt;ratio=1&lt;/code&gt;) to users in the control group.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import NearestNeighborMatch
 
@@ -27734,22 +27734,26 @@ table1_matched
 &lt;/table&gt;
 &lt;p&gt;The effect is now positive, but not statistically significant.&lt;/p&gt;
 &lt;h3 id=&#34;propensity-score&#34;&gt;Propensity Score&lt;/h3&gt;
-&lt;p&gt;Under &lt;strong&gt;unconfoundedness&lt;/strong&gt; assumption introduced above, we can rewrite the average treatment effect as&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://academic.oup.com/biomet/article/70/1/41/240879&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Rosenbaum and Rubin (1983)&lt;/a&gt; prove a very powerful result: if the &lt;strong&gt;strong ingorability assumption&lt;/strong&gt; holds, it is sufficient to condition your analysis on the probability ot treatment, the &lt;strong&gt;propensity score&lt;/strong&gt;, in order to obtain conditional independence.&lt;/p&gt;
 &lt;p&gt;$$
-\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{D_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right]
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i \quad \leftrightarrow \quad \big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ e(X_i)
 $$&lt;/p&gt;
-&lt;p&gt;where $e(X_i)$ is the &lt;strong&gt;propensity score&lt;/strong&gt; of observation $i$,&lt;/p&gt;
+&lt;p&gt;Where $e(X_i)$ is the probability of treatment of individual $i$, given the observable characteristics $X$,&lt;/p&gt;
 &lt;p&gt;$$
 e(x) = \mathbb P \left[ D_i = 1 \ \big | \ X_i = x \right]
 $$&lt;/p&gt;
-&lt;p&gt;i.e. its probability of being treated.&lt;/p&gt;
+&lt;p&gt;This is an incredibly &lt;strong&gt;powerful and practical result&lt;/strong&gt; since the propensity score is a &lt;strong&gt;one dimensional&lt;/strong&gt; variable, while $X$ might be very high dimensional.&lt;/p&gt;
+&lt;p&gt;Under &lt;strong&gt;unconfoundedness&lt;/strong&gt; assumption introduced above, we can rewrite the average treatment effect as&lt;/p&gt;
+&lt;p&gt;$$
+\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{D_i Y_i}{e(X_i)} - \frac{(1-D_i) Y_i}{1-e(X_i)} \right]
+$$&lt;/p&gt;
 &lt;p&gt;Note that this formulation of the average treatment effect does not depend on the potential outcomes $Y_i^{(1)}$ and $Y_i^{(0)}$, but only on the observed outcomes $Y_i$.&lt;/p&gt;
-&lt;p&gt;This formulation of the average treatment effect implies the &lt;strong&gt;Inverse Propensity Weighted&lt;/strong&gt; estimator which is an unbiased estimator for the average treatment effect $\tau$&lt;/p&gt;
+&lt;p&gt;This formulation of the average treatment effect implies the &lt;strong&gt;Inverse Propensity Weighted (IPW)&lt;/strong&gt; estimator which is an unbiased estimator for the average treatment effect $\tau$&lt;/p&gt;
 &lt;p&gt;$$
 \hat \tau^{*}_{IPW} = \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{D_i Y_i}{e(X_i)} - \frac{(1-D_i) Y_i}{1-e(X_i)} \right)
 $$&lt;/p&gt;
-&lt;p&gt;However, this estimator is &lt;strong&gt;unfeasible&lt;/strong&gt; since we do not observe the propensity scores $e(X_i)$. However, we can estimate.&lt;/p&gt;
-&lt;p&gt;There are several possible ways to estimate a probability, the simplest and most common on is &lt;a href=&#34;https://en.wikipedia.org/wiki/Logistic_regression&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;logistic regression&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;However, this estimator is &lt;strong&gt;unfeasible&lt;/strong&gt; since we do not observe the propensity scores $e(X_i)$. However, we can estimate it. Actually, &lt;a href=&#34;https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00442&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Imbens, Hirano, Ridder (2003)&lt;/a&gt; show that you &lt;strong&gt;should&lt;/strong&gt; use the estimated propensity score even if we knew the true values (for example because you know the sampling procedure). The idea is that if the estimated propensity scores are different from the true ones, this can be informative in the estimation.&lt;/p&gt;
+&lt;p&gt;There are several possible ways to estimate a probability, the simplest and most common one is &lt;a href=&#34;https://en.wikipedia.org/wiki/Logistic_regression&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;logistic regression&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&amp;quot;pscore&amp;quot;] = smf.logit(&amp;quot;np.rint(dark_mode) ~ male + age + hours&amp;quot;, data=df).fit(disp=False).predict()
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;An &lt;strong&gt;important check&lt;/strong&gt; to perform after estimating propensity scores is plotting them, across treatment and control groups. First of all, we can then observe whether the two groups are balanced or not, depending on how close the two distributions are. Moreover, we can also check how likely it is that the &lt;strong&gt;overlap assumption&lt;/strong&gt; is satisfied. Ideally both distributions should span the same interval.&lt;/p&gt;
@@ -27802,10 +27806,31 @@ smf.wls(&amp;quot;read_time ~ dark_mode&amp;quot;, weights=w, data=df).fit().sum
 &lt;p&gt;The average treatment effect is again positive and statistically significant at the 1% level!&lt;/p&gt;
 &lt;h2 id=&#34;comparison&#34;&gt;Comparison&lt;/h2&gt;
 &lt;p&gt;How do the different methods compare to each other?&lt;/p&gt;
+&lt;p&gt;There is a tight connection between the &lt;strong&gt;IPW&lt;/strong&gt; estimator and linear regression with covariates. This is particularly evident when we have a single, binary covariate $X$.&lt;/p&gt;
+&lt;p&gt;In this case, the estimand of IPW (i.e. the quantity that IPW estimates) is given by&lt;/p&gt;
+&lt;p&gt;$$
+\beta^{IPW} = \frac{ \sum_x \color{red}{\beta_x} \color{blue}{\Pr(D_i | X_i = x)} \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)} \Pr(X_i = x)}
+$$&lt;/p&gt;
+&lt;p&gt;The IPW estimand is a weighted average of the treatment effects $\beta_x$, where the weights are given by the &lt;strong&gt;treatment probabilities&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;On the other hand, the estimand of linear regression with control variables is&lt;/p&gt;
+&lt;p&gt;$$
+\beta^{OLS} = \frac{ \sum_x \color{red}{\beta_x} \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}
+$$&lt;/p&gt;
+&lt;p&gt;The OLS estimand is a weighted average of the treatment effects $\beta_x$, where the weights are given by the &lt;strong&gt;variance of the treatment probabilities&lt;/strong&gt;. This means that linear regression is a weighted estimator, that gives more weight to observations that have characteristics for which we observe more treatment variability. Since a binary random variable has the highest variance when its expected value is 0.5, &lt;strong&gt;OLS gives the most weight to observations that have characteristics for which we observe 50/50 split between treatment and control group&lt;/strong&gt;. On the other hand, if for some characteristics we only observe treated or untreated individuals, those are going to receive zero weight. I recommend Chapter 3 of &lt;a href=&#34;https://www.mostlyharmlesseconometrics.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Angrist and Pischke (2009)&lt;/a&gt; for more details.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;TBD&lt;/p&gt;
+&lt;p&gt;Last but not least, if you want to know more, I strongly recommend this &lt;strong&gt;video lecture&lt;/strong&gt; on propensity scores from &lt;a href=&#34;https://paulgp.github.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Paul Goldsmith-Pinkham&lt;/a&gt; that is freely available online.&lt;/p&gt;
+&lt;br&gt;
+
+&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
+  &lt;iframe src=&#34;https://www.youtube.com/embed/8gWctYvRzk4&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+&lt;br&gt;
+&lt;p&gt;The whole course is a gem and it is an incredible privilege to have such high quality material available online for free.&lt;/p&gt;
 &lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
-&lt;p&gt;TBD&lt;/p&gt;
+&lt;p&gt;[1] P. Rosenbaum, D. Rubin, &lt;a href=&#34;https://academic.oup.com/biomet/article/70/1/41/240879&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The central role of the propensity score in observational studies for causal effects&lt;/a&gt; (1983), &lt;em&gt;Biometrika&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] G. Imbens, K. Hirano, G. Ridder, &lt;a href=&#34;https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00442&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Efficient Estimation of Average Treatment Effects Using the Estimated Propensity Score&lt;/a&gt; (2003), &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[3] J. Angrist, J. S. Pischke, &lt;a href=&#34;https://www.mostlyharmlesseconometrics.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Mostly harmless econometrics: An Empiricist&amp;rsquo;s Companion&lt;/a&gt; (2009), &lt;em&gt;Princeton University Press&lt;/em&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding The Frisch-Waugh-Lovell Theorem&lt;/a&gt;&lt;/li&gt;
