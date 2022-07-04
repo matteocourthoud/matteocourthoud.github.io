@@ -31,8 +31,7 @@
     
   
   <meta name="description" content="Understanding and comparing different methods for conditional causal inference analysis
-INTRO
-Example Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog." />
+AB tests or randomized controlled trials are the gold standard in causal inference. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/ipw/" />
@@ -336,17 +335,16 @@ Example Assume we had blog on statistics and causal inference 😇. To improve u
   <meta property="og:url" content="https://matteocourthoud.github.io/post/ipw/" />
   <meta property="og:title" content="Weighting, Matching, or Regression? | Matteo Courthoud" />
   <meta property="og:description" content="Understanding and comparing different methods for conditional causal inference analysis
-INTRO
-Example Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog." /><meta property="og:image" content="https://matteocourthoud.github.io/post/ipw/featured.png" />
+AB tests or randomized controlled trials are the gold standard in causal inference. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone." /><meta property="og:image" content="https://matteocourthoud.github.io/post/ipw/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/ipw/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-07-03T00:00:00&#43;00:00"
+        content="2022-07-04T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-07-03T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-07-04T00:00:00&#43;00:00">
   
 
   
@@ -378,8 +376,8 @@ Example Assume we had blog on statistics and causal inference 😇. To improve u
     "https://matteocourthoud.github.io/post/ipw/featured.png"
   ],
   
-  "datePublished": "2022-07-03T00:00:00Z",
-  "dateModified": "2022-07-03T00:00:00Z",
+  "datePublished": "2022-07-04T00:00:00Z",
+  "dateModified": "2022-07-04T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -389,7 +387,7 @@ Example Assume we had blog on statistics and causal inference 😇. To improve u
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "Understanding and comparing different methods for conditional causal inference analysis\nINTRO\nExample Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering releasing a dark mode, and we would like to understand whether this new feature increases the time users spend on our blog."
+  "description": "Understanding and comparing different methods for conditional causal inference analysis\nAB tests or randomized controlled trials are the gold standard in causal inference. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone."
 }
 </script>
 
@@ -836,7 +834,7 @@ Example Assume we had blog on statistics and causal inference 😇. To improve u
     
       
     
-    Jul 3, 2022
+    Jul 4, 2022
   </span>
   
 
@@ -845,7 +843,7 @@ Example Assume we had blog on statistics and causal inference 😇. To improve u
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    14 min read
+    15 min read
   </span>
   
 
@@ -881,7 +879,9 @@ Example Assume we had blog on statistics and causal inference 😇. To improve u
         <div class="article-container">
           <div class="article-style" align="justify">
             <p><em>Understanding and comparing different methods for conditional causal inference analysis</em></p>
-<p>INTRO</p>
+<p>AB tests or randomized controlled trials are the <strong>gold standard</strong> in causal inference. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone.</p>
+<p>However, often the treatment and control groups are <strong>not perfectly comparable</strong>. This could be due to the fact that randomization was not perfect or available. Not always we can randomize a treatment, for ethical or practical reasons. And even when we can, sometimes we do not have enough individuals or units so that differences between groups are seizable. This happens often, for example, when randomization is not done at the individual level, but at a higher level of aggregation, for example zipcodes, counties or even states.</p>
+<p>In these settings, we can still recover a causal estimate of the treatment effect if we have <strong>enough information</strong> about individuals, by making the treatment and control group comparable, ex-post. In this blog post, we are going to introduce and compare different procedures to estimate causal effects in presence of imbalances between treatment and control groups that are <strong>fully observable</strong>. In particular we are going to analyze weighting, matching and regression procedures.</p>
 <h2 id="example">Example</h2>
 <p>Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering <strong>releasing a dark mode</strong>, and we would like to understand whether this new feature increases the time users spend on our blog.</p>
 <img src="fig/modes.png" width="600px"/>
@@ -1388,6 +1388,8 @@ $$</p>
 $$</p>
 <p>The OLS estimand is a weighted average of the treatment effects $\tau_x$, where the weights are given by the <strong>variances of the treatment probabilities</strong>. This means that linear regression is a weighted estimator, that gives more weight to observations that have characteristics for which we observe more treatment variability. Since a binary random variable has the highest variance when its expected value is 0.5, <strong>OLS gives the most weight to observations that have characteristics for which we observe a 50/50 split between treatment and control group</strong>. On the other hand, if for some characteristics we only observe treated or untreated individuals, those observations are going to receive zero weight. I recommend Chapter 3 of <a href="https://www.mostlyharmlesseconometrics.com/" target="_blank" rel="noopener">Angrist and Pischke (2009)</a> for more details.</p>
 <h2 id="conclusion">Conclusion</h2>
+<p>In this blog post, we have seen how to perform <strong>conditional analysis</strong> using different approached. Matching directly matches most similar units in the treatment and control group. Weighting simply assigns different weight to different observations depending on their probability of receiving the treatment. Regression instead weights observations depending on the conditional treatment variances, giving more weight to observations that have characteristics common to both the treatment and control group.</p>
+<p>These procedures are <strong>extremely helpful</strong> because they can either allow us to estimate causal effects from (very rich) observational data or correct experimental estimates when randomization was not perfect or we have a small sample.</p>
 <p>Last but not least, if you want to know more, I strongly recommend this <strong>video lecture</strong> on propensity scores from <a href="https://paulgp.github.io/" target="_blank" rel="noopener">Paul Goldsmith-Pinkham</a> that is freely available online.</p>
 <br>
 
@@ -1396,7 +1398,7 @@ $$</p>
 </div>
 
 <br>
-<p>The whole course is a gem and it is an incredible privilege to have such high quality material available online for free.</p>
+<p>The whole course is a <strong>gem</strong> and it is an incredible privilege to have such high quality material available online for free!</p>
 <h3 id="references">References</h3>
 <p>[1] P. Rosenbaum, D. Rubin, <a href="https://academic.oup.com/biomet/article/70/1/41/240879" target="_blank" rel="noopener">The central role of the propensity score in observational studies for causal effects</a> (1983), <em>Biometrika</em>.</p>
 <p>[2] G. Imbens, K. Hirano, G. Ridder, <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00442" target="_blank" rel="noopener">Efficient Estimation of Average Treatment Effects Using the Estimated Propensity Score</a> (2003), <em>Econometrica</em>.</p>
