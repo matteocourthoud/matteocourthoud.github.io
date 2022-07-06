@@ -341,10 +341,10 @@ AB tests or randomized controlled trials are the gold standard in causal inferen
     
       <meta
         property="article:published_time"
-        content="2022-07-04T00:00:00&#43;00:00"
+        content="2022-07-06T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-07-04T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-07-06T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@ AB tests or randomized controlled trials are the gold standard in causal inferen
     "https://matteocourthoud.github.io/post/ipw/featured.png"
   ],
   
-  "datePublished": "2022-07-04T00:00:00Z",
-  "dateModified": "2022-07-04T00:00:00Z",
+  "datePublished": "2022-07-06T00:00:00Z",
+  "dateModified": "2022-07-06T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -777,7 +777,12 @@ AB tests or randomized controlled trials are the gold standard in causal inferen
         <li><a href="#regression-with-control-variables">Regression with Control Variables</a></li>
       </ul>
     </li>
-    <li><a href="#comparison">Comparison</a></li>
+    <li><a href="#comparison">Comparison</a>
+      <ul>
+        <li><a href="#ipw-and-regression">IPW and Regression</a></li>
+        <li><a href="#ipw-and-matching">IPW and Matching</a></li>
+      </ul>
+    </li>
     <li><a href="#conclusion">Conclusion</a>
       <ul>
         <li><a href="#references">References</a></li>
@@ -834,7 +839,7 @@ AB tests or randomized controlled trials are the gold standard in causal inferen
     
       
     
-    Jul 4, 2022
+    Jul 6, 2022
   </span>
   
 
@@ -843,7 +848,7 @@ AB tests or randomized controlled trials are the gold standard in causal inferen
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    15 min read
+    17 min read
   </span>
   
 
@@ -902,8 +907,6 @@ D --&gt; Y
 X1 --&gt; Y
 X1 --&gt; D
 X2 --&gt; D
-X2 --&gt; Y
-X3 --&gt; D
 X3 --&gt; Y
 
 class D,Y included;
@@ -947,43 +950,43 @@ df.head()
   <tbody>
     <tr>
       <th>0</th>
-      <td>10.42</td>
+      <td>14.4</td>
       <td>False</td>
       <td>0</td>
       <td>43.0</td>
-      <td>79.17</td>
+      <td>65.6</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>11.41</td>
-      <td>True</td>
+      <td>15.4</td>
+      <td>False</td>
       <td>1</td>
       <td>55.0</td>
-      <td>130.35</td>
+      <td>125.4</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>20.88</td>
-      <td>False</td>
+      <td>20.9</td>
+      <td>True</td>
       <td>0</td>
       <td>23.0</td>
-      <td>458.21</td>
+      <td>642.6</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>17.02</td>
+      <td>20.0</td>
       <td>False</td>
       <td>0</td>
       <td>41.0</td>
-      <td>133.30</td>
+      <td>129.1</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>21.04</td>
+      <td>21.5</td>
       <td>True</td>
       <td>0</td>
       <td>29.0</td>
-      <td>179.65</td>
+      <td>190.2</td>
     </tr>
   </tbody>
 </table>
@@ -992,7 +995,7 @@ df.head()
 <p>We would like to estimate the effect of the new <code>dark_mode</code> on users' <code>read_time</code>. If we were runnig an <a href="https://de.wikipedia.org/wiki/A/B-Test" target="_blank" rel="noopener"><strong>AB test</strong></a> or randomized control trial, we could just compare users with and without the dark mode and we could attribute the difference in average reading time to the <code>dark_mode</code>. Let&rsquo;s check what number we would get.</p>
 <pre><code class="language-python">np.mean(df.loc[df.dark_mode==True, 'read_time']) - np.mean(df.loc[df.dark_mode==False, 'read_time'])
 </code></pre>
-<pre><code>-1.3702904153929154
+<pre><code>-0.4446330948042103
 </code></pre>
 <p>Individuals that select the <code>dark_mode</code> spend on average 1.37 hours less on the blog, per week. Should we conclude that <code>dark_mode</code> is a <strong>bad idea</strong>? Is this a causal effect?</p>
 <p>We did not randomize the <code>dark_mode</code> so that users that selected it might not be directly <strong>comparable</strong> with users that didn&rsquo;t. Can we verify this concern? Partially. We can only check characteristics that we observe, <code>gender</code>, <code>age</code> and total <code>hours</code> in our setting. We cannot check if users differ along other dimensions that we don&rsquo;t observe.</p>
@@ -1035,27 +1038,27 @@ table1
   <tbody>
     <tr>
       <th>n</th>
-      <td>166</td>
-      <td>134</td>
+      <td>151</td>
+      <td>149</td>
       <td></td>
     </tr>
     <tr>
       <th>age</th>
-      <td>41.33 (11.60)</td>
-      <td>44.13 (10.57)</td>
-      <td>0.2524</td>
+      <td>46.01 (9.79)</td>
+      <td>39.09 (11.53)</td>
+      <td>-0.6469</td>
     </tr>
     <tr>
       <th>hours</th>
-      <td>303.91 (330.20)</td>
-      <td>205.16 (279.63)</td>
-      <td>-0.3228</td>
+      <td>337.78 (464.00)</td>
+      <td>328.57 (442.12)</td>
+      <td>-0.0203</td>
     </tr>
     <tr>
       <th>male</th>
-      <td>0.37 (0.48)</td>
+      <td>0.34 (0.47)</td>
       <td>0.66 (0.48)</td>
-      <td>0.6025</td>
+      <td>0.6732</td>
     </tr>
   </tbody>
 </table>
@@ -1091,12 +1094,10 @@ D --&gt; Y
 X1 --&gt; Y
 X1 --&gt; D
 X2 --&gt; D
-X2 --&gt; Y
-X3 --&gt; D
 X3 --&gt; Y
 
 linkStyle 0 stroke:#00ff00,stroke-width:4px;
-linkStyle 1,2,3,4,5,6 stroke:#ff0000,stroke-width:4px;
+linkStyle 1,2 stroke:#ff0000,stroke-width:4px;
 class D,Y included;
 class X1,X2,X3 excluded;
 </code></pre>
@@ -1115,10 +1116,8 @@ Y((read time))
 D --&gt; Y
 X1 -.-&gt; Y
 X1 -.-&gt; D
-X2 -.-&gt; D
-X2 -.-&gt; Y
-X3 -.-&gt; D
-X3 -.-&gt; Y
+X2 --&gt; D
+X3 --&gt; Y
 
 linkStyle 0 stroke:#00ff00,stroke-width:4px;
 class D,Y,X1,X2,X3 included;
@@ -1186,15 +1185,15 @@ df_gender
   <tbody>
     <tr>
       <th>0</th>
-      <td>17.856857</td>
-      <td>19.241739</td>
-      <td>1.384882</td>
+      <td>20.318000</td>
+      <td>22.24902</td>
+      <td>1.931020</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>13.291148</td>
-      <td>12.491591</td>
-      <td>-0.799557</td>
+      <td>16.933333</td>
+      <td>16.89898</td>
+      <td>-0.034354</td>
     </tr>
   </tbody>
 </table>
@@ -1243,32 +1242,33 @@ table1_matched
   <tbody>
     <tr>
       <th>n</th>
-      <td>123</td>
-      <td>123</td>
+      <td>104</td>
+      <td>104</td>
       <td></td>
     </tr>
     <tr>
       <th>age</th>
-      <td>43.89 (10.38)</td>
-      <td>43.94 (10.40)</td>
-      <td>0.0047</td>
+      <td>41.93 (10.05)</td>
+      <td>41.85 (10.02)</td>
+      <td>-0.0086</td>
     </tr>
     <tr>
       <th>hours</th>
-      <td>158.59 (154.46)</td>
-      <td>152.27 (154.70)</td>
-      <td>-0.0408</td>
+      <td>206.92 (309.62)</td>
+      <td>209.48 (321.79)</td>
+      <td>0.0081</td>
     </tr>
     <tr>
       <th>male</th>
-      <td>0.65 (0.48)</td>
-      <td>0.65 (0.48)</td>
+      <td>0.62 (0.49)</td>
+      <td>0.62 (0.49)</td>
       <td>0.0</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>Now the average differences between the two groups have <strong>shrunk</strong> by at least a couple of orders of magnitude. We can visually inspect distributional differences with the paired violinplot.</p>
+<p>Now the average differences between the two groups have <strong>shrunk</strong> by at least a couple of orders of magnitude. However, note how the sample size has slightly decreased (300 $\to$ 246) since (1) we only match treated users and (2) we are not able to find a good match for all of them.</p>
+<p>We can visually inspect distributional differences with the paired violinplot.</p>
 <pre><code class="language-python">plot_distributions(df_matched, X, &quot;dark_mode&quot;)
 </code></pre>
 <p><img src="img/ipw_28_0.png" alt="png"></p>
@@ -1288,6 +1288,7 @@ table1_matched
 <p><img src="img/ipw_31_0.png" alt="png"></p>
 <p>As we can see, now all differences in observable characteristics between the two groups are essentially zero. We could also compare the distributions using other metrics or test statistics, such as the <a href="https://towardsdatascience.com/9b06ee4d30bf" target="_blank" rel="noopener">Kolmogorov-Smirnov test statistic</a>.</p>
 <p>How do we <strong>estimate the average treatment effect</strong>? We can simply do a difference in means. An equivalent way that automatically provides standard errors is to run a linear regression of the outcome, <code>read_time</code>, on the treatment, <code>dark_mode</code>.</p>
+<p><strong>Note</strong> that, since we have performed the matching for each treated user, the treatment effect we are estimating is the <strong>average treatment effect on the treated (ATT)</strong>, which can be different from the average treatment effect if the treated sample differs from the overall population (which is likely to be the case, since we are doing matching in the first place).</p>
 <pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode&quot;, data=df_matched).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -1295,13 +1296,36 @@ table1_matched
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   13.4627</td> <td>    0.513</td> <td>   26.262</td> <td> 0.000</td> <td>   12.453</td> <td>   14.472</td>
+  <th>Intercept</th>         <td>   17.0365</td> <td>    0.469</td> <td>   36.363</td> <td> 0.000</td> <td>   16.113</td> <td>   17.960</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    0.9148</td> <td>    0.725</td> <td>    1.262</td> <td> 0.208</td> <td>   -0.513</td> <td>    2.343</td>
+  <th>dark_mode[T.True]</th> <td>    1.4490</td> <td>    0.663</td> <td>    2.187</td> <td> 0.030</td> <td>    0.143</td> <td>    2.755</td>
 </tr>
 </table>
 <p>The effect is now positive, but not statistically significant.</p>
+<p><strong>Note</strong> that we might have matched multiple treated users with the same untreated user, violating the independence assumption across observations and, in turn, distorting inference.</p>
+<p>We have two solutions:</p>
+<ol>
+<li>cluster standard errors at the matched individual level</li>
+<li>compute standard errors via bootstrap</li>
+</ol>
+<p>We implement the first and cluster the standard errors by the original individual identifiers (the dataframe index).</p>
+<pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode&quot;, data=df_matched)\
+    .fit(cov_type='cluster', cov_kwds={'groups': df_matched.index})\
+    .summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+          <td></td>             <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>         <td>   17.0365</td> <td>    0.650</td> <td>   26.217</td> <td> 0.000</td> <td>   15.763</td> <td>   18.310</td>
+</tr>
+<tr>
+  <th>dark_mode[T.True]</th> <td>    1.4490</td> <td>    0.821</td> <td>    1.765</td> <td> 0.078</td> <td>   -0.160</td> <td>    3.058</td>
+</tr>
+</table>
+<p>The effect is even less statistically significant.</p>
 <h3 id="propensity-score">Propensity Score</h3>
 <p><a href="https://academic.oup.com/biomet/article/70/1/41/240879" target="_blank" rel="noopener">Rosenbaum and Rubin (1983)</a> proved a very powerful result: if the <strong>strong ignorability assumption</strong> holds, it is sufficient to condition the analysis on the probability ot treatment, the <strong>propensity score</strong>, in order to have conditional independence.</p>
 <p>$$
@@ -1330,7 +1354,7 @@ $$</p>
 <pre><code class="language-python">sns.histplot(data=df, x='pscore', hue='dark_mode', bins=30, stat='density', common_norm=False).\
     set(ylabel=&quot;&quot;, title=&quot;Distribution of Propensity Scores&quot;);
 </code></pre>
-<p><img src="img/ipw_39_0.png" alt="png"></p>
+<p><img src="img/ipw_41_0.png" alt="png"></p>
 <p>As expected, the distribution of propensity scores between the treatment and control group is <strong>significantly different</strong>, suggesting that the two groups are hardly comparable. However, there is significant overlap in the support of the distributions, suggesting that the overlap assumption is likely to be satisfied.</p>
 <p>How do we estimate the average treatment effect?</p>
 <p>Once we have computed the propensity scores, we just need to re-weight observations by their respective propensity score. We can then either compute a difference between the weighted <code>read_time</code> averages, or run a weighted regression of <code>read_time</code> on <code>dark_mode</code>.</p>
@@ -1342,10 +1366,10 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   15.0908</td> <td>    0.501</td> <td>   30.132</td> <td> 0.000</td> <td>   14.105</td> <td>   16.076</td>
+  <th>Intercept</th>         <td>   18.5511</td> <td>    0.412</td> <td>   45.049</td> <td> 0.000</td> <td>   17.741</td> <td>   19.362</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    1.5609</td> <td>    0.707</td> <td>    2.208</td> <td> 0.028</td> <td>    0.170</td> <td>    2.952</td>
+  <th>dark_mode[T.True]</th> <td>    1.1572</td> <td>    0.582</td> <td>    1.990</td> <td> 0.048</td> <td>    0.013</td> <td>    2.302</td>
 </tr>
 </table>
 <p>The effect of the <code>dark_mode</code> is now positive and statistically significant, at the 5% level!</p>
@@ -1358,24 +1382,25 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   19.1829</td> <td>    1.048</td> <td>   18.299</td> <td> 0.000</td> <td>   17.120</td> <td>   21.246</td>
+  <th>Intercept</th>         <td>   16.8591</td> <td>    1.082</td> <td>   15.577</td> <td> 0.000</td> <td>   14.729</td> <td>   18.989</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    1.4987</td> <td>    0.541</td> <td>    2.769</td> <td> 0.006</td> <td>    0.434</td> <td>    2.564</td>
+  <th>dark_mode[T.True]</th> <td>    1.3858</td> <td>    0.524</td> <td>    2.646</td> <td> 0.009</td> <td>    0.355</td> <td>    2.417</td>
 </tr>
 <tr>
-  <th>male</th>              <td>   -5.6579</td> <td>    0.529</td> <td>  -10.704</td> <td> 0.000</td> <td>   -6.698</td> <td>   -4.618</td>
+  <th>male</th>              <td>   -4.4855</td> <td>    0.499</td> <td>   -8.990</td> <td> 0.000</td> <td>   -5.468</td> <td>   -3.504</td>
 </tr>
 <tr>
-  <th>age</th>               <td>   -0.0944</td> <td>    0.023</td> <td>   -4.149</td> <td> 0.000</td> <td>   -0.139</td> <td>   -0.050</td>
+  <th>age</th>               <td>    0.0513</td> <td>    0.022</td> <td>    2.311</td> <td> 0.022</td> <td>    0.008</td> <td>    0.095</td>
 </tr>
 <tr>
-  <th>hours</th>             <td>    0.0098</td> <td>    0.001</td> <td>   11.911</td> <td> 0.000</td> <td>    0.008</td> <td>    0.011</td>
+  <th>hours</th>             <td>    0.0043</td> <td>    0.001</td> <td>    8.427</td> <td> 0.000</td> <td>    0.003</td> <td>    0.005</td>
 </tr>
 </table>
 <p>The average treatment effect is again positive and statistically significant at the 1% level!</p>
 <h2 id="comparison">Comparison</h2>
 <p>How do the different methods compare to each other?</p>
+<h3 id="ipw-and-regression">IPW and Regression</h3>
 <p>There is a <strong>tight connection</strong> between the IPW estimator and linear regression with covariates. This is particularly evident when we have a one-dimensional, discrete covariate $X$.</p>
 <p>In this case, the estimand of IPW (i.e. the quantity that IPW estimates) is given by</p>
 <p>$$
@@ -1387,6 +1412,29 @@ $$</p>
 \tau^{OLS} = \frac{ \sum_x \color{red}{\tau_x} \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}
 $$</p>
 <p>The OLS estimand is a weighted average of the treatment effects $\tau_x$, where the weights are given by the <strong>variances of the treatment probabilities</strong>. This means that linear regression is a weighted estimator, that gives more weight to observations that have characteristics for which we observe more treatment variability. Since a binary random variable has the highest variance when its expected value is 0.5, <strong>OLS gives the most weight to observations that have characteristics for which we observe a 50/50 split between treatment and control group</strong>. On the other hand, if for some characteristics we only observe treated or untreated individuals, those observations are going to receive zero weight. I recommend Chapter 3 of <a href="https://www.mostlyharmlesseconometrics.com/" target="_blank" rel="noopener">Angrist and Pischke (2009)</a> for more details.</p>
+<h3 id="ipw-and-matching">IPW and Matching</h3>
+<p>As we have seen in the IPW section, <a href="https://academic.oup.com/biomet/article/70/1/41/240879" target="_blank" rel="noopener">Rosenbaum and Rubin (1983)</a> result tells us that we do not need to perform the analysis conditional on all the covariates $X$, but it is sufficient to condition on the propensity score $e(X)$.</p>
+<p>We have seed how this result implies a weighted estimator but it also extends to matching: we do not need to match observations on all the covariates $X$, but it is sufficient to <strong>match them on the propensity score</strong> $e(X)$. This method is called propensity score matching.</p>
+<pre><code class="language-python">psm = NearestNeighborMatch(replace=False, random_state=1)
+df_ipwmatched = psm.match(data=df, treatment_col=&quot;dark_mode&quot;, score_cols=['pscore'])
+</code></pre>
+<p>As before, after matching, we can simply computer the estimate as a difference in means, remembering that observations are <strong>not independent</strong> and therefore we need to be cautions when doing inference.</p>
+<pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode&quot;, data=df_ipwmatched)\
+    .fit(cov_type='cluster', cov_kwds={'groups': df_ipwmatched.index})\
+    .summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+          <td></td>             <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>         <td>   17.8223</td> <td>    0.486</td> <td>   36.669</td> <td> 0.000</td> <td>   16.870</td> <td>   18.775</td>
+</tr>
+<tr>
+  <th>dark_mode[T.True]</th> <td>    1.9585</td> <td>    0.695</td> <td>    2.816</td> <td> 0.005</td> <td>    0.595</td> <td>    3.322</td>
+</tr>
+</table>
+<p>The estimated effect of <code>dark_mode</code> is positive, significant at the 1% level and very close to the true value of 2!</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this blog post, we have seen how to perform <strong>conditional analysis</strong> using different approached. Matching directly matches most similar units in the treatment and control group. Weighting simply assigns different weight to different observations depending on their probability of receiving the treatment. Regression instead weights observations depending on the conditional treatment variances, giving more weight to observations that have characteristics common to both the treatment and control group.</p>
 <p>These procedures are <strong>extremely helpful</strong> because they can either allow us to estimate causal effects from (very rich) observational data or correct experimental estimates when randomization was not perfect or we have a small sample.</p>
