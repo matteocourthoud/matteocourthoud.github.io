@@ -341,10 +341,10 @@ During my PhD, I spent a lot of time learning and applying causal inference meth
     
       <meta
         property="article:published_time"
-        content="2022-06-30T00:00:00&#43;00:00"
+        content="2022-07-12T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-06-30T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-07-12T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@ During my PhD, I spent a lot of time learning and applying causal inference meth
     "https://matteocourthoud.github.io/post/cuped/featured.png"
   ],
   
-  "datePublished": "2022-06-30T00:00:00Z",
-  "dateModified": "2022-06-30T00:00:00Z",
+  "datePublished": "2022-07-12T00:00:00Z",
+  "dateModified": "2022-07-12T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -845,7 +845,7 @@ During my PhD, I spent a lot of time learning and applying causal inference meth
     
       
     
-    Jun 30, 2022
+    Jul 12, 2022
   </span>
   
 
@@ -1132,6 +1132,7 @@ $$</p>
 </tr>
 </table>
 <p>The estimated coefficient is very similar to the one we obtained with CUPED and also the standard error is very close. However, they are not exactly the same.</p>
+<p>If you are familiar with the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Frisch-Waugh-Lowell Theorem</a>, you might wonder why the two procedures are <strong>not equivalent</strong>. The reason is that with CUPED we are partialling out only $Y$, while the FWL theorem holds when we are partialling out either X or both X and Y.</p>
 <h3 id="diff-in-diffs">Diff-in-Diffs</h3>
 <p>The <strong>second question</strong> that came to my mind was &ldquo;i<em>s CUPED just difference-in-differences?</em>&rdquo;. <a href="https://diff.healthpolicydatascience.org/" target="_blank" rel="noopener">Difference-in-Differences</a> (or diff-in-diffs, or DiD) is an estimator that computes the treatment effect as a <strong>double-difference</strong> instead of a single one: pre-post and treatment-control instead of just treatment-control.</p>
 <p>$$
@@ -1166,8 +1167,8 @@ df_long.head()
       <th></th>
       <th>i</th>
       <th>t</th>
-      <th>ad_campaign</th>
       <th>revenue1_tilde</th>
+      <th>ad_campaign</th>
       <th>revenue1_cuped</th>
       <th>revenue</th>
     </tr>
@@ -1177,8 +1178,8 @@ df_long.head()
       <th>0</th>
       <td>1</td>
       <td>0</td>
-      <td>0</td>
       <td>8.093744</td>
+      <td>0</td>
       <td>8.093744</td>
       <td>5.315635</td>
     </tr>
@@ -1186,8 +1187,8 @@ df_long.head()
       <th>1</th>
       <td>2</td>
       <td>0</td>
-      <td>1</td>
       <td>10.164644</td>
+      <td>1</td>
       <td>10.164644</td>
       <td>2.977799</td>
     </tr>
@@ -1195,8 +1196,8 @@ df_long.head()
       <th>2</th>
       <td>3</td>
       <td>0</td>
-      <td>0</td>
       <td>9.472203</td>
+      <td>0</td>
       <td>9.472203</td>
       <td>4.693796</td>
     </tr>
@@ -1204,8 +1205,8 @@ df_long.head()
       <th>3</th>
       <td>4</td>
       <td>0</td>
-      <td>0</td>
       <td>7.688063</td>
+      <td>0</td>
       <td>7.688063</td>
       <td>5.827975</td>
     </tr>
@@ -1213,8 +1214,8 @@ df_long.head()
       <th>4</th>
       <td>5</td>
       <td>0</td>
-      <td>0</td>
       <td>8.742618</td>
+      <td>0</td>
       <td>8.742618</td>
       <td>5.230095</td>
     </tr>
@@ -1265,6 +1266,22 @@ df_long.head()
 </tr>
 </table>
 <p>Clustering standard errors at the individual level we obtain standard errors that are comparable to the previous estimates ($\sim 0.2$).</p>
+<p>Note that diff-in-diffs is <strong>equivalent to CUPED</strong> when we assume the CUPED coefficient $\theta=1$.</p>
+<pre><code class="language-python">df['revenue1_cuped2'] = df['revenue1'] - 1 * (df['revenue0'] - np.mean(df['revenue0']))
+smf.ols('revenue1_cuped2 ~ ad_campaign', data=df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>   <td>    8.2353</td> <td>    0.145</td> <td>   56.756</td> <td> 0.000</td> <td>    7.947</td> <td>    8.523</td>
+</tr>
+<tr>
+  <th>ad_campaign</th> <td>    1.9224</td> <td>    0.207</td> <td>    9.274</td> <td> 0.000</td> <td>    1.511</td> <td>    2.334</td>
+</tr>
+</table>
+<p>Indeed, we obtain the same exact coefficient and almost identical standard errors!</p>
 <h3 id="comparison">Comparison</h3>
 <p>Which method is better? From what we have seen so far, all methods seem to deliver an accurate estimate, but the simple difference has a larger standard deviation.</p>
 <p>Let&rsquo;s now compare all the methods we have seen so far via <strong>simulation</strong>. We simulate the data generating process <code>dgp_cuped()</code> 1000 times and we save the estimated coefficient of the following methods:</p>
@@ -1315,7 +1332,7 @@ df_long.head()
 plt.axvline(x=2, c='k', ls='--');
 plt.title('Simulated Distributions');
 </code></pre>
-<p><img src="img/cuped_51_0.png" alt="png"></p>
+<p><img src="img/cuped_53_0.png" alt="png"></p>
 <p>We can also tabulate the simulated mean and standard deviation of each estimator.</p>
 <pre><code class="language-python">results.groupby('Estimator').agg(mean=(&quot;Estimate&quot;, &quot;mean&quot;), std=(&quot;Estimate&quot;, &quot;std&quot;))
 </code></pre>
@@ -1354,8 +1371,8 @@ plt.title('Simulated Distributions');
     </tr>
     <tr>
       <th>2. Areg</th>
-      <td>1.993343</td>
-      <td>0.198337</td>
+      <td>2.034145</td>
+      <td>1.063968</td>
     </tr>
     <tr>
       <th>3. DiD</th>
@@ -1393,7 +1410,7 @@ $$</p>
 plt.axvline(x=2, c='k', ls='--');
 plt.title('Simulated Distributions');
 </code></pre>
-<p><img src="img/cuped_59_0.png" alt="png"></p>
+<p><img src="img/cuped_61_0.png" alt="png"></p>
 <pre><code class="language-python">results_beta1.groupby('Estimator').agg(mean=(&quot;Estimate&quot;, &quot;mean&quot;), std=(&quot;Estimate&quot;, &quot;std&quot;))
 </code></pre>
 <div>
