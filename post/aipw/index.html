@@ -899,7 +899,7 @@ When estimating causal effects, the gold standard is randomized controlled trial
 <p><strong>TLDR;</strong> AIPW is amazing and you should always use it!</p>
 <h2 id="example">Example</h2>
 <p>Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering <strong>releasing a dark mode</strong>, and we would like to understand whether this new feature increases the time users spend on our blog.</p>
-<p>This example is borrowed from my last post on the estimation of conditional average treatment effects (CATE). You can find the <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">original post here</a>.</p>
+<p>This example is borrowed from my last post on the estimation of conditional average treatment effects (CATE). You can find the <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">original post here</a>. If you remember the setting, you can skip this introduction.</p>
 <img src="fig/modes.png" width="600px"/>
 <p>We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users select it or not and the time they spend on the blog. We know that there might be <strong>selection</strong>:  users that prefer the dark mode could have different reading preferences and this might complicate our causal analysis.</p>
 <p>We can represent the data generating process with the following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a>.</p>
@@ -1089,15 +1089,15 @@ table1
 <p>There seems to be <strong>some difference</strong> between treatment (<code>dark_mode</code>) and control group. In particular, users that select the <code>dark_mode</code> are older, have spent less hours on the blog and they are more likely to be males.</p>
 <p>What can we do? If we assume that all differences between treatment and control group are <strong>observable</strong>, we can solve the problem by performing <strong>conditional analysis</strong>.</p>
 <h2 id="conditional-analysis">Conditional Analysis</h2>
-<p>We assume that for a set of subjects $i = 1, &hellip;, n$ we observed a tuple $(D_i, Y_i, X_i)$ comprised of</p>
+<p>We assume that for a set of subjects $i = 1, &hellip;, n$ we observed a set of variables $(D_i, Y_i, X_i)$ that includes</p>
 <ul>
 <li>a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$ (<code>dark_mode</code>)</li>
 <li>a response $Y_i \in \mathbb R$ (<code>read_time</code>)</li>
 <li>a feature vector $X_i \in \mathbb R^n$ (<code>gender</code>, <code>age</code> and <code>hours</code>)</li>
 </ul>
-<p>We are interested in <strong>estimating the average treatment effect</strong>.</p>
+<p>We are interested in <strong>estimating the conditional average treatment effect (CATE)</strong>.</p>
 <p>$$
-\tau = \mathbb E \Big[ Y_i^{(1)} - Y_i^{(0)} \Big]
+\tau(x) = \mathbb E \Big[ Y_i^{(1)} - Y_i^{(0)} \ \Big| \ X_i = x \Big]
 $$</p>
 <p>Where $Y_i^{(d)}$ indicates the potential outcome of individual $i$ under treatment status $d$. We also make the following assumptions.</p>
 <p><strong>Assumption 1 : unconfoundedness</strong> (or ignorability, or selection on observables)</p>
@@ -1118,37 +1118,37 @@ $$</p>
 <h3 id="ipw-and-meta-learners">IPW and Meta-Learners</h3>
 <p>Two alternative ways to perform conditional analysis are</p>
 <ol>
-<li><a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener"><strong>IPW</strong></a>: balance observations by their conditional treatment assignment probability. Give the most weights to observations that are equally likely to be in the treatment and control group and them estimate the treatment effect as a difference in means</li>
+<li><a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener"><strong>IPW</strong></a>: balance observations by their conditional treatment assignment probability and then estimate the treatment effect as a weighted difference in means</li>
 <li><a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener"><strong>Meta Learners</strong></a>: predict the potential outcomes from observable characteristics and estimate treatment effects as the difference between observed and counterfactual outcomes</li>
 </ol>
 <p>These two alternative procedures exploit the fact that we observe individual characteristics $X$ in different ways:</p>
 <ol>
-<li>IPW exploits $X$ to predict the treatment assignment $D$ and estimate the <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener"><strong>propensity scores</strong></a> $e(X) = \mathbb{E} [D | X]$</li>
-<li>Meta Learners exploit $X$ to predict the counterfactual outcomes $Y^{(d)}$</li>
+<li>IPW exploits $X$ to predict the treatment assignment $D$ and estimate the <strong>propensity scores</strong> $e(X) = \mathbb{E} [D | X]$</li>
+<li>Meta Learners exploit $X$ to predict the counterfactual outcomes $Y^{(d)}$ and estimate the <strong>response function</strong> $\mu(X)^{(d)} = \mathbb{E} [Y | D, X]$</li>
 </ol>
-<p>Can we <strong>combine</strong> the two procedures and get the best of both worlds? Yes, with the <strong>AIPW or double-robust estimator</strong>.</p>
+<p>Can we <strong>combine</strong> the two procedures and get the best of both worlds?</p>
+<p>Yes, with the <strong>AIPW or double-robust estimator</strong>.</p>
 <h2 id="the-aipw-estimator">The AIPW Estimator</h2>
-<p>Math first, explanations later!</p>
 <p>The <strong>Augmented Inverse Propensity Weighted</strong> estimator is given by</p>
 <p>$$
 \hat \tau_{AIPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{D_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-D_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right) \right)
 $$</p>
-<p>where $\mu(x)$ is the <strong>response function</strong>, i.e. the expected value of the outcome, conditional on observable characteristics $X$ and treatment status $D$, and $e(X)$ is the <strong>propensity score</strong>.</p>
+<p>where $\mu^{(d)}(x)$ is the <strong>response function</strong>, i.e. the expected value of the outcome, conditional on observable characteristics $x$ and treatment status $d$, and $e(X)$ is the <strong>propensity score</strong>.</p>
 <p>$$
 \mu^{(d)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, D_i = d \right] \qquad ; \qquad e(x) = \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right]
 $$</p>
 <p>The formula of the AIPW estimator seems very cryptic at first, so let&rsquo;s dig deeper and try to understand it.</p>
 <h3 id="decomposition">Decomposition</h3>
 <p>The best way to understand the AIPW formula is to <strong>decompose</strong> it into two parts.</p>
-<p>The <strong>first way</strong> to decompose the AIPW estimator into a <strong>S-learner estimator</strong> and an adjustment factor.</p>
+<p>The <strong>first way</strong> is to decompose the AIPW estimator into a <a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener"><strong>S-learner estimator</strong></a> and an adjustment factor.</p>
 <p>$$
-\hat \tau_{AIPW} = \hat \tau_{META} + \widehat{\text{adj}}_{META}
+\hat \tau_{AIPW} = \hat \tau_{S-learn} + \widehat{\text{adj}}_{S-learn}
 $$</p>
 <p>where</p>
 <p>$$
 \begin{aligned}
-\hat \tau_{META} =&amp; \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right) \newline
-\widehat {adj} _ {META} =&amp; \frac{1}{n} \sum_{i=1}^{n} \left(\frac{D_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-D_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right) \right)
+\hat \tau_{S-learn} =&amp; \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right) \newline
+\widehat {adj} _ {S-learn} =&amp; \frac{1}{n} \sum_{i=1}^{n} \left(\frac{D_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-D_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right) \right)
 \end{aligned}
 $$</p>
 <p>The adjustment is essentially an IPW estimator performed on the <strong>residuals</strong> of the S-learner.</p>
@@ -1163,21 +1163,21 @@ $$</p>
 \widehat {adj} _ {IPW} &amp;= \frac{1}{n} \sum_{i=1}^{n} \left( \frac{\hat e(X_i) - D_i}{\hat e(X_i)} \hat \mu^{(1)}(X_i) - \frac{(1-\hat e(X_i)) - (1-D_i)}{1-\hat e(X_i)} \hat \mu^{(0)}(X_i) \right)
 \end{aligned}
 $$</p>
-<p>The adjustment is essentially the S-learner estimator weighted by the discrepancy between the estimated propensity scores $\hat e(X)$ and the actual treatment assignment $D$.</p>
+<p>The adjustment is essentially an S-learner estimator weighted by the residual treatment probabilities.</p>
 <h3 id="double-robustness">Double Robustness</h3>
 <p>Why is the AIPW estimator so <strong>compelling</strong>? The reason is that it just needs one of the two predictions, $\hat \mu$ or $\hat e$, to be right in order to be <strong>unbiased</strong> (i.e. correct on average). Let&rsquo;s check it.</p>
-<p>If $\hat \mu$ is correctly specified, i.e. $\mathbb E \left[ \hat \mu^{(t)}(x) \right] = \mathbb E \left[ Y_i \ \big | \ X_i = x, D_i = d \right]$, then, even if $\hat e$ is misspecified,</p>
+<p>If $\hat \mu$ is correctly specified, i.e. $\mathbb E \left[ \hat \mu^{(d)}(x) \right] = \mathbb E \left[ Y_i \ \big | \ X_i = x, D_i = d \right]$, then $\hat \tau_{AIPW}$ is unbiased, <strong>even if</strong> $\hat e$ is misspecified.</p>
 <p>$$
 \begin{aligned}
-\hat \tau_{AIPW} &amp;\overset{p}{\to} \mathbb E \Big[ \hat \tau_{META} + \widehat{\text{adj}}_{META} \Big] = \newline
+\hat \tau_{AIPW} &amp;\overset{p}{\to} \mathbb E \Big[ \hat \tau_{S-learn} + \widehat{\text{adj}}_{S-learn} \Big] = \newline
 &amp;= \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{D_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-D_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right] = \newline
 &amp;= \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right] = \newline
 &amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] = \newline
 &amp;= \tau
 \end{aligned}
 $$</p>
-<p>The <strong>intuition</strong> is that, if $\hat \mu$ is correctly specified, $\hat \tau_{META}$ is <strong>unbiased</strong> and the adjustment factor <strong>vanishes</strong>, since the residuals $\left( Y_i - \hat \mu^{(t)}(X_i) \right)$ converge to zero.</p>
-<p>On the other hand, if $\hat e$ is correctly specified, i.e. $\mathbb E \left[\hat e(x) \right] = \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right]$, then, even if $\hat \mu$ is misspecified</p>
+<p>The <strong>intuition</strong> is that, if $\hat \mu$ is correctly specified, $\hat \tau_{S-learn}$ is <strong>unbiased</strong> and the adjustment factor <strong>vanishes</strong>, since the residuals $\left( Y_i - \hat \mu^{(t)}(X_i) \right)$ converge to zero.</p>
+<p>On the other hand, if $\hat e$ is correctly specified, i.e. $\mathbb E \left[\hat e(x) \right] = \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right]$, then $\hat \tau_{AIPW}$ is unbiased, <strong>even if</strong> $\hat \mu$ is misspecified.</p>
 <p>$$
 \begin{aligned}
 \hat \tau_{AIPW} &amp; \overset{p}{\to} \mathbb E \Big[ \hat \tau_{IPW} + \widehat{\text{adj}}_{IPW} \Big] = \newline
@@ -1198,7 +1198,7 @@ $$</p>
 <p><strong>2. Check the Overlap Assumption</strong></p>
 <p>Another assumption that we can check is the <strong>overlap</strong> assumption, i.e. $\exists \eta \ : \ \eta \leq \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta$. To check this assumption we can simply check the bounds of the predicted propensity scores. If the overlap assumption is violated, we end up dividing some term of the estimator by zero.</p>
 <p><strong>3. Use Cross-Fitting</strong></p>
-<p>Whenever we build a prediction, it is best practice to exclude observation $i$ when estimating $\hat \mu^{(d)} (X_i)$ or $\hat e (X_i)$. This procedure is generally known as <a href="https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29" target="_blank" rel="noopener"><strong>cross-fitting</strong></a> in the machine learning literature. While, there are many possible ways to perform cross-fitting, the simplest one is the following:</p>
+<p>Whenever we build a prediction, it is best practice to exclude observation $i$ when estimating $\hat \mu^{(d)} (X_i)$ or $\hat e (X_i)$. This procedure is generally known as <a href="https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29" target="_blank" rel="noopener"><strong>cross-fitting</strong></a> in the machine learning literature. While there are many possible ways to perform cross-fitting, the simplest one is the following:</p>
 <ol>
 <li>Split the sample in two at random</li>
 <li>Use sample 1 to estimate $\hat \mu^{(d)} (X_i)$ and $\hat e (X_i)$</li>
@@ -1244,6 +1244,7 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
   <th>dark_mode[T.True]</th> <td>    1.0620</td> <td>    0.582</td> <td>    1.826</td> <td> 0.069</td> <td>   -0.083</td> <td>    2.207</td>
 </tr>
 </table>
+<p>Note that the computed standard errors are not exact, since we are ignoring the extra uncertainty that comes from the estimation of the propensity scores $e(X)$.</p>
 <h3 id="response-function">Response Function</h3>
 <p>Let&rsquo;s now estimate the second building block of the AIPW estimator: the <strong>response function</strong> $\mu(X)$.</p>
 <pre><code class="language-python">def estimate_mu(df, X, D, y, model_mu):
@@ -1260,21 +1261,14 @@ print(np.mean(mu1-mu0))
 </code></pre>
 <pre><code>1.3858099131476969
 </code></pre>
-<p>We can compute the meta learner estimate of the average treatment effect as a difference in means between the two estimated response functions, $\mu^{(1)}(X)$ and $\mu^{(0)}(X)$.</p>
-<p>We can use any unbiased estimator to get the response function, even more complex ones such as <a href="https://lightgbm.readthedocs.io/" target="_blank" rel="noopener">Light Gradient Boosting Regression (LGBM)</a>.</p>
-<pre><code class="language-python">from lightgbm import LGBMRegressor
-
-mu0, mu1 = estimate_mu(df, X, &quot;dark_mode&quot;, &quot;read_time&quot;, LGBMRegressor())
-print(np.mean(mu1-mu0))
-</code></pre>
-<pre><code>1.3003274773021265
-</code></pre>
+<p>We have computed the meta learner estimate of the average treatment effect as the difference in means between the two estimated response functions, $\mu^{(1)}(X)$ and $\mu^{(0)}(X)$.</p>
+<p><strong>Note</strong> that we can use any estimator to get the response function, I used linear regression for simplicity.</p>
 <h3 id="estimating-aipw">Estimating AIPW</h3>
 <p>We now have <strong>all the building blocks</strong> to compute the AIPW estimator!</p>
 <pre><code class="language-python">aipw = mu1 - mu0 + df[&quot;dark_mode&quot;] / e * (df[&quot;read_time&quot;] - mu1) - (1-df[&quot;dark_mode&quot;]) / (1-e) * (df[&quot;read_time&quot;] - mu0)
 print(np.mean(aipw))
 </code></pre>
-<pre><code>1.372173034177093
+<pre><code>1.3153774511905783
 </code></pre>
 <p>We can also compute it directly using the <code>LinearDRLearner</code> function from Microsoft&rsquo;s <a href="https://econml.azurewebsites.net/index.html" target="_blank" rel="noopener"><code>EconML</code></a> library.</p>
 <pre><code class="language-python">from econml.drlearner import LinearDRLearner
@@ -1297,13 +1291,13 @@ model.fit(Y=df[&quot;read_time&quot;], T=df[&quot;dark_mode&quot;], X=df[X]);
 </tr>
 </table>
 <p>The estimate is statistically different from zero and the confidence interval includes the true value of 2.</p>
-<p><strong>Note</strong> that we got a different estimated coefficient because the <code>LinearDRLearner</code> function also performed cross-fitting, which we did not before.</p>
+<p><strong>Note</strong> that we got a different estimate because the <code>LinearDRLearner</code> function also performed <strong>cross-fitting</strong> in the background, which we did not before.</p>
 <h3 id="assessment">Assessment</h3>
 <p>Let&rsquo;s now assess the main property of the AIPW estimator: its <strong>double robustness</strong>. To do so, we compare it with its two parents: the IPW estimator and the S-learner.</p>
 <pre><code class="language-python">def compare_estimators(X_e, X_mu, D, y, seed):
     df = dgp_darkmode().generate_data(seed=seed)
     e = estimate_e(df, X_e, D, LogisticRegression())
-    mu0, mu1 = estimate_mu(df, X_mu, D, y, LGBMRegressor())
+    mu0, mu1 = estimate_mu(df, X_mu, D, y, LinearRegression())
     slearn = mu1 - mu0
     ipw = (df[D] / e - (1-df[D]) / (1-e)) * df[y]
     aipw = slearn + df[D] / e * (df[y] - mu1) - (1-df[D]) / (1-e) * (df[y] - mu0)
