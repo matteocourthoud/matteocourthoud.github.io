@@ -30,8 +30,8 @@
   
     
   
-  <meta name="description" content="INTRO TBD
-Example For this post, we are going to borrow the same setting I used to compare different estimators for conditional analysis. You can find the original post here." />
+  <meta name="description" content="An introduction to doubly-robust estimation of conditional average treatment effects (CATE)
+When estimating causal effects, the gold standard is randomized controlled trials or AB tests. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/aipw/" />
@@ -333,9 +333,9 @@ Example For this post, we are going to borrow the same setting I used to compare
   
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/aipw/" />
-  <meta property="og:title" content="AIPW | Matteo Courthoud" />
-  <meta property="og:description" content="INTRO TBD
-Example For this post, we are going to borrow the same setting I used to compare different estimators for conditional analysis. You can find the original post here." /><meta property="og:image" content="https://matteocourthoud.github.io/post/aipw/featured.png" />
+  <meta property="og:title" content="Understanding AIPW | Matteo Courthoud" />
+  <meta property="og:description" content="An introduction to doubly-robust estimation of conditional average treatment effects (CATE)
+When estimating causal effects, the gold standard is randomized controlled trials or AB tests. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone." /><meta property="og:image" content="https://matteocourthoud.github.io/post/aipw/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/aipw/featured.png" /><meta property="og:locale" content="en-us" />
   
     
@@ -370,7 +370,7 @@ Example For this post, we are going to borrow the same setting I used to compare
     "@type": "WebPage",
     "@id": "https://matteocourthoud.github.io/post/aipw/"
   },
-  "headline": "AIPW",
+  "headline": "Understanding AIPW",
   
   "image": [
     "https://matteocourthoud.github.io/post/aipw/featured.png"
@@ -387,7 +387,7 @@ Example For this post, we are going to borrow the same setting I used to compare
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "INTRO TBD\nExample For this post, we are going to borrow the same setting I used to compare different estimators for conditional analysis. You can find the original post here."
+  "description": "An introduction to doubly-robust estimation of conditional average treatment effects (CATE)\nWhen estimating causal effects, the gold standard is randomized controlled trials or AB tests. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone."
 }
 </script>
 
@@ -433,7 +433,7 @@ Example For this post, we are going to borrow the same setting I used to compare
 
 
 
-  <title>AIPW | Matteo Courthoud</title>
+  <title>Understanding AIPW | Matteo Courthoud</title>
 </head>
 
 
@@ -819,7 +819,7 @@ Example For this post, we are going to borrow the same setting I used to compare
 
 
 <div class="article-container pt-3">
-  <h1>AIPW</h1>
+  <h1>Understanding AIPW</h1>
 
   
 
@@ -846,7 +846,7 @@ Example For this post, we are going to borrow the same setting I used to compare
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    16 min read
+    17 min read
   </span>
   
 
@@ -881,10 +881,16 @@ Example For this post, we are going to borrow the same setting I used to compare
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>INTRO TBD</p>
+            <p><em>An introduction to doubly-robust estimation of conditional average treatment effects (CATE)</em></p>
+<p>When estimating causal effects, the gold standard is <strong>randomized controlled trials or AB tests</strong>. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone.</p>
+<p>However, often the treatment and control groups are <strong>not perfectly comparable</strong>. This could be due to the fact that randomization was not perfect or available. Not always we can randomize a treatment, for ethical or practical reasons. And even when we can, sometimes we do not have enough individuals or units so that differences between groups are seizable. This happens often, for example, when randomization is not done at the individual level, but at a higher level of aggregation, for example zipcodes, counties or even states.</p>
+<p>In a <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">previous post</a>, I have introduced and compared a series of methods that compute <strong>conditional average treatment effects (CATE)</strong> from observational or experimental data. Some of these methods require the researcher to specify and estimate the distribution of the outcome of interest, given the treatment and the observable characteristics (e.g. <a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">meta learners</a>). Other methods require the researcher to specify and estimate the probability of being treated, given the observable characteristics (e.g. <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">IPW</a>).</p>
+<p>In this post, we are going to see a procedure that combines both methods and is robust to misspecification of either method: the <strong>Augmented Inverse Probability Weighted estimator (AIPW)</strong>.</p>
+<p><strong>TLDR;</strong> AIPW is amazing and you should always use it!</p>
+<p><img src="fig/spongebob.gif" alt=""></p>
 <h2 id="example">Example</h2>
-<p>For this post, we are going to borrow the same setting I used to compare different estimators for conditional analysis. You can find the <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">original post here</a>.</p>
 <p>Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering <strong>releasing a dark mode</strong>, and we would like to understand whether this new feature increases the time users spend on our blog.</p>
+<p>This example is borrowed from my last post on the estimation of conditional average treatment effects (CATE). You can find the <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">original post here</a>.</p>
 <img src="fig/modes.png" width="600px"/>
 <p>We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users select it or not and the time they spend on the blog. We know that there might be <strong>selection</strong>:  users that prefer the dark mode could have different reading preferences and this might complicate our causal analysis.</p>
 <p>We can represent the data generating process with the following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a>.</p>
@@ -1211,7 +1217,7 @@ df['e'] = estimate_e(df, X, &quot;dark_mode&quot;, LogisticRegression())
 <pre><code class="language-python">sns.histplot(data=df, x='e', hue='dark_mode', bins=30, stat='density', common_norm=False).\
     set(ylabel=&quot;&quot;, title=&quot;Distribution of Propensity Scores&quot;);
 </code></pre>
-<p><img src="img/aipw_33_0.png" alt="png"></p>
+<p><img src="img/aipw_35_0.png" alt="png"></p>
 <p>The distribution of propensity scores is different between two groups, but it&rsquo;s generally overlapping.</p>
 <p>We can now use the propensity scores to build the IPW estimator.</p>
 <pre><code class="language-python">w = 1 / (e * df[&quot;dark_mode&quot;] + (1-e) * (1-df[&quot;dark_mode&quot;]))
@@ -1304,17 +1310,17 @@ def simulate_estimators(X_e, X_mu, D, y):
 <p>We plot the distribution of the three estimators across 100 simulations.</p>
 <pre><code class="language-python">simulate_estimators(X_e=X, X_mu=X, D=&quot;dark_mode&quot;, y=&quot;read_time&quot;)
 </code></pre>
-<p><img src="img/aipw_55_0.png" alt="png"></p>
+<p><img src="img/aipw_57_0.png" alt="png"></p>
 <p>Indeed, all estimator are <strong>unbiased</strong> and deliver very similar estimates.</p>
 <p>What happens if we <strong>misspecify</strong> one of the two models? Let&rsquo;s start by (correctly) assuming that <code>gender</code> and <code>age</code> influence the probability of selecting <code>dark_mode</code> and (wrongly) assuming that only previous <code>hours</code> influence the weekly <code>read_time</code>. In this case, the propensity score $e(X)$ is well specified, while the response function $\mu(X)$ is misspecified.</p>
 <pre><code class="language-python">simulate_estimators(X_e=['male', 'age'], X_mu=['hours'], D=&quot;dark_mode&quot;, y=&quot;read_time&quot;)
 </code></pre>
-<p><img src="img/aipw_57_0.png" alt="png"></p>
+<p><img src="img/aipw_59_0.png" alt="png"></p>
 <p>As expected, the S-learner is biased since we have misspecified $\mu(X)$, while IPW isn&rsquo;t. AIPW picks the <strong>best of both worlds</strong> and is unbiased.</p>
 <p>Let&rsquo;s now explore the alternative <strong>misspecification</strong>. We (wrongly) assume that only <code>age</code> influences the probability of selecting <code>dark_mode</code> and (correctly) assume that both <code>gender</code> and previous <code>hours</code> influence the weekly <code>read_time</code>. In this case, the propensity score $e(X)$ is misspecified, while the response function $\mu(X)$ is correctly specified.</p>
 <pre><code class="language-python">simulate_estimators(['age'], ['male', 'hours'], D=&quot;dark_mode&quot;, y=&quot;read_time&quot;)
 </code></pre>
-<p><img src="img/aipw_59_0.png" alt="png"></p>
+<p><img src="img/aipw_61_0.png" alt="png"></p>
 <p>In this case, the S-learner is unbiased, while IPW isn&rsquo;t, since we have misspecified $e(X)$. Again, AIPW picks the <strong>best of both worlds</strong> and is unbiased.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this article we have seen a method to estimate conditional average treatment effects (CATE), that is <strong>robust to model misspecification</strong>: the Augmented Inverse Propensity Weighted (AIPW) estimator. The AIPW estimator takes the best out of two existing estimators: the <a href="">IPW estimator</a> and the <a href="">S-learner</a>. It requires the estimation of both the propensity score function $\mathbb{E} [ D | X ]$ and the response function $\mathbb{E} [ Y | D, X ]$ and it is <strong>unbiased</strong> even if one of the two functions is misspecified.</p>
@@ -1354,7 +1360,7 @@ def simulate_estimators(X_e, X_mu, D, y):
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/aipw/&amp;text=AIPW" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/aipw/&amp;text=Understanding%20AIPW" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -1367,7 +1373,7 @@ def simulate_estimators(X_e, X_mu, D, y):
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/aipw/&amp;t=AIPW" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/aipw/&amp;t=Understanding%20AIPW" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook"></i>
         </a>
       </li>
@@ -1380,7 +1386,7 @@ def simulate_estimators(X_e, X_mu, D, y):
       
       
       <li>
-        <a href="mailto:?subject=AIPW&amp;body=https://matteocourthoud.github.io/post/aipw/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=Understanding%20AIPW&amp;body=https://matteocourthoud.github.io/post/aipw/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -1393,7 +1399,7 @@ def simulate_estimators(X_e, X_mu, D, y):
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/aipw/&amp;title=AIPW" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/aipw/&amp;title=Understanding%20AIPW" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -1406,7 +1412,7 @@ def simulate_estimators(X_e, X_mu, D, y):
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=AIPW%20https://matteocourthoud.github.io/post/aipw/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=Understanding%20AIPW%20https://matteocourthoud.github.io/post/aipw/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>
