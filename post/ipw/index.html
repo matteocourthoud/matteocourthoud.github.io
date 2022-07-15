@@ -341,10 +341,10 @@ AB tests or randomized controlled trials are the gold standard in causal inferen
     
       <meta
         property="article:published_time"
-        content="2022-07-06T00:00:00&#43;00:00"
+        content="2022-07-15T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-07-06T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-07-15T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@ AB tests or randomized controlled trials are the gold standard in causal inferen
     "https://matteocourthoud.github.io/post/ipw/featured.png"
   ],
   
-  "datePublished": "2022-07-06T00:00:00Z",
-  "dateModified": "2022-07-06T00:00:00Z",
+  "datePublished": "2022-07-15T00:00:00Z",
+  "dateModified": "2022-07-15T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -839,7 +839,7 @@ AB tests or randomized controlled trials are the gold standard in causal inferen
     
       
     
-    Jul 6, 2022
+    Jul 15, 2022
   </span>
   
 
@@ -1348,13 +1348,25 @@ $$</p>
 $$</p>
 <p>This estimator is <strong>unfeasible</strong> since we do not observe the propensity scores $e(X_i)$. However, we can estimate them. Actually, <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00442" target="_blank" rel="noopener">Imbens, Hirano, Ridder (2003)</a> show that you <strong>should</strong> use the estimated propensity scores even if you knew the true values (for example because you know the sampling procedure). The idea is that if the estimated propensity scores are different from the true ones, this can be informative in the estimation.</p>
 <p>There are several possible ways to estimate a probability, the simplest and most common one being <a href="https://en.wikipedia.org/wiki/Logistic_regression" target="_blank" rel="noopener"><strong>logistic regression</strong></a>.</p>
-<pre><code class="language-python">df[&quot;pscore&quot;] = smf.logit(&quot;np.rint(dark_mode) ~ male + age + hours&quot;, data=df).fit(disp=False).predict()
+<pre><code class="language-python">from sklearn.linear_model import LogisticRegressionCV
+
+df[&quot;pscore&quot;] = LogisticRegressionCV().fit(y=df[&quot;dark_mode&quot;], X=df[X]).predict_proba(df[X])[:,1]
+</code></pre>
+<p>It is best practice, whenever we fit a prediction model, to <strong>fit the model on a different sample</strong> with respect to the one that we use for inference. This practice is usually called <strong>cross-validation</strong> or cross-fitting. One of the best (but computationally expensive) cross-validation procedures is <strong>leave-one-out (LOO)</strong> cross-fitting: when predicting the value of observation $i$ we use all observations except for $i$. We implement the LOO cross-fitting procedure using the <code>cross_val_predict</code> and <code>LeaveOneOut</code> functions from the <a href="https://scikit-learn.org/" target="_blank" rel="noopener"><code>sklearn</code></a> package.</p>
+<pre><code class="language-python">from sklearn.model_selection import cross_val_predict, LeaveOneOut
+
+df['pscore'] = cross_val_predict(estimator=LogisticRegressionCV(), 
+                                 X=df[X], 
+                                 y=df[&quot;dark_mode&quot;],
+                                 cv=LeaveOneOut(),
+                                 method='predict_proba',
+                                 n_jobs=-1)[:,1]
 </code></pre>
 <p>An <strong>important check</strong> to perform after estimating propensity scores is plotting them, across the treatment and control groups. First of all, we can then observe whether the two groups are balanced or not, depending on how close the two distributions are. Moreover, we can also check how likely it is that the <strong>overlap assumption</strong> is satisfied. Ideally both distributions should span the same interval.</p>
 <pre><code class="language-python">sns.histplot(data=df, x='pscore', hue='dark_mode', bins=30, stat='density', common_norm=False).\
     set(ylabel=&quot;&quot;, title=&quot;Distribution of Propensity Scores&quot;);
 </code></pre>
-<p><img src="img/ipw_41_0.png" alt="png"></p>
+<p><img src="img/ipw_43_0.png" alt="png"></p>
 <p>As expected, the distribution of propensity scores between the treatment and control group is <strong>significantly different</strong>, suggesting that the two groups are hardly comparable. However, there is significant overlap in the support of the distributions, suggesting that the overlap assumption is likely to be satisfied.</p>
 <p>How do we estimate the average treatment effect?</p>
 <p>Once we have computed the propensity scores, we just need to re-weight observations by their respective propensity score. We can then either compute a difference between the weighted <code>read_time</code> averages, or run a weighted regression of <code>read_time</code> on <code>dark_mode</code>.</p>
@@ -1366,13 +1378,14 @@ smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().t
           <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   18.5511</td> <td>    0.412</td> <td>   45.049</td> <td> 0.000</td> <td>   17.741</td> <td>   19.362</td>
+  <th>Intercept</th>         <td>   18.5859</td> <td>    0.412</td> <td>   45.110</td> <td> 0.000</td> <td>   17.775</td> <td>   19.397</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    1.1572</td> <td>    0.582</td> <td>    1.990</td> <td> 0.048</td> <td>    0.013</td> <td>    2.302</td>
+  <th>dark_mode[T.True]</th> <td>    1.1303</td> <td>    0.582</td> <td>    1.942</td> <td> 0.053</td> <td>   -0.015</td> <td>    2.276</td>
 </tr>
 </table>
-<p>The effect of the <code>dark_mode</code> is now positive and statistically significant, at the 5% level!</p>
+<p>The effect of the <code>dark_mode</code> is now positive and almost statistically significant, at the 5% level.</p>
+<p><strong>Note</strong> that the <code>wls</code> function automatically normalizes weights so that they sum to 1, which greatly improves the stability of the estimator. In fact, the unnormalized IPW estimator can be very <strong>unstable</strong> when the propensity scores approach zero or one.</p>
 <h3 id="regression-with-control-variables">Regression with Control Variables</h3>
 <p>The last method we are going to review today is <strong>linear regression with control variables</strong>. This estimator is extremely easy to implement, since we just need to add the user characteristics - <code>gender</code>, <code>age</code> and <code>hours</code> - to the regression of <code>read_time</code> on <code>dark_mode</code>.</p>
 <pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode + male + age + hours&quot;, data=df).fit().summary().tables[1]
@@ -1418,7 +1431,7 @@ $$</p>
 <pre><code class="language-python">psm = NearestNeighborMatch(replace=False, random_state=1)
 df_ipwmatched = psm.match(data=df, treatment_col=&quot;dark_mode&quot;, score_cols=['pscore'])
 </code></pre>
-<p>As before, after matching, we can simply computer the estimate as a difference in means, remembering that observations are <strong>not independent</strong> and therefore we need to be cautions when doing inference.</p>
+<p>As before, after matching, we can simply compute the estimate as a difference in means, remembering that observations are <strong>not independent</strong> and therefore we need to be cautious when doing inference.</p>
 <pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode&quot;, data=df_ipwmatched)\
     .fit(cov_type='cluster', cov_kwds={'groups': df_ipwmatched.index})\
     .summary().tables[1]
@@ -1428,10 +1441,10 @@ df_ipwmatched = psm.match(data=df, treatment_col=&quot;dark_mode&quot;, score_co
           <td></td>             <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>         <td>   17.8223</td> <td>    0.486</td> <td>   36.669</td> <td> 0.000</td> <td>   16.870</td> <td>   18.775</td>
+  <th>Intercept</th>         <td>   18.4633</td> <td>    0.505</td> <td>   36.576</td> <td> 0.000</td> <td>   17.474</td> <td>   19.453</td>
 </tr>
 <tr>
-  <th>dark_mode[T.True]</th> <td>    1.9585</td> <td>    0.695</td> <td>    2.816</td> <td> 0.005</td> <td>    0.595</td> <td>    3.322</td>
+  <th>dark_mode[T.True]</th> <td>    1.1888</td> <td>    0.703</td> <td>    1.692</td> <td> 0.091</td> <td>   -0.188</td> <td>    2.566</td>
 </tr>
 </table>
 <p>The estimated effect of <code>dark_mode</code> is positive, significant at the 1% level and very close to the true value of 2!</p>
