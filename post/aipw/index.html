@@ -846,7 +846,7 @@ Example For this post, we are going to borrow the same setting I used to compare
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    15 min read
+    16 min read
   </span>
   
 
@@ -1183,8 +1183,19 @@ $$</p>
 </ol>
 <p><strong>2. Check the Overlap Assumption</strong></p>
 <p>Another assumption that we can check is the <strong>overlap</strong> assumption, i.e. $\exists \eta \ : \ \eta \leq \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta$. To check this assumption we can simply check the bounds of the predicted propensity scores. If the overlap assumption is violated, we end up dividing some term of the estimator by zero.</p>
-<p><strong>3. Use LOO Predictors</strong></p>
-<p>Whenever we build a prediction, it is best practice to exclude observation $i$ when fitting the algorithm for predicting $\hat \mu^{(d)} (X_i)$ or $\hat e (X_i)$. This procedure is generally known as <a href="https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29" target="_blank" rel="noopener"><strong>cross-fitting</strong></a> in the machine learning literature, and the practice of leaving out just observation $i$ is called <strong>Leave One Out</strong>.</p>
+<p><strong>3. Use Cross-Fitting</strong></p>
+<p>Whenever we build a prediction, it is best practice to exclude observation $i$ when estimating $\hat \mu^{(d)} (X_i)$ or $\hat e (X_i)$. This procedure is generally known as <a href="https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29" target="_blank" rel="noopener"><strong>cross-fitting</strong></a> in the machine learning literature. While, there are many possible ways to perform cross-fitting, the simplest one is the following:</p>
+<ol>
+<li>Split the sample in two at random</li>
+<li>Use sample 1 to estimate $\hat \mu^{(d)} (X_i)$ and $\hat e (X_i)$</li>
+<li>Use sample 2 to estimate $\hat{\tau}_{AIPW, 1}$</li>
+<li>Repeat (2) and (3) swapping samples to estimate $\hat{\tau}_{AIPW, 2}$</li>
+<li>Compute $\hat{\tau}_{AIPW}$ as the average of the two estimates</li>
+</ol>
+<p>Steps (2) and (3) ensure that the estimator is not overfitting. Steps (4) and (5) ensure that the estimator is efficient, using all the data for all steps and not just half. <a href="https://arxiv.org/abs/2004.14497" target="_blank" rel="noopener">Kennedy (2022)</a> shows that this procedure produces much more precise estimates than existing methods and provide formal results on error bounds. In particular, their main result is the following:</p>
+<blockquote>
+<p>&ldquo;<em>The bound on the DR-Learner error given in Theorem 2 shows that it can only deviate from the oracle error by at most a (smoothed) product of errors in the propensity score and regression estimators, thus allowing faster rates for estimating the CATE even when the nui- sance estimates converge at slower rates. Importantly the result is agnostic about the methods used, and requires no special tuning or undersmoothing.</em>&rdquo;</p>
+</blockquote>
 <h2 id="back-to-the-data">Back to the Data</h2>
 <p>Let&rsquo;s now build and explore the AIPW estimator in our dataset. First, let&rsquo;s estimate the <strong>propensity scores</strong> $e(X)$.</p>
 <pre><code class="language-python">def estimate_e(df, X, D, model_e):
@@ -1201,17 +1212,7 @@ df['e'] = estimate_e(df, X, &quot;dark_mode&quot;, LogisticRegression())
     set(ylabel=&quot;&quot;, title=&quot;Distribution of Propensity Scores&quot;);
 </code></pre>
 <p><img src="img/aipw_33_0.png" alt="png"></p>
-<p>The distribution of propensity scores</p>
-<p>A <strong>best practice</strong> is to use the <code>LeaveOneOut</code> estimator to make predictions, i.e., for each observations, build a model using the remaining observations. This procedure helps preventing overfitting bias. The main issue is that it&rsquo;s particularly slow since we need to fit one model per observation. However, it is parallelizable.</p>
-<pre><code class="language-python">from sklearn.model_selection import cross_val_predict, LeaveOneOut
-
-e = cross_val_predict(estimator=LogisticRegression(), 
-                      X=df[X], 
-                      y=df[&quot;dark_mode&quot;],
-                      cv=LeaveOneOut(),
-                      method='predict_proba',
-                      n_jobs=-1)[:,1]
-</code></pre>
+<p>The distribution of propensity scores is different between two groups, but it&rsquo;s generally overlapping.</p>
 <p>We can now use the propensity scores to build the IPW estimator.</p>
 <pre><code class="language-python">w = 1 / (e * df[&quot;dark_mode&quot;] + (1-e) * (1-df[&quot;dark_mode&quot;]))
 smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().tables[1]
@@ -1243,7 +1244,7 @@ print(np.mean(mu1-mu0))
 <pre><code>1.3858099131476969
 </code></pre>
 <p>We can compute the meta learner estimate of the average treatment effect as a difference in means between the two estimated response functions, $\mu^{(1)}(X)$ and $\mu^{(0)}(X)$.</p>
-<p>We can use any unbiased estimator to get the response function,</p>
+<p>We can use any unbiased estimator to get the response function, even more complex ones such as <a href="https://lightgbm.readthedocs.io/" target="_blank" rel="noopener">Light Gradient Boosting Regression (LGBM)</a>.</p>
 <pre><code class="language-python">from lightgbm import LGBMRegressor
 
 mu0, mu1 = estimate_mu(df, X, &quot;dark_mode&quot;, &quot;read_time&quot;, LGBMRegressor())
@@ -1303,17 +1304,17 @@ def simulate_estimators(X_e, X_mu, D, y):
 <p>We plot the distribution of the three estimators across 100 simulations.</p>
 <pre><code class="language-python">simulate_estimators(X_e=X, X_mu=X, D=&quot;dark_mode&quot;, y=&quot;read_time&quot;)
 </code></pre>
-<p><img src="img/aipw_57_0.png" alt="png"></p>
+<p><img src="img/aipw_55_0.png" alt="png"></p>
 <p>Indeed, all estimator are <strong>unbiased</strong> and deliver very similar estimates.</p>
 <p>What happens if we <strong>misspecify</strong> one of the two models? Let&rsquo;s start by (correctly) assuming that <code>gender</code> and <code>age</code> influence the probability of selecting <code>dark_mode</code> and (wrongly) assuming that only previous <code>hours</code> influence the weekly <code>read_time</code>. In this case, the propensity score $e(X)$ is well specified, while the response function $\mu(X)$ is misspecified.</p>
 <pre><code class="language-python">simulate_estimators(X_e=['male', 'age'], X_mu=['hours'], D=&quot;dark_mode&quot;, y=&quot;read_time&quot;)
 </code></pre>
-<p><img src="img/aipw_59_0.png" alt="png"></p>
+<p><img src="img/aipw_57_0.png" alt="png"></p>
 <p>As expected, the S-learner is biased since we have misspecified $\mu(X)$, while IPW isn&rsquo;t. AIPW picks the <strong>best of both worlds</strong> and is unbiased.</p>
 <p>Let&rsquo;s now explore the alternative <strong>misspecification</strong>. We (wrongly) assume that only <code>age</code> influences the probability of selecting <code>dark_mode</code> and (correctly) assume that both <code>gender</code> and previous <code>hours</code> influence the weekly <code>read_time</code>. In this case, the propensity score $e(X)$ is misspecified, while the response function $\mu(X)$ is correctly specified.</p>
 <pre><code class="language-python">simulate_estimators(['age'], ['male', 'hours'], D=&quot;dark_mode&quot;, y=&quot;read_time&quot;)
 </code></pre>
-<p><img src="img/aipw_61_0.png" alt="png"></p>
+<p><img src="img/aipw_59_0.png" alt="png"></p>
 <p>In this case, the S-learner is unbiased, while IPW isn&rsquo;t, since we have misspecified $e(X)$. Again, AIPW picks the <strong>best of both worlds</strong> and is unbiased.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this article we have seen a method to estimate conditional average treatment effects (CATE), that is <strong>robust to model misspecification</strong>: the Augmented Inverse Propensity Weighted (AIPW) estimator. The AIPW estimator takes the best out of two existing estimators: the <a href="">IPW estimator</a> and the <a href="">S-learner</a>. It requires the estimation of both the propensity score function $\mathbb{E} [ D | X ]$ and the response function $\mathbb{E} [ Y | D, X ]$ and it is <strong>unbiased</strong> even if one of the two functions is misspecified.</p>
