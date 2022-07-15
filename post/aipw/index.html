@@ -770,8 +770,11 @@ When estimating causal effects, the gold standard is randomized controlled trial
       <nav id="TableOfContents">
   <ul>
     <li><a href="#example">Example</a></li>
-    <li><a href="#conditional-analysis">Conditional Analysis</a></li>
-    <li><a href="#ipw-and-meta-learners">IPW and Meta-Learners</a></li>
+    <li><a href="#conditional-analysis">Conditional Analysis</a>
+      <ul>
+        <li><a href="#ipw-and-meta-learners">IPW and Meta-Learners</a></li>
+      </ul>
+    </li>
     <li><a href="#the-aipw-estimator">The AIPW Estimator</a>
       <ul>
         <li><a href="#decomposition">Decomposition</a></li>
@@ -891,9 +894,9 @@ When estimating causal effects, the gold standard is randomized controlled trial
 <p>When estimating causal effects, the gold standard is <strong>randomized controlled trials or AB tests</strong>. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone.</p>
 <p>However, often the treatment and control groups are <strong>not perfectly comparable</strong>. This could be due to the fact that randomization was not perfect or available. Not always we can randomize a treatment, for ethical or practical reasons. And even when we can, sometimes we do not have enough individuals or units so that differences between groups are seizable. This happens often, for example, when randomization is not done at the individual level, but at a higher level of aggregation, for example zipcodes, counties or even states.</p>
 <p>In a <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">previous post</a>, I have introduced and compared a series of methods that compute <strong>conditional average treatment effects (CATE)</strong> from observational or experimental data. Some of these methods require the researcher to specify and estimate the distribution of the outcome of interest, given the treatment and the observable characteristics (e.g. <a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">meta learners</a>). Other methods require the researcher to specify and estimate the probability of being treated, given the observable characteristics (e.g. <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">IPW</a>).</p>
-<p>In this post, we are going to see a procedure that combines both methods and is robust to misspecification of either method: the <strong>Augmented Inverse Probability Weighted estimator (AIPW)</strong>.</p>
+<p>In this post, we are going to see a procedure that <strong>combines</strong> both methods and is <strong>robust</strong> to misspecification of either method&rsquo;s model: the Augmented Inverse Probability Weighted estimator (AIPW).</p>
+<img src="fig/fusion.gif" width="400px"/>
 <p><strong>TLDR;</strong> AIPW is amazing and you should always use it!</p>
-<img src="fig/spongebob.gif" width="400px"/>
 <h2 id="example">Example</h2>
 <p>Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering <strong>releasing a dark mode</strong>, and we would like to understand whether this new feature increases the time users spend on our blog.</p>
 <p>This example is borrowed from my last post on the estimation of conditional average treatment effects (CATE). You can find the <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">original post here</a>.</p>
@@ -1112,7 +1115,7 @@ $$</p>
 Y^{(d)} \perp D
 $$</p>
 <p>i.e. the potential outcome does not depend on the treatment status. In our case, we are ruling out the fact that another user selecting <code>dark_mode</code> might affect my effect of <code>dark_mode</code> on <code>read_time</code>. The most common setting where SUTVA is violated is in presence of <strong>network effects</strong>: if a friend of mine uses a social network increases my utility from using it.</p>
-<h2 id="ipw-and-meta-learners">IPW and Meta-Learners</h2>
+<h3 id="ipw-and-meta-learners">IPW and Meta-Learners</h3>
 <p>Two alternative ways to perform conditional analysis are</p>
 <ol>
 <li><a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener"><strong>IPW</strong></a>: balance observations by their conditional treatment assignment probability. Give the most weights to observations that are equally likely to be in the treatment and control group and them estimate the treatment effect as a difference in means</li>
@@ -1224,7 +1227,7 @@ df['e'] = estimate_e(df, X, &quot;dark_mode&quot;, LogisticRegression())
 <pre><code class="language-python">sns.histplot(data=df, x='e', hue='dark_mode', bins=30, stat='density', common_norm=False).\
     set(ylabel=&quot;&quot;, title=&quot;Distribution of Propensity Scores&quot;);
 </code></pre>
-<p><img src="img/aipw_37_0.png" alt="png"></p>
+<p><img src="img/aipw_38_0.png" alt="png"></p>
 <p>The distribution of propensity scores is different between two groups, but it&rsquo;s generally overlapping.</p>
 <p>We can now use the propensity scores to build the IPW estimator.</p>
 <pre><code class="language-python">w = 1 / (e * df[&quot;dark_mode&quot;] + (1-e) * (1-df[&quot;dark_mode&quot;]))
@@ -1320,17 +1323,17 @@ def simulate_estimators(X_e, X_mu, D, y):
 <p>We plot the distribution of the three estimators across 100 simulations.</p>
 <pre><code class="language-python">simulate_estimators(X_e=X, X_mu=X, D=&quot;dark_mode&quot;, y=&quot;read_time&quot;)
 </code></pre>
-<p><img src="img/aipw_61_0.png" alt="png"></p>
+<p><img src="img/aipw_62_0.png" alt="png"></p>
 <p>Indeed, all estimator are <strong>unbiased</strong> and deliver very similar estimates.</p>
 <p>What happens if we <strong>misspecify</strong> one of the two models? Let&rsquo;s start by (correctly) assuming that <code>gender</code> and <code>age</code> influence the probability of selecting <code>dark_mode</code> and (wrongly) assuming that only previous <code>hours</code> influence the weekly <code>read_time</code>. In this case, the propensity score $e(X)$ is well specified, while the response function $\mu(X)$ is misspecified.</p>
 <pre><code class="language-python">simulate_estimators(X_e=['male', 'age'], X_mu=['hours'], D=&quot;dark_mode&quot;, y=&quot;read_time&quot;)
 </code></pre>
-<p><img src="img/aipw_63_0.png" alt="png"></p>
+<p><img src="img/aipw_64_0.png" alt="png"></p>
 <p>As expected, the S-learner is biased since we have misspecified $\mu(X)$, while IPW isn&rsquo;t. AIPW picks the <strong>best of both worlds</strong> and is unbiased.</p>
 <p>Let&rsquo;s now explore the alternative <strong>misspecification</strong>. We (wrongly) assume that only <code>age</code> influences the probability of selecting <code>dark_mode</code> and (correctly) assume that both <code>gender</code> and previous <code>hours</code> influence the weekly <code>read_time</code>. In this case, the propensity score $e(X)$ is misspecified, while the response function $\mu(X)$ is correctly specified.</p>
 <pre><code class="language-python">simulate_estimators(['age'], ['male', 'hours'], D=&quot;dark_mode&quot;, y=&quot;read_time&quot;)
 </code></pre>
-<p><img src="img/aipw_65_0.png" alt="png"></p>
+<p><img src="img/aipw_66_0.png" alt="png"></p>
 <p>In this case, the S-learner is unbiased, while IPW isn&rsquo;t, since we have misspecified $e(X)$. Again, AIPW picks the <strong>best of both worlds</strong> and is unbiased.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this article we have seen a method to estimate conditional average treatment effects (CATE), that is <strong>robust to model misspecification</strong>: the Augmented Inverse Propensity Weighted (AIPW) estimator. The AIPW estimator takes the best out of two existing estimators: the <a href="">IPW estimator</a> and the <a href="">S-learner</a>. It requires the estimation of both the propensity score function $\mathbb{E} [ D | X ]$ and the response function $\mathbb{E} [ Y | D, X ]$ and it is <strong>unbiased</strong> even if one of the two functions is misspecified.</p>
