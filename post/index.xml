@@ -23,7 +23,7 @@
 &lt;p&gt;In a &lt;a href=&#34;https://towardsdatascience.com/99bf5cffa0d9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;previous post&lt;/a&gt;, I have introduced and compared a series of methods that compute &lt;strong&gt;conditional average treatment effects (CATE)&lt;/strong&gt; from observational or experimental data. Some of these methods require the researcher to specify and estimate the distribution of the outcome of interest, given the treatment and the observable characteristics (e.g. &lt;a href=&#34;https://towardsdatascience.com/8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;meta learners&lt;/a&gt;). Other methods require the researcher to specify and estimate the probability of being treated, given the observable characteristics (e.g. &lt;a href=&#34;https://towardsdatascience.com/99bf5cffa0d9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;IPW&lt;/a&gt;).&lt;/p&gt;
 &lt;p&gt;In this post, we are going to see a procedure that combines both methods and is robust to misspecification of either method: the &lt;strong&gt;Augmented Inverse Probability Weighted estimator (AIPW)&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;TLDR;&lt;/strong&gt; AIPW is amazing and you should always use it!&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;fig/spongebob.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;img src=&#34;fig/spongebob.gif&#34; width=&#34;400px&#34;/&gt;
 &lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
 &lt;p&gt;Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering &lt;strong&gt;releasing a dark mode&lt;/strong&gt;, and we would like to understand whether this new feature increases the time users spend on our blog.&lt;/p&gt;
 &lt;p&gt;This example is borrowed from my last post on the estimation of conditional average treatment effects (CATE). You can find the &lt;a href=&#34;https://towardsdatascience.com/99bf5cffa0d9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;original post here&lt;/a&gt;.&lt;/p&gt;
@@ -273,10 +273,10 @@ $$&lt;/p&gt;
 $$&lt;/p&gt;
 &lt;p&gt;where&lt;/p&gt;
 &lt;p&gt;$$
-\begin{align}
+\begin{aligned}
 \hat \tau_{META} =&amp;amp; \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right) \newline
 \widehat{\text{adj}}&lt;em&gt;{META} =&amp;amp; \frac{1}{n} \sum&lt;/em&gt;{i=1}^{n} \left(\frac{D_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-D_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right) \right)
-\end{align}
+\end{aligned}
 $$&lt;/p&gt;
 &lt;p&gt;The adjustment is essentially an IPW estimator performed on the &lt;strong&gt;residuals&lt;/strong&gt; of the S-learner.&lt;/p&gt;
 &lt;p&gt;The &lt;strong&gt;second way&lt;/strong&gt; to decompose the AIPW estimator into the &lt;strong&gt;IPW estimator&lt;/strong&gt; and an adjustment factor.&lt;/p&gt;
@@ -285,11 +285,11 @@ $$&lt;/p&gt;
 $$&lt;/p&gt;
 &lt;p&gt;where&lt;/p&gt;
 &lt;p&gt;$$
-\begin{align}
+\begin{aligned}
 \hat \tau_{IPW} &amp;amp;= \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{D_i Y_i}{\hat e(X_i)} - \frac{(1-D_i) Y_i}{1-\hat e(X_i)} \right)
 \newline
 \widehat{\text{adj}}&lt;em&gt;{IPW} &amp;amp;= \frac{1}{n} \sum&lt;/em&gt;{i=1}^{n} \left( \frac{\hat e(X_i) - D_i}{\hat e(X_i)} \hat \mu^{(1)}(X_i) - \frac{(1-\hat e(X_i)) - (1-D_i)}{1-\hat e(X_i)} \hat \mu^{(0)}(X_i) \right)
-\end{align}
+\end{aligned}
 $$&lt;/p&gt;
 &lt;p&gt;The adjustment is essentially the S-learner estimator weighted by the discrepancy between the estimated propensity scores $\hat e(X)$ and the actual treatment assignment $D$.&lt;/p&gt;
 &lt;h3 id=&#34;double-robustness&#34;&gt;Double Robustness&lt;/h3&gt;
@@ -316,7 +316,7 @@ $$&lt;/p&gt;
 \end{aligned}
 $$&lt;/p&gt;
 &lt;p&gt;The &lt;strong&gt;intuition&lt;/strong&gt; is that, if $\hat e$ is correctly specified, $\hat \tau_{IPW}$ is &lt;strong&gt;unbiased&lt;/strong&gt; and the adjustment factor &lt;strong&gt;vanishes&lt;/strong&gt;, since the residuals $\left( D_i - \hat e (X_i) \right)$ converge to zero.&lt;/p&gt;
-&lt;h2 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h2&gt;
+&lt;h3 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;1. Check Covariate Balance&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Both IPW and AIPW were built for settings in which the treatment $D$ is not unconditionally randomly assigned, but might depend on some observables $X$. This information can be checked in two ways:&lt;/p&gt;
 &lt;ol&gt;
@@ -339,7 +339,9 @@ $$&lt;/p&gt;
 &lt;p&gt;&amp;ldquo;&lt;em&gt;The bound on the DR-Learner error given in Theorem 2 shows that it can only deviate from the oracle error by at most a (smoothed) product of errors in the propensity score and regression estimators, thus allowing faster rates for estimating the CATE even when the nui- sance estimates converge at slower rates. Importantly the result is agnostic about the methods used, and requires no special tuning or undersmoothing.&lt;/em&gt;&amp;rdquo;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h2 id=&#34;back-to-the-data&#34;&gt;Back to the Data&lt;/h2&gt;
-&lt;p&gt;Let&amp;rsquo;s now build and explore the AIPW estimator in our dataset. First, let&amp;rsquo;s estimate the &lt;strong&gt;propensity scores&lt;/strong&gt; $e(X)$.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s now build and explore the AIPW estimator in our dataset.&lt;/p&gt;
+&lt;h3 id=&#34;propensity-scores&#34;&gt;Propensity Scores&lt;/h3&gt;
+&lt;p&gt;First, let&amp;rsquo;s estimate the &lt;strong&gt;propensity scores&lt;/strong&gt; $e(X)$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def estimate_e(df, X, D, model_e):
     e = model_e.fit(df[X], df[D]).predict_proba(df[X])[:,1]
     return e
@@ -353,7 +355,7 @@ df[&#39;e&#39;] = estimate_e(df, X, &amp;quot;dark_mode&amp;quot;, LogisticRegre
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(data=df, x=&#39;e&#39;, hue=&#39;dark_mode&#39;, bins=30, stat=&#39;density&#39;, common_norm=False).\
     set(ylabel=&amp;quot;&amp;quot;, title=&amp;quot;Distribution of Propensity Scores&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_35_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_37_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The distribution of propensity scores is different between two groups, but it&amp;rsquo;s generally overlapping.&lt;/p&gt;
 &lt;p&gt;We can now use the propensity scores to build the IPW estimator.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;w = 1 / (e * df[&amp;quot;dark_mode&amp;quot;] + (1-e) * (1-df[&amp;quot;dark_mode&amp;quot;]))
@@ -370,6 +372,7 @@ smf.wls(&amp;quot;read_time ~ dark_mode&amp;quot;, weights=w, data=df).fit().sum
   &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    1.0620&lt;/td&gt; &lt;td&gt;    0.582&lt;/td&gt; &lt;td&gt;    1.826&lt;/td&gt; &lt;td&gt; 0.069&lt;/td&gt; &lt;td&gt;   -0.083&lt;/td&gt; &lt;td&gt;    2.207&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
+&lt;h3 id=&#34;response-function&#34;&gt;Response Function&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s now estimate the second building block of the AIPW estimator: the &lt;strong&gt;response function&lt;/strong&gt; $\mu(X)$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def estimate_mu(df, X, D, y, model_mu):
     mu = model_mu.fit(df[X + [D]], df[y])
@@ -394,6 +397,7 @@ print(np.mean(mu1-mu0))
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;1.3003274773021265
 &lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;estimating-aipw&#34;&gt;Estimating AIPW&lt;/h3&gt;
 &lt;p&gt;We now have &lt;strong&gt;all the building blocks&lt;/strong&gt; to compute the AIPW estimator!&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;aipw = mu1 - mu0 + df[&amp;quot;dark_mode&amp;quot;] / e * (df[&amp;quot;read_time&amp;quot;] - mu1) - (1-df[&amp;quot;dark_mode&amp;quot;]) / (1-e) * (df[&amp;quot;read_time&amp;quot;] - mu0)
 print(np.mean(aipw))
@@ -421,7 +425,8 @@ model.fit(Y=df[&amp;quot;read_time&amp;quot;], T=df[&amp;quot;dark_mode&amp;quot
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;The estimate is statistically different from zero and the confidence interval includes the true value of 2.&lt;/p&gt;
-&lt;h2 id=&#34;assessment&#34;&gt;Assessment&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt; that we got a different estimated coefficient because the &lt;code&gt;LinearDRLearner&lt;/code&gt; function also performed cross-fitting, which we did not before.&lt;/p&gt;
+&lt;h3 id=&#34;assessment&#34;&gt;Assessment&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s now assess the main property of the AIPW estimator: its &lt;strong&gt;double robustness&lt;/strong&gt;. To do so, we compare it with its two parents: the IPW estimator and the S-learner.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def compare_estimators(X_e, X_mu, D, y, seed):
     df = dgp_darkmode().generate_data(seed=seed)
@@ -446,17 +451,17 @@ def simulate_estimators(X_e, X_mu, D, y):
 &lt;p&gt;We plot the distribution of the three estimators across 100 simulations.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;simulate_estimators(X_e=X, X_mu=X, D=&amp;quot;dark_mode&amp;quot;, y=&amp;quot;read_time&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_57_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Indeed, all estimator are &lt;strong&gt;unbiased&lt;/strong&gt; and deliver very similar estimates.&lt;/p&gt;
 &lt;p&gt;What happens if we &lt;strong&gt;misspecify&lt;/strong&gt; one of the two models? Let&amp;rsquo;s start by (correctly) assuming that &lt;code&gt;gender&lt;/code&gt; and &lt;code&gt;age&lt;/code&gt; influence the probability of selecting &lt;code&gt;dark_mode&lt;/code&gt; and (wrongly) assuming that only previous &lt;code&gt;hours&lt;/code&gt; influence the weekly &lt;code&gt;read_time&lt;/code&gt;. In this case, the propensity score $e(X)$ is well specified, while the response function $\mu(X)$ is misspecified.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;simulate_estimators(X_e=[&#39;male&#39;, &#39;age&#39;], X_mu=[&#39;hours&#39;], D=&amp;quot;dark_mode&amp;quot;, y=&amp;quot;read_time&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_59_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_63_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As expected, the S-learner is biased since we have misspecified $\mu(X)$, while IPW isn&amp;rsquo;t. AIPW picks the &lt;strong&gt;best of both worlds&lt;/strong&gt; and is unbiased.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s now explore the alternative &lt;strong&gt;misspecification&lt;/strong&gt;. We (wrongly) assume that only &lt;code&gt;age&lt;/code&gt; influences the probability of selecting &lt;code&gt;dark_mode&lt;/code&gt; and (correctly) assume that both &lt;code&gt;gender&lt;/code&gt; and previous &lt;code&gt;hours&lt;/code&gt; influence the weekly &lt;code&gt;read_time&lt;/code&gt;. In this case, the propensity score $e(X)$ is misspecified, while the response function $\mu(X)$ is correctly specified.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;simulate_estimators([&#39;age&#39;], [&#39;male&#39;, &#39;hours&#39;], D=&amp;quot;dark_mode&amp;quot;, y=&amp;quot;read_time&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_65_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;In this case, the S-learner is unbiased, while IPW isn&amp;rsquo;t, since we have misspecified $e(X)$. Again, AIPW picks the &lt;strong&gt;best of both worlds&lt;/strong&gt; and is unbiased.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;In this article we have seen a method to estimate conditional average treatment effects (CATE), that is &lt;strong&gt;robust to model misspecification&lt;/strong&gt;: the Augmented Inverse Propensity Weighted (AIPW) estimator. The AIPW estimator takes the best out of two existing estimators: the &lt;a href=&#34;&#34;&gt;IPW estimator&lt;/a&gt; and the &lt;a href=&#34;&#34;&gt;S-learner&lt;/a&gt;. It requires the estimation of both the propensity score function $\mathbb{E} [ D | X ]$ and the response function $\mathbb{E} [ Y | D, X ]$ and it is &lt;strong&gt;unbiased&lt;/strong&gt; even if one of the two functions is misspecified.&lt;/p&gt;
