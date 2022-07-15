@@ -5,12 +5,470 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 12 Jul 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Fri, 15 Jul 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://matteocourthoud.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>AIPW</title>
+      <link>https://matteocourthoud.github.io/post/aipw/</link>
+      <pubDate>Fri, 15 Jul 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/aipw/</guid>
+      <description>&lt;p&gt;INTRO TBD&lt;/p&gt;
+&lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
+&lt;p&gt;For this post, we are going to borrow the same setting I used to compare different estimators for conditional analysis. You can find the &lt;a href=&#34;https://towardsdatascience.com/99bf5cffa0d9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;original post here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering &lt;strong&gt;releasing a dark mode&lt;/strong&gt;, and we would like to understand whether this new feature increases the time users spend on our blog.&lt;/p&gt;
+&lt;img src=&#34;fig/modes.png&#34; width=&#34;600px&#34;/&gt;
+&lt;p&gt;We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users select it or not and the time they spend on the blog. We know that there might be &lt;strong&gt;selection&lt;/strong&gt;:  users that prefer the dark mode could have different reading preferences and this might complicate our causal analysis.&lt;/p&gt;
+&lt;p&gt;We can represent the data generating process with the following &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Directed Acyclic Graph (DAG)&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+X1((gender))
+X2((age))
+X3((hours))
+D((dark mode))
+Y((read time))
+
+D --&amp;gt; Y
+X1 --&amp;gt; Y
+X1 --&amp;gt; D
+X2 --&amp;gt; D
+X3 --&amp;gt; Y
+
+class D,Y included;
+class X1,X2,X3 excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We generate the simulated data using the data generating process &lt;code&gt;dgp_darkmode()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp_darkmode
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_darkmode()
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;read_time&lt;/th&gt;
+      &lt;th&gt;dark_mode&lt;/th&gt;
+      &lt;th&gt;male&lt;/th&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;th&gt;hours&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;14.4&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;43.0&lt;/td&gt;
+      &lt;td&gt;65.6&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;15.4&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;55.0&lt;/td&gt;
+      &lt;td&gt;125.4&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;20.9&lt;/td&gt;
+      &lt;td&gt;True&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;23.0&lt;/td&gt;
+      &lt;td&gt;642.6&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;20.0&lt;/td&gt;
+      &lt;td&gt;False&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;41.0&lt;/td&gt;
+      &lt;td&gt;129.1&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;21.5&lt;/td&gt;
+      &lt;td&gt;True&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;29.0&lt;/td&gt;
+      &lt;td&gt;190.2&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have informations on 300 users for whom we observe whether they select the &lt;code&gt;dark_mode&lt;/code&gt; (the treatment), their weekly &lt;code&gt;read_time&lt;/code&gt; (the outcome of interest) and some characteristics like &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; previously spend on the blog.&lt;/p&gt;
+&lt;p&gt;We would like to estimate the effect of the new &lt;code&gt;dark_mode&lt;/code&gt; on users&#39; &lt;code&gt;read_time&lt;/code&gt;. As a first approach, we might naively compute the effect as a difference in means, assuming that the treatment and control sample are comparable. We can estimate the difference in means by regressing &lt;code&gt;read_time&lt;/code&gt; on &lt;code&gt;dark_mode&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;read_time ~ dark_mode&amp;quot;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+          &lt;td&gt;&lt;/td&gt;             &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   19.1748&lt;/td&gt; &lt;td&gt;    0.402&lt;/td&gt; &lt;td&gt;   47.661&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   18.383&lt;/td&gt; &lt;td&gt;   19.967&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;   -0.4446&lt;/td&gt; &lt;td&gt;    0.571&lt;/td&gt; &lt;td&gt;   -0.779&lt;/td&gt; &lt;td&gt; 0.437&lt;/td&gt; &lt;td&gt;   -1.568&lt;/td&gt; &lt;td&gt;    0.679&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Individuals that select the &lt;code&gt;dark_mode&lt;/code&gt; spend on average 0.44 hours less on the blog, per week. Should we conclude that &lt;code&gt;dark_mode&lt;/code&gt; is a &lt;strong&gt;bad idea&lt;/strong&gt;? Is this a causal effect?&lt;/p&gt;
+&lt;p&gt;The problem is that we did &lt;strong&gt;not&lt;/strong&gt; run an &lt;a href=&#34;https://de.wikipedia.org/wiki/A/B-Test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;AB test&lt;/strong&gt;&lt;/a&gt; or randomized control trial, therefore users that selected the &lt;code&gt;dark_mode&lt;/code&gt; might not be directly &lt;strong&gt;comparable&lt;/strong&gt; with users that didn&amp;rsquo;t. Can we verify this concern? Partially. We can only check characteristics that we observe, &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; in our setting. We cannot check if users differ along other dimensions that we don&amp;rsquo;t observe.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s use the &lt;code&gt;create_table_one&lt;/code&gt; function from Uber&amp;rsquo;s &lt;a href=&#34;https://causalml.readthedocs.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;causalml&lt;/code&gt;&lt;/a&gt; package to produce a &lt;strong&gt;covariate balance table&lt;/strong&gt;, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.&lt;/p&gt;
+&lt;p&gt;We did not randomize the &lt;code&gt;dark_mode&lt;/code&gt; so that users that selected it might not be directly &lt;strong&gt;comparable&lt;/strong&gt; with users that didn&amp;rsquo;t. Can we verify this concern? Partially. We can only check characteristics that we observe, &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; in our setting. We cannot check if users differ along other dimensions that we don&amp;rsquo;t observe.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s use the &lt;code&gt;create_table_one&lt;/code&gt; function from Uber&amp;rsquo;s &lt;a href=&#34;https://causalml.readthedocs.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;causalml&lt;/code&gt;&lt;/a&gt; package to produce a &lt;strong&gt;covariate balance table&lt;/strong&gt;, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import create_table_one
+
+X = [&#39;male&#39;, &#39;age&#39;, &#39;hours&#39;]
+table1 = create_table_one(df, &#39;dark_mode&#39;, X)
+table1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Control&lt;/th&gt;
+      &lt;th&gt;Treatment&lt;/th&gt;
+      &lt;th&gt;SMD&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Variable&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;n&lt;/th&gt;
+      &lt;td&gt;151&lt;/td&gt;
+      &lt;td&gt;149&lt;/td&gt;
+      &lt;td&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;age&lt;/th&gt;
+      &lt;td&gt;46.01 (9.79)&lt;/td&gt;
+      &lt;td&gt;39.09 (11.53)&lt;/td&gt;
+      &lt;td&gt;-0.6469&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;hours&lt;/th&gt;
+      &lt;td&gt;337.78 (464.00)&lt;/td&gt;
+      &lt;td&gt;328.57 (442.12)&lt;/td&gt;
+      &lt;td&gt;-0.0203&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;male&lt;/th&gt;
+      &lt;td&gt;0.34 (0.47)&lt;/td&gt;
+      &lt;td&gt;0.66 (0.48)&lt;/td&gt;
+      &lt;td&gt;0.6732&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;There seems to be &lt;strong&gt;some difference&lt;/strong&gt; between treatment (&lt;code&gt;dark_mode&lt;/code&gt;) and control group. In particular, users that select the &lt;code&gt;dark_mode&lt;/code&gt; are older, have spent less hours on the blog and they are more likely to be males.&lt;/p&gt;
+&lt;p&gt;What can we do? If we assume that all differences between treatment and control group are &lt;strong&gt;observable&lt;/strong&gt;, we can solve the problem by performing &lt;strong&gt;conditional analysis&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;conditional-analysis&#34;&gt;Conditional Analysis&lt;/h2&gt;
+&lt;p&gt;We assume that for a set of subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(D_i, Y_i, X_i)$ comprised of&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$ (&lt;code&gt;dark_mode&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;a response $Y_i \in \mathbb R$ (&lt;code&gt;read_time&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;a feature vector $X_i \in \mathbb R^n$ (&lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;hours&lt;/code&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We are interested in &lt;strong&gt;estimating the average treatment effect&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+\tau = \mathbb E \Big[ Y_i^{(1)} - Y_i^{(0)} \Big]
+$$&lt;/p&gt;
+&lt;p&gt;Where $Y_i^{(d)}$ indicates the potential outcome of individual $i$ under treatment status $d$. We also make the following assumptions.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 1 : unconfoundedness&lt;/strong&gt; (or ignorability, or selection on observables)&lt;/p&gt;
+&lt;p&gt;$$
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i
+$$&lt;/p&gt;
+&lt;p&gt;i.e. conditional on observable characteristics $X$, the treatment assignment $D$ is as good as random. What we are effectively assuming is that there is no other characteristics that we do not observe that could impact both whether a user selects the &lt;code&gt;dark_mode&lt;/code&gt; and their &lt;code&gt;read_time&lt;/code&gt;. This is a &lt;strong&gt;strong assumption&lt;/strong&gt; that is more likely to be satisfied the more individual characteristics we observe.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 2: overlap&lt;/strong&gt; (or common support)&lt;/p&gt;
+&lt;p&gt;$$
+\exists \eta &amp;gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
+$$&lt;/p&gt;
+&lt;p&gt;i.e. no observation is deterministically assigned to the treatment or control group. This is a more technical assumption that basically means that for any level of &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; or &lt;code&gt;hours&lt;/code&gt;, there could exist an individual that select the &lt;code&gt;dark_mode&lt;/code&gt; and one that doesn&amp;rsquo;t. Differently from the unconfoundedness assumption, the overal assumption is &lt;strong&gt;testable&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Assumption 3: stable unit treatment value (SUTVA)&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;$$
+Y^{(d)} \perp D
+$$&lt;/p&gt;
+&lt;p&gt;i.e. the potential outcome does not depend on the treatment status. In our case, we are ruling out the fact that another user selecting &lt;code&gt;dark_mode&lt;/code&gt; might affect my effect of &lt;code&gt;dark_mode&lt;/code&gt; on &lt;code&gt;read_time&lt;/code&gt;. The most common setting where SUTVA is violated is in presence of &lt;strong&gt;network effects&lt;/strong&gt;: if a friend of mine uses a social network increases my utility from using it.&lt;/p&gt;
+&lt;h2 id=&#34;ipw-and-meta-learners&#34;&gt;IPW and Meta-Learners&lt;/h2&gt;
+&lt;p&gt;Two alternative ways to perform conditional analysis are&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/99bf5cffa0d9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;IPW&lt;/strong&gt;&lt;/a&gt;: balance observations by their conditional treatment assignment probability. Give the most weights to observations that are equally likely to be in the treatment and control group and them estimate the treatment effect as a difference in means&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Meta Learners&lt;/strong&gt;&lt;/a&gt;: predict the potential outcomes from observable characteristics and estimate treatment effects as the difference between observed and counterfactual outcomes&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;These two alternative procedures exploit the fact that we observe individual characteristics $X$ in different ways:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;IPW exploits $X$ to predict the treatment assignment $D$ and estimate the &lt;a href=&#34;https://towardsdatascience.com/99bf5cffa0d9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;propensity scores&lt;/strong&gt;&lt;/a&gt; $e(X) = \mathbb{E} [D | X]$&lt;/li&gt;
+&lt;li&gt;Meta Learners exploit $X$ to predict the counterfactual outcomes $Y^{(d)}$&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Can we &lt;strong&gt;combine&lt;/strong&gt; the two procedures and get the best of both worlds? Yes, with the &lt;strong&gt;AIPW or double-robust estimator&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;the-aipw-estimator&#34;&gt;The AIPW Estimator&lt;/h2&gt;
+&lt;p&gt;Math first, explanations later!&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;Augmented Inverse Propensity Weighted&lt;/strong&gt; estimator is given by&lt;/p&gt;
+&lt;p&gt;$$
+\hat \tau_{AIPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{D_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-D_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right) \right)
+$$&lt;/p&gt;
+&lt;p&gt;where $\mu(x)$ is the &lt;strong&gt;response function&lt;/strong&gt;, i.e. the expected value of the outcome, conditional on observable characteristics $X$ and treatment status $D$, and $e(X)$ is the &lt;strong&gt;propensity score&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+\mu^{(d)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, D_i = d \right] \qquad ; \qquad e(x) = \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right]
+$$&lt;/p&gt;
+&lt;p&gt;The formula of the AIPW estimator seems very cryptic at first, so let&amp;rsquo;s dig deeper and try to understand it.&lt;/p&gt;
+&lt;h3 id=&#34;decomposition&#34;&gt;Decomposition&lt;/h3&gt;
+&lt;p&gt;The best way to understand the AIPW formula is to &lt;strong&gt;decompose&lt;/strong&gt; it into two parts.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;first way&lt;/strong&gt; to decompose the AIPW estimator into a &lt;strong&gt;S-learner estimator&lt;/strong&gt; and an adjustment factor.&lt;/p&gt;
+&lt;p&gt;$$
+\hat \tau_{AIPW} = \hat \tau_{META} + \widehat{\text{adj}}_{META}
+$$&lt;/p&gt;
+&lt;p&gt;where&lt;/p&gt;
+&lt;p&gt;$$
+\begin{align}
+\hat \tau_{META} =&amp;amp; \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right) \newline
+\widehat{\text{adj}}&lt;em&gt;{META} =&amp;amp; \frac{1}{n} \sum&lt;/em&gt;{i=1}^{n} \left(\frac{D_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-D_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right) \right)
+\end{align}
+$$&lt;/p&gt;
+&lt;p&gt;The adjustment is essentially an IPW estimator performed on the &lt;strong&gt;residuals&lt;/strong&gt; of the S-learner.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;second way&lt;/strong&gt; to decompose the AIPW estimator into the &lt;strong&gt;IPW estimator&lt;/strong&gt; and an adjustment factor.&lt;/p&gt;
+&lt;p&gt;$$
+\hat \tau_{AIPW} = \hat \tau_{IPW} + \widehat{\text{adj}}_{IPW}
+$$&lt;/p&gt;
+&lt;p&gt;where&lt;/p&gt;
+&lt;p&gt;$$
+\begin{align}
+\hat \tau_{IPW} &amp;amp;= \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{D_i Y_i}{\hat e(X_i)} - \frac{(1-D_i) Y_i}{1-\hat e(X_i)} \right)
+\newline
+\widehat{\text{adj}}&lt;em&gt;{IPW} &amp;amp;= \frac{1}{n} \sum&lt;/em&gt;{i=1}^{n} \left( \frac{\hat e(X_i) - D_i}{\hat e(X_i)} \hat \mu^{(1)}(X_i) - \frac{(1-\hat e(X_i)) - (1-D_i)}{1-\hat e(X_i)} \hat \mu^{(0)}(X_i) \right)
+\end{align}
+$$&lt;/p&gt;
+&lt;p&gt;The adjustment is essentially the S-learner estimator weighted by the discrepancy between the estimated propensity scores $\hat e(X)$ and the actual treatment assignment $D$.&lt;/p&gt;
+&lt;h3 id=&#34;double-robustness&#34;&gt;Double Robustness&lt;/h3&gt;
+&lt;p&gt;Why is the AIPW estimator so &lt;strong&gt;compelling&lt;/strong&gt;? The reason is that it just needs one of the two predictions, $\hat \mu$ or $\hat e$, to be right in order to be &lt;strong&gt;unbiased&lt;/strong&gt; (i.e. correct on average). Let&amp;rsquo;s check it.&lt;/p&gt;
+&lt;p&gt;If $\hat \mu$ is correctly specified, i.e. $\mathbb E \left[ \hat \mu^{(t)}(x) \right] = \mathbb E \left[ Y_i \ \big | \ X_i = x, D_i = d \right]$, then, even if $\hat e$ is misspecified,&lt;/p&gt;
+&lt;p&gt;$$
+\begin{aligned}
+\hat \tau_{AIPW} &amp;amp;\overset{p}{\to} \mathbb E \Big[ \hat \tau_{META} + \widehat{\text{adj}}_{META} \Big] = \newline
+&amp;amp;= \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{D_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-D_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right] = \newline
+&amp;amp;= \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right] = \newline
+&amp;amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] = \newline
+&amp;amp;= \tau
+\end{aligned}
+$$&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;intuition&lt;/strong&gt; is that, if $\hat \mu$ is correctly specified, $\hat \tau_{META}$ is &lt;strong&gt;unbiased&lt;/strong&gt; and the adjustment factor &lt;strong&gt;vanishes&lt;/strong&gt;, since the residuals $\left( Y_i - \hat \mu^{(t)}(X_i) \right)$ converge to zero.&lt;/p&gt;
+&lt;p&gt;On the other hand, if $\hat e$ is correctly specified, i.e. $\mathbb E \left[\hat e(x) \right] = \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right]$, then, even if $\hat \mu$ is misspecified&lt;/p&gt;
+&lt;p&gt;$$
+\begin{aligned}
+\hat \tau_{AIPW} &amp;amp;\overset{p}{\to}  \mathbb E \Big[ \hat \tau_{IPW} + \widehat{\text{adj}}_{IPW} \Big] = \newline
+&amp;amp;= \mathbb E \left[ \frac{D_i Y_i}{\hat e(X_i)} - \frac{(1-D_i) Y_i }{1-\hat e(X_i)} + \frac{\hat e(X_i) - D_i}{\hat e(X_i)} \hat \mu^{(1)}(X_i) - \frac{(1-\hat e(X_i)) - (1-D_i)}{1-\hat e(X_i)} \hat \mu^{(0)}(X_i) \right] = \newline
+&amp;amp;= \mathbb E \left[ \frac{D_i Y_i}{\hat e(X_i)} - \frac{(1-D_i) Y_i }{1-\hat e(X_i)}\right] = \newline
+&amp;amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] = \newline
+&amp;amp;= \tau
+\end{aligned}
+$$&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;intuition&lt;/strong&gt; is that, if $\hat e$ is correctly specified, $\hat \tau_{IPW}$ is &lt;strong&gt;unbiased&lt;/strong&gt; and the adjustment factor &lt;strong&gt;vanishes&lt;/strong&gt;, since the residuals $\left( D_i - \hat e (X_i) \right)$ converge to zero.&lt;/p&gt;
+&lt;h2 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;1. Check Covariate Balance&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Both IPW and AIPW were built for settings in which the treatment $D$ is not unconditionally randomly assigned, but might depend on some observables $X$. This information can be checked in two ways:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Produce a balance table, summarizing the covariates across treatment arms. If unconditional randomization does not hold, we expect to see significant differences across some observables&lt;/li&gt;
+&lt;li&gt;Plot the estimated propensity scores. If unconditional randomization holds, we expect the propensity scores to be constant&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;2. Check the Overlap Assumption&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Another assumption that we can check is the &lt;strong&gt;overlap&lt;/strong&gt; assumption, i.e. $\exists \eta \ : \ \eta \leq \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta$. To check this assumption we can simply check the bounds of the predicted propensity scores. If the overlap assumption is violated, we end up dividing some term of the estimator by zero.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;3. Use LOO Predictors&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Whenever we build a prediction, it is best practice to exclude observation $i$ when fitting the algorithm for predicting $\hat \mu^{(d)} (X_i)$ or $\hat e (X_i)$. This procedure is generally known as &lt;a href=&#34;https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;cross-fitting&lt;/strong&gt;&lt;/a&gt; in the machine learning literature, and the practice of leaving out just observation $i$ is called &lt;strong&gt;Leave One Out&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;back-to-the-data&#34;&gt;Back to the Data&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s now build and explore the AIPW estimator in our dataset. First, let&amp;rsquo;s estimate the &lt;strong&gt;propensity scores&lt;/strong&gt; $e(X)$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def estimate_e(df, X, D, model_e):
+    e = model_e.fit(df[X], df[D]).predict_proba(df[X])[:,1]
+    return e
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We estimate them by &lt;a href=&#34;https://en.wikipedia.org/wiki/Logistic_regression&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;logistic regression&lt;/a&gt; using the &lt;code&gt;LogisticRegression&lt;/code&gt; methods from the &lt;code&gt;sklearn&lt;/code&gt; package.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import LogisticRegression
+
+df[&#39;e&#39;] = estimate_e(df, X, &amp;quot;dark_mode&amp;quot;, LogisticRegression())
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s check if the &lt;strong&gt;bounded support&lt;/strong&gt; assumption is satisfied, by plotting the estimated propensity scores, across treatment and control groups.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(data=df, x=&#39;e&#39;, hue=&#39;dark_mode&#39;, bins=30, stat=&#39;density&#39;, common_norm=False).\
+    set(ylabel=&amp;quot;&amp;quot;, title=&amp;quot;Distribution of Propensity Scores&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The distribution of propensity scores&lt;/p&gt;
+&lt;p&gt;A &lt;strong&gt;best practice&lt;/strong&gt; is to use the &lt;code&gt;LeaveOneOut&lt;/code&gt; estimator to make predictions, i.e., for each observations, build a model using the remaining observations. This procedure helps preventing overfitting bias. The main issue is that it&amp;rsquo;s particularly slow since we need to fit one model per observation. However, it is parallelizable.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.model_selection import cross_val_predict, LeaveOneOut
+
+e = cross_val_predict(estimator=LogisticRegression(), 
+                      X=df[X], 
+                      y=df[&amp;quot;dark_mode&amp;quot;],
+                      cv=LeaveOneOut(),
+                      method=&#39;predict_proba&#39;,
+                      n_jobs=-1)[:,1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can now use the propensity scores to build the IPW estimator.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;w = 1 / (e * df[&amp;quot;dark_mode&amp;quot;] + (1-e) * (1-df[&amp;quot;dark_mode&amp;quot;]))
+smf.wls(&amp;quot;read_time ~ dark_mode&amp;quot;, weights=w, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+          &lt;td&gt;&lt;/td&gt;             &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;         &lt;td&gt;   18.6099&lt;/td&gt; &lt;td&gt;    0.412&lt;/td&gt; &lt;td&gt;   45.159&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   17.799&lt;/td&gt; &lt;td&gt;   19.421&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;dark_mode[T.True]&lt;/th&gt; &lt;td&gt;    1.0620&lt;/td&gt; &lt;td&gt;    0.582&lt;/td&gt; &lt;td&gt;    1.826&lt;/td&gt; &lt;td&gt; 0.069&lt;/td&gt; &lt;td&gt;   -0.083&lt;/td&gt; &lt;td&gt;    2.207&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Let&amp;rsquo;s now estimate the second building block of the AIPW estimator: the &lt;strong&gt;response function&lt;/strong&gt; $\mu(X)$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def estimate_mu(df, X, D, y, model_mu):
+    mu = model_mu.fit(df[X + [D]], df[y])
+    mu0 = mu.predict(df[X + [D]].assign(dark_mode=0))
+    mu1 = mu.predict(df[X + [D]].assign(dark_mode=1))
+    return mu0, mu1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s start by estimating $\mu(X)$ with linear regression.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import LinearRegression
+
+mu0, mu1 = estimate_mu(df, X, &amp;quot;dark_mode&amp;quot;, &amp;quot;read_time&amp;quot;, LinearRegression())
+print(np.mean(mu1-mu0))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;1.3858099131476969
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can compute the meta learner estimate of the average treatment effect as a difference in means between the two estimated response functions, $\mu^{(1)}(X)$ and $\mu^{(0)}(X)$.&lt;/p&gt;
+&lt;p&gt;We can use any unbiased estimator to get the response function,&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from lightgbm import LGBMRegressor
+
+mu0, mu1 = estimate_mu(df, X, &amp;quot;dark_mode&amp;quot;, &amp;quot;read_time&amp;quot;, LGBMRegressor())
+print(np.mean(mu1-mu0))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;1.3003274773021265
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We now have &lt;strong&gt;all the building blocks&lt;/strong&gt; to compute the AIPW estimator!&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;aipw = mu1 - mu0 + df[&amp;quot;dark_mode&amp;quot;] / e * (df[&amp;quot;read_time&amp;quot;] - mu1) - (1-df[&amp;quot;dark_mode&amp;quot;]) / (1-e) * (df[&amp;quot;read_time&amp;quot;] - mu0)
+print(np.mean(aipw))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;1.372173034177093
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can also compute it directly using the &lt;code&gt;LinearDRLearner&lt;/code&gt; function from Microsoft&amp;rsquo;s &lt;a href=&#34;https://econml.azurewebsites.net/index.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;EconML&lt;/code&gt;&lt;/a&gt; library.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.drlearner import LinearDRLearner
+
+model = LinearDRLearner(model_propensity=LogisticRegression(), 
+                        model_regression=LinearRegression(),
+                        random_state=1)
+model.fit(Y=df[&amp;quot;read_time&amp;quot;], T=df[&amp;quot;dark_mode&amp;quot;], X=df[X]);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The model directly gives us the average treatment effect.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model.ate_inference(X=df[X].values, T0=0, T1=1).summary().tables[0]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;caption&gt;Uncertainty of Mean Point Estimate&lt;/caption&gt;
+&lt;tr&gt;
+  &lt;th&gt;mean_point&lt;/th&gt; &lt;th&gt;stderr_mean&lt;/th&gt; &lt;th&gt;zstat&lt;/th&gt; &lt;th&gt;pvalue&lt;/th&gt; &lt;th&gt;ci_mean_lower&lt;/th&gt; &lt;th&gt;ci_mean_upper&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+     &lt;td&gt;1.417&lt;/td&gt;      &lt;td&gt;0.541&lt;/td&gt;    &lt;td&gt;2.621&lt;/td&gt;  &lt;td&gt;0.009&lt;/td&gt;     &lt;td&gt;0.358&lt;/td&gt;         &lt;td&gt;2.477&lt;/td&gt;    
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The estimate is statistically different from zero and the confidence interval includes the true value of 2.&lt;/p&gt;
+&lt;h2 id=&#34;assessment&#34;&gt;Assessment&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s now assess the main property of the AIPW estimator: its &lt;strong&gt;double robustness&lt;/strong&gt;. To do so, we compare it with its two parents: the IPW estimator and the S-learner.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def compare_estimators(X_e, X_mu, D, y, seed):
+    df = dgp_darkmode().generate_data(seed=seed)
+    e = estimate_e(df, X_e, D, LogisticRegression())
+    mu0, mu1 = estimate_mu(df, X_mu, D, y, LGBMRegressor())
+    slearn = mu1 - mu0
+    ipw = (df[D] / e - (1-df[D]) / (1-e)) * df[y]
+    aipw = slearn + df[D] / e * (df[y] - mu1) - (1-df[D]) / (1-e) * (df[y] - mu0)
+    return np.mean((slearn, ipw, aipw), axis=1)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We use the &lt;a href=&#34;https://joblib.readthedocs.io/en/latest/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;joblib&lt;/code&gt;&lt;/a&gt; library to run the simulations in parallel and speed up the process.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from joblib import Parallel, delayed
+
+def simulate_estimators(X_e, X_mu, D, y):
+    r = Parallel(n_jobs=8)(delayed(compare_estimators)(X_e, X_mu, D, y, i) for i in range(100))
+    df_tau = pd.DataFrame(r, columns=[&#39;S-learn&#39;, &#39;IPW&#39;, &#39;AIPW&#39;])
+    plot = sns.boxplot(data=pd.melt(df_tau), x=&#39;variable&#39;, y=&#39;value&#39;, linewidth=2);
+    plot.set(title=&amp;quot;Distribution of $\hat τ$ and its components&amp;quot;, xlabel=&#39;&#39;, ylabel=&#39;&#39;)
+    plot.axhline(2, c=&#39;r&#39;, ls=&#39;:&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;First, let&amp;rsquo;s assume that we use &lt;strong&gt;all variables&lt;/strong&gt; for both models, $\mu(X)$ and $e(X)$. In this case, both models are &lt;strong&gt;well specified&lt;/strong&gt; and we expect all estimators to perform well.&lt;/p&gt;
+&lt;p&gt;We plot the distribution of the three estimators across 100 simulations.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;simulate_estimators(X_e=X, X_mu=X, D=&amp;quot;dark_mode&amp;quot;, y=&amp;quot;read_time&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_57_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Indeed, all estimator are &lt;strong&gt;unbiased&lt;/strong&gt; and deliver very similar estimates.&lt;/p&gt;
+&lt;p&gt;What happens if we &lt;strong&gt;misspecify&lt;/strong&gt; one of the two models? Let&amp;rsquo;s start by (correctly) assuming that &lt;code&gt;gender&lt;/code&gt; and &lt;code&gt;age&lt;/code&gt; influence the probability of selecting &lt;code&gt;dark_mode&lt;/code&gt; and (wrongly) assuming that only previous &lt;code&gt;hours&lt;/code&gt; influence the weekly &lt;code&gt;read_time&lt;/code&gt;. In this case, the propensity score $e(X)$ is well specified, while the response function $\mu(X)$ is misspecified.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;simulate_estimators(X_e=[&#39;male&#39;, &#39;age&#39;], X_mu=[&#39;hours&#39;], D=&amp;quot;dark_mode&amp;quot;, y=&amp;quot;read_time&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_59_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As expected, the S-learner is biased since we have misspecified $\mu(X)$, while IPW isn&amp;rsquo;t. AIPW picks the &lt;strong&gt;best of both worlds&lt;/strong&gt; and is unbiased.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s now explore the alternative &lt;strong&gt;misspecification&lt;/strong&gt;. We (wrongly) assume that only &lt;code&gt;age&lt;/code&gt; influences the probability of selecting &lt;code&gt;dark_mode&lt;/code&gt; and (correctly) assume that both &lt;code&gt;gender&lt;/code&gt; and previous &lt;code&gt;hours&lt;/code&gt; influence the weekly &lt;code&gt;read_time&lt;/code&gt;. In this case, the propensity score $e(X)$ is misspecified, while the response function $\mu(X)$ is correctly specified.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;simulate_estimators([&#39;age&#39;], [&#39;male&#39;, &#39;hours&#39;], D=&amp;quot;dark_mode&amp;quot;, y=&amp;quot;read_time&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/aipw_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;In this case, the S-learner is unbiased, while IPW isn&amp;rsquo;t, since we have misspecified $e(X)$. Again, AIPW picks the &lt;strong&gt;best of both worlds&lt;/strong&gt; and is unbiased.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this article we have seen a method to estimate conditional average treatment effects (CATE), that is &lt;strong&gt;robust to model misspecification&lt;/strong&gt;: the Augmented Inverse Propensity Weighted (AIPW) estimator. The AIPW estimator takes the best out of two existing estimators: the &lt;a href=&#34;&#34;&gt;IPW estimator&lt;/a&gt; and the &lt;a href=&#34;&#34;&gt;S-learner&lt;/a&gt;. It requires the estimation of both the propensity score function $\mathbb{E} [ D | X ]$ and the response function $\mathbb{E} [ Y | D, X ]$ and it is &lt;strong&gt;unbiased&lt;/strong&gt; even if one of the two functions is misspecified.&lt;/p&gt;
+&lt;p&gt;This estimator is now a standard and it is included all the most important causal inference packages such as Microsoft&amp;rsquo;s &lt;a href=&#34;https://econml.azurewebsites.net/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;EconML&lt;/a&gt;, Uber&amp;rsquo;s &lt;a href=&#34;https://causalml.readthedocs.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;causalml&lt;/a&gt; and Stanford researchers&#39; R package &lt;a href=&#34;https://grf-labs.github.io/grf/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;grf&lt;/a&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;p&gt;[1] J. Robins, A. Rotzniski, J. P. Zhao, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1080/01621459.1994.10476818&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Estimation of regression coefficients when some regressors are not always observed&lt;/a&gt; (1994), &lt;em&gt;Journal of the American Statistical Associations&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] A. Glyn, K. Quinn, &lt;a href=&#34;https://www.cambridge.org/core/journals/political-analysis/article/abs/an-introduction-to-the-augmented-inverse-propensity-weighted-estimator/4B1B8301E46F4432C4DCC91FE20780DB&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;An Introduction to the Augmented Inverse Propensity Weighted Estimator&lt;/a&gt; (2010), &lt;em&gt;Political Analysis&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[3] E. Kennedy, &lt;a href=&#34;https://arxiv.org/abs/2004.14497&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Towards optimal doubly robust estimation of heterogeneous causal effects&lt;/a&gt; (2022), &lt;em&gt;working paper&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/99bf5cffa0d9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Matching, Weighting, or Regression?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Unserstanding Meta Learners&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/aipw.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/aipw.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Understanding CUPED</title>
@@ -7577,538 +8035,6 @@ mono_font = &amp;quot;Roboto Mono&amp;quot;
 &lt;li&gt;Wowchemy website: &lt;a href=&#34;https://wowchemy.com/docs/getting-started/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://wowchemy.com/docs/getting-started/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Old Academic website: &lt;a href=&#34;https://sourcethemes.com/academic/docs/install/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://sourcethemes.com/academic/docs/install/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Guide for the Terminal: &lt;a href=&#34;https://github.com/fliptanedo/FlipWebsite2017&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/fliptanedo/FlipWebsite2017&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>AIPW</title>
-      <link>https://matteocourthoud.github.io/post/aipw/</link>
-      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/aipw/</guid>
-      <description>&lt;p&gt;In this tutorial, we are going to see how to robustly estimate treatment effects when treatment is conditionally randomly assigned, using the &lt;strong&gt;Augmented Inverse Propensity Weighted&lt;/strong&gt; estimator, also known as &lt;strong&gt;doubly-robust&lt;/strong&gt; estimator.&lt;/p&gt;
-&lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Rubin&amp;rsquo;s potential outcome framework&lt;/li&gt;
-&lt;li&gt;Propensity score weighting&lt;/li&gt;
-&lt;li&gt;Basic machine learning&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
-&lt;p&gt;We assume that for a set of i.i.d. subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(X_i, T_i, Y_i)$ comprised of&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;a feature vector $X_i \in \mathbb R^n$&lt;/li&gt;
-&lt;li&gt;a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
-&lt;li&gt;a response $Y_i \in \mathbb R$&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;Assumption 1 : unconfoundedness&lt;/strong&gt; (or ignorability, or selection on observables)&lt;/p&gt;
-&lt;p&gt;$$
-\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ T_i \ | \ X_i
-$$&lt;/p&gt;
-&lt;p&gt;i.e. conditional on observable characteristics $X$, the treatment assignment $T$ is as good as random.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Assumption 2: overlap&lt;/strong&gt; (or bounded support)&lt;/p&gt;
-&lt;p&gt;$$
-\exists \eta &amp;gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
-$$&lt;/p&gt;
-&lt;p&gt;i.e. no observation is deterministically assigned to the treatment or control group.&lt;/p&gt;
-&lt;h2 id=&#34;the-ipw-estimator&#34;&gt;The IPW Estimator&lt;/h2&gt;
-&lt;p&gt;We want to estimate the &lt;strong&gt;average treatment effect&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;$$
-\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right]
-$$&lt;/p&gt;
-&lt;p&gt;We would like to obtain an unbiased estimator that satifies a central limit theorem of the form&lt;/p&gt;
-&lt;p&gt;$$
-\sqrt{n} ( \hat \tau - \tau) \ \overset{d}{\to} \ N(0, V)
-$$&lt;/p&gt;
-&lt;p&gt;thus enabling us to construct &lt;strong&gt;confidence intervals&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;Under &lt;strong&gt;unconfoundedness&lt;/strong&gt;, we can rewrite the average treatment effect as&lt;/p&gt;
-&lt;p&gt;$$
-\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{T_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right]
-$$&lt;/p&gt;
-&lt;p&gt;where $e(X_i)$ is the &lt;strong&gt;propensity score&lt;/strong&gt; of observation $i$,&lt;/p&gt;
-&lt;p&gt;$$
-e(x) = \mathbb P \left[ T_i = 1 \ \big | \ X_i = x \right]
-$$&lt;/p&gt;
-&lt;p&gt;i.e. its probability of being treated.&lt;/p&gt;
-&lt;p&gt;Note that this formulation of the average treatment effect does not depend on the potential outcomes $Y_i^{(1)}$ and $Y_i^{(0)}$, but only on the observed outcomes $Y_i$.&lt;/p&gt;
-&lt;p&gt;This formulation of the average treatment effect implies the &lt;strong&gt;Inverse Propensity Weighted&lt;/strong&gt; estimator which is an unbiased estimator for the average treatment effect $\tau$&lt;/p&gt;
-&lt;p&gt;$$
-\hat \tau^{*}_{IPW} = \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{T_i Y_i}{e(X_i)} - \frac{(1-T_i) Y_i}{1-e(X_i)} \right)
-$$&lt;/p&gt;
-&lt;p&gt;However, this estimator is &lt;strong&gt;unfeasible&lt;/strong&gt; since we do not observe the propensity scores $e(X_i)$.&lt;/p&gt;
-&lt;h2 id=&#34;the-aipw-estimator&#34;&gt;The AIPW Estimator&lt;/h2&gt;
-&lt;p&gt;A feasible estimator of the average treatment effect $\tau$ is&lt;/p&gt;
-&lt;p&gt;$$
-\hat \tau_{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i}{1-\hat e(X_i)} \right)
-$$&lt;/p&gt;
-&lt;p&gt;where we have replaced the propensity scores $e (X_i)$ with their estimates $\hat e (X_i)$.&lt;/p&gt;
-&lt;p&gt;With a linear model, $Y_i = \alpha T_i + \beta X_i + \varepsilon_i$, we can get a central limit theorem for $\hat \tau$. However, we want to take a non-parametric / &lt;strong&gt;machine learning&lt;/strong&gt; approach with respect to the relationship between $Y$ and $X$.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Advantages&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;flexible functional form for $\mathbb E[Y | X]$&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;Disadvantages&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;machine learning methods have slow convergence rates&lt;/li&gt;
-&lt;li&gt;it impacts inference, i.e. we cannot easily get a central limit theorem result to build confidence intervals&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Is there a way to get around the slow rate of convergence of machine learning methods?&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Yes!&lt;/strong&gt; Idea: combine two predicton problems instead of one.&lt;/p&gt;
-&lt;p&gt;The &lt;strong&gt;Augmented Inverse Propensity Weighted&lt;/strong&gt; estimator is given by&lt;/p&gt;
-&lt;p&gt;$$
-\hat \tau_{IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-T_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right) \right)
-$$&lt;/p&gt;
-&lt;p&gt;where&lt;/p&gt;
-&lt;p&gt;$$
-\mu^{(t)}(x) = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right] \qquad ; \qquad e(x) = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]
-$$&lt;/p&gt;
-&lt;p&gt;The formula of the AIPW estimator might seem scary at first, so let&amp;rsquo;s &lt;strong&gt;decompose&lt;/strong&gt; it into two parts.&lt;/p&gt;
-&lt;p&gt;First,&lt;/p&gt;
-&lt;p&gt;$$
-D = \frac{1}{n} \sum_{i=1}^{n} \left( \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right)
-$$&lt;/p&gt;
-&lt;p&gt;is basically the &lt;strong&gt;direct estimate&lt;/strong&gt; of the average treatment effect. This is a consistent estimator of the ATE but, since machine learning estimators&#39; rate of convergence is too slow, it does not provide correct confidence intervals.&lt;/p&gt;
-&lt;p&gt;Instead,&lt;/p&gt;
-&lt;p&gt;$$
-R = \frac{1}{n} \sum_{i=1}^{n} \left(\frac{T_i }{\hat e(X_i)} \left( Y_i - \hat \mu^{(1)}(X_i) \right) - \frac{(1-T_i) }{1-\hat e(X_i)} \left( Y_i - \hat \mu^{(0)}(X_i) \right) \right)
-$$&lt;/p&gt;
-&lt;p&gt;is basically &lt;strong&gt;IPW applied to the residuals&lt;/strong&gt; $Y_i - \hat \mu^{(t)}(X_i)$ instead of $Y_i$.&lt;/p&gt;
-&lt;h3 id=&#34;double-robustness&#34;&gt;Double Robustness&lt;/h3&gt;
-&lt;p&gt;Why is the AIPW estimator so &lt;strong&gt;compelling&lt;/strong&gt;? It just needs one of the two predictions, $\hat \mu$ and $\hat e$, to be right in order to be unbiased. Let&amp;rsquo;s check it.&lt;/p&gt;
-&lt;p&gt;If $\hat \mu$ is correctly specified, i.e. $\mathbb E \left[ \hat \mu^{(t)}(x) \right] = \mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, then&lt;/p&gt;
-&lt;p&gt;$$
-\begin{aligned}
-\hat \tau_{IPW} &amp;amp;\overset{p}{\to} \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right] =
-\newline
-&amp;amp;= \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) \right] =
-\newline
-&amp;amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] =
-\newline
-&amp;amp;= \tau
-\end{aligned}
-$$&lt;/p&gt;
-&lt;p&gt;even if $\hat e$ is misspecified.&lt;/p&gt;
-&lt;p&gt;The &lt;strong&gt;intuition&lt;/strong&gt; is that the residuals $\left( Y_i - \hat \mu^{(t)}(X_i) \right)$ converge to zero and therefore IPW has no relevance.&lt;/p&gt;
-&lt;p&gt;On the other hand, if $\hat e$ is correctly specified, i.e. $\mathbb E \left[\hat e(x) \right] = \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right]$, then&lt;/p&gt;
-&lt;p&gt;$$
-\begin{aligned}
-\hat \tau_{IPW} &amp;amp;\overset{p}{\to} \mathbb E \left[ \hat \mu^{(1)}(X_i) - \hat \mu^{(0)}(X_i) + \frac{T_i \left( Y_i - \hat \mu^{(1)}(X_i) \right)}{\hat e(X_i)} - \frac{(1-T_i) \left( Y_i - \hat \mu^{(0)}(X_i) \right)}{1-\hat e(X_i)} \right] =
-\newline
-&amp;amp;= \mathbb E \left[ \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i }{1-\hat e(X_i)} + \left(1 - \frac{T_i}{\hat e(X_i)} \right) \hat \mu^{(1)}(X_i) - \left(1 - \frac{1-T_i}{1-\hat e(X_i)} \right) \hat \mu^{(0)}(X_i)  \right] =
-\newline
-&amp;amp;= \mathbb E \left[ \frac{T_i Y_i}{\hat e(X_i)} - \frac{(1-T_i) Y_i }{1-\hat e(X_i)}\right] =
-\newline
-&amp;amp;= \mathbb E \left[ Y^{(1)} - Y^{(0)} \right] =
-\newline
-&amp;amp;= \tau
-\end{aligned}
-$$&lt;/p&gt;
-&lt;p&gt;even if $\hat \mu$ is misspecified.&lt;/p&gt;
-&lt;p&gt;The &lt;strong&gt;intuition&lt;/strong&gt; is that, if we have a wrong model of $\mu(x)$ for $\mathbb E \left[ Y_i \ \big | \ X_i = x, T_i = t \right]$, it will not capture differences between treatment and control group or, even worse, it will capture wrong ones. Running IPW on the residuals we can not only recover the treatment effect but also compensate for eventual biases introduced by $\mu(x)$.&lt;/p&gt;
-&lt;h2 id=&#34;best-practices&#34;&gt;Best Practices&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;1. Check Covariate Balance&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Both IPW and AIPW were built for settings in which the treatment $T$ is not uconditionally randomly assigned, but might depend on some observables $X$. This information can be checked in two ways:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Produce a balance table, summarizing the covariates across treatment arms. If undonditional randomization does not hold, we expect to see significant differences across some observables&lt;/li&gt;
-&lt;li&gt;Plot the estimated propensity scores. If undonditional randomization holds, we expect the propensity scores to be constant&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;2. Check the Overlap Assumption&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Another assumption that we can check is the &lt;strong&gt;overlap&lt;/strong&gt; assumption, i.e. $\exists \eta \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta$. To check this assumption we can simply check the bounds of the predicted propensity scores. If the overlap assumption is violated, we end up dividing some term of the estimator by zero.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;3. Use LOO Predictors&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;It is best practice, whenever we build a prediction it is best pratice to exclude observation $i$ when fitting the algorithm for predicting $\hat \mu^{(t)} (X_i)$ or $\hat e (X_i)$. These predictors are called &lt;strong&gt;Leave One Out&lt;/strong&gt; predictors.&lt;/p&gt;
-&lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
-%config InlineBackend.figure_format = &#39;retina&#39;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
-from src.dgp import dgp_aipw
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;In this example, we are going to use the following &lt;strong&gt;data generating process&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;$N = 1000$&lt;/li&gt;
-&lt;li&gt;$p = 20$&lt;/li&gt;
-&lt;li&gt;$X_i \sim N(0, I_p)$&lt;/li&gt;
-&lt;li&gt;$e(x) = 1 / (1 + e^{-x_1})$&lt;/li&gt;
-&lt;li&gt;$\mu^{(0)}(x) = (x_1 + x_2)_+$&lt;/li&gt;
-&lt;li&gt;$\mu^{(1)}(x) = (x_1 + x_3)_+ \mathbf{- 0.05}$&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;So that the average treatment effect is $- 0.05$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_aipw()
-df = dgp.generate_data()
-df.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;x1&lt;/th&gt;
-      &lt;th&gt;x2&lt;/th&gt;
-      &lt;th&gt;x3&lt;/th&gt;
-      &lt;th&gt;x4&lt;/th&gt;
-      &lt;th&gt;x5&lt;/th&gt;
-      &lt;th&gt;x6&lt;/th&gt;
-      &lt;th&gt;x7&lt;/th&gt;
-      &lt;th&gt;x8&lt;/th&gt;
-      &lt;th&gt;x9&lt;/th&gt;
-      &lt;th&gt;x10&lt;/th&gt;
-      &lt;th&gt;...&lt;/th&gt;
-      &lt;th&gt;x16&lt;/th&gt;
-      &lt;th&gt;x17&lt;/th&gt;
-      &lt;th&gt;x18&lt;/th&gt;
-      &lt;th&gt;x19&lt;/th&gt;
-      &lt;th&gt;x20&lt;/th&gt;
-      &lt;th&gt;e&lt;/th&gt;
-      &lt;th&gt;T&lt;/th&gt;
-      &lt;th&gt;Y0&lt;/th&gt;
-      &lt;th&gt;Y1&lt;/th&gt;
-      &lt;th&gt;Y&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;1.624345&lt;/td&gt;
-      &lt;td&gt;-0.611756&lt;/td&gt;
-      &lt;td&gt;-0.528172&lt;/td&gt;
-      &lt;td&gt;-1.072969&lt;/td&gt;
-      &lt;td&gt;0.865408&lt;/td&gt;
-      &lt;td&gt;-2.301539&lt;/td&gt;
-      &lt;td&gt;1.744812&lt;/td&gt;
-      &lt;td&gt;-0.761207&lt;/td&gt;
-      &lt;td&gt;0.319039&lt;/td&gt;
-      &lt;td&gt;-0.249370&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;-1.099891&lt;/td&gt;
-      &lt;td&gt;-0.172428&lt;/td&gt;
-      &lt;td&gt;-0.877858&lt;/td&gt;
-      &lt;td&gt;0.042214&lt;/td&gt;
-      &lt;td&gt;0.582815&lt;/td&gt;
-      &lt;td&gt;0.835394&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;0.962589&lt;/td&gt;
-      &lt;td&gt;0.996174&lt;/td&gt;
-      &lt;td&gt;0.996174&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;-1.100619&lt;/td&gt;
-      &lt;td&gt;1.144724&lt;/td&gt;
-      &lt;td&gt;0.901591&lt;/td&gt;
-      &lt;td&gt;0.502494&lt;/td&gt;
-      &lt;td&gt;0.900856&lt;/td&gt;
-      &lt;td&gt;-0.683728&lt;/td&gt;
-      &lt;td&gt;-0.122890&lt;/td&gt;
-      &lt;td&gt;-0.935769&lt;/td&gt;
-      &lt;td&gt;-0.267888&lt;/td&gt;
-      &lt;td&gt;0.530355&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;-0.012665&lt;/td&gt;
-      &lt;td&gt;-1.117310&lt;/td&gt;
-      &lt;td&gt;0.234416&lt;/td&gt;
-      &lt;td&gt;1.659802&lt;/td&gt;
-      &lt;td&gt;0.742044&lt;/td&gt;
-      &lt;td&gt;0.249624&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;0.044105&lt;/td&gt;
-      &lt;td&gt;-0.050000&lt;/td&gt;
-      &lt;td&gt;0.044105&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;-0.191836&lt;/td&gt;
-      &lt;td&gt;-0.887629&lt;/td&gt;
-      &lt;td&gt;-0.747158&lt;/td&gt;
-      &lt;td&gt;1.692455&lt;/td&gt;
-      &lt;td&gt;0.050808&lt;/td&gt;
-      &lt;td&gt;-0.636996&lt;/td&gt;
-      &lt;td&gt;0.190915&lt;/td&gt;
-      &lt;td&gt;2.100255&lt;/td&gt;
-      &lt;td&gt;0.120159&lt;/td&gt;
-      &lt;td&gt;0.617203&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;0.586623&lt;/td&gt;
-      &lt;td&gt;0.838983&lt;/td&gt;
-      &lt;td&gt;0.931102&lt;/td&gt;
-      &lt;td&gt;0.285587&lt;/td&gt;
-      &lt;td&gt;0.885141&lt;/td&gt;
-      &lt;td&gt;0.452188&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;-0.050000&lt;/td&gt;
-      &lt;td&gt;-0.100000&lt;/td&gt;
-      &lt;td&gt;-0.100000&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;-0.754398&lt;/td&gt;
-      &lt;td&gt;1.252868&lt;/td&gt;
-      &lt;td&gt;0.512930&lt;/td&gt;
-      &lt;td&gt;-0.298093&lt;/td&gt;
-      &lt;td&gt;0.488518&lt;/td&gt;
-      &lt;td&gt;-0.075572&lt;/td&gt;
-      &lt;td&gt;1.131629&lt;/td&gt;
-      &lt;td&gt;1.519817&lt;/td&gt;
-      &lt;td&gt;2.185575&lt;/td&gt;
-      &lt;td&gt;-1.396496&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;-2.022201&lt;/td&gt;
-      &lt;td&gt;-0.306204&lt;/td&gt;
-      &lt;td&gt;0.827975&lt;/td&gt;
-      &lt;td&gt;0.230095&lt;/td&gt;
-      &lt;td&gt;0.762011&lt;/td&gt;
-      &lt;td&gt;0.319864&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;0.448470&lt;/td&gt;
-      &lt;td&gt;-0.100000&lt;/td&gt;
-      &lt;td&gt;-0.100000&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;-0.222328&lt;/td&gt;
-      &lt;td&gt;-0.200758&lt;/td&gt;
-      &lt;td&gt;0.186561&lt;/td&gt;
-      &lt;td&gt;0.410052&lt;/td&gt;
-      &lt;td&gt;0.198300&lt;/td&gt;
-      &lt;td&gt;0.119009&lt;/td&gt;
-      &lt;td&gt;-0.670662&lt;/td&gt;
-      &lt;td&gt;0.377564&lt;/td&gt;
-      &lt;td&gt;0.121821&lt;/td&gt;
-      &lt;td&gt;1.129484&lt;/td&gt;
-      &lt;td&gt;...&lt;/td&gt;
-      &lt;td&gt;0.077340&lt;/td&gt;
-      &lt;td&gt;-0.343854&lt;/td&gt;
-      &lt;td&gt;0.043597&lt;/td&gt;
-      &lt;td&gt;-0.620001&lt;/td&gt;
-      &lt;td&gt;0.698032&lt;/td&gt;
-      &lt;td&gt;0.444646&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;0.000000&lt;/td&gt;
-      &lt;td&gt;-0.050000&lt;/td&gt;
-      &lt;td&gt;0.000000&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;5 rows × 25 columns&lt;/p&gt;
-&lt;/div&gt;
-&lt;p&gt;First, we check for covariate imbalance across treatment arms, with a &lt;strong&gt;balance table&lt;/strong&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.groupby(&#39;T&#39;).agg([&#39;mean&#39;, &#39;std&#39;]).T.unstack(1).head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead tr th {
-    text-align: left;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;T&lt;/th&gt;
-      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;0&lt;/th&gt;
-      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;1&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;mean&lt;/th&gt;
-      &lt;th&gt;std&lt;/th&gt;
-      &lt;th&gt;mean&lt;/th&gt;
-      &lt;th&gt;std&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;x1&lt;/th&gt;
-      &lt;td&gt;-0.462644&lt;/td&gt;
-      &lt;td&gt;0.920626&lt;/td&gt;
-      &lt;td&gt;0.413837&lt;/td&gt;
-      &lt;td&gt;0.882116&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;x2&lt;/th&gt;
-      &lt;td&gt;0.007900&lt;/td&gt;
-      &lt;td&gt;1.010610&lt;/td&gt;
-      &lt;td&gt;-0.054072&lt;/td&gt;
-      &lt;td&gt;0.991680&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;x3&lt;/th&gt;
-      &lt;td&gt;-0.005718&lt;/td&gt;
-      &lt;td&gt;0.950997&lt;/td&gt;
-      &lt;td&gt;-0.042624&lt;/td&gt;
-      &lt;td&gt;1.059308&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;x4&lt;/th&gt;
-      &lt;td&gt;0.122930&lt;/td&gt;
-      &lt;td&gt;0.936591&lt;/td&gt;
-      &lt;td&gt;0.095082&lt;/td&gt;
-      &lt;td&gt;1.004048&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;x5&lt;/th&gt;
-      &lt;td&gt;0.032637&lt;/td&gt;
-      &lt;td&gt;0.955479&lt;/td&gt;
-      &lt;td&gt;0.119788&lt;/td&gt;
-      &lt;td&gt;1.039616&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;We can also get a first (wrong) estimate of the treatment effect as a difference in means.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.loc[df[&#39;T&#39;]==1, &#39;Y&#39;].mean() - df.loc[df[&#39;T&#39;]==0, &#39;Y&#39;].mean()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.29838749886286686
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We know this estimate is wrong since the treatment is not unconditionally randomized. Therefore, we estimate the average treatment effect using the &lt;strong&gt;AIPW estimator&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;First, we estimate the &lt;strong&gt;propensity scores&lt;/strong&gt; $e(x)$ using &lt;code&gt;LogisticRegression&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def estimate_e(df, X, model_e):
-    e = model_e.fit(df[dgp.X], df[&#39;T&#39;]).predict_proba(df[dgp.X])[:,1]
-    return e
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import LogisticRegression as logit
-
-e = estimate_e(df, dgp.X, logit())
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;A best practice is to use the &lt;code&gt;LeaveOneOut&lt;/code&gt; estimator to make predictions, i.e., for each observations, build a model using the remaining observations. This procedure helps preventing overfitting bias. The main issue is that it&amp;rsquo;s particularly slow since we need to fit one model per observation. However, it is parallelizable.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.model_selection import cross_val_predict, LeaveOneOut
-
-e = cross_val_predict(estimator=logit(), 
-                      X=df[dgp.X], 
-                      y=df[&#39;T&#39;],
-                      cv=LeaveOneOut(),
-                      method=&#39;predict_proba&#39;,
-                      n_jobs=-1)[:,1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Let&amp;rsquo;s check if the &lt;strong&gt;bounded support&lt;/strong&gt; assumption is satisfied.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print(f&#39;Support of e is [{min(e):.2}, {max(e):.2}]&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Support of e is [0.019, 0.97]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The support assumption is satisfied. Note that this is guaranteed with logistic regression.&lt;/p&gt;
-&lt;p&gt;We can further plot the distribution of scores. They definitely do not seem constant.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(e, bins=100).set(title=&#39;Propensity Scores&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;We can now estimate the average treatment effect using the AIPW estimator. We also separately compute its components, $D$ and $R$.&lt;/p&gt;
-&lt;p&gt;We use &lt;code&gt;RandomForestRegressor&lt;/code&gt; to estimate the conditional expectation of $Y$, $\hat \mu^{(t)}(x)$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def estimate_mu(df, X, model_mu):
-    mu = model_mu.fit(df[X + [&#39;T&#39;]], df[&#39;Y&#39;])
-    mu0 = mu.predict(df[X + [&#39;T&#39;]].assign(T=0))
-    mu1 = mu.predict(df[X + [&#39;T&#39;]].assign(T=1))
-    return mu0, mu1
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.ensemble import RandomForestRegressor as rfr
-
-mu0, mu1 = estimate_mu(df, dgp.X, rfr(max_features=5))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We now have all the elements to estimate AIPW&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def AIPW(df, X, e, mu0, mu1):
-    D = mu1 - mu0
-    R = df[&#39;T&#39;] / e * (df[&#39;Y&#39;] - mu1) - (1-df[&#39;T&#39;]) / (1-e) * (df[&#39;Y&#39;] - mu0)
-    tau_AIPW = D + R
-    return D, R, tau_AIPW
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;D, R, hat_tau_AIPW = AIPW(df, dgp.X, e, mu0, mu1)
-print(f&amp;quot;Mean: {np.mean(hat_tau_AIPW):.2} and var {np.var(hat_tau_AIPW):.2}&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Mean: -0.02 and var 0.48
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Our estimate is now closer to the true value, $-0.05$. We plot the distribution of $\hat \tau_i^{AIPW}$ below.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(hat_tau_AIPW, bins=20).set(title=&#39;Estimated $τ_{AIPW}$&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_37_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;To visualize the impact of the AIPW correction, we simulate the distribution of the AIPW estimator and its components.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def simulate_AIPW(k):
-    df = dgp_aipw().generate_data(seed=k)
-    e = estimate_e(df, dgp.X, logit())
-    mu0, mu1 = estimate_mu(df, dgp.X, rfr())
-    aipw = AIPW(df, dgp.X, e, mu0, mu1)
-    return np.mean(aipw, axis=1)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from joblib import Parallel, delayed
-
-def distribution_AIPW(t):
-    r = Parallel(n_jobs=8)(delayed(simulate_AIPW)(i) for i in range(100))
-    sim_tau_AIPW = pd.DataFrame(r, columns=[&#39;Direct&#39;, &#39;Correction&#39;, &#39;$τ_{AIPW}$&#39;])
-    plot = sns.boxplot(data=pd.melt(sim_tau_AIPW), x=&#39;variable&#39;, y=&#39;value&#39;, linewidth=2);
-    plot.set(title=t, xlabel=&#39;&#39;, ylabel=&#39;&#39;)
-    plot.axhline(-0.05, c=&#39;r&#39;, ls=&#39;:&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Below we plot the AIPW estimator and its components.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;distribution_AIPW(&amp;quot;Distribution of $\hat τ_{AIPW}$ and its components&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_42_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Since the model is well specified, the correction is close to zero and the final estimates are very close to the direct estimates.&lt;/p&gt;
-&lt;p&gt;We now turn into checking the &lt;strong&gt;double-robustness&lt;/strong&gt; of the estimator.&lt;/p&gt;
-&lt;p&gt;What happens if we misspecify the propensity score? Let&amp;rsquo;s assume now that the propensity score is $\hat e(X_i) = 1 /(1 + e^{x_4})$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def estimate_e(df, X, model_e):
-    e = 1 / (1 + np.exp(df[&#39;x4&#39;]))
-    return e
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;distribution_AIPW(&amp;quot;Distribution of $\hat τ_{AIPW}$ with misspecified $\hat e$&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_45_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;Not much changes. In fact, since we have a good direct model of $\mu(x)$, the residuals are small and the correction does not play a big role.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s now misspecify $\mu(x)$ and assume it is equal to $|x_5|$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def estimate_e(df, X, model_e):
-    e = model_e.fit(df[dgp.X], df[&#39;T&#39;]).predict_proba(df[dgp.X])[:,1]
-    return e
-
-def estimate_mu(df, X, model_mu):
-    mu0 = 0
-    mu1 = np.abs(df[&#39;x6&#39;])
-    return mu0, mu1
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;distribution_AIPW(&amp;quot;Distribution of $\hat τ_{AIPW}$ with misspecified $\hat μ$&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/aipw_48_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;In this case, the correction term is crucial and fully offsets the bias of the original estimator.&lt;/p&gt;
-&lt;p&gt;The &lt;a href=&#34;https://econml.azurewebsites.net/index.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;EconML&lt;/code&gt;&lt;/a&gt; library offers a plug and play estimator, &lt;code&gt;LinearDRLearner&lt;/code&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.drlearner import LinearDRLearner
-
-model = LinearDRLearner(model_propensity=logit(), model_regression=rfr())
-model.fit(Y=df[dgp.Y], X=df[dgp.X], T=df[dgp.T]);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The model directly gives us the average treatment effect.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model.ate_inference(X=df[dgp.X].values, T0=0, T1=1).summary().tables[0]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;caption&gt;Uncertainty of Mean Point Estimate&lt;/caption&gt;
-&lt;tr&gt;
-  &lt;th&gt;mean_point&lt;/th&gt; &lt;th&gt;stderr_mean&lt;/th&gt;  &lt;th&gt;zstat&lt;/th&gt; &lt;th&gt;pvalue&lt;/th&gt; &lt;th&gt;ci_mean_lower&lt;/th&gt; &lt;th&gt;ci_mean_upper&lt;/th&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-    &lt;td&gt;-0.087&lt;/td&gt;      &lt;td&gt;0.036&lt;/td&gt;    &lt;td&gt;-2.438&lt;/td&gt;  &lt;td&gt;0.015&lt;/td&gt;    &lt;td&gt;-0.157&lt;/td&gt;        &lt;td&gt;-0.017&lt;/td&gt;    
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;p&gt;The estimate is statistically different from zero and the confidence interval includes the true value of $-0.05$.&lt;/p&gt;
-&lt;h2 id=&#34;research-paper-replication&#34;&gt;Research Paper Replication&lt;/h2&gt;
-&lt;p&gt;TBD&lt;/p&gt;
-&lt;h2 id=&#34;business-case&#34;&gt;Business Case&lt;/h2&gt;
-&lt;p&gt;TBD&lt;/p&gt;
-&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Original paper: &lt;a href=&#34;https://www.cambridge.org/core/journals/political-analysis/article/abs/an-introduction-to-the-augmented-inverse-propensity-weighted-estimator/4B1B8301E46F4432C4DCC91FE20780DB&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;An Introduction to the Augmented Inverse Propensity Weighted Estimator&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=IfZHUFFlsGc&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Video lecture&lt;/a&gt; by Prof. Stefan Wager (Stanford)&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
