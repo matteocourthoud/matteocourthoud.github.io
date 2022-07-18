@@ -339,10 +339,10 @@
     
       <meta
         property="article:published_time"
-        content="2022-05-06T00:00:00&#43;00:00"
+        content="2022-07-18T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-05-06T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-07-18T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +374,8 @@
     "https://matteocourthoud.github.io/post/optimal_stopping/featured.png"
   ],
   
-  "datePublished": "2022-05-06T00:00:00Z",
-  "dateModified": "2022-05-06T00:00:00Z",
+  "datePublished": "2022-07-18T00:00:00Z",
+  "dateModified": "2022-07-18T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -780,8 +780,12 @@
         <li><a href="#simulation">Simulation</a></li>
       </ul>
     </li>
-    <li><a href="#conclusion">Conclusion</a></li>
-    <li><a href="#references">References</a></li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
     </div>
@@ -831,7 +835,7 @@
     
       
     
-    May 6, 2022
+    Jul 18, 2022
   </span>
   
 
@@ -973,22 +977,23 @@ zstat.__name__ = 'z-statistic'
 <li>$c = \mu_1 - z_{0.8} * \frac{\sigma}{\sqrt{n}}$</li>
 </ol>
 <p>where $z_{p}$ is the CDF inverse (or <a href="https://en.wikipedia.org/wiki/Quantile_function" target="_blank" rel="noopener">percent point function</a>) at $p$, and $\mu_i$ are the values of the mean under the different hypotheses.</p>
+<p>If we do not know the <strong>sign</strong> of the unknown mean $\mu$, we have to run a <strong>two-sided test</strong>. This means that the maximum probability of type 1 error on each side of the distribution has to be $\alpha/2 = 0.025$, implying $z_{0.975} = 1.96$.</p>
 <p>Combining the two expressions together we can solve for the <strong>required minimum sample size</strong>.</p>
 <p>$$
-n : \mu_0 + z_{0.95} * \frac{\sigma}{\sqrt{n}} = \mu_1 - z_{0.8} * \frac{\sigma}{\sqrt{n}}
+n : \mu_0 + z_{0.975} * \frac{\sigma}{\sqrt{n}} = \mu_1 - z_{0.8} * \frac{\sigma}{\sqrt{n}}
 $$</p>
 <p>so that</p>
 <p>$$
-n = \left( \sigma * \frac{z_{0.95} + z_{0.8}}{\mu_0 + \mu_1} \right)^2 = \left( 1 * \frac{1.64 + 0.84}{0 + 0.1} \right)^2 = 618.25
+n = \left( \sigma * \frac{z_{0.975} + z_{0.8}}{\mu_0 + \mu_1} \right)^2 = \left( 1 * \frac{1.96 + 0.84}{0 + 0.1} \right)^2 = 784.89
 $$</p>
 <pre><code class="language-python">from scipy.stats import norm
 
-n = ( (norm.ppf(0.95) + norm.ppf(0.8)) / 0.1 )**2
+n = ( (norm.ppf(0.975) + norm.ppf(0.8)) / 0.1 )**2
 print(f&quot;Minimum sample size: {n}&quot;)
 </code></pre>
-<pre><code>Minimum sample size: 618.2557232019765
+<pre><code>Minimum sample size: 784.8879734349086
 </code></pre>
-<p>We need at least 619 observations.</p>
+<p>We need at least 785 observations.</p>
 <p>We can get a better <strong>intuition</strong> by graphically plotting the two distributions with the critical value. I wrote a function <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/figures.py" target="_blank" rel="noopener"><code>plot_test</code></a> to draw a standard hypothesis testing setting.</p>
 <pre><code class="language-python">from src.figures import plot_test
 
@@ -997,7 +1002,7 @@ plot_test(mu0=0, mu1=0.1, alpha=0.05, n=n)
 <p><img src="img/optimal_stopping_11_0.png" alt="png"></p>
 <p>The critical value is such that, given the distributions under the two hypothesis, the <strong>rejection area</strong> in red is equal to $\alpha$. The sample size $n$ is such that it shrinks the variance of the two distributions so that the area in green is equal to $\beta$.</p>
 <p>Let&rsquo;s now <strong>simulate an experiment</strong> in which we draw an ordered sequence of observations and, after each observation, we compute the value of the test statistic.</p>
-<pre><code class="language-python">def experiment(f_stat, mu=0, n=619, seed=1):
+<pre><code class="language-python">def experiment(f_stat, mu=0, n=785, seed=1):
     np.random.seed(seed) # Set seed
     I = np.arange(1, n+1) # Observation index
     x = np.random.normal(mu, 1, n) # Observation value
@@ -1080,7 +1085,7 @@ df.head()
 <p>In this case, the test never crosses the critical values. Therefore, peeking does not have an effect. We would not have stopped the experiment prematurely.</p>
 <p>What would happen if we were <strong>repeating</strong> the experiment many times? Since the data is generated under the null hypothesis, $H_0: \mu = 0$, we expect to reject it only $\alpha=5%$ of the times.</p>
 <p>Let&rsquo;s simulate the data-generating process $K=100$ times.</p>
-<pre><code class="language-python">def simulate_experiments(f_stat, ybounds, xmin=0, early_stop=False, mu=0, K=100, n=619, **kwargs):
+<pre><code class="language-python">def simulate_experiments(f_stat, ybounds, xmin=0, early_stop=False, mu=0, K=100, n=785, **kwargs):
     # Count experiment durations
     stops = np.zeros(K) * n
     
@@ -1115,20 +1120,20 @@ df.head()
 <p>We plot the distribution of the z-statistic over samples .</p>
 <pre><code class="language-python">simulate_experiments(zstat, ybounds=[-1.96, 1.96], early_stop=False);
 </code></pre>
-<pre><code>Bounds crossed: 3 (33% upper, 67% lower)
-Average experiment duration: 619
+<pre><code>Bounds crossed: 3 (67% upper, 33% lower)
+Average experiment duration: 785
 </code></pre>
 <p><img src="img/optimal_stopping_22_1.png" alt="png"></p>
 <p>In the figure above, I have highlighted the experiments for which we reject the null hypothesis <strong>without peeking</strong>, i.e. given the value of the z test statistic <strong>at the end of the sampling</strong> process. Only in 3 experiments the final value lies outside the critical values, so that we reject the null hypothesis. This means a <strong>rejection rate</strong> of 3% which is very close to the expected rejection rate of $\alpha=0.05$ (under the null).</p>
 <p>What if instead we were <strong>impatient</strong> and, after collecting the first 100 observations, we were stopping <strong>as soon as</strong> we saw the z-statistic crossing the boundaries?</p>
-<pre><code class="language-python">stops_zstat_h0 = simulate_experiments(zstsat, xmin=99, ybounds=[-1.96, 1.96], early_stop=True, lw=2);
+<pre><code class="language-python">stops_zstat_h0 = simulate_experiments(zstat, xmin=99, ybounds=[-1.96, 1.96], early_stop=True, lw=2);
 plt.vlines(100, ymin=plt.ylim()[0], ymax=plt.ylim()[1], color='k', lw=1, ls='--');
 </code></pre>
-<pre><code>Bounds crossed: 25 (48% upper, 52% lower)
-Average experiment duration: 523
+<pre><code>Bounds crossed: 29 (45% upper, 55% lower)
+Average experiment duration: 644
 </code></pre>
 <p><img src="img/optimal_stopping_24_1.png" alt="png"></p>
-<p>In the figure above, I have highlighted the experiments in which the values of the z-statistic crosses one of the boundaries, from the 100th observation onwards. This happens in 25 simulations out of 100, which implies a <strong>rejection rate</strong> of 25%, which is very far from the expected rejection rate of $\alpha=0.05$ (under the null hypothesis). Peaking <strong>distorts</strong> the significance level of the test.</p>
+<p>In the figure above, I have highlighted the experiments in which the values of the z-statistic crosses one of the boundaries, from the 100th observation onwards. This happens in 29 simulations out of 100, which implies a <strong>rejection rate</strong> of 25%, which is very far from the expected rejection rate of $\alpha=0.05$ (under the null hypothesis). Peaking <strong>distorts</strong> the significance level of the test.</p>
 <p>Potential solutions are:</p>
 <ol>
 <li><strong>sequential probability ratio tests</strong></li>
@@ -1287,26 +1292,26 @@ print(f'Optimal bounds : [{a:.3f}, {b:.3f}]')
 </code></pre>
 <p><img src="img/optimal_stopping_43_0.png" alt="png"></p>
 <p>In this particular case, the test is inconclusive within our sampling framework. We need to <strong>collect more data</strong> in order to come to a decision.</p>
-<pre><code class="language-python">plot_experiment(experiment(log_lr, n=800), ybounds=[a,b]);
+<pre><code class="language-python">plot_experiment(experiment(log_lr, n=789), ybounds=[a,b]);
 </code></pre>
 <p><img src="img/optimal_stopping_45_0.png" alt="png"></p>
-<p>It takes 800 observations to reach to a conclusion, while before the sample size was 619. This test procedure seems much more lengthy than the previous one. Is it true on average?</p>
+<p>It takes 789 observations to reach to a conclusion, while before the sample size was 785. This test procedure can require a <strong>larger sample size</strong> than the previous one. Is it true on average?</p>
 <p>What would happen if we were to repeat the experiment $K=100$ times?</p>
 <pre><code class="language-python">simulate_experiments(log_lr, ybounds=[a, b], early_stop=True, lw=1.5);
 </code></pre>
-<pre><code>Bounds crossed: 91 (4% upper, 96% lower)
-Average experiment duration: 253
+<pre><code>Bounds crossed: 96 (4% upper, 96% lower)
+Average experiment duration: 264
 </code></pre>
 <p><img src="img/optimal_stopping_47_1.png" alt="png"></p>
-<p>We get a decision for 91 simulations out of 100 and for 96% of them, it&rsquo;s the correct decision. Therefore, our rejection rate is very close to the expected $\alpha=0.05$ (under the null hypothesis).</p>
-<p>However, for 9 experiments, the test is inconclusive. What would happen if we were to sample until we reach a conclusion in each experiment?</p>
+<p>We get a decision for 96 simulations out of 100 and for 96% of them, it&rsquo;s the correct decision. Therefore, our rejection rate is very close to the expected $\alpha=0.05$ (under the null hypothesis).</p>
+<p>However, for 4 experiments, the test is inconclusive. What would happen if we were to sample until we reach a conclusion in each experiment?</p>
 <pre><code class="language-python">simulate_experiments(log_lr, ybounds=[a,b], early_stop=True, lw=1.5, n=1900);
 </code></pre>
 <pre><code>Bounds crossed: 100 (4% upper, 96% lower)
 Average experiment duration: 275
 </code></pre>
 <p><img src="img/optimal_stopping_49_1.png" alt="png"></p>
-<p>As we can see from the plot, in one particularly unlucky experiment, we need to collect 1900 observations before coming to a conclusion. However, despite this outlier, the <strong>average experiment duration</strong> is an astounding 275 samples, less than half of the original sample size of 619.</p>
+<p>As we can see from the plot, in one particularly unlucky experiment, we need to collect 1900 observations before coming to a conclusion. However, despite this outlier, the <strong>average experiment duration</strong> is an astounding 275 samples, almost a third of the original sample size of 785.</p>
 <p>What would happen if instead the alternative hypothesis $H_1: \mu = 0.1$ was true?</p>
 <pre><code class="language-python">simulate_experiments(log_lr, ybounds=[a,b], early_stop=True, mu=0.1, lw=1, n=2100);
 </code></pre>
@@ -1321,11 +1326,13 @@ Average experiment duration: 443
 <p>Does it mean that we always need to perform tests with a pre-specified sample size? No! There exist procedures that allow for optimal stopping. These procedures were born for a specific purpose: reducing the sample size as much as possible, without sacrificing accuracy. The first and most known is the Sequential Probability Ratio Test, defined by Wallis as &ldquo;<em>the most powerful and
 seminal statistical ideas of the past third of a century</em>&rdquo; (in 1980).</p>
 <p>The SPRT was not only a powerful tool during war time but keeps being used today for very practical purposes (see for example <a href="https://netflixtechblog.com/improving-experimentation-efficiency-at-netflix-with-meta-analysis-and-optimal-stopping-d8ec290ae5be" target="_blank" rel="noopener">Netflix</a>, <a href="https://eng.uber.com/xp/" target="_blank" rel="noopener">Uber</a>).</p>
-<h2 id="references">References</h2>
+<h3 id="references">References</h3>
 <p>[1] A. Wald, <a href="https://www.jstor.org/stable/2235829" target="_blank" rel="noopener">Sequential tests of statistical hypotheses</a> (1945), <em>The Annal of Mathematical Statistics</em>.</p>
 <p>[2] A. Wald and J Wolfowitz, <a href="https://www.jstor.org/stable/2235638" target="_blank" rel="noopener">Optimum character of the sequential probability ratio test</a> (1948), <em>The Annals of Mathematical Statistics</em>.</p>
 <p>[3] W. A. Wallis, <a href="https://www.tandfonline.com/doi/abs/10.1080/01621459.1980.10477469" target="_blank" rel="noopener">The Statistical Research Group, 1942–1945</a> (1980), <em>Journal of the American Statistical Association</em>.</p>
-<p>You can find the original Jupyter Notebook here: <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/optimal_stopping.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/optimal_stopping.ipynb</a></p>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/optimal_stopping.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/optimal_stopping.ipynb</a></p>
 
           </div>
           

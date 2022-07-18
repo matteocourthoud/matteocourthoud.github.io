@@ -341,10 +341,10 @@ When estimating causal effects, the gold standard is randomized controlled trial
     
       <meta
         property="article:published_time"
-        content="2022-07-15T00:00:00&#43;00:00"
+        content="2022-07-18T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-07-15T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-07-18T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@ When estimating causal effects, the gold standard is randomized controlled trial
     "https://matteocourthoud.github.io/post/aipw/featured.png"
   ],
   
-  "datePublished": "2022-07-15T00:00:00Z",
-  "dateModified": "2022-07-15T00:00:00Z",
+  "datePublished": "2022-07-18T00:00:00Z",
+  "dateModified": "2022-07-18T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -846,7 +846,7 @@ When estimating causal effects, the gold standard is randomized controlled trial
     
       
     
-    Jul 15, 2022
+    Jul 18, 2022
   </span>
   
 
@@ -896,7 +896,7 @@ When estimating causal effects, the gold standard is randomized controlled trial
 <p>In a <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">previous post</a>, I have introduced and compared a series of methods that compute <strong>conditional average treatment effects (CATE)</strong> from observational or experimental data. Some of these methods require the researcher to specify and estimate the distribution of the outcome of interest, given the treatment and the observable characteristics (e.g. <a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">meta learners</a>). Other methods require the researcher to specify and estimate the probability of being treated, given the observable characteristics (e.g. <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">IPW</a>).</p>
 <p>In this post, we are going to see a procedure that <strong>combines</strong> both methods and is <strong>robust</strong> to misspecification of either method&rsquo;s model: the Augmented Inverse Probability Weighted estimator (AIPW).</p>
 <img src="fig/fusion.gif" width="400px"/>
-<p><strong>TLDR;</strong> AIPW is amazing and you should always use it!</p>
+<p><strong>TLDR;</strong> AIPW greatly improves both IPW and meta-learners, and you should always use it!</p>
 <h2 id="example">Example</h2>
 <p>Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering <strong>releasing a dark mode</strong>, and we would like to understand whether this new feature increases the time users spend on our blog.</p>
 <p>This example is borrowed from my last post on the estimation of conditional average treatment effects (CATE). You can find the <a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">original post here</a>. If you remember the setting, you can skip this introduction.</p>
@@ -1107,7 +1107,7 @@ $$</p>
 <p>i.e. conditional on observable characteristics $X$, the treatment assignment $D$ is as good as random. What we are effectively assuming is that there is no other characteristics that we do not observe that could impact both whether a user selects the <code>dark_mode</code> and their <code>read_time</code>. This is a <strong>strong assumption</strong> that is more likely to be satisfied the more individual characteristics we observe.</p>
 <p><strong>Assumption 2: overlap</strong> (or common support)</p>
 <p>$$
-\exists \eta &gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
+\exists \eta &gt; 0 \ : \ \eta \leq \mathbb E \left[ D_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
 $$</p>
 <p>i.e. no observation is deterministically assigned to the treatment or control group. This is a more technical assumption that basically means that for any level of <code>gender</code>, <code>age</code> or <code>hours</code>, there could exist an individual that select the <code>dark_mode</code> and one that doesn&rsquo;t. Differently from the unconfoundedness assumption, the overal assumption is <strong>testable</strong>.</p>
 <p><strong>Assumption 3: stable unit treatment value (SUTVA)</strong></p>
@@ -1340,7 +1340,7 @@ def simulate_estimators(X_e, X_mu, D, y):
 <ul>
 <li><a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">DAGs and Control Variables</a></li>
 <li><a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">Matching, Weighting, or Regression?</a></li>
-<li><a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">Unserstanding Meta Learners</a></li>
+<li><a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">Understanding Meta Learners</a></li>
 </ul>
 <h3 id="code">Code</h3>
 <p>You can find the original Jupyter Notebook here:</p>
