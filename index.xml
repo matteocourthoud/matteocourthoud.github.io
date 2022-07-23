@@ -27422,11 +27422,7 @@ df.head()
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;len(df.city.unique())
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;46
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We have information on the largest 46 U.S. cities for the period 2002-2019. The panel is &lt;strong&gt;balanced&lt;/strong&gt;, which means that we observe all cities for all time periods.&lt;/p&gt;
+&lt;p&gt;We have information on the largest 46 U.S. cities for the period 2002-2019. The panel is &lt;strong&gt;balanced&lt;/strong&gt;, which means that we observe all cities for all time periods. Self-driving cars were introduced in 2013.&lt;/p&gt;
 &lt;p&gt;Is the &lt;strong&gt;treated&lt;/strong&gt; unit, Miami, comparable to the rest of the sample? Let&amp;rsquo;s use the &lt;code&gt;create_table_one&lt;/code&gt; function from Uber&amp;rsquo;s &lt;a href=&#34;https://causalml.readthedocs.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;causalml&lt;/code&gt;&lt;/a&gt; package to produce a &lt;strong&gt;covariate balance table&lt;/strong&gt;, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from causalml.match import create_table_one
 
@@ -27534,7 +27530,7 @@ create_table_one(df, &#39;treated&#39;, [&#39;density&#39;, &#39;employment&#39;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;The effect of self-driving cars seems to be positive and statistically significant.&lt;/p&gt;
-&lt;p&gt;However, the &lt;strong&gt;problem&lt;/strong&gt; of this procedure is that there might have been many &lt;strong&gt;other things happening&lt;/strong&gt; after 2016. It&amp;rsquo;s a very strong stretch to attribute all differences to self-driving cars.&lt;/p&gt;
+&lt;p&gt;However, the &lt;strong&gt;problem&lt;/strong&gt; of this procedure is that there might have been many &lt;strong&gt;other things happening&lt;/strong&gt; after 2013. It&amp;rsquo;s a very strong stretch to attribute all differences to self-driving cars.&lt;/p&gt;
 &lt;p&gt;We can better understand this concern if we plot the time trend of revenue over cities. First, we need to reshape the data into a &lt;strong&gt;wide format&lt;/strong&gt;, with one column per city and one row per year.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = df.pivot(index=&#39;year&#39;, columns=&#39;city&#39;, values=&#39;revenue&#39;).reset_index()
 &lt;/code&gt;&lt;/pre&gt;
@@ -27554,7 +27550,7 @@ df[&#39;Other Cities&#39;] = df[[c for c in cities if c != treated_city]].mean(a
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_lines(df, treated_city, &#39;Other Cities&#39;, treatment_year)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, revenue seems to be increasing after the treatment in Miami. But it&amp;rsquo;s a very volatile time series. And revenue was increasing also in the rest of the country. It&amp;rsquo;s very hard from this plot to attribute the change to self-driving case.&lt;/p&gt;
 &lt;p&gt;Can we do better?&lt;/p&gt;
 &lt;h2 id=&#34;synthetic-control&#34;&gt;Synthetic Control&lt;/h2&gt;
@@ -27566,7 +27562,7 @@ df[&#39;Other Cities&#39;] = df[[c for c in cities if c != treated_city]].mean(a
 &lt;li&gt;a response $Y_{i,t} \in \mathbb R$ (&lt;code&gt;revenue&lt;/code&gt;)&lt;/li&gt;
 &lt;li&gt;a feature vector $X_{i,t} \in \mathbb R^n$ (&lt;code&gt;population&lt;/code&gt;, &lt;code&gt;density&lt;/code&gt;, &lt;code&gt;employment&lt;/code&gt; and &lt;code&gt;GDP&lt;/code&gt;)&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Moreover, one unit (Miami in our case) is treated at time $t^*$ (2016 in our case). We distinguish time periods before treatment and time periods after treatment.&lt;/p&gt;
+&lt;p&gt;Moreover, one unit (Miami in our case) is treated at time $t^*$ (2013 in our case). We distinguish time periods before treatment and time periods after treatment.&lt;/p&gt;
 &lt;p&gt;Crucially, treatment $D_i$ is not randomly assigned, therefore a difference in means between the treated unit(s) and the control group is not an unbiased estimator of the average treatment effect.&lt;/p&gt;
 &lt;h3 id=&#34;the-problem&#34;&gt;The Problem&lt;/h3&gt;
 &lt;p&gt;The problem is that, as usual, we do not observe the counterfactual outcome for treated units, i.e. we do not know what would have happened to them, if they had not been treated. This is known as the &lt;strong&gt;fundamental problem of causal inference&lt;/strong&gt;.&lt;/p&gt;
@@ -27607,10 +27603,12 @@ $$&lt;/p&gt;
 &lt;p&gt;You might notice a very close similarity to &lt;strong&gt;linear regression&lt;/strong&gt;.  Indeed, we are doing something very similar.&lt;/p&gt;
 &lt;p&gt;In linear regression, we usually have &lt;strong&gt;many units&lt;/strong&gt; (observations), &lt;strong&gt;few exogenous features&lt;/strong&gt; and &lt;strong&gt;one endogenous feature&lt;/strong&gt; and we try to express the endogenous feature as a linear combination of the endogenous features, for each unit.&lt;/p&gt;
 &lt;img src=&#34;fig/synth1.png&#34; width=&#34;500px&#34;/&gt;
-&lt;p&gt;With synthetic control, we instead have &lt;strong&gt;many time periods&lt;/strong&gt; (features), few &lt;strong&gt;control units&lt;/strong&gt; and a single &lt;strong&gt;treated unit&lt;/strong&gt; and we try to express the treated unit as a linear combination of the control units, for each time period&lt;/p&gt;
-&lt;img src=&#34;fig/synth2.png&#34; width=&#34;500px&#34;/&gt;
-&lt;p&gt;In the end, we are doing the same thing, but with a transposed dataset.&lt;/p&gt;
+&lt;p&gt;With synthetic control, we instead have &lt;strong&gt;many time periods&lt;/strong&gt; (features), few &lt;strong&gt;control units&lt;/strong&gt; and a single &lt;strong&gt;treated unit&lt;/strong&gt; and we try to express the treated unit as a linear combination of the control units, for each time period.&lt;/p&gt;
+&lt;p&gt;To perform the same operation, we essentially need to &lt;strong&gt;transpose the data&lt;/strong&gt;.&lt;/p&gt;
 &lt;img src=&#34;fig/synth3.png&#34; width=&#34;500px&#34;/&gt;
+&lt;p&gt;After the swap, we compute the &lt;strong&gt;synthetic control&lt;/strong&gt; weights, exactly as we would compute regression coefficients. However now one observation is a time period and one feature is a unit.&lt;/p&gt;
+&lt;img src=&#34;fig/synth2.png&#34; width=&#34;500px&#34;/&gt;
+&lt;p&gt;Notice that this swap is &lt;strong&gt;not innocent&lt;/strong&gt;. In linear regression we assume that the relationship between the exogenous features and the endogenous feature is the same &lt;strong&gt;across units&lt;/strong&gt;, instead in synthetic control we assume that the relationship between the treated units and the control unit is the same &lt;strong&gt;over time&lt;/strong&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;back-to-self-driving-cars&#34;&gt;Back to self-driving cars&lt;/h3&gt;
 &lt;p&gt;Let&amp;rsquo;s go back to the data now! First, we write a &lt;code&gt;synth_predict&lt;/code&gt; function that takes as input a model that is trained on control cities and tries to predict the outcome of the treated city, Miami, before the introduction of self-driving cars.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def synth_predict(df, model, city, year):
@@ -27766,7 +27764,7 @@ print(f&amp;quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype=&#39;floa
 _, bins, _ = plt.hist(lambdas.values(), bins=20, color=&amp;quot;C1&amp;quot;);
 plt.hist([lambdas[treated_city]], bins=bins)
 plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across cities&#39;);
-ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2.75, 1.6), frameon=False));
+ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2.7, 1.7), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synth_67_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Indeed, the statistic for Miami is quite extreme.&lt;/p&gt;
@@ -27794,6 +27792,12 @@ ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zo
 &lt;p&gt;[3] N. Doudchenko, G. Imbens, &lt;a href=&#34;https://arxiv.org/pdf/1610.07748.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Balancing, Regression, Difference-In-Differences and Synthetic Control Methods: A Synthesis&lt;/a&gt; (2017), &lt;em&gt;working paper&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[] Matrix completion methods for causal panel data models&lt;/p&gt;
 &lt;p&gt;[] Using Synthetic Controls: Feasibility, Data Requirements, and Methodological Aspects&lt;/p&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/99bf5cffa0d9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Matching, Weighting, or Regression?&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Meta Learners&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
 &lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/synth.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/synth.ipynb&lt;/a&gt;&lt;/p&gt;
