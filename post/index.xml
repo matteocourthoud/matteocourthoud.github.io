@@ -428,38 +428,31 @@ for city in cities:
     synth_predict(df, SyntheticControl(), city, treatment_year)
     plot_difference(df, city, treatment_year, vline=False, alpha=0.2, color=&#39;C1&#39;, lw=3)
 plot_difference(df, treated_city, treatment_year)
-ax.add_artist(AnnotationBbox(OffsetImage(mpimg.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2015, 2.7), frameon=False));
+ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2015, 2.7), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;---------------------------------------------------------------------------
-
-NameError                                 Traceback (most recent call last)
-
-Input In [21], in &amp;lt;module&amp;gt;
-      6     plot_difference(df, city, treatment_year, vline=False, alpha=0.2, color=&#39;C1&#39;, lw=3)
-      7 plot_difference(df, treated_city, treatment_year)
-----&amp;gt; 8 ax.add_artist(AnnotationBbox(OffsetImage(mpimg.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2015, 2.7), frameon=False))
-
-
-NameError: name &#39;mpimg&#39; is not defined
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_61_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;From the graph we notice two things. First, the effect for California is quite extreme and therefore likely not to be driven by random noise.&lt;/p&gt;
-&lt;p&gt;Second, we also notice that there are a couple of states for which we cannot fit the pre-trend very well. This is expected since, for each state, we are building the counterfactual trend as a &lt;strong&gt;convex combination&lt;/strong&gt; of all other states. States that are quite extreme in terms of cigarette consumpion are very useful to build the counterfactuals of other states, but it&amp;rsquo;s hard to build a counterfactual for them. Not to bias the analysis, let&amp;rsquo;s exclude states for which we cannot build a &amp;ldquo;good enough&amp;rdquo; counterfectual, in terms of pre-treatment MSE.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;From the graph we notice two things. First, the effect for Miami is quite &lt;strong&gt;extreme&lt;/strong&gt; and therefore likely not to be driven by random noise.&lt;/p&gt;
+&lt;p&gt;Second, we also notice that there are a couple of cities for which we cannot fit the pre-trend very well. In particular, there is a line that is sensibly lower than all others. This is expected since, for each city, we are building the counterfactual trend as a &lt;strong&gt;convex combination&lt;/strong&gt; of all other cities. Cities that are quite extreme in terms of &lt;code&gt;revenue&lt;/code&gt; are very useful to build the counterfactuals of other cities, but it&amp;rsquo;s &lt;strong&gt;hard to build a counterfactual for them&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Not to bias the analysis, let&amp;rsquo;s exclude states for which we cannot build a &amp;ldquo;good enough&amp;rdquo; counterfectual, in terms of pre-treatment MSE.&lt;/p&gt;
 &lt;p&gt;$$
 MSE_{pre} = \frac{1}{n} \sum_{t \in \text{pre}} \left( Y_t - \hat Y_t \right)^2
 $$&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;mse_treated = synth_predict(df, SyntheticControl(), treated_city, treatment_year).mse
+&lt;p&gt;As a rule of thumb, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Abadie, Diamond and Hainmueller (2010)&lt;/a&gt; suggest to exclude units for which the prediction MSE is larger than twice the MSE of the treated unit.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Reference mse
+mse_treated = synth_predict(df, SyntheticControl(), treated_city, treatment_year).mse
 
+# Other mse
 fig, ax = plt.subplots()
 for city in cities:
     mse = synth_predict(df, SyntheticControl(), city, treatment_year).mse
     if mse &amp;lt; 2 * mse_treated:
         plot_difference(df, city, treatment_year, vline=False, alpha=0.2, color=&#39;C1&#39;, lw=3)
 plot_difference(df, treated_city, treatment_year)
-ax.add_artist(AnnotationBbox(OffsetImage(mpimg.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2015, 2.7), frameon=False));
+ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2015, 2.7), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;After exluding extreme observations, it looks like the effect for California is very unusual, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales).&lt;/p&gt;
-&lt;p&gt;One &lt;strong&gt;statistic&lt;/strong&gt; that the authors suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_63_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;After exluding extreme observations, it looks like the effect for Miami is very unusual.&lt;/p&gt;
+&lt;p&gt;One &lt;strong&gt;statistic&lt;/strong&gt; that &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Abadie, Diamond and Hainmueller (2010)&lt;/a&gt; suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.&lt;/p&gt;
 &lt;p&gt;$$
 \lambda = \frac{MSE_{post}}{MSE_{pre}} = \frac{\frac{1}{n} \sum_{t \in \text{post}} \left( Y_t - \hat Y_t \right)^2 }{\frac{1}{n} \sum_{t \in \text{pre}} \left( Y_t - \hat Y_t \right)^2 }
 $$&lt;/p&gt;
@@ -472,13 +465,16 @@ for city in cities:
     
 print(f&amp;quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype=&#39;float&#39;) &amp;gt; lambdas[treated_city]):.4}&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;It seems that only $4.3%$ of the cities had a larger MSE ratio. We can visualize the distribution of the statistic under permutation with a histogram.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;p-value: 0.04348
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It seems that only $4.3%$ of the cities had a larger MSE ratio than Miami, implying a p-value of 0.043. We can visualize the distribution of the statistic under permutation with a histogram.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plt.subplots()
 _, bins, _ = plt.hist(lambdas.values(), bins=20, color=&amp;quot;C1&amp;quot;);
 plt.hist([lambdas[treated_city]], bins=bins)
 plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across cities&#39;);
 ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2.7, 1.6), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_67_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Indeed, the statistic for Miami is quite extreme.&lt;/p&gt;
 &lt;h3 id=&#34;synthetic-control-vs-other-methods&#34;&gt;Synthetic Control vs Other Methods&lt;/h3&gt;
 &lt;p&gt;What are the advantages and disadvantages of synthetic control methods with respect to other methods?&lt;/p&gt;
@@ -506,7 +502,7 @@ ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zo
 &lt;p&gt;[] Using Synthetic Controls: Feasibility, Data Requirements, and Methodological Aspects&lt;/p&gt;
 &lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
 &lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/synthetic_control.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/synthetic_control.ipynb&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/synth.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/synth.ipynb&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
