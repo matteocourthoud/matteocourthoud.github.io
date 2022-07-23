@@ -27634,7 +27634,7 @@ coef = synth_predict(df, LinearRegression(), treated_city, treatment_year).coef_
 &lt;p&gt;On the other hand, we are clearly &lt;strong&gt;overfitting&lt;/strong&gt;: the pre-treatment predicted &lt;code&gt;revenue&lt;/code&gt; line is perfectly overlapping with the actual data. Given the high variability of &lt;code&gt;revenue&lt;/code&gt; in Miami, this is suspicious, to say the least.&lt;/p&gt;
 &lt;p&gt;Another problem concerns the &lt;strong&gt;weights&lt;/strong&gt;. Let&amp;rsquo;s plot them.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_states = pd.DataFrame({&#39;city&#39;: [c for c in cities if c!=treated_city], &#39;ols_coef&#39;: coef})
-plt.figure(figsize=(10, 10))
+plt.figure(figsize=(10, 12))
 sns.barplot(data=df_states, x=&#39;ols_coef&#39;, y=&#39;city&#39;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synth_45_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
@@ -27706,7 +27706,7 @@ plot_lines(df, treated_city, f&#39;Synthetic {treated_city}&#39;, treatment_year
 &lt;p&gt;&lt;img src=&#34;img/synth_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The difference is clearly positive and slightly increasing over time.&lt;/p&gt;
 &lt;p&gt;We can also visualize the &lt;strong&gt;weights&lt;/strong&gt; to interpret the estimated counterfactual (what would have happened in Miami, without self-driving cars).&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.figure(figsize=(10, 10))
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.figure(figsize=(10, 12))
 sns.barplot(data=df_states, x=&#39;coef_synth&#39;, y=&#39;city&#39;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/synth_57_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
@@ -27744,7 +27744,6 @@ for city in cities:
 plot_difference(df, treated_city, treatment_year)
 ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2015, 2.7), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_63_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;After exluding extreme observations, it looks like the effect for Miami is very unusual.&lt;/p&gt;
 &lt;p&gt;One &lt;strong&gt;statistic&lt;/strong&gt; that &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Abadie, Diamond and Hainmueller (2010)&lt;/a&gt; suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.&lt;/p&gt;
 &lt;p&gt;$$
@@ -27759,8 +27758,6 @@ for city in cities:
     
 print(f&amp;quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype=&#39;float&#39;) &amp;gt; lambdas[treated_city]):.4}&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;p-value: 0.04348
-&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;It seems that only $4.3%$ of the cities had a larger MSE ratio than Miami, implying a p-value of 0.043. We can visualize the distribution of the statistic under permutation with a histogram.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plt.subplots()
 _, bins, _ = plt.hist(lambdas.values(), bins=20, color=&amp;quot;C1&amp;quot;);
@@ -27768,7 +27765,6 @@ plt.hist([lambdas[treated_city]], bins=bins)
 plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across cities&#39;);
 ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2.7, 1.6), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_67_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Indeed, the statistic for Miami is quite extreme.&lt;/p&gt;
 &lt;h3 id=&#34;synthetic-control-vs-other-methods&#34;&gt;Synthetic Control vs Other Methods&lt;/h3&gt;
 &lt;p&gt;What are the advantages and disadvantages of synthetic control methods with respect to other methods?&lt;/p&gt;

@@ -1209,7 +1209,7 @@ coef = synth_predict(df, LinearRegression(), treated_city, treatment_year).coef_
 <p>On the other hand, we are clearly <strong>overfitting</strong>: the pre-treatment predicted <code>revenue</code> line is perfectly overlapping with the actual data. Given the high variability of <code>revenue</code> in Miami, this is suspicious, to say the least.</p>
 <p>Another problem concerns the <strong>weights</strong>. Let&rsquo;s plot them.</p>
 <pre><code class="language-python">df_states = pd.DataFrame({'city': [c for c in cities if c!=treated_city], 'ols_coef': coef})
-plt.figure(figsize=(10, 10))
+plt.figure(figsize=(10, 12))
 sns.barplot(data=df_states, x='ols_coef', y='city');
 </code></pre>
 <p><img src="img/synth_45_0.png" alt="png"></p>
@@ -1281,7 +1281,7 @@ plot_lines(df, treated_city, f'Synthetic {treated_city}', treatment_year)
 <p><img src="img/synth_55_0.png" alt="png"></p>
 <p>The difference is clearly positive and slightly increasing over time.</p>
 <p>We can also visualize the <strong>weights</strong> to interpret the estimated counterfactual (what would have happened in Miami, without self-driving cars).</p>
-<pre><code class="language-python">plt.figure(figsize=(10, 10))
+<pre><code class="language-python">plt.figure(figsize=(10, 12))
 sns.barplot(data=df_states, x='coef_synth', y='city');
 </code></pre>
 <p><img src="img/synth_57_0.png" alt="png"></p>
@@ -1319,7 +1319,6 @@ for city in cities:
 plot_difference(df, treated_city, treatment_year)
 ax.add_artist(AnnotationBbox(OffsetImage(plt.imread('fig/miami.png'), zoom=0.25), (2015, 2.7), frameon=False));
 </code></pre>
-<p><img src="img/synth_63_0.png" alt="png"></p>
 <p>After exluding extreme observations, it looks like the effect for Miami is very unusual.</p>
 <p>One <strong>statistic</strong> that <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Abadie, Diamond and Hainmueller (2010)</a> suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.</p>
 <p>$$
@@ -1334,8 +1333,6 @@ for city in cities:
     
 print(f&quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype='float') &gt; lambdas[treated_city]):.4}&quot;)
 </code></pre>
-<pre><code>p-value: 0.04348
-</code></pre>
 <p>It seems that only $4.3%$ of the cities had a larger MSE ratio than Miami, implying a p-value of 0.043. We can visualize the distribution of the statistic under permutation with a histogram.</p>
 <pre><code class="language-python">fig, ax = plt.subplots()
 _, bins, _ = plt.hist(lambdas.values(), bins=20, color=&quot;C1&quot;);
@@ -1343,7 +1340,6 @@ plt.hist([lambdas[treated_city]], bins=bins)
 plt.title('Ratio of $MSE_{post}$ and $MSE_{pre}$ across cities');
 ax.add_artist(AnnotationBbox(OffsetImage(plt.imread('fig/miami.png'), zoom=0.25), (2.7, 1.6), frameon=False));
 </code></pre>
-<p><img src="img/synth_67_0.png" alt="png"></p>
 <p>Indeed, the statistic for Miami is quite extreme.</p>
 <h3 id="synthetic-control-vs-other-methods">Synthetic Control vs Other Methods</h3>
 <p>What are the advantages and disadvantages of synthetic control methods with respect to other methods?</p>
