@@ -891,7 +891,7 @@ As you can imagine, there are many limitations to running an AB/test for this ty
 <p>Suppose you were a <strong>ride-sharing platform</strong> and you want to test the effect of self-driving cars in your fleet.</p>
 <p>As you can imagine, there are many <strong>limitations</strong> to running an AB/test for this type of feature. First of all, it&rsquo;s complicated to randomize individual rides. Second, it&rsquo;s a very expensive intervention. Third, and statistically most important, you cannot run this intervention at the ride level. The problem is that there are <strong>spillover</strong> effects from treated to control units: if indeed self-driving cars are more efficient, it means that they can serve more customers in the same amount of time, reducing the customers available to normal drivers (the control group). This spillover <strong>contaminates</strong> the experiment and prevents a causal interpretation of the results.</p>
 <p>For all these reasons, we select only one city at random to run this experiment&hellip; (drum roll)&hellip; Miami!</p>
-<img src="fig/miami2.jpg" width="700px"/>
+<img src="fig/miami_skyline.jpg" width="700px"/>
 <p>I generate a simulated dataset in which we observe a panel of U.S. cities over time. The revenue data is made up, while the socio-economic variables are taken from the <a href="https://stats.oecd.org/" target="_blank" rel="noopener">OECD database</a>. I import the data generating process <code>dgp_selfdriving()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
@@ -1319,6 +1319,7 @@ for city in cities:
 plot_difference(df, treated_city, treatment_year)
 ax.add_artist(AnnotationBbox(OffsetImage(plt.imread('fig/miami.png'), zoom=0.25), (2015, 2.7), frameon=False));
 </code></pre>
+<p><img src="img/synth_63_0.png" alt="png"></p>
 <p>After exluding extreme observations, it looks like the effect for Miami is very unusual.</p>
 <p>One <strong>statistic</strong> that <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Abadie, Diamond and Hainmueller (2010)</a> suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.</p>
 <p>$$
@@ -1333,13 +1334,16 @@ for city in cities:
     
 print(f&quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype='float') &gt; lambdas[treated_city]):.4}&quot;)
 </code></pre>
+<pre><code>p-value: 0.04348
+</code></pre>
 <p>It seems that only $4.3%$ of the cities had a larger MSE ratio than Miami, implying a p-value of 0.043. We can visualize the distribution of the statistic under permutation with a histogram.</p>
 <pre><code class="language-python">fig, ax = plt.subplots()
 _, bins, _ = plt.hist(lambdas.values(), bins=20, color=&quot;C1&quot;);
 plt.hist([lambdas[treated_city]], bins=bins)
 plt.title('Ratio of $MSE_{post}$ and $MSE_{pre}$ across cities');
-ax.add_artist(AnnotationBbox(OffsetImage(plt.imread('fig/miami.png'), zoom=0.25), (2.7, 1.6), frameon=False));
+ax.add_artist(AnnotationBbox(OffsetImage(plt.imread('fig/miami.png'), zoom=0.25), (2.75, 1.6), frameon=False));
 </code></pre>
+<p><img src="img/synth_67_0.png" alt="png"></p>
 <p>Indeed, the statistic for Miami is quite extreme.</p>
 <h3 id="synthetic-control-vs-other-methods">Synthetic Control vs Other Methods</h3>
 <p>What are the advantages and disadvantages of synthetic control methods with respect to other methods?</p>

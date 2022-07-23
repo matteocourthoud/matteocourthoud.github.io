@@ -22,7 +22,7 @@
 &lt;p&gt;Suppose you were a &lt;strong&gt;ride-sharing platform&lt;/strong&gt; and you want to test the effect of self-driving cars in your fleet.&lt;/p&gt;
 &lt;p&gt;As you can imagine, there are many &lt;strong&gt;limitations&lt;/strong&gt; to running an AB/test for this type of feature. First of all, it&amp;rsquo;s complicated to randomize individual rides. Second, it&amp;rsquo;s a very expensive intervention. Third, and statistically most important, you cannot run this intervention at the ride level. The problem is that there are &lt;strong&gt;spillover&lt;/strong&gt; effects from treated to control units: if indeed self-driving cars are more efficient, it means that they can serve more customers in the same amount of time, reducing the customers available to normal drivers (the control group). This spillover &lt;strong&gt;contaminates&lt;/strong&gt; the experiment and prevents a causal interpretation of the results.&lt;/p&gt;
 &lt;p&gt;For all these reasons, we select only one city at random to run this experiment&amp;hellip; (drum roll)&amp;hellip; Miami!&lt;/p&gt;
-&lt;img src=&#34;fig/miami2.jpg&#34; width=&#34;700px&#34;/&gt;
+&lt;img src=&#34;fig/miami_skyline.jpg&#34; width=&#34;700px&#34;/&gt;
 &lt;p&gt;I generate a simulated dataset in which we observe a panel of U.S. cities over time. The revenue data is made up, while the socio-economic variables are taken from the &lt;a href=&#34;https://stats.oecd.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;OECD database&lt;/a&gt;. I import the data generating process &lt;code&gt;dgp_selfdriving()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
@@ -450,6 +450,7 @@ for city in cities:
 plot_difference(df, treated_city, treatment_year)
 ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2015, 2.7), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_63_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;After exluding extreme observations, it looks like the effect for Miami is very unusual.&lt;/p&gt;
 &lt;p&gt;One &lt;strong&gt;statistic&lt;/strong&gt; that &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Abadie, Diamond and Hainmueller (2010)&lt;/a&gt; suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.&lt;/p&gt;
 &lt;p&gt;$$
@@ -464,13 +465,16 @@ for city in cities:
     
 print(f&amp;quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype=&#39;float&#39;) &amp;gt; lambdas[treated_city]):.4}&amp;quot;)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;p-value: 0.04348
+&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;It seems that only $4.3%$ of the cities had a larger MSE ratio than Miami, implying a p-value of 0.043. We can visualize the distribution of the statistic under permutation with a histogram.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plt.subplots()
 _, bins, _ = plt.hist(lambdas.values(), bins=20, color=&amp;quot;C1&amp;quot;);
 plt.hist([lambdas[treated_city]], bins=bins)
 plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across cities&#39;);
-ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2.7, 1.6), frameon=False));
+ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2.75, 1.6), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_67_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Indeed, the statistic for Miami is quite extreme.&lt;/p&gt;
 &lt;h3 id=&#34;synthetic-control-vs-other-methods&#34;&gt;Synthetic Control vs Other Methods&lt;/h3&gt;
 &lt;p&gt;What are the advantages and disadvantages of synthetic control methods with respect to other methods?&lt;/p&gt;
