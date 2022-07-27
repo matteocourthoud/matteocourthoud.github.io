@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sat, 23 Jul 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Wed, 27 Jul 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -27307,15 +27307,19 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
     </item>
     
     <item>
-      <title>Synthetic Control</title>
+      <title>Understanding Synthetic Control Methods</title>
       <link>https://matteocourthoud.github.io/post/synth/</link>
-      <pubDate>Sat, 23 Jul 2022 00:00:00 +0000</pubDate>
+      <pubDate>Wed, 27 Jul 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/synth/</guid>
-      <description>&lt;p&gt;INTRO&lt;/p&gt;
+      <description>&lt;p&gt;&lt;em&gt;A detailed introduction to one of the most popular causal inference techniques in the industry&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;It is now widely accepted that the gold standard technique to compute the &lt;strong&gt;causal effect&lt;/strong&gt; of a treatment (a drug, ad, product, &amp;hellip;) on an outcome of interest (a disease, firm revenue, customer satisfaction, &amp;hellip;) is &lt;strong&gt;AB testing&lt;/strong&gt;, a.k.a. randomized experiments. We randomly split a set of subjects (patients, users, customers, &amp;hellip;) into a treatment and a control group and give the treatment to the treatment group. This procedure ensures that, ex-ante, the only expected difference between the two groups is caused by the treatment.&lt;/p&gt;
+&lt;p&gt;One of the key assumptions in AB testing is that there is &lt;strong&gt;no contamination&lt;/strong&gt; between treatment and control group. Giving a drug to one patient in the treatment group does not affect the health of patients in the control group. This might not be the case for example if we are twying to cure a contageous disease and the two groups are not isolated. In the industry, frequent violations of the contamination assumption are &lt;strong&gt;network effects&lt;/strong&gt; - my utility of using a social network increases as the number of friends on the network increases - and &lt;strong&gt;general equilibrium effects&lt;/strong&gt; - if I improve one product, it might decrease the sales of another similar product.&lt;/p&gt;
+&lt;p&gt;Because of this reason, often experiments are carried out at a sufficiently large scale so that there is no contamination across groups, such as cities, states or even countries. Then another problem arises because of the larger scale: the treatment becomes &lt;strong&gt;more expensive&lt;/strong&gt;. Giving a drug to 50% of patients in a hospital is much less expensive than giving a drug to 50% of cities in a country. Therefore, often only &lt;strong&gt;few units are treated&lt;/strong&gt; but often over a longer period of time.&lt;/p&gt;
+&lt;p&gt;In these settings, a very powerful method emerged around 10 years age: &lt;strong&gt;Synthetic Control&lt;/strong&gt;. The idea of synthetic control is to exploit the temporal variation in the data instead of the cross-sectional one (across time instead of across units). This method is extremely popular in the industry - e.g. in companies like &lt;a href=&#34;https://proceedings.neurips.cc/paper/2021/file/48d23e87eb98cc2227b5a8c33fa00680-Paper.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Google&lt;/a&gt;, &lt;a href=&#34;https://eng.uber.com/causal-inference-at-uber/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Uber&lt;/a&gt;, &lt;a href=&#34;https://research.facebook.com/publications/regression-adjustment-with-synthetic-controls-in-online-experiments/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Facebook&lt;/a&gt;, &lt;a href=&#34;https://github.com/Microsoft/SparseSC&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Microsoft&lt;/a&gt;, &lt;a href=&#34;https://www.amazon.science/publications/a-self-supervised-approach-to-hierarchical-forecasting-with-applications-to-groupwise-synthetic-controls&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Amazon&lt;/a&gt; - because it is easy to interpret and deals with a setting that emerges often at large scales. In this post we are going to explore this technique by means of example: we will investigate the effectiveness of self-driving cars for a ride-sharing platform.&lt;/p&gt;
 &lt;h2 id=&#34;self-driving-cars&#34;&gt;Self-Driving Cars&lt;/h2&gt;
-&lt;p&gt;Suppose you were a &lt;strong&gt;ride-sharing platform&lt;/strong&gt; and you want to test the effect of self-driving cars in your fleet.&lt;/p&gt;
+&lt;p&gt;Suppose you were a &lt;strong&gt;ride-sharing platform&lt;/strong&gt; and you wanted to test the effect of self-driving cars in your fleet.&lt;/p&gt;
 &lt;p&gt;As you can imagine, there are many &lt;strong&gt;limitations&lt;/strong&gt; to running an AB/test for this type of feature. First of all, it&amp;rsquo;s complicated to randomize individual rides. Second, it&amp;rsquo;s a very expensive intervention. Third, and statistically most important, you cannot run this intervention at the ride level. The problem is that there are &lt;strong&gt;spillover&lt;/strong&gt; effects from treated to control units: if indeed self-driving cars are more efficient, it means that they can serve more customers in the same amount of time, reducing the customers available to normal drivers (the control group). This spillover &lt;strong&gt;contaminates&lt;/strong&gt; the experiment and prevents a causal interpretation of the results.&lt;/p&gt;
-&lt;p&gt;For all these reasons, we select only one city at random to run this experiment&amp;hellip; (drum roll)&amp;hellip; Miami!&lt;/p&gt;
+&lt;p&gt;For all these reasons, we select only one city. Given the synthetic vibe of the article we cannot but select&amp;hellip; (&lt;em&gt;drum roll&lt;/em&gt;)&amp;hellip; Miami!&lt;/p&gt;
 &lt;img src=&#34;fig/miami_skyline_text.jpg&#34; width=&#34;700px&#34;/&gt;
 &lt;p&gt;I generate a simulated dataset in which we observe a panel of U.S. cities over time. The revenue data is made up, while the socio-economic variables are taken from the &lt;a href=&#34;https://stats.oecd.org/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;OECD database&lt;/a&gt;. I import the data generating process &lt;code&gt;dgp_selfdriving()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
@@ -27514,7 +27518,7 @@ create_table_one(df, &#39;treated&#39;, [&#39;density&#39;, &#39;employment&#39;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;The effect of self-driving cars seems to be negative but not significant.&lt;/p&gt;
-&lt;p&gt;The main &lt;strong&gt;problem&lt;/strong&gt; here is that we have a &lt;strong&gt;single treated unit&lt;/strong&gt;: Miami. It&amp;rsquo;s very hard to argue that Miami is comparable to other cities. Randomization ensures that this simple estimator is unbiased, ex-ante. However, with a single treated unit, the estimator suffers from severe small sample bias .&lt;/p&gt;
+&lt;p&gt;The main &lt;strong&gt;problem&lt;/strong&gt; here is that treatment was &lt;strong&gt;not randomly assigned&lt;/strong&gt;. We have a single treated unit, Miami, and it&amp;rsquo;s hardly comparable to other cities.&lt;/p&gt;
 &lt;p&gt;One alternative procedure, is to compare revenue &lt;strong&gt;before and after&lt;/strong&gt; the treatment, within the city of Miami.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;revenue ~ post&#39;, data=df[df[&#39;city&#39;]==treated_city]).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
@@ -27530,7 +27534,7 @@ create_table_one(df, &#39;treated&#39;, [&#39;density&#39;, &#39;employment&#39;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;The effect of self-driving cars seems to be positive and statistically significant.&lt;/p&gt;
-&lt;p&gt;However, the &lt;strong&gt;problem&lt;/strong&gt; of this procedure is that there might have been many &lt;strong&gt;other things happening&lt;/strong&gt; after 2013. It&amp;rsquo;s a very strong stretch to attribute all differences to self-driving cars.&lt;/p&gt;
+&lt;p&gt;However, the &lt;strong&gt;problem&lt;/strong&gt; of this procedure is that there might have been many &lt;strong&gt;other things happening&lt;/strong&gt; after 2013. It&amp;rsquo;s quite a stretch to attribute all differences to self-driving cars.&lt;/p&gt;
 &lt;p&gt;We can better understand this concern if we plot the time trend of revenue over cities. First, we need to reshape the data into a &lt;strong&gt;wide format&lt;/strong&gt;, with one column per city and one row per year.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = df.pivot(index=&#39;year&#39;, columns=&#39;city&#39;, values=&#39;revenue&#39;).reset_index()
 &lt;/code&gt;&lt;/pre&gt;
@@ -27550,11 +27554,11 @@ df[&#39;Other Cities&#39;] = df[[c for c in cities if c != treated_city]].mean(a
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_lines(df, treated_city, &#39;Other Cities&#39;, treatment_year)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_21_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, revenue seems to be increasing after the treatment in Miami. But it&amp;rsquo;s a very volatile time series. And revenue was increasing also in the rest of the country. It&amp;rsquo;s very hard from this plot to attribute the change to self-driving case.&lt;/p&gt;
 &lt;p&gt;Can we do better?&lt;/p&gt;
 &lt;h2 id=&#34;synthetic-control&#34;&gt;Synthetic Control&lt;/h2&gt;
-&lt;p&gt;The answer is yes! Synthetic control methods were first introduced by &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Abadie, Diamond and Hainmueller (2010)&lt;/a&gt; and allow us to do causal inference when we have as few as one treated unit and many control units and we observe them over time.&lt;/p&gt;
+&lt;p&gt;The answer is yes! Synthetic control allow us to do causal inference when we have &lt;strong&gt;as few as one treated unit&lt;/strong&gt; and &lt;strong&gt;many control units&lt;/strong&gt; and we observe them &lt;strong&gt;over time&lt;/strong&gt;. The idea is simple: combine untreated units so that they mimic the behavior of the treated unit as closely as possible, without the treatment. Then use this &amp;ldquo;synthetic unit&amp;rdquo; as a control. The method first introduced by &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Abadie, Diamond and Hainmueller (2010)&lt;/a&gt; and has been called &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jep.31.2.3&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;the most important innovation in the policy evaluation literature in the last few years&amp;rdquo;&lt;/a&gt;. Moreover, it is widely used in the industry because of its simplicity and interpretability.&lt;/p&gt;
 &lt;h3 id=&#34;setting&#34;&gt;Setting&lt;/h3&gt;
 &lt;p&gt;We assume that for a panel of i.i.d. subjects $i = 1, &amp;hellip;, n$ over time $t=1, &amp;hellip;,T$ we observed a set of variables $(X_{it}, D_i, Y_{it})$ that includes&lt;/p&gt;
 &lt;ul&gt;
@@ -27568,15 +27572,7 @@ df[&#39;Other Cities&#39;] = df[[c for c in cities if c != treated_city]].mean(a
 &lt;p&gt;The problem is that, as usual, we do not observe the counterfactual outcome for treated units, i.e. we do not know what would have happened to them, if they had not been treated. This is known as the &lt;strong&gt;fundamental problem of causal inference&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;The simplest approach, would be just to compare pre and post periods. This is called the &lt;strong&gt;event study&lt;/strong&gt; approach.&lt;/p&gt;
 &lt;p&gt;However, we can do better than this. In fact, even though treatment was not randomly assigned, we still have access to some units that were not treated.&lt;/p&gt;
-&lt;p&gt;For the outcome variable we have the following setup&lt;/p&gt;
-&lt;p&gt;$$
-Y =
-\begin{bmatrix}
-Y_{t, post} \ &amp;amp; Y_{c, post} \newline
-Y_{t, pre} \ &amp;amp; Y_{c, pre}
-\end{bmatrix}
-$$&lt;/p&gt;
-&lt;p&gt;which we can rewrite as&lt;/p&gt;
+&lt;p&gt;For the outcome variable we observe the following values&lt;/p&gt;
 &lt;p&gt;$$
 Y =
 \begin{bmatrix}
@@ -27584,7 +27580,7 @@ Y^{(1)} _ {t, post} \ &amp;amp; Y^{(0)} _ {c, post} \newline
 Y^{(0)} _ {t, pre} \ &amp;amp; Y^{(0)} _ {c, pre}
 \end{bmatrix}
 $$&lt;/p&gt;
-&lt;p&gt;We basically have a &lt;strong&gt;missing data problem&lt;/strong&gt; since we do not observe $Y^{(0)} _ {t, post}$.&lt;/p&gt;
+&lt;p&gt;Where $Y^{(d)} _ {a, t}$ is the outcome of an observation at time $t$, given treatment assignment $a$ and treatment status $d$. We basically have a &lt;strong&gt;missing data problem&lt;/strong&gt; since we do not observe $Y^{(0)} _ {t, post}$: what would have happened to treated units ($a=t$) without treatment ($d=0$).&lt;/p&gt;
 &lt;h3 id=&#34;the-solution&#34;&gt;The Solution&lt;/h3&gt;
 &lt;p&gt;Following &lt;a href=&#34;https://arxiv.org/pdf/1610.07748.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Doudchenko and Inbens (2018)&lt;/a&gt;, we can formulate an estimate of the counterfactual outcome for the treated unit as a linear combination of the observed outcomes for the control units.&lt;/p&gt;
 &lt;p&gt;$$
@@ -27627,7 +27623,7 @@ coef = synth_predict(df, LinearRegression(), treated_city, treatment_year).coef_
 &lt;p&gt;We can visually answer both questions by plotting the actual revenue in Miami against the predicted one.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_lines(df, treated_city, f&#39;Synthetic {treated_city}&#39;, treatment_year)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_43_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_44_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;It looks like self-driving cars had a sensible &lt;strong&gt;positive effect&lt;/strong&gt; on &lt;code&gt;revenue&lt;/code&gt; in Miami: the predicted trend is lower than the actual data and diverges right after the introduction of self-driving cars.&lt;/p&gt;
 &lt;p&gt;On the other hand, we are clearly &lt;strong&gt;overfitting&lt;/strong&gt;: the pre-treatment predicted &lt;code&gt;revenue&lt;/code&gt; line is perfectly overlapping with the actual data. Given the high variability of &lt;code&gt;revenue&lt;/code&gt; in Miami, this is suspicious, to say the least.&lt;/p&gt;
 &lt;p&gt;Another problem concerns the &lt;strong&gt;weights&lt;/strong&gt;. Let&amp;rsquo;s plot them.&lt;/p&gt;
@@ -27635,7 +27631,7 @@ coef = synth_predict(df, LinearRegression(), treated_city, treatment_year).coef_
 plt.figure(figsize=(10, 9))
 sns.barplot(data=df_states, x=&#39;ols_coef&#39;, y=&#39;city&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_45_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_46_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We have many &lt;strong&gt;negative weights&lt;/strong&gt;, which do not make much sense from a causal inference perspective. I can understand that Miami can be expressed as a combination of 0.2 St. Louis, 0.15 Oklahoma and 0.15 Hartford. But what does it mean that Miami is -0.15 Milwaukee?&lt;/p&gt;
 &lt;p&gt;Since we would like to interpret our synthetic control as a &lt;strong&gt;weighted average&lt;/strong&gt; of untreated states, all weights should be positive  and they should sum to one.&lt;/p&gt;
 &lt;p&gt;To address both concerns (weighting and overfitting), we need to impose some &lt;strong&gt;restrictions on the weights&lt;/strong&gt;.&lt;/p&gt;
@@ -27688,7 +27684,7 @@ class SyntheticControl():
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_states[&#39;coef_synth&#39;] = synth_predict(df, SyntheticControl(), treated_city, treatment_year).coef_
 plot_lines(df, treated_city, f&#39;Synthetic {treated_city}&#39;, treatment_year)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_52_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_53_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, now we are &lt;strong&gt;not overfitting&lt;/strong&gt; anymore. The actual and predicted &lt;code&gt;revenue&lt;/code&gt; pre-treatment are close but not identical. The reason is that the non-negativity constraint is constraining most coefficients to be zero (as &lt;a href=&#34;https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Lasso&lt;/a&gt; does).&lt;/p&gt;
 &lt;p&gt;It looks like the effect is again negative. However, let&amp;rsquo;s plot the &lt;strong&gt;difference&lt;/strong&gt; between the two lines to better visualize the magnitude.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_difference(df, city, year, vline=True, hline=True, **kwargs):
@@ -27701,13 +27697,13 @@ plot_lines(df, treated_city, f&#39;Synthetic {treated_city}&#39;, treatment_year
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_difference(df, treated_city, treatment_year)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_56_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;The difference is clearly positive and slightly increasing over time.&lt;/p&gt;
 &lt;p&gt;We can also visualize the &lt;strong&gt;weights&lt;/strong&gt; to interpret the estimated counterfactual (what would have happened in Miami, without self-driving cars).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.figure(figsize=(10, 9))
 sns.barplot(data=df_states, x=&#39;coef_synth&#39;, y=&#39;city&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_57_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_58_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, now we are expressing &lt;code&gt;revenue&lt;/code&gt; in Miami as a linear combination of just a couple of cities: Tampa, St. Louis and, to a lower extent, Las Vegas. This makes the whole procedure very &lt;strong&gt;transparent&lt;/strong&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;inference&#34;&gt;Inference&lt;/h3&gt;
 &lt;p&gt;What about &lt;strong&gt;inference&lt;/strong&gt;? Is the estimate significantly different from zero? Or, more practically, &amp;ldquo;&lt;em&gt;how unusual is this estimate under the null hypothesis of no policy effect&lt;/em&gt;?&amp;rdquo;.&lt;/p&gt;
@@ -27722,7 +27718,7 @@ for city in cities:
 plot_difference(df, treated_city, treatment_year)
 ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2015, 2.7), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_62_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;From the graph we notice two things. First, the effect for Miami is quite &lt;strong&gt;extreme&lt;/strong&gt; and therefore likely not to be driven by random noise.&lt;/p&gt;
 &lt;p&gt;Second, we also notice that there are a couple of cities for which we cannot fit the pre-trend very well. In particular, there is a line that is sensibly lower than all others. This is expected since, for each city, we are building the counterfactual trend as a &lt;strong&gt;convex combination&lt;/strong&gt; of all other cities. Cities that are quite extreme in terms of &lt;code&gt;revenue&lt;/code&gt; are very useful to build the counterfactuals of other cities, but it&amp;rsquo;s &lt;strong&gt;hard to build a counterfactual for them&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;Not to bias the analysis, let&amp;rsquo;s exclude states for which we cannot build a &amp;ldquo;good enough&amp;rdquo; counterfectual, in terms of pre-treatment MSE.&lt;/p&gt;
@@ -27742,7 +27738,7 @@ for city in cities:
 plot_difference(df, treated_city, treatment_year)
 ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2015, 2.7), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_63_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_64_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;After exluding extreme observations, it looks like the effect for Miami is very unusual.&lt;/p&gt;
 &lt;p&gt;One &lt;strong&gt;statistic&lt;/strong&gt; that &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Abadie, Diamond and Hainmueller (2010)&lt;/a&gt; suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.&lt;/p&gt;
 &lt;p&gt;$$
@@ -27766,32 +27762,26 @@ plt.hist([lambdas[treated_city]], bins=bins)
 plt.title(&#39;Ratio of $MSE_{post}$ and $MSE_{pre}$ across cities&#39;);
 ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zoom=0.25), (2.7, 1.7), frameon=False));
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/synth_67_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/synth_68_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Indeed, the statistic for Miami is quite extreme.&lt;/p&gt;
-&lt;h3 id=&#34;synthetic-control-vs-other-methods&#34;&gt;Synthetic Control vs Other Methods&lt;/h3&gt;
-&lt;p&gt;What are the advantages and disadvantages of synthetic control methods with respect to other methods?&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;As long as we use positive weights that are constrained to sum to one, the method &lt;strong&gt;avoids extrapolation&lt;/strong&gt;: we will never go out of the support of the data&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;It can be &lt;strong&gt;&amp;ldquo;pre-registered&amp;rdquo;&lt;/strong&gt; in the sense that you don&amp;rsquo;t need post-treatment observations to build the method: could avoid p-hacking and cherry picking&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Weights make the counterfactual analysis &lt;strong&gt;explicit&lt;/strong&gt;: one can look at the weights and understand which comparison we are making&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;It&amp;rsquo;s a &lt;strong&gt;bridge&lt;/strong&gt; between quantitative and qualitative research: can be used to inspect single-treated unit cases&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;TBD&lt;/p&gt;
+&lt;p&gt;In this article, we have explored a very popoular method for causal inference when we have &lt;strong&gt;few treated units&lt;/strong&gt;, but many time periods. This setting emerges often in industry settings when the treatment has to be assigned at the &lt;strong&gt;aggregate level&lt;/strong&gt; and randomization might not be possible. The key idea of synthetic control is to &lt;strong&gt;combinate control units&lt;/strong&gt; into one syntetic control unit to use as counterfactual to estimate the causal effect of the treatment.&lt;/p&gt;
+&lt;p&gt;One of the main &lt;strong&gt;advantages&lt;/strong&gt; of synthetic control is that, as long as we use positive weights that are constrained to sum to one, the method &lt;strong&gt;avoids extrapolation&lt;/strong&gt;: we will never go out of the support of the data. Moreover, synthetic control studies can be &lt;strong&gt;&amp;ldquo;pre-registered&amp;rdquo;&lt;/strong&gt;: you can specify the weights before the study to avoid &lt;a href=&#34;https://en.wikipedia.org/wiki/Data_dredging&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;p-hacking&lt;/a&gt; and cherry picking. Another reason why this method is so popular in the industry is that weights make the counterfactual analysis &lt;strong&gt;explicit&lt;/strong&gt;: one can look at the weights and understand which comparison we are making.&lt;/p&gt;
+&lt;p&gt;This method is relatively young and many &lt;strong&gt;extensions&lt;/strong&gt; are appearing every year. Some notable ones are the generalyzed synthetic control by &lt;a href=&#34;https://www.cambridge.org/core/journals/political-analysis/article/generalized-synthetic-control-method-causal-inference-with-interactive-fixed-effects-models/B63A8BD7C239DD4141C67DA10CD0E4F3&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Xu (2017)&lt;/a&gt;, the synthetic difference-in-differences by &lt;a href=&#34;https://arxiv.org/pdf/1610.07748.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Doudchenko and Imbens (2017)&lt;/a&gt;, the penalyzed synthetic control of &lt;a href=&#34;https://www.tandfonline.com/doi/full/10.1080/01621459.2021.1971535&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Abadie e L&amp;rsquo;Hour (2020)&lt;/a&gt; and the matrix completion methods of &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1080/01621459.2021.1891924&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Athey et al. (2021)&lt;/a&gt;. Last but not least, if you want to have the method explained by one of its inventors, there is this great lecture by Alberto Abadie at the NBER Summer Institute freely available on Youtube.&lt;/p&gt;
+&lt;br&gt;
+
+&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
+  &lt;iframe src=&#34;https://www.youtube.com/embed/T2p9Wg650bY&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+
+&lt;br&gt;
 &lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
 &lt;p&gt;[1] A. Abadie, A. Diamond and J. Hainmueller, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program&lt;/a&gt; (2010), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[2] A. Abadie, J. L&amp;rsquo;Hour, &lt;a href=&#34;https://www.tandfonline.com/doi/full/10.1080/01621459.2021.1971535&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;A Penalized Synthetic Control Estimator for Disaggregated Data&lt;/a&gt; (2020), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] A. Abadie, &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jel.20191450&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Using Synthetic Controls: Feasibility, Data Requirements, and Methodological Aspects&lt;/a&gt; (2021), &lt;em&gt;Journal of Economic Perspectives&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[3] N. Doudchenko, G. Imbens, &lt;a href=&#34;https://arxiv.org/pdf/1610.07748.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Balancing, Regression, Difference-In-Differences and Synthetic Control Methods: A Synthesis&lt;/a&gt; (2017), &lt;em&gt;working paper&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[] Matrix completion methods for causal panel data models&lt;/p&gt;
-&lt;p&gt;[] Using Synthetic Controls: Feasibility, Data Requirements, and Methodological Aspects&lt;/p&gt;
+&lt;p&gt;[4] Y. Xu, &lt;a href=&#34;https://www.cambridge.org/core/journals/political-analysis/article/generalized-synthetic-control-method-causal-inference-with-interactive-fixed-effects-models/B63A8BD7C239DD4141C67DA10CD0E4F3&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Generalized Synthetic Control Method: Causal Inference with Interactive Fixed Effects Models&lt;/a&gt; (2018), &lt;em&gt;Political Analysis&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[5] A. Abadie, J. L&amp;rsquo;Hour, &lt;a href=&#34;https://www.tandfonline.com/doi/full/10.1080/01621459.2021.1971535&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;A Penalized Synthetic Control Estimator for Disaggregated Data&lt;/a&gt; (2020), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[6] S. Athey, M. Bayati, N. Doudchenko, G. Imbens, K. Khosravi, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1080/01621459.2021.1891924&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Matrix Completion Methods for Causal Panel Data Models&lt;/a&gt; (2021), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/li&gt;
