@@ -327,25 +327,24 @@ In causal inference we do not want just to compute treatment effect, we also wan
   
   
     
-    
   
   
-  <meta property="twitter:card" content="summary" />
+  <meta property="twitter:card" content="summary_large_image" />
   
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/bayes_boot/" />
   <meta property="og:title" content="The Bayesian Bootstrap | Matteo Courthoud" />
   <meta property="og:description" content="A short guide to a simple and powerful alternative to the bootstrap
-In causal inference we do not want just to compute treatment effect, we also want to do inference (duh!" /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
-    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+In causal inference we do not want just to compute treatment effect, we also want to do inference (duh!" /><meta property="og:image" content="https://matteocourthoud.github.io/post/bayes_boot/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/bayes_boot/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-07-20T00:00:00&#43;00:00"
+        content="2022-08-17T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-07-20T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2022-08-17T00:00:00&#43;00:00">
   
 
   
@@ -373,8 +372,12 @@ In causal inference we do not want just to compute treatment effect, we also wan
   },
   "headline": "The Bayesian Bootstrap",
   
-  "datePublished": "2022-07-20T00:00:00Z",
-  "dateModified": "2022-07-20T00:00:00Z",
+  "image": [
+    "https://matteocourthoud.github.io/post/bayes_boot/featured.png"
+  ],
+  
+  "datePublished": "2022-08-17T00:00:00Z",
+  "dateModified": "2022-08-17T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -773,7 +776,6 @@ In causal inference we do not want just to compute treatment effect, we also wan
         <li><a href="#mean-of-a-skewed-distribution">Mean of a Skewed Distribution</a></li>
         <li><a href="#no-weighting-no-problem">No Weighting? No Problem</a></li>
         <li><a href="#logistic-regression-with-rare-outcome">Logistic Regression with Rare Outcome</a></li>
-        <li><a href="#regression-with-few-treated-units">Regression with few Treated Units</a></li>
       </ul>
     </li>
     <li><a href="#conclusion">Conclusion</a>
@@ -801,18 +803,23 @@ In causal inference we do not want just to compute treatment effect, we also wan
 
 
 
-  
+
+
+
+
+
+
+
 
   
-  
-  
+
+
 <div class="article-container pt-3">
   <h1>The Bayesian Bootstrap</h1>
 
   
 
   
-    
 
 
 <div class="article-metadata">
@@ -826,7 +833,7 @@ In causal inference we do not want just to compute treatment effect, we also wan
     
       
     
-    Jul 20, 2022
+    Aug 17, 2022
   </span>
   
 
@@ -851,13 +858,20 @@ In causal inference we do not want just to compute treatment effect, we also wan
 
 </div>
 
-    
-
-
-
-
-
   
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 813px; max-height: 492px;">
+  <div style="position: relative">
+    <img src="/post/bayes_boot/featured.png" alt="" class="featured-image">
+    
+  </div>
 </div>
 
 
@@ -903,22 +917,34 @@ np.sum(bootstrap_weights)
 <p>Now you might have a spontaneous question: why not use <strong>continuous weights</strong> instead of discrete ones?</p>
 <p>Very good question! The <strong>Bayesian Bootstrap</strong> is the answer.</p>
 <h2 id="the-bayesian-bootstrap">The Bayesian Bootstrap</h2>
-<p>The Bayesian bootstrap was introduced by <a href="https://www.jstor.org/stable/2240875" target="_blank" rel="noopener">Rubin (1981)</a> and it&rsquo;s based on a very simple <strong>idea</strong>: why not draw a smoother distribution of weights? The continuous equivalent of the multinomial distribution is the <a href="https://en.wikipedia.org/wiki/Dirichlet_distribution" target="_blank" rel="noopener"><strong>Dirichelet distribution</strong></a>.</p>
+<p>The Bayesian bootstrap was introduced by <a href="https://www.jstor.org/stable/2240875" target="_blank" rel="noopener">Rubin (1981)</a> and it&rsquo;s based on a very simple <strong>idea</strong>: why not draw a smoother distribution of weights? The continuous equivalent of the multinomial distribution is the <a href="https://en.wikipedia.org/wiki/Dirichlet_distribution" target="_blank" rel="noopener"><strong>Dirichelet distribution</strong></a>. Below I plot the probability distribution of Multinomial and Dirichelet weights for a single observation (they are Poisson and Gamma distributed, respectively).</p>
+<pre><code class="language-python">from scipy.stats import gamma, poisson
+
+x1 = np.arange(0, 8, 0.001)
+x2 = np.arange(0, 8, 1)
+sns.barplot(x2, poisson.pmf(x2, mu=1), color='C0', label='Multinomial Weights'); 
+plt.plot(x1, gamma.pdf(x1, a=1.0001), color='C1', label='Dirichlet Weights');
+plt.legend()
+plt.title('Distribution of Bootstrap Weights');
+</code></pre>
+<p><img src="img/bayes_boot_13_0.png" alt="png"></p>
 <p>The Bayesian Bootstrap has <strong>many advantages</strong>.</p>
-<p>The first and most intuitive one is that it delivers estimates that are much more <strong>smooth</strong> than the normal bootstrap, because of its continuous weighting scheme.</p>
-<p>Moreover, the continuous weighting scheme <strong>prevents corner cases</strong> from emerging, since no observation will ever receive zero weight. For example, in linear regression, no problem of <a href="https://en.wikipedia.org/wiki/Multicollinearity" target="_blank" rel="noopener">collinearity</a> emerges, if there wasn&rsquo;t one in the original sample.</p>
-<p>Lastly, being a Bayesian method, we gain <strong>interpretation</strong>: the estimated distribution of the estimator can be interpreted as the <a href="https://en.wikipedia.org/wiki/Posterior_probability" target="_blank" rel="noopener">posterior distribution</a> with an <a href="https://en.wikipedia.org/wiki/Prior_probability" target="_blank" rel="noopener">uninformative prior</a>.</p>
-<p>Let&rsquo;s repeat the sample experiment as before, but with the Dirichelet distribution.</p>
+<ul>
+<li>The first and most intuitive one is that it delivers estimates that are much more <strong>smooth</strong> than the normal bootstrap, because of its continuous weighting scheme.</li>
+<li>Moreover, the continuous weighting scheme <strong>prevents corner cases</strong> from emerging, since no observation will ever receive zero weight. For example, in linear regression, no problem of <a href="https://en.wikipedia.org/wiki/Multicollinearity" target="_blank" rel="noopener">collinearity</a> emerges, if there wasn&rsquo;t one in the original sample.</li>
+<li>Lastly, being a Bayesian method, we gain <strong>interpretation</strong>: the estimated distribution of the estimator can be interpreted as the <a href="https://en.wikipedia.org/wiki/Posterior_probability" target="_blank" rel="noopener">posterior distribution</a> with an <a href="https://en.wikipedia.org/wiki/Prior_probability" target="_blank" rel="noopener">uninformative prior</a>.</li>
+</ul>
+<p>Let&rsquo;s now draw a set a Dirichlet weights.</p>
 <pre><code class="language-python">bayesian_weights = np.random.dirichlet(alpha=np.ones(N), size=1)[0] * N
 np.sum(bayesian_weights)
 </code></pre>
 <pre><code>10000.000000000005
 </code></pre>
 <p>The weights naturally sum to (approximately) 1, so we have to scale them by a factor N.</p>
-<p>As before, we can plot the distribution of weights, with the difference that now we have continuous weights, so we have to approximate the distribution. We can do so by</p>
-<pre><code class="language-python">sns.histplot(bayesian_weights, color='C1', kde=True).set(title='Bootstrap Weights');
+<p>As before, we can plot the distribution of weights, with the difference that now we have continuous weights, so we have to approximate the distribution.</p>
+<pre><code class="language-python">sns.histplot(bayesian_weights, color='C1').set(title='Dirichlet Weights');
 </code></pre>
-<p><img src="img/bayes_boot_15_0.png" alt="png"></p>
+<p><img src="img/bayes_boot_17_0.png" alt="png"></p>
 <p>As you might have noticed, the Dirichelet distirbution has a parameter $\alpha$ that we have set to 1 for all observations. What does it do?</p>
 <p>The $\alpha$ parameter essentially governs both the absolute and relative probability of being samples. Increasing $\alpha$ for all observations makes the distribution less skewed so that all observations have a more similar weight. For $\alpha \to \infty$, all observations receiver the same weight and we are back to the original sample.</p>
 <p>How should we pick $\alpha$? <a href="https://link.springer.com/book/10.1007/978-1-4612-0795-5" target="_blank" rel="noopener">Shao and Tu (1995)</a> suggest the following.</p>
@@ -927,11 +953,11 @@ np.sum(bayesian_weights)
 </blockquote>
 <p>Let&rsquo;s have a look at how a Dirichelet distribution with $\alpha = 4$ for all observations compare to our previous distribution with $\alpha = 1$ for all observations.</p>
 <pre><code class="language-python">bayesian_weights2 = np.random.dirichlet(np.ones(N) * 4, 1)[0] * N
-sns.histplot(bayesian_weights, color='C1', kde=True)
-sns.histplot(bayesian_weights2, color='C2', kde=True).set(title='Bootstrap Weights');
+sns.histplot(bayesian_weights, color='C1')
+sns.histplot(bayesian_weights2, color='C2').set(title='Comparing Dirichlet Weights');
 plt.legend([r'$\alpha = 1$', r'$\alpha = 4$']);
 </code></pre>
-<p><img src="img/bayes_boot_17_0.png" alt="png"></p>
+<p><img src="img/bayes_boot_19_0.png" alt="png"></p>
 <p>The new distribution is much less skewed and more concentrated around the average value of 1.</p>
 <h2 id="examples">Examples</h2>
 <p>Let&rsquo;s have a look at a couple of examples, where we compare both inference procedures.</p>
@@ -939,9 +965,9 @@ plt.legend([r'$\alpha = 1$', r'$\alpha = 4$']);
 <p>First, let&rsquo;s have a look at one of the simplest and most common estimators: the <strong>sample mean</strong>.</p>
 <pre><code class="language-python">np.random.seed(2)
 X = pd.Series(np.random.pareto(2, 100))
-sns.histplot(X);
+sns.histplot(X).set(title='Sample from Pareto Distribution');
 </code></pre>
-<p><img src="img/bayes_boot_23_0.png" alt="png"></p>
+<p><img src="img/bayes_boot_25_0.png" alt="png"></p>
 <pre><code class="language-python">def classic_boot(df, estimator, seed=1):
     df_boot = df.sample(n=len(df), replace=True, random_state=seed)
     estimate = estimator(df_boot)
@@ -967,7 +993,7 @@ def bootstrap(boot_method, df, estimator, K):
     r = Parallel(n_jobs=8)(delayed(boot_method)(df, estimator, seed=i) for i in range(K))
     return r
 </code></pre>
-<pre><code class="language-python">def compare_boot(df, boot1, boot2, estimator, K):
+<pre><code class="language-python">def compare_boot(df, boot1, boot2, estimator, title, K=1000):
     s1 = bootstrap(boot1, df, estimator, K)
     s2 = bootstrap(boot2, df, estimator, K)
     df = pd.DataFrame({'Estimate': s1 + s2,
@@ -975,16 +1001,16 @@ def bootstrap(boot_method, df, estimator, K):
     sns.histplot(data=df, x='Estimate', hue='Estimator')
     plt.legend([f'Bayes:   {np.mean(s2):.2f} ({np.std(s2):.2f})',
                 f'Classic: {np.mean(s1):.2f} ({np.std(s1):.2f})'])
-    plt.title('Comparing Bootstrap Methods')
+    plt.title(f'Bootstrap Estimates of {title}')
 </code></pre>
-<pre><code class="language-python">compare_boot(X, classic_boot, bayes_boot, np.average, 1000)
+<pre><code class="language-python">compare_boot(X, classic_boot, bayes_boot, np.average, 'Sample Mean')
 </code></pre>
-<p><img src="img/bayes_boot_30_0.png" alt="png"></p>
+<p><img src="img/bayes_boot_32_0.png" alt="png"></p>
 <p>In this setting, both procedures give a very similar answer.</p>
 <p>Which one is faster?</p>
 <pre><code class="language-python">import time
 
-def compare_time(df, boot1, boot2, estimator, K):
+def compare_time(df, boot1, boot2, estimator, K=1000):
     t1, t2 = np.zeros(K), np.zeros(K)
     for k in range(K):
         
@@ -1000,9 +1026,9 @@ def compare_time(df, boot1, boot2, estimator, K):
     
     print(f&quot;Bayes wins {np.mean(t1 &gt; t2)*100}% of the time (by {np.mean((t1 - t2)/t1*100):.2f}%)&quot;)
 </code></pre>
-<pre><code class="language-python">compare_time(X, classic_boot, bayes_boot, np.average, 1000)
+<pre><code class="language-python">compare_time(X, classic_boot, bayes_boot, np.average)
 </code></pre>
-<pre><code>Bayes wins 100.0% of the time (by 83.43%)
+<pre><code>Bayes wins 99.8% of the time (by 82.89%)
 </code></pre>
 <p>The Bayesian bootstrap is faster than the classical bootstrap 100% of the simulations, and by an impressive 83%!</p>
 <h3 id="no-weighting-no-problem">No Weighting? No Problem</h3>
@@ -1016,9 +1042,9 @@ def compare_time(df, boot1, boot2, estimator, K):
 </code></pre>
 <pre><code class="language-python">np.random.seed(1)
 X = pd.Series(np.random.normal(0, 10, 1000))
-compare_boot(X, classic_boot, twolv_boot, np.median, 1000)
+compare_boot(X, classic_boot, twolv_boot, np.median, 'Sample Median')
 </code></pre>
-<p><img src="img/bayes_boot_38_0.png" alt="png"></p>
+<p><img src="img/bayes_boot_40_0.png" alt="png"></p>
 <p>In this setting, the Bayesian Bootstrap is also <strong>more precise</strong> than the classical bootstrap.</p>
 <h3 id="logistic-regression-with-rare-outcome">Logistic Regression with Rare Outcome</h3>
 <p>Let&rsquo;s now explore the first of two settings in which the classical bootstrap might fall into <strong>corner cases</strong>. Suppose we observed a feature $x$, normally distributed, and a binary outcome $y$. We are interested in the relationship between the two variables.</p>
@@ -1086,17 +1112,17 @@ df.head()
 <pre><code>10.0
 </code></pre>
 <p>Since the outcome is binary, we fit a <a href="https://en.wikipedia.org/wiki/Logistic_regression" target="_blank" rel="noopener"><strong>logistic regression</strong></a> model.</p>
-<pre><code class="language-python">smf.logit('y ~ d ', data=df).fit(disp=False).summary().tables[1]
+<pre><code class="language-python">smf.logit('y ~ x', data=df).fit(disp=False).summary().tables[1]
 </code></pre>
 <table class="simpletable">
 <tr>
       <td></td>         <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>   -2.1518</td> <td>    0.334</td> <td>   -6.440</td> <td> 0.000</td> <td>   -2.807</td> <td>   -1.497</td>
+  <th>Intercept</th> <td>   -4.0955</td> <td>    0.887</td> <td>   -4.618</td> <td> 0.000</td> <td>   -5.834</td> <td>   -2.357</td>
 </tr>
 <tr>
-  <th>d</th>         <td>  -23.5182</td> <td> 1.88e+05</td> <td>   -0.000</td> <td> 1.000</td> <td>-3.68e+05</td> <td> 3.68e+05</td>
+  <th>x</th>         <td>    2.7664</td> <td>    0.752</td> <td>    3.677</td> <td> 0.000</td> <td>    1.292</td> <td>    4.241</td>
 </tr>
 </table>
 <p>Can we bootstrap the distribution of our estimator? Let&rsquo;s try to compute the logistic regression coefficient over 1000 bootstrap samples.</p>
@@ -1115,7 +1141,6 @@ Error for bootstrap number 835: Perfect separation detected, results not availab
 </code></pre>
 <p>For 5 samples out of 1000, we are <strong>unable</strong> to compute the estimate. This would not have happened with then bayesian bootstrap.</p>
 <p>This might seem like an innocuous issue in this case: we can just drop those observations. Let&rsquo;s conclude with a much more dangerous example.</p>
-<h3 id="regression-with-few-treated-units">Regression with few Treated Units</h3>
 <p>Suppose we observed a binary feature $x$ and a continuous outcome $y$. We are again interested in the relationship between the two variables.</p>
 <pre><code class="language-python">N = 100
 np.random.seed(1)
@@ -1177,9 +1202,9 @@ df.head()
 </div>
 <p>Let&rsquo;s compare the two bootstrap estimators of the regression coefficient of $y$ on $x$.</p>
 <pre><code class="language-python">estimate_beta = lambda df, **kwargs: smf.wls('y ~ x', data=df, **kwargs).fit().params[1]
-compare_boot(df, classic_boot, bayes_boot, estimate_beta, 1000)
+compare_boot(df, classic_boot, bayes_boot, estimate_beta, 'beta')
 </code></pre>
-<p><img src="img/bayes_boot_54_0.png" alt="png"></p>
+<p><img src="img/bayes_boot_55_0.png" alt="png"></p>
 <p>The classic bootstrap procedure estimates a 50% larger variance of our estimator. Why? If we look more closely, we seen that in almost 20 re-samples, we get a very unusual estimate of zero!</p>
 <p>The problem is that in some samples we might not have have <strong>any observations</strong> with $x=1$. Therefore, in these re-samples, the estimated coefficient is zero. This does not happen with the Bayesian bootstrap, since it does not drop any observation.</p>
 <p>The problematic part here is that we are not getting any error message or warning. This bias is very sneaky and could easily go <strong>unnoticed</strong>!</p>

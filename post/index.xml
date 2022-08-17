@@ -215,6 +215,359 @@ Regression&lt;/a&gt; (1980), &lt;em&gt;Technometrics&lt;/em&gt;.&lt;/p&gt;
     </item>
     
     <item>
+      <title>The Bayesian Bootstrap</title>
+      <link>https://matteocourthoud.github.io/post/bayes_boot/</link>
+      <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/bayes_boot/</guid>
+      <description>&lt;p&gt;&lt;em&gt;A short guide to a simple and powerful alternative to the bootstrap&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;In causal inference we do not want just to compute treatment effect, we also want to do &lt;strong&gt;inference&lt;/strong&gt; (duh!). In some cases, it&amp;rsquo;s very easy to compute the asymptotic difference of an estimator, thanks to the &lt;a href=&#34;https://en.wikipedia.org/wiki/Central_limit_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;central limit theorem&lt;/strong&gt;&lt;/a&gt;. This is the case of computing the average treatment effect in AB tests or randomized controlled trials, for example. However, in other settings, inference is more &lt;strong&gt;complicated&lt;/strong&gt;. The most frequent setting is the computation of quantities that are not sums or averages, such as the median treatment effect, for example. In these cases, we cannot rely on the central limit theorem. What can we do then?&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;bootstrap&lt;/strong&gt; is the answer! It is a very powerful procedure to compute the distribution of an estimator, without needing any knowledge of the data generating process. It is also very &lt;strong&gt;intuitive and simple&lt;/strong&gt; to implement: just re-sample your data with replacement a lot of times and compute your estimator on the re-computed sample.&lt;/p&gt;
+&lt;p&gt;Can we do better? The answer is yes! The &lt;strong&gt;Bayesian Bootstrap&lt;/strong&gt; is a powerful procedure that in a lot of setting performs &lt;strong&gt;better&lt;/strong&gt; than the bootstrap. In particular, it&amp;rsquo;s usually faster, can give tighter confidence intervals and prevents a lot of corner cases of the bootstrap. In this article we are going to explore this simple but powerful procedure more in detail.&lt;/p&gt;
+&lt;h2 id=&#34;the-bootstrap&#34;&gt;The Bootstrap&lt;/h2&gt;
+&lt;p&gt;Bootstrap is a procedure to compute properties of an estimator by random &lt;strong&gt;re-sampling with replacement&lt;/strong&gt; from the data. It was first introduced by &lt;a href=&#34;https://www.jstor.org/stable/2958830&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Efron (1979)&lt;/a&gt;. The procedure is very simple and consists in the following steps.&lt;/p&gt;
+&lt;p&gt;Suppose you have access to an i.i.d. sample $\lbrace X_i \rbrace_{i=1}^n$ and you want to compute a statistic $\theta$ using an estimator $\hat \theta(X)$. You can approximate the distribution of $\hat \theta$ by&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Sample $n$ observations with replacement from your sample $\lbrace \tilde X_i \rbrace_{i=1}^n$&lt;/li&gt;
+&lt;li&gt;Compute the estimator $\hat \theta_{bootstrap}(\tilde X)$&lt;/li&gt;
+&lt;li&gt;Repeat steps 1 and 2 a large number of times&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The distribution of $\hat \theta_{bootstrap}$ is a good approximation of the distribution of $\hat \theta$.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Why is the bootstrap so powerful?&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;First of all, it&amp;rsquo;s &lt;strong&gt;easy to implement&lt;/strong&gt;. It does not require you to do anything more than what you were already doing: estimating $\theta$. You just need to do it &lt;em&gt;a lot of times&lt;/em&gt;. Indeed, the main disadvantage of the bootstrap is its &lt;strong&gt;computational speed&lt;/strong&gt;. If estimating $\theta$ once is slow, bootstrapping it is prohibitive.&lt;/p&gt;
+&lt;p&gt;Second, the bootstrap makes &lt;strong&gt;no distributional assumption&lt;/strong&gt;. It only assumes a representative sample from your population, where observations are independent from each other. This assumption might be violated when observations are tightly connected with each other, such when studying social networks.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Is bootstrap just weighting?&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;In the end, what we are doing is assigning &lt;strong&gt;integer weights&lt;/strong&gt; to our observations, such that their sum adds up to $n$. Such distribution is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Multinomial_distribution&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;multinomial distribution&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s have a look at what a multinomial distribution look like by drawing a sample of size 10.000.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N = 10_000
+np.random.seed(1)
+bootstrap_weights = np.random.multinomial(N, np.ones(N)/N)
+np.sum(bootstrap_weights)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;10000
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;First of all, we check that indeed the weights sum up to 1000, or equivalently, we generated a re-sample of the same size of the data.&lt;/p&gt;
+&lt;p&gt;We can now plot the &lt;strong&gt;distribution of weights&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.countplot(bootstrap_weights, color=&#39;C0&#39;).set(title=&#39;Bootstrap Weights&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_boot_9_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, around 3600 observations got zero weight, however a couple of observations got a weights of 6. Or equivalently, around 3600 observations did not get re-sampled while a couple of observations got samples as many as 6 times.&lt;/p&gt;
+&lt;p&gt;Now you might have a spontaneous question: why not use &lt;strong&gt;continuous weights&lt;/strong&gt; instead of discrete ones?&lt;/p&gt;
+&lt;p&gt;Very good question! The &lt;strong&gt;Bayesian Bootstrap&lt;/strong&gt; is the answer.&lt;/p&gt;
+&lt;h2 id=&#34;the-bayesian-bootstrap&#34;&gt;The Bayesian Bootstrap&lt;/h2&gt;
+&lt;p&gt;The Bayesian bootstrap was introduced by &lt;a href=&#34;https://www.jstor.org/stable/2240875&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Rubin (1981)&lt;/a&gt; and it&amp;rsquo;s based on a very simple &lt;strong&gt;idea&lt;/strong&gt;: why not draw a smoother distribution of weights? The continuous equivalent of the multinomial distribution is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Dirichlet_distribution&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Dirichelet distribution&lt;/strong&gt;&lt;/a&gt;. Below I plot the probability distribution of Multinomial and Dirichelet weights for a single observation (they are Poisson and Gamma distributed, respectively).&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.stats import gamma, poisson
+
+x1 = np.arange(0, 8, 0.001)
+x2 = np.arange(0, 8, 1)
+sns.barplot(x2, poisson.pmf(x2, mu=1), color=&#39;C0&#39;, label=&#39;Multinomial Weights&#39;); 
+plt.plot(x1, gamma.pdf(x1, a=1.0001), color=&#39;C1&#39;, label=&#39;Dirichlet Weights&#39;);
+plt.legend()
+plt.title(&#39;Distribution of Bootstrap Weights&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_boot_13_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The Bayesian Bootstrap has &lt;strong&gt;many advantages&lt;/strong&gt;.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The first and most intuitive one is that it delivers estimates that are much more &lt;strong&gt;smooth&lt;/strong&gt; than the normal bootstrap, because of its continuous weighting scheme.&lt;/li&gt;
+&lt;li&gt;Moreover, the continuous weighting scheme &lt;strong&gt;prevents corner cases&lt;/strong&gt; from emerging, since no observation will ever receive zero weight. For example, in linear regression, no problem of &lt;a href=&#34;https://en.wikipedia.org/wiki/Multicollinearity&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;collinearity&lt;/a&gt; emerges, if there wasn&amp;rsquo;t one in the original sample.&lt;/li&gt;
+&lt;li&gt;Lastly, being a Bayesian method, we gain &lt;strong&gt;interpretation&lt;/strong&gt;: the estimated distribution of the estimator can be interpreted as the &lt;a href=&#34;https://en.wikipedia.org/wiki/Posterior_probability&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;posterior distribution&lt;/a&gt; with an &lt;a href=&#34;https://en.wikipedia.org/wiki/Prior_probability&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;uninformative prior&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Let&amp;rsquo;s now draw a set a Dirichlet weights.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;bayesian_weights = np.random.dirichlet(alpha=np.ones(N), size=1)[0] * N
+np.sum(bayesian_weights)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;10000.000000000005
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The weights naturally sum to (approximately) 1, so we have to scale them by a factor N.&lt;/p&gt;
+&lt;p&gt;As before, we can plot the distribution of weights, with the difference that now we have continuous weights, so we have to approximate the distribution.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(bayesian_weights, color=&#39;C1&#39;).set(title=&#39;Dirichlet Weights&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_boot_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As you might have noticed, the Dirichelet distirbution has a parameter $\alpha$ that we have set to 1 for all observations. What does it do?&lt;/p&gt;
+&lt;p&gt;The $\alpha$ parameter essentially governs both the absolute and relative probability of being samples. Increasing $\alpha$ for all observations makes the distribution less skewed so that all observations have a more similar weight. For $\alpha \to \infty$, all observations receiver the same weight and we are back to the original sample.&lt;/p&gt;
+&lt;p&gt;How should we pick $\alpha$? &lt;a href=&#34;https://link.springer.com/book/10.1007/978-1-4612-0795-5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Shao and Tu (1995)&lt;/a&gt; suggest the following.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;em&gt;The distribution of the random weight vector does not have to be restricted to the Diri(l, &amp;hellip; , 1). Later investigations found that the weights having a scaled Diri(4, &amp;hellip; ,4) distribution give better approximations (Tu and Zheng, 1987)&lt;/em&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Let&amp;rsquo;s have a look at how a Dirichelet distribution with $\alpha = 4$ for all observations compare to our previous distribution with $\alpha = 1$ for all observations.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;bayesian_weights2 = np.random.dirichlet(np.ones(N) * 4, 1)[0] * N
+sns.histplot(bayesian_weights, color=&#39;C1&#39;)
+sns.histplot(bayesian_weights2, color=&#39;C2&#39;).set(title=&#39;Comparing Dirichlet Weights&#39;);
+plt.legend([r&#39;$\alpha = 1$&#39;, r&#39;$\alpha = 4$&#39;]);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_boot_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The new distribution is much less skewed and more concentrated around the average value of 1.&lt;/p&gt;
+&lt;h2 id=&#34;examples&#34;&gt;Examples&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s have a look at a couple of examples, where we compare both inference procedures.&lt;/p&gt;
+&lt;h3 id=&#34;mean-of-a-skewed-distribution&#34;&gt;Mean of a Skewed Distribution&lt;/h3&gt;
+&lt;p&gt;First, let&amp;rsquo;s have a look at one of the simplest and most common estimators: the &lt;strong&gt;sample mean&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(2)
+X = pd.Series(np.random.pareto(2, 100))
+sns.histplot(X).set(title=&#39;Sample from Pareto Distribution&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_boot_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def classic_boot(df, estimator, seed=1):
+    df_boot = df.sample(n=len(df), replace=True, random_state=seed)
+    estimate = estimator(df_boot)
+    return estimate
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;classic_boot(X, np.mean)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.7079805545831946
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def bayes_boot(df, estimator, seed=1):
+    np.random.seed(seed)
+    w = np.random.dirichlet(np.ones(len(df)), 1)[0]
+    result = estimator(df, weights=w)
+    return result
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;bayes_boot(X, np.average)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;1.0378495251293498
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from joblib import Parallel, delayed
+
+def bootstrap(boot_method, df, estimator, K):
+    r = Parallel(n_jobs=8)(delayed(boot_method)(df, estimator, seed=i) for i in range(K))
+    return r
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def compare_boot(df, boot1, boot2, estimator, title, K=1000):
+    s1 = bootstrap(boot1, df, estimator, K)
+    s2 = bootstrap(boot2, df, estimator, K)
+    df = pd.DataFrame({&#39;Estimate&#39;: s1 + s2,
+                       &#39;Estimator&#39;: [&#39;Classic&#39;]*K + [&#39;Bayes&#39;]*K})
+    sns.histplot(data=df, x=&#39;Estimate&#39;, hue=&#39;Estimator&#39;)
+    plt.legend([f&#39;Bayes:   {np.mean(s2):.2f} ({np.std(s2):.2f})&#39;,
+                f&#39;Classic: {np.mean(s1):.2f} ({np.std(s1):.2f})&#39;])
+    plt.title(f&#39;Bootstrap Estimates of {title}&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_boot(X, classic_boot, bayes_boot, np.average, &#39;Sample Mean&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_boot_32_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;In this setting, both procedures give a very similar answer.&lt;/p&gt;
+&lt;p&gt;Which one is faster?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import time
+
+def compare_time(df, boot1, boot2, estimator, K=1000):
+    t1, t2 = np.zeros(K), np.zeros(K)
+    for k in range(K):
+        
+        # Classic bootstrap
+        start = time.time()
+        boot1(df, estimator)
+        t1[k] = time.time() - start
+    
+        # Bayesian bootstrap
+        start = time.time()
+        boot2(df, estimator)
+        t2[k] = time.time() - start
+    
+    print(f&amp;quot;Bayes wins {np.mean(t1 &amp;gt; t2)*100}% of the time (by {np.mean((t1 - t2)/t1*100):.2f}%)&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_time(X, classic_boot, bayes_boot, np.average)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Bayes wins 99.8% of the time (by 82.89%)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The Bayesian bootstrap is faster than the classical bootstrap 100% of the simulations, and by an impressive 83%!&lt;/p&gt;
+&lt;h3 id=&#34;no-weighting-no-problem&#34;&gt;No Weighting? No Problem&lt;/h3&gt;
+&lt;p&gt;What if we have an estimator that does not accept weights, such as the median? We can do &lt;strong&gt;two-level sampling&lt;/strong&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def twolv_boot(df, estimator, seed=1):
+    np.random.seed(seed)
+    w = np.random.dirichlet(np.ones(len(df))*4, 1)[0]
+    df_boot = df.sample(n=len(df)*10, replace=True, weights=w, random_state=seed)
+    result = estimator(df_boot)
+    return result
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(1)
+X = pd.Series(np.random.normal(0, 10, 1000))
+compare_boot(X, classic_boot, twolv_boot, np.median, &#39;Sample Median&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_boot_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;In this setting, the Bayesian Bootstrap is also &lt;strong&gt;more precise&lt;/strong&gt; than the classical bootstrap.&lt;/p&gt;
+&lt;h3 id=&#34;logistic-regression-with-rare-outcome&#34;&gt;Logistic Regression with Rare Outcome&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s now explore the first of two settings in which the classical bootstrap might fall into &lt;strong&gt;corner cases&lt;/strong&gt;. Suppose we observed a feature $x$, normally distributed, and a binary outcome $y$. We are interested in the relationship between the two variables.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N = 100
+np.random.seed(1)
+x = np.random.normal(0, 1, N)
+y = np.rint(np.random.normal(x, 1, N) &amp;gt; 2)
+df = pd.DataFrame({&#39;x&#39;: x, &#39;y&#39;: y})
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;x&lt;/th&gt;
+      &lt;th&gt;y&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1.624345&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;-0.611756&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;-0.528172&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;-1.072969&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;0.865408&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;In this case, we observe a positive outcome only in 10 observations out of 100.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.sum(df[&#39;y&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;10.0
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Since the outcome is binary, we fit a &lt;a href=&#34;https://en.wikipedia.org/wiki/Logistic_regression&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;logistic regression&lt;/strong&gt;&lt;/a&gt; model.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.logit(&#39;y ~ x&#39;, data=df).fit(disp=False).summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;z&lt;/th&gt;      &lt;th&gt;P&gt;|z|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;   -4.0955&lt;/td&gt; &lt;td&gt;    0.887&lt;/td&gt; &lt;td&gt;   -4.618&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -5.834&lt;/td&gt; &lt;td&gt;   -2.357&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;x&lt;/th&gt;         &lt;td&gt;    2.7664&lt;/td&gt; &lt;td&gt;    0.752&lt;/td&gt; &lt;td&gt;    3.677&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.292&lt;/td&gt; &lt;td&gt;    4.241&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Can we bootstrap the distribution of our estimator? Let&amp;rsquo;s try to compute the logistic regression coefficient over 1000 bootstrap samples.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;estimate_logit = lambda df: smf.logit(&#39;y ~ x&#39;, data=df).fit(disp=False).params[1]
+for i in range(1000):
+    try:
+        classic_boot(df, estimate_logit, seed=i)
+    except Exception as e:
+        print(f&#39;Error for bootstrap number {i}: {e}&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Error for bootstrap number 92: Perfect separation detected, results not available
+Error for bootstrap number 521: Perfect separation detected, results not available
+Error for bootstrap number 545: Perfect separation detected, results not available
+Error for bootstrap number 721: Perfect separation detected, results not available
+Error for bootstrap number 835: Perfect separation detected, results not available
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For 5 samples out of 1000, we are &lt;strong&gt;unable&lt;/strong&gt; to compute the estimate. This would not have happened with then bayesian bootstrap.&lt;/p&gt;
+&lt;p&gt;This might seem like an innocuous issue in this case: we can just drop those observations. Let&amp;rsquo;s conclude with a much more dangerous example.&lt;/p&gt;
+&lt;p&gt;Suppose we observed a binary feature $x$ and a continuous outcome $y$. We are again interested in the relationship between the two variables.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N = 100
+np.random.seed(1)
+x = np.random.binomial(1, 5/N, N)
+y = np.random.normal(1 + 2*x, 1, N)
+df = pd.DataFrame({&#39;x&#39;: x, &#39;y&#39;: y})
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;x&lt;/th&gt;
+      &lt;th&gt;y&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1.315635&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;-1.022201&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0.693796&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1.827975&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1.230095&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;Let&amp;rsquo;s compare the two bootstrap estimators of the regression coefficient of $y$ on $x$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;estimate_beta = lambda df, **kwargs: smf.wls(&#39;y ~ x&#39;, data=df, **kwargs).fit().params[1]
+compare_boot(df, classic_boot, bayes_boot, estimate_beta, &#39;beta&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_boot_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The classic bootstrap procedure estimates a 50% larger variance of our estimator. Why? If we look more closely, we seen that in almost 20 re-samples, we get a very unusual estimate of zero!&lt;/p&gt;
+&lt;p&gt;The problem is that in some samples we might not have have &lt;strong&gt;any observations&lt;/strong&gt; with $x=1$. Therefore, in these re-samples, the estimated coefficient is zero. This does not happen with the Bayesian bootstrap, since it does not drop any observation.&lt;/p&gt;
+&lt;p&gt;The problematic part here is that we are not getting any error message or warning. This bias is very sneaky and could easily go &lt;strong&gt;unnoticed&lt;/strong&gt;!&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;The article was inspired by the following tweet by Brown University professor &lt;a href=&#34;https://sites.google.com/site/aboutpeterhull/home&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Peter Hull&lt;/a&gt;&lt;/p&gt;
+&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;Ok, so I come bearing good news for ~93% of you: esp. those bootstraping complex models (e.g. w/many FEs)&lt;br&gt;&lt;br&gt;Instead of resampling, which can be seen as reweighting by a random integer W that may be zero, you can reweight by a random non-zero non-integer W &lt;a href=&#34;https://t.co/Rpm1GmomHg&#34;&gt;https://t.co/Rpm1GmomHg&lt;/a&gt;&lt;/p&gt;&amp;mdash; Peter Hull (@instrumenthull) &lt;a href=&#34;https://twitter.com/instrumenthull/status/1487469316010389516?ref_src=twsrc%5Etfw&#34;&gt;January 29, 2022&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;Indeed, besides being a simple and intuitive procedure, the Bayesian Bootstrap is not part of the standard econometrics curriculum in economic graduate schools.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;p&gt;[1] B. Efron &lt;a href=&#34;https://www.jstor.org/stable/2958830&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Bootstrap Methods: Another Look at the Jackknife&lt;/a&gt; (1979), &lt;em&gt;The Annals of Statistics&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] D. Rubin, &lt;a href=&#34;https://www.jstor.org/stable/2240875&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Bayesian Bootstrap&lt;/a&gt; (1981), &lt;em&gt;The Annals of Statistics&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[3] A. Lo, &lt;a href=&#34;https://www.jstor.org/stable/2241087&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;A Large Sample Study of the Bayesian Bootstrap&lt;/a&gt; (1987), &lt;em&gt;The Annals of Statistics&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[4] J. Shao, D. Tu, &lt;a href=&#34;https://link.springer.com/book/10.1007/978-1-4612-0795-5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Jacknife and Bootstrap&lt;/a&gt; (1995), &lt;em&gt;Springer&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/bayes_boot.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/bayes_boot.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Understanding Synthetic Control Methods</title>
       <link>https://matteocourthoud.github.io/post/synth/</link>
       <pubDate>Wed, 27 Jul 2022 00:00:00 +0000</pubDate>
@@ -699,348 +1052,6 @@ ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zo
 &lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
 &lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/synth.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/synth.ipynb&lt;/a&gt;&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>The Bayesian Bootstrap</title>
-      <link>https://matteocourthoud.github.io/post/bayes_boot/</link>
-      <pubDate>Wed, 20 Jul 2022 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/bayes_boot/</guid>
-      <description>&lt;p&gt;&lt;em&gt;A short guide to a simple and powerful alternative to the bootstrap&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;In causal inference we do not want just to compute treatment effect, we also want to do &lt;strong&gt;inference&lt;/strong&gt; (duh!). In some cases, it&amp;rsquo;s very easy to compute the asymptotic difference of an estimator, thanks to the &lt;a href=&#34;https://en.wikipedia.org/wiki/Central_limit_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;central limit theorem&lt;/strong&gt;&lt;/a&gt;. This is the case of computing the average treatment effect in AB tests or randomized controlled trials, for example. However, in other settings, inference is more &lt;strong&gt;complicated&lt;/strong&gt;. The most frequent setting is the computation of quantities that are not sums or averages, such as the median treatment effect, for example. In these cases, we cannot rely on the central limit theorem. What can we do then?&lt;/p&gt;
-&lt;p&gt;The &lt;strong&gt;bootstrap&lt;/strong&gt; is the answer! It is a very powerful procedure to compute the distribution of an estimator, without needing any knowledge of the data generating process. It is also very &lt;strong&gt;intuitive and simple&lt;/strong&gt; to implement: just re-sample your data with replacement a lot of times and compute your estimator on the re-computed sample.&lt;/p&gt;
-&lt;p&gt;Can we do better? The answer is yes! The &lt;strong&gt;Bayesian Bootstrap&lt;/strong&gt; is a powerful procedure that in a lot of setting performs &lt;strong&gt;better&lt;/strong&gt; than the bootstrap. In particular, it&amp;rsquo;s usually faster, can give tighter confidence intervals and prevents a lot of corner cases of the bootstrap. In this article we are going to explore this simple but powerful procedure more in detail.&lt;/p&gt;
-&lt;h2 id=&#34;the-bootstrap&#34;&gt;The Bootstrap&lt;/h2&gt;
-&lt;p&gt;Bootstrap is a procedure to compute properties of an estimator by random &lt;strong&gt;re-sampling with replacement&lt;/strong&gt; from the data. It was first introduced by &lt;a href=&#34;https://www.jstor.org/stable/2958830&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Efron (1979)&lt;/a&gt;. The procedure is very simple and consists in the following steps.&lt;/p&gt;
-&lt;p&gt;Suppose you have access to an i.i.d. sample $\lbrace X_i \rbrace_{i=1}^n$ and you want to compute a statistic $\theta$ using an estimator $\hat \theta(X)$. You can approximate the distribution of $\hat \theta$ by&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;Sample $n$ observations with replacement from your sample $\lbrace \tilde X_i \rbrace_{i=1}^n$&lt;/li&gt;
-&lt;li&gt;Compute the estimator $\hat \theta_{bootstrap}(\tilde X)$&lt;/li&gt;
-&lt;li&gt;Repeat steps 1 and 2 a large number of times&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;The distribution of $\hat \theta_{bootstrap}$ is a good approximation of the distribution of $\hat \theta$.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Why is the bootstrap so powerful?&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;First of all, it&amp;rsquo;s &lt;strong&gt;easy to implement&lt;/strong&gt;. It does not require you to do anything more than what you were already doing: estimating $\theta$. You just need to do it &lt;em&gt;a lot of times&lt;/em&gt;. Indeed, the main disadvantage of the bootstrap is its &lt;strong&gt;computational speed&lt;/strong&gt;. If estimating $\theta$ once is slow, bootstrapping it is prohibitive.&lt;/p&gt;
-&lt;p&gt;Second, the bootstrap makes &lt;strong&gt;no distributional assumption&lt;/strong&gt;. It only assumes a representative sample from your population, where observations are independent from each other. This assumption might be violated when observations are tightly connected with each other, such when studying social networks.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Is bootstrap just weighting?&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;In the end, what we are doing is assigning &lt;strong&gt;integer weights&lt;/strong&gt; to our observations, such that their sum adds up to $n$. Such distribution is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Multinomial_distribution&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;multinomial distribution&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s have a look at what a multinomial distribution look like by drawing a sample of size 10.000.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
-%config InlineBackend.figure_format = &#39;retina&#39;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N = 10_000
-np.random.seed(1)
-bootstrap_weights = np.random.multinomial(N, np.ones(N)/N)
-np.sum(bootstrap_weights)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;10000
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;First of all, we check that indeed the weights sum up to 1000, or equivalently, we generated a re-sample of the same size of the data.&lt;/p&gt;
-&lt;p&gt;We can now plot the &lt;strong&gt;distribution of weights&lt;/strong&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.countplot(bootstrap_weights, color=&#39;C0&#39;).set(title=&#39;Bootstrap Weights&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/bayes_boot_9_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;As we can see, around 3600 observations got zero weight, however a couple of observations got a weights of 6. Or equivalently, around 3600 observations did not get re-sampled while a couple of observations got samples as many as 6 times.&lt;/p&gt;
-&lt;p&gt;Now you might have a spontaneous question: why not use &lt;strong&gt;continuous weights&lt;/strong&gt; instead of discrete ones?&lt;/p&gt;
-&lt;p&gt;Very good question! The &lt;strong&gt;Bayesian Bootstrap&lt;/strong&gt; is the answer.&lt;/p&gt;
-&lt;h2 id=&#34;the-bayesian-bootstrap&#34;&gt;The Bayesian Bootstrap&lt;/h2&gt;
-&lt;p&gt;The Bayesian bootstrap was introduced by &lt;a href=&#34;https://www.jstor.org/stable/2240875&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Rubin (1981)&lt;/a&gt; and it&amp;rsquo;s based on a very simple &lt;strong&gt;idea&lt;/strong&gt;: why not draw a smoother distribution of weights? The continuous equivalent of the multinomial distribution is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Dirichlet_distribution&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Dirichelet distribution&lt;/strong&gt;&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;The Bayesian Bootstrap has &lt;strong&gt;many advantages&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;The first and most intuitive one is that it delivers estimates that are much more &lt;strong&gt;smooth&lt;/strong&gt; than the normal bootstrap, because of its continuous weighting scheme.&lt;/p&gt;
-&lt;p&gt;Moreover, the continuous weighting scheme &lt;strong&gt;prevents corner cases&lt;/strong&gt; from emerging, since no observation will ever receive zero weight. For example, in linear regression, no problem of &lt;a href=&#34;https://en.wikipedia.org/wiki/Multicollinearity&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;collinearity&lt;/a&gt; emerges, if there wasn&amp;rsquo;t one in the original sample.&lt;/p&gt;
-&lt;p&gt;Lastly, being a Bayesian method, we gain &lt;strong&gt;interpretation&lt;/strong&gt;: the estimated distribution of the estimator can be interpreted as the &lt;a href=&#34;https://en.wikipedia.org/wiki/Posterior_probability&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;posterior distribution&lt;/a&gt; with an &lt;a href=&#34;https://en.wikipedia.org/wiki/Prior_probability&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;uninformative prior&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s repeat the sample experiment as before, but with the Dirichelet distribution.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;bayesian_weights = np.random.dirichlet(alpha=np.ones(N), size=1)[0] * N
-np.sum(bayesian_weights)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;10000.000000000005
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The weights naturally sum to (approximately) 1, so we have to scale them by a factor N.&lt;/p&gt;
-&lt;p&gt;As before, we can plot the distribution of weights, with the difference that now we have continuous weights, so we have to approximate the distribution. We can do so by&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(bayesian_weights, color=&#39;C1&#39;, kde=True).set(title=&#39;Bootstrap Weights&#39;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/bayes_boot_15_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;As you might have noticed, the Dirichelet distirbution has a parameter $\alpha$ that we have set to 1 for all observations. What does it do?&lt;/p&gt;
-&lt;p&gt;The $\alpha$ parameter essentially governs both the absolute and relative probability of being samples. Increasing $\alpha$ for all observations makes the distribution less skewed so that all observations have a more similar weight. For $\alpha \to \infty$, all observations receiver the same weight and we are back to the original sample.&lt;/p&gt;
-&lt;p&gt;How should we pick $\alpha$? &lt;a href=&#34;https://link.springer.com/book/10.1007/978-1-4612-0795-5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Shao and Tu (1995)&lt;/a&gt; suggest the following.&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;em&gt;The distribution of the random weight vector does not have to be restricted to the Diri(l, &amp;hellip; , 1). Later investigations found that the weights having a scaled Diri(4, &amp;hellip; ,4) distribution give better approximations (Tu and Zheng, 1987)&lt;/em&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Let&amp;rsquo;s have a look at how a Dirichelet distribution with $\alpha = 4$ for all observations compare to our previous distribution with $\alpha = 1$ for all observations.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;bayesian_weights2 = np.random.dirichlet(np.ones(N) * 4, 1)[0] * N
-sns.histplot(bayesian_weights, color=&#39;C1&#39;, kde=True)
-sns.histplot(bayesian_weights2, color=&#39;C2&#39;, kde=True).set(title=&#39;Bootstrap Weights&#39;);
-plt.legend([r&#39;$\alpha = 1$&#39;, r&#39;$\alpha = 4$&#39;]);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/bayes_boot_17_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;The new distribution is much less skewed and more concentrated around the average value of 1.&lt;/p&gt;
-&lt;h2 id=&#34;examples&#34;&gt;Examples&lt;/h2&gt;
-&lt;p&gt;Let&amp;rsquo;s have a look at a couple of examples, where we compare both inference procedures.&lt;/p&gt;
-&lt;h3 id=&#34;mean-of-a-skewed-distribution&#34;&gt;Mean of a Skewed Distribution&lt;/h3&gt;
-&lt;p&gt;First, let&amp;rsquo;s have a look at one of the simplest and most common estimators: the &lt;strong&gt;sample mean&lt;/strong&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(2)
-X = pd.Series(np.random.pareto(2, 100))
-sns.histplot(X);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/bayes_boot_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def classic_boot(df, estimator, seed=1):
-    df_boot = df.sample(n=len(df), replace=True, random_state=seed)
-    estimate = estimator(df_boot)
-    return estimate
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;classic_boot(X, np.mean)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.7079805545831946
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def bayes_boot(df, estimator, seed=1):
-    np.random.seed(seed)
-    w = np.random.dirichlet(np.ones(len(df)), 1)[0]
-    result = estimator(df, weights=w)
-    return result
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;bayes_boot(X, np.average)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;1.0378495251293498
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from joblib import Parallel, delayed
-
-def bootstrap(boot_method, df, estimator, K):
-    r = Parallel(n_jobs=8)(delayed(boot_method)(df, estimator, seed=i) for i in range(K))
-    return r
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def compare_boot(df, boot1, boot2, estimator, K):
-    s1 = bootstrap(boot1, df, estimator, K)
-    s2 = bootstrap(boot2, df, estimator, K)
-    df = pd.DataFrame({&#39;Estimate&#39;: s1 + s2,
-                       &#39;Estimator&#39;: [&#39;Classic&#39;]*K + [&#39;Bayes&#39;]*K})
-    sns.histplot(data=df, x=&#39;Estimate&#39;, hue=&#39;Estimator&#39;)
-    plt.legend([f&#39;Bayes:   {np.mean(s2):.2f} ({np.std(s2):.2f})&#39;,
-                f&#39;Classic: {np.mean(s1):.2f} ({np.std(s1):.2f})&#39;])
-    plt.title(&#39;Comparing Bootstrap Methods&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_boot(X, classic_boot, bayes_boot, np.average, 1000)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/bayes_boot_30_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;In this setting, both procedures give a very similar answer.&lt;/p&gt;
-&lt;p&gt;Which one is faster?&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import time
-
-def compare_time(df, boot1, boot2, estimator, K):
-    t1, t2 = np.zeros(K), np.zeros(K)
-    for k in range(K):
-        
-        # Classic bootstrap
-        start = time.time()
-        boot1(df, estimator)
-        t1[k] = time.time() - start
-    
-        # Bayesian bootstrap
-        start = time.time()
-        boot2(df, estimator)
-        t2[k] = time.time() - start
-    
-    print(f&amp;quot;Bayes wins {np.mean(t1 &amp;gt; t2)*100}% of the time (by {np.mean((t1 - t2)/t1*100):.2f}%)&amp;quot;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_time(X, classic_boot, bayes_boot, np.average, 1000)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Bayes wins 100.0% of the time (by 83.43%)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The Bayesian bootstrap is faster than the classical bootstrap 100% of the simulations, and by an impressive 83%!&lt;/p&gt;
-&lt;h3 id=&#34;no-weighting-no-problem&#34;&gt;No Weighting? No Problem&lt;/h3&gt;
-&lt;p&gt;What if we have an estimator that does not accept weights, such as the median? We can do &lt;strong&gt;two-level sampling&lt;/strong&gt;.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def twolv_boot(df, estimator, seed=1):
-    np.random.seed(seed)
-    w = np.random.dirichlet(np.ones(len(df))*4, 1)[0]
-    df_boot = df.sample(n=len(df)*10, replace=True, weights=w, random_state=seed)
-    result = estimator(df_boot)
-    return result
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(1)
-X = pd.Series(np.random.normal(0, 10, 1000))
-compare_boot(X, classic_boot, twolv_boot, np.median, 1000)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/bayes_boot_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;In this setting, the Bayesian Bootstrap is also &lt;strong&gt;more precise&lt;/strong&gt; than the classical bootstrap.&lt;/p&gt;
-&lt;h3 id=&#34;logistic-regression-with-rare-outcome&#34;&gt;Logistic Regression with Rare Outcome&lt;/h3&gt;
-&lt;p&gt;Let&amp;rsquo;s now explore the first of two settings in which the classical bootstrap might fall into &lt;strong&gt;corner cases&lt;/strong&gt;. Suppose we observed a feature $x$, normally distributed, and a binary outcome $y$. We are interested in the relationship between the two variables.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N = 100
-np.random.seed(1)
-x = np.random.normal(0, 1, N)
-y = np.rint(np.random.normal(x, 1, N) &amp;gt; 2)
-df = pd.DataFrame({&#39;x&#39;: x, &#39;y&#39;: y})
-df.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;x&lt;/th&gt;
-      &lt;th&gt;y&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;1.624345&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;-0.611756&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;-0.528172&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;-1.072969&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;0.865408&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;In this case, we observe a positive outcome only in 10 observations out of 100.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.sum(df[&#39;y&#39;])
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;10.0
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Since the outcome is binary, we fit a &lt;a href=&#34;https://en.wikipedia.org/wiki/Logistic_regression&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;logistic regression&lt;/strong&gt;&lt;/a&gt; model.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.logit(&#39;y ~ d &#39;, data=df).fit(disp=False).summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;z&lt;/th&gt;      &lt;th&gt;P&gt;|z|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;   -2.1518&lt;/td&gt; &lt;td&gt;    0.334&lt;/td&gt; &lt;td&gt;   -6.440&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -2.807&lt;/td&gt; &lt;td&gt;   -1.497&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;d&lt;/th&gt;         &lt;td&gt;  -23.5182&lt;/td&gt; &lt;td&gt; 1.88e+05&lt;/td&gt; &lt;td&gt;   -0.000&lt;/td&gt; &lt;td&gt; 1.000&lt;/td&gt; &lt;td&gt;-3.68e+05&lt;/td&gt; &lt;td&gt; 3.68e+05&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;p&gt;Can we bootstrap the distribution of our estimator? Let&amp;rsquo;s try to compute the logistic regression coefficient over 1000 bootstrap samples.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;estimate_logit = lambda df: smf.logit(&#39;y ~ x&#39;, data=df).fit(disp=False).params[1]
-for i in range(1000):
-    try:
-        classic_boot(df, estimate_logit, seed=i)
-    except Exception as e:
-        print(f&#39;Error for bootstrap number {i}: {e}&#39;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Error for bootstrap number 92: Perfect separation detected, results not available
-Error for bootstrap number 521: Perfect separation detected, results not available
-Error for bootstrap number 545: Perfect separation detected, results not available
-Error for bootstrap number 721: Perfect separation detected, results not available
-Error for bootstrap number 835: Perfect separation detected, results not available
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;For 5 samples out of 1000, we are &lt;strong&gt;unable&lt;/strong&gt; to compute the estimate. This would not have happened with then bayesian bootstrap.&lt;/p&gt;
-&lt;p&gt;This might seem like an innocuous issue in this case: we can just drop those observations. Let&amp;rsquo;s conclude with a much more dangerous example.&lt;/p&gt;
-&lt;h3 id=&#34;regression-with-few-treated-units&#34;&gt;Regression with few Treated Units&lt;/h3&gt;
-&lt;p&gt;Suppose we observed a binary feature $x$ and a continuous outcome $y$. We are again interested in the relationship between the two variables.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N = 100
-np.random.seed(1)
-x = np.random.binomial(1, 5/N, N)
-y = np.random.normal(1 + 2*x, 1, N)
-df = pd.DataFrame({&#39;x&#39;: x, &#39;y&#39;: y})
-df.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;x&lt;/th&gt;
-      &lt;th&gt;y&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;1.315635&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;-1.022201&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;0.693796&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;1.827975&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;1.230095&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;Let&amp;rsquo;s compare the two bootstrap estimators of the regression coefficient of $y$ on $x$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;estimate_beta = lambda df, **kwargs: smf.wls(&#39;y ~ x&#39;, data=df, **kwargs).fit().params[1]
-compare_boot(df, classic_boot, bayes_boot, estimate_beta, 1000)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/bayes_boot_54_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;The classic bootstrap procedure estimates a 50% larger variance of our estimator. Why? If we look more closely, we seen that in almost 20 re-samples, we get a very unusual estimate of zero!&lt;/p&gt;
-&lt;p&gt;The problem is that in some samples we might not have have &lt;strong&gt;any observations&lt;/strong&gt; with $x=1$. Therefore, in these re-samples, the estimated coefficient is zero. This does not happen with the Bayesian bootstrap, since it does not drop any observation.&lt;/p&gt;
-&lt;p&gt;The problematic part here is that we are not getting any error message or warning. This bias is very sneaky and could easily go &lt;strong&gt;unnoticed&lt;/strong&gt;!&lt;/p&gt;
-&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;The article was inspired by the following tweet by Brown University professor &lt;a href=&#34;https://sites.google.com/site/aboutpeterhull/home&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Peter Hull&lt;/a&gt;&lt;/p&gt;
-&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;Ok, so I come bearing good news for ~93% of you: esp. those bootstraping complex models (e.g. w/many FEs)&lt;br&gt;&lt;br&gt;Instead of resampling, which can be seen as reweighting by a random integer W that may be zero, you can reweight by a random non-zero non-integer W &lt;a href=&#34;https://t.co/Rpm1GmomHg&#34;&gt;https://t.co/Rpm1GmomHg&lt;/a&gt;&lt;/p&gt;&amp;mdash; Peter Hull (@instrumenthull) &lt;a href=&#34;https://twitter.com/instrumenthull/status/1487469316010389516?ref_src=twsrc%5Etfw&#34;&gt;January 29, 2022&lt;/a&gt;&lt;/blockquote&gt;
-&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
-
-&lt;p&gt;Indeed, besides being a simple and intuitive procedure, the Bayesian Bootstrap is not part of the standard econometrics curriculum in economic graduate schools.&lt;/p&gt;
-&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
-&lt;p&gt;[1] B. Efron &lt;a href=&#34;https://www.jstor.org/stable/2958830&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Bootstrap Methods: Another Look at the Jackknife&lt;/a&gt; (1979), &lt;em&gt;The Annals of Statistics&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[2] D. Rubin, &lt;a href=&#34;https://www.jstor.org/stable/2240875&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Bayesian Bootstrap&lt;/a&gt; (1981), &lt;em&gt;The Annals of Statistics&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[3] A. Lo, &lt;a href=&#34;https://www.jstor.org/stable/2241087&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;A Large Sample Study of the Bayesian Bootstrap&lt;/a&gt; (1987), &lt;em&gt;The Annals of Statistics&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;[4] J. Shao, D. Tu, &lt;a href=&#34;https://link.springer.com/book/10.1007/978-1-4612-0795-5&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Jacknife and Bootstrap&lt;/a&gt; (1995), &lt;em&gt;Springer&lt;/em&gt;.&lt;/p&gt;
-&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
-&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/bayes_boot.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/bayes_boot.ipynb&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
