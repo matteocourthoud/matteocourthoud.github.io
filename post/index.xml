@@ -5,12 +5,308 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Wed, 17 Aug 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sun, 04 Sep 2022 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://matteocourthoud.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>A/B Tests, Privacy and Online Regression</title>
+      <link>https://matteocourthoud.github.io/post/online_reg/</link>
+      <pubDate>Sun, 04 Sep 2022 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/online_reg/</guid>
+      <description>&lt;p&gt;&lt;em&gt;How to run experiments without storing individual data&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;AB tests, a.k.a. randomized controlled trials, are widely recognized as the gold standard technique to compute the causal effect of a treatment (a drug, ad, product, &amp;hellip;) on an outcome of interest (a disease, firm revenue, customer satisfaction, &amp;hellip;). We randomly split a set of subjects (patients, users, customers, &amp;hellip;) into a treatment and a control group and give the treatment to the treatment group. This procedure ensures that ex-ante, the only expected difference between the two groups is caused by the treatment.&lt;/p&gt;
+&lt;p&gt;One potential &lt;strong&gt;privacy issue&lt;/strong&gt; is that one needs to store data about many users for the whole duration of the experiment in order to estimate the effect of the treatment. This is not necessarily tr&lt;/p&gt;
+&lt;p&gt;⚠️ Some parts are algebra-intense, but you can skip them if you are only interested in the intuition.&lt;/p&gt;
+&lt;h2 id=&#34;credit-cards-and-donations&#34;&gt;Credit Cards and Donations&lt;/h2&gt;
+&lt;p&gt;Suppose, for example, that we were a fintech company. We are interested in experimenting whether giving promotional discounts to users encourages them to spend more. In order to estimate the causal effect of coupons on spending, we would like to run an A/B test or randomized controlled trial.&lt;/p&gt;
+&lt;p&gt;We have one major problem: we cannot store user-level information for privacy reasons.&lt;/p&gt;
+&lt;p&gt;First, let&amp;rsquo;s have a look at the data. I import the data generating process &lt;code&gt;dgp_credit()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt; and some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;. I include code snippets from &lt;a href=&#34;https://deepnote.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Deepnote&lt;/a&gt;, a Jupyter-like web-based collaborative notebook environment. For our purpose, Deepnote is very handy because it allows me not only to include code but also output, like data and tables.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp_credit
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I first generate the whole dataset in one-shot. We will then investigate how to perform the experimental analysis in case the data was arriving dynamically.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N = 100
+df = dgp_credit.generate_data(N)
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;c&lt;/th&gt;
+      &lt;th&gt;treated&lt;/th&gt;
+      &lt;th&gt;balance&lt;/th&gt;
+      &lt;th&gt;spend&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;117.22&lt;/td&gt;
+      &lt;td&gt;2.14&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;29.97&lt;/td&gt;
+      &lt;td&gt;29.97&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;53.45&lt;/td&gt;
+      &lt;td&gt;10.07&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;188.84&lt;/td&gt;
+      &lt;td&gt;2.88&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;130.00&lt;/td&gt;
+      &lt;td&gt;43.29&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on 100 users, for whom we observe&amp;hellip;&lt;/p&gt;
+&lt;p&gt;First, let&amp;rsquo;s have a look&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model = smf.ols(&#39;spend ~ treated + balance&#39;, data=df).fit()
+model.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    5.2712&lt;/td&gt; &lt;td&gt;    1.275&lt;/td&gt; &lt;td&gt;    4.134&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.741&lt;/td&gt; &lt;td&gt;    7.802&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;treated&lt;/th&gt;   &lt;td&gt;    1.8561&lt;/td&gt; &lt;td&gt;    1.532&lt;/td&gt; &lt;td&gt;    1.211&lt;/td&gt; &lt;td&gt; 0.229&lt;/td&gt; &lt;td&gt;   -1.185&lt;/td&gt; &lt;td&gt;    4.898&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;balance&lt;/th&gt;   &lt;td&gt;    0.0341&lt;/td&gt; &lt;td&gt;    0.020&lt;/td&gt; &lt;td&gt;    1.702&lt;/td&gt; &lt;td&gt; 0.092&lt;/td&gt; &lt;td&gt;   -0.006&lt;/td&gt; &lt;td&gt;    0.074&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;In order to understand how we can make linear regression one data point at the time, we first need a brief linear algebra recap.&lt;/p&gt;
+&lt;p&gt;First of all, let&amp;rsquo;s define $y$ the dependent variable, &lt;code&gt;spend&lt;/code&gt; in our case, and $X$ the explanatory variable, the &lt;code&gt;treated&lt;/code&gt; indicator, the account &lt;code&gt;balance&lt;/code&gt; and a constant.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def xy_from_df(df, r0, r1):
+    return df.iloc[r0:r1,:3].to_numpy(), df.iloc[r0:r1,3].to_numpy()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The  estimator is given by
+$$
+\hat{\beta}_{OLS} = (X&amp;rsquo;X)^{-1}X&amp;rsquo;y
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from numpy.linalg import inv
+
+X, Y = xy_from_df(df, 0, 100)
+inv(X.T @ X) @ X.T @ Y
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;array([5.27115294, 1.85610826, 0.03410236])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We get indeed the same exact number as with the &lt;code&gt;smf.ols&lt;/code&gt; command!&lt;/p&gt;
+&lt;p&gt;Can we compute $\beta$ one observation at the time?&lt;/p&gt;
+&lt;p&gt;The answer is yes! Assume we had $n$ observations and we just received the $n+1$th observation: the pair $(x_{n+1}, y_{n+1})$. In order to compute $\hat{\beta}_{n+1}$ we need to have stored only two objects in memory&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$\hat{\beta}_{n}$, the previous estimate of $\beta$&lt;/li&gt;
+&lt;li&gt;$(X_n&#39; X_n)^{-1}$, the previous value of $(X&#39; X)^{-1}$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;First of all, how do we update $(X&#39; X)^{-1}$?
+$$
+\begin{align*}
+(X_{n+1}&#39; X_{n+1})^{-1} = (X_n&#39; X_n)^{-1} - \frac{(X_n&#39; X_n)^{-1} x_{n+1} x_{n+1}&#39; (X_n&#39; X_n)^{-1}}{1 + x_{n+1}&#39; (X_n&#39; X_n)^{-1} x_{n+1}}
+\end{align*}
+$$&lt;/p&gt;
+&lt;p&gt;After having updated $(X&#39; X)^{-1}$, we can update $\hat{\beta}$.
+$$
+\hat{\beta}&lt;em&gt;{n+1} = \hat{\beta}&lt;/em&gt;{n} + (X_n&#39; X_n)^{-1} x_{n} (y_n - x_n&#39; \hat{\beta}_{n})
+$$&lt;/p&gt;
+&lt;p&gt;Note that this procedure is not only privacy friendly but also &lt;strong&gt;memory-friendly&lt;/strong&gt;. Our dataset is a $100 \times 4$ matrix while $(X&#39; X)^{-1}$ is $3 \times 3$ matrix and $\beta$ is a $3 \times 1$ matrix. We are storing only 12 numbers instead of up to 400!&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def update_xb(XiX, beta, x, y):
+    XiX -= (XiX @ x.T @ x @ XiX) / (1 + x @ XiX @ x.T )
+    beta += XiX @ x.T @ (y - x @ beta)
+    return XiX, beta
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We are now ready to estimate our OLS coefficient, one data point at the time. However, we cannot really start from the first observation, because we would be unable to invert the matrix $X&amp;rsquo;X$. We need at least $k+1$ observations, where $k$ is the number of variables in $X$.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s use a warm start of 10 observations to be safe.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Initialize XiX and beta from first 10 observations
+x, y = xy_from_df(df, 0, 10)
+XiX = inv(x.T @ x)
+beta = XiX @ x.T @ y
+
+# Update estimate live
+for n in range(10, N):
+    x, y = xy_from_df(df, n, n+1)
+    XiX, beta = update_xb(XiX, beta, x, y)
+    
+# Print result
+print(beta)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[5.27115294 1.85610826 0.03410236]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We got exactly the same coefficient! Nice!&lt;/p&gt;
+&lt;p&gt;How did we get there? We can plot the evolution of out estimate $\hat{\beta}$ as we accumulate data. The dynamic plotting function is a bit more cumbersome, but you can find it in &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/figures.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.figures&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.figures import online_regression
+
+online_regression(df, &amp;quot;fig/online_reg1.gif&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;fig/online_reg1.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, as the number of data points increases, the estimate seems to less and less volatile.&lt;/p&gt;
+&lt;p&gt;But is it really the case? As usual, we are not just interested in the point estimate of the effect of the &lt;code&gt;coupon&lt;/code&gt; on spending, we would also like to understand how precise this estimate is.&lt;/p&gt;
+&lt;h2 id=&#34;inference&#34;&gt;Inference&lt;/h2&gt;
+&lt;p&gt;We have seen how to estimate the treatment effect &amp;ldquo;online&amp;rdquo;: one observation at the time. Can we also compute the variance of the estimator in the same manner?&lt;/p&gt;
+&lt;p&gt;First of all, let&amp;rsquo;s review what the variance of the OLS estimator looks like. Under baseline assumptions, the variance of the OLS estimator is given by:
+$$
+\text{Var}(\hat{\beta}_{OLS}) = (X&amp;rsquo;X)^{-1} \hat{\sigma}^2
+$$&lt;/p&gt;
+&lt;p&gt;where $\hat{\sigma}^2$ is the variance of the residuals $e = (y - X&#39;\hat{\beta})$.&lt;/p&gt;
+&lt;p&gt;The regression table reports the standard errors of the coefficients, which are the squared elements on the diagonal of $\text{Var}(\hat{\beta})$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    5.2712&lt;/td&gt; &lt;td&gt;    1.275&lt;/td&gt; &lt;td&gt;    4.134&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.741&lt;/td&gt; &lt;td&gt;    7.802&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;treated&lt;/th&gt;   &lt;td&gt;    1.8561&lt;/td&gt; &lt;td&gt;    1.532&lt;/td&gt; &lt;td&gt;    1.211&lt;/td&gt; &lt;td&gt; 0.229&lt;/td&gt; &lt;td&gt;   -1.185&lt;/td&gt; &lt;td&gt;    4.898&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;balance&lt;/th&gt;   &lt;td&gt;    0.0341&lt;/td&gt; &lt;td&gt;    0.020&lt;/td&gt; &lt;td&gt;    1.702&lt;/td&gt; &lt;td&gt; 0.092&lt;/td&gt; &lt;td&gt;   -0.006&lt;/td&gt; &lt;td&gt;    0.074&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Let&amp;rsquo;s check that we would obtain the same numbers using matrix algebra.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;beta = inv(X.T @ X) @ X.T @ Y
+np.sqrt(np.diag(inv(X.T @ X) * np.var(Y - X @ beta)))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;array([1.25571838, 1.50928106, 0.01973147])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Indeed, we get exactly the same numbers!&lt;/p&gt;
+&lt;p&gt;We already have a method to part of $\text{Var}(\hat{\beta}&lt;em&gt;{OLS}$ online: $(X&amp;rsquo;X)^{-1}$ update the matrix $(X&amp;rsquo;X)^{-1}$ online. How do we update $\hat{\sigma}^2$? This is the formula to update the sum of squared residuals $S$.
+$$
+S&lt;/em&gt;{n+1} = S_{n} + \frac{(y_{n+1} - x_{n+1}\hat{\beta_n})}{1 + x_{n+1}&#39; (X_n&#39; X_n)^{-1} x_{n+1}}
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def update_xbs(XiX, beta, S, x, y):
+    S += (y - x @ beta)**2 / (1 + x @ XiX @ x.T )
+    XiX -= (XiX @ x.T @ x @ XiX) / (1 + x @ XiX @ x.T )
+    beta += XiX @ x.T @ (y - x @ beta)
+    return XiX, beta, S[0,0]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note, the order here is very important!&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Inizialize XiX, beta, and sigma from the first 10 observations
+x, y = xy_from_df(df, 0, 10)
+XiX = inv(x.T @ x)
+beta = XiX @ x.T @ y
+S = np.sum((y - x @ beta)**2)
+
+# Update XiX, beta, and sigma online
+for n in range(10, N):
+    x, y = xy_from_df(df, n, n+1)
+    XiX, beta, S = update_xbs(XiX, beta, S, x, y)
+    
+# Print result
+print(np.sqrt(np.diag(XiX * S / (N - 3))))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;[1.27498884 1.53244274 0.02003428]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We indeed got the same result! Note that to get from the sum of squared residuals $S$ to the residuals variance $\hat{\sigma}^2$ we need to divide by the degrees of freedom: $n - k = 100 - 3$.&lt;/p&gt;
+&lt;p&gt;As before we have plotted the evolution of the estimate of the OLS coefficient over time, we can now augment that plot with a confidence band of +- one standard deviation.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;online_regression(df, &amp;quot;fig/online_reg2.gif&amp;quot;, ci=True)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;fig/online_reg2.gif&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the estimated variance of the OLS estimator indeed decreases as the sample size increases.&lt;/p&gt;
+&lt;h2 id=&#34;bootstrap&#34;&gt;Bootstrap&lt;/h2&gt;
+&lt;p&gt;So far we have used the asymptotic assumptions behind the Central Limit Theorem to compute the standard errors of the estimator. However, we have a particularly small sample. We further check the empirical distribution of the model residuals.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(model.resid, bins=30);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/online_reg_38_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The residuals seem to be particularly &lt;strong&gt;skewed&lt;/strong&gt;! This might be a problem in such a small sample.&lt;/p&gt;
+&lt;p&gt;One alternative is &lt;strong&gt;the bootstrap&lt;/strong&gt;. Instead of relying on asymptotics, we approximate the distribution of our estimator by resampling our dataset with replacement. Can we bootstrap online?&lt;/p&gt;
+&lt;p&gt;The answer is once again yes! They key is to weight each observation with an integer weight drawn from a Poisson distribution with mean (and variance) equal to 1. We repeat this process multiple times, in parallel and then we&lt;/p&gt;
+&lt;p&gt;The updating rules for $(X&amp;rsquo;X)^{-1}$ and $\hat{beta}$ become the following.
+$$
+\begin{align*}
+(X_{n+1}&#39; X_{n+1})^{-1} = (X_n&#39; X_n)^{-1} - \frac{w (X_n&#39; X_n)^{-1} x_{n+1} x_{n+1}&#39; (X_n&#39; X_n)^{-1}}{1 + w x_{n+1}&#39; (X_n&#39; X_n)^{-1} x_{n+1}}
+\end{align*}
+$$&lt;/p&gt;
+&lt;p&gt;and
+$$
+\hat{\beta}&lt;em&gt;{n+1} = \hat{\beta}&lt;/em&gt;{n} + w (X_n&#39; X_n)^{-1} x_{n} (y_n - x_n&#39; \hat{\beta}_{n})
+$$&lt;/p&gt;
+&lt;p&gt;where $w$ are Poisson weights. First, let&amp;rsquo;s update the updating function for $(X&amp;rsquo;X)^{-1}$ and $\hat{beta}$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def update_xbw(XiX, beta, w, x, y):
+    XiX -= (w * XiX @ x.T @ x @ XiX) / (1 + w * x @ XiX @ x.T )
+    beta += w * XiX @ x.T @ (y - x @ beta)
+    return XiX, beta
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can now run the online estimation. We bootstrap 1000 different estimates of $\hat{\beta}$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Inizialize a vector of XiXs and betas 
+np.random.seed(0)
+K = 1000
+x, y = xy_from_df(df, 0, 10)
+XiXs = [inv(x.T @ x) for k in range(K)]
+betas = [xix @ x.T @ y for xix in XiXs]
+
+# Update the vector of XiXs and betas online
+for n in range(10, N):
+    x, y = xy_from_df(df, n, n+1)
+    for k in range(K):
+        w = np.random.poisson(1)
+        XiXs[k], betas[k] = update_xbw(XiXs[k], betas[k], w, x, y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can compute the estimated standard deviation of the treatment effect, simply by computing the standard deviation of the vector of bootstrapped coefficients.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.std(betas, axis=0)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;array([1.10757328, 1.27691523, 0.01923486])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The estimated standard errors are slightly different from the previous values of $[1.275, 1.532, 0.020]$, but not very far apart.&lt;/p&gt;
+&lt;p&gt;Lastly, some of you might have wondered &amp;ldquo;&lt;em&gt;why sampling discrete weights and not continuous ones?&lt;/em&gt;&amp;rdquo;. Indeed, we can. This procedure is called the &lt;strong&gt;Bayesian Bootstrap&lt;/strong&gt; and you can find a more detailed explanation &lt;a href=&#34;https://towardsdatascience.com/6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this post, we have seen hot to run an experiment without storing individual-level data. How are we able to do it? In order to compute the average treatment effect, we do not need every single observation but it&amp;rsquo;s sufficient to store just a more compact representation of it.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;p&gt;[1] W. Chou, &lt;a href=&#34;https://arxiv.org/abs/2102.03316&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Randomized Controlled Trials without Data Retention&lt;/a&gt; (2021), &lt;em&gt;Working Paper&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/954506cec665&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Experiments, Peeking, and Optimal Stopping&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Bayesian Bootstrap&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/online_reg.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/online_reg.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Outliers, Leverage, and Influential Observations</title>
