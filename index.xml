@@ -27316,7 +27316,7 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
 &lt;p&gt;However, sometimes we might be interested in quantities different from the average, such as the &lt;a href=&#34;https://en.wikipedia.org/wiki/Median&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;median&lt;/strong&gt;&lt;/a&gt;. The median is an alternative measure of &lt;em&gt;central tendency&lt;/em&gt; that is more robust to outliers and is often more informative with skewed distributions. More generally, we might want to estimate the effect for different &lt;a href=&#34;https://en.wikipedia.org/wiki/Quantile&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;quantiles&lt;/a&gt; of the outcome distribution. A &lt;strong&gt;common use-case&lt;/strong&gt; is studying the impact of a UI change on the loading time of a website: a slightly heavier website might translate in an imperceptible change for most users, but a big change for a few users with very slow connections. Another common use-case is studying the impact of a product change on a product that is bought by few people: do existing customers buy it more or are we attracting new customers?&lt;/p&gt;
 &lt;p&gt;These questions are hard to answer with linear regression that estimates the &lt;em&gt;average treatment effect&lt;/em&gt;. A more suitable tool is &lt;strong&gt;quantile regression&lt;/strong&gt; that can instead estimate the &lt;em&gt;median treatment effect&lt;/em&gt;. In this article we are going to cover a brief introduction to quantile regression and the estimation of quantile treatment effects.&lt;/p&gt;
 &lt;h2 id=&#34;loyalty-cards-and-spending&#34;&gt;Loyalty Cards and Spending&lt;/h2&gt;
-&lt;p&gt;Suppose we were an &lt;strong&gt;online store&lt;/strong&gt; and we wanted to increase sales. We decide to offer our customers a &lt;strong&gt;loyalty card&lt;/strong&gt; that grants them discounts as they increase their spend in the store. We would like to assess if the loyalty card is effective in increasing sales so we run an &lt;strong&gt;A/B test&lt;/strong&gt;: we offer the loyalty card on to a subset of our customers, at random.&lt;/p&gt;
+&lt;p&gt;Suppose we were an &lt;strong&gt;online store&lt;/strong&gt; and we wanted to increase sales. We decide to offer our customers a &lt;strong&gt;loyalty card&lt;/strong&gt; that grants them discounts as they increase their spend in the store. We would like to assess if the loyalty card is effective in increasing sales so we run an &lt;strong&gt;A/B test&lt;/strong&gt;: we offer the loyalty card only to a subset of our customers, at random.&lt;/p&gt;
 &lt;p&gt;I import the data generating process &lt;code&gt;dgp_fidelty()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.  To include not only code but also data and tables, I use &lt;a href=&#34;https://deepnote.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Deepnote&lt;/a&gt;, a Jupyter-like web-based collaborative notebook environment.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
@@ -27393,8 +27393,8 @@ df.head()
 &lt;/div&gt;
 &lt;p&gt;Interestingly, we notice that the outcome of interest, &lt;code&gt;spend&lt;/code&gt;, seems to have a lot of zeros. Let&amp;rsquo;s dig deeper.&lt;/p&gt;
 &lt;h2 id=&#34;mean-vs-median&#34;&gt;Mean vs Median&lt;/h2&gt;
-&lt;p&gt;Before analyzing our experiment, let&amp;rsquo;s have a look at our outcome variable, &lt;code&gt;spend&lt;/code&gt;. Let&#39; first inspect it using centrality measures. We have two main options: the &lt;strong&gt;mean&lt;/strong&gt; and the &lt;strong&gt;median&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;First of all, what are they? The mean captures the average value, while the median captures the value in the middle of the distribution. In general, the mean is mathematically more tractable and easier to interpret, while the median is more robust to outliers. You can find plenty of articles online comparing the two measures and suggesting which one is appropriate and when. Let&amp;rsquo;s have a look at the mean and median &lt;code&gt;spend&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Before analyzing our experiment, let&amp;rsquo;s have a look at our outcome variable, &lt;code&gt;spend&lt;/code&gt;. We first inspect it using centrality measures. We have two main options: the &lt;strong&gt;mean&lt;/strong&gt; and the &lt;strong&gt;median&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;First of all, what are they? The mean captures the average value, while the median captures the value in the middle of the distribution. In general, the mean is mathematically more tractable and easier to interpret, while the median is more robust to outliers. You can find plenty of articles online comparing the two measures and suggesting which one is more appropriate and when. Let&amp;rsquo;s have a look at the mean and median &lt;code&gt;spend&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.mean(df[&#39;spend&#39;])
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;28.136224
@@ -27403,29 +27403,29 @@ df.head()
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;0.0
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;How do we interpret these two numbers? People spend on average 28$ on our store. However, more than 50% of people don&amp;rsquo;t spend anything. As we can see, both measures are very informative and, to a certain extent, complementary. We can better understand the distribution of &lt;code&gt;spend&lt;/code&gt; by plotting its histogram.&lt;/p&gt;
+&lt;p&gt;How do we interpret these two numbers? People spend on average 28\$ on our store. However, more than 50% of people don&amp;rsquo;t spend anything. As we can see, both measures are very informative and, to a certain extent, complementary. We can better understand the distribution of &lt;code&gt;spend&lt;/code&gt; by plotting its histogram.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(data=df, x=&amp;quot;spend&amp;quot;).set(ylabel=&#39;&#39;, title=&#39;Histogram&#39;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/quantile_reg_14_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;As previewed by the values of the mean and median, the distribution of &lt;code&gt;spend&lt;/code&gt; is very skewed, with more than 5000 customers not spending anything.&lt;/p&gt;
-&lt;p&gt;One natural question then is: are we interested in the effect of the &lt;code&gt;fidelity&lt;/code&gt; card on average &lt;code&gt;spend&lt;/code&gt; or on median &lt;code&gt;spend&lt;/code&gt;? The first would tell us if customers spend more on average, the second would tell us if the average customer spends more.&lt;/p&gt;
+&lt;p&gt;As previewed by the values of the mean and the median, the distribution of &lt;code&gt;spend&lt;/code&gt; is very skewed, with more than 5000 customers (out of 10000) not spending anything.&lt;/p&gt;
+&lt;p&gt;One natural question then is: are we interested in the effect of the &lt;code&gt;fidelity&lt;/code&gt; card on average &lt;code&gt;spend&lt;/code&gt; or on median &lt;code&gt;spend&lt;/code&gt;? The first would tell us if customers spend more on average, while the second would tell us if the average customer spends more.&lt;/p&gt;
 &lt;p&gt;Linear regression can tell us the effect of the &lt;code&gt;fidelty&lt;/code&gt; card on average &lt;code&gt;spend&lt;/code&gt;. However, what can we do if we were interested in the effect of the &lt;code&gt;fidelty&lt;/code&gt; card on median &lt;code&gt;spend&lt;/code&gt; (or other quantiles)? The answer is &lt;strong&gt;quantile regression&lt;/strong&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;quantile-regression&#34;&gt;Quantile Regression&lt;/h2&gt;
-&lt;p&gt;With &lt;strong&gt;linear regression&lt;/strong&gt;, we try to estimate the conditional expectation of an outcome variable $Y$ (&lt;code&gt;spend&lt;/code&gt; in our example) with respect to one or more explanatory variables $X$ (&lt;code&gt;fidelty&lt;/code&gt; in our example).&lt;/p&gt;
+&lt;p&gt;With &lt;strong&gt;linear regression&lt;/strong&gt;, we try to estimate the &lt;em&gt;conditional expectation function&lt;/em&gt; of an outcome variable $Y$ (&lt;code&gt;spend&lt;/code&gt; in our example) with respect to one or more explanatory variables $X$ (&lt;code&gt;fidelty&lt;/code&gt; in our example).&lt;/p&gt;
 &lt;p&gt;$$
 \mathbb E \big[ Y \big| X \big]
 $$&lt;/p&gt;
-&lt;p&gt;In other words, we want to find a function $f$ such that $f(X) = \mathbb E[Y]$. We do so, by solving the following minimization problem:&lt;/p&gt;
+&lt;p&gt;In other words, we want to find a function $f$ such that $f(X) = \mathbb E[Y|X]$. We do so, by solving the following minimization problem:&lt;/p&gt;
 &lt;p&gt;$$
 \hat f(X) = \arg \min_{f} \mathbb E \big[ Y - f(X) \big]^2
 $$&lt;/p&gt;
 &lt;p&gt;It can be shown that the function $f$ that solves this minimization is indeed the conditional expectation of $Y$, with respect to $X$.&lt;/p&gt;
-&lt;p&gt;Since $f(X)$ can be infinite dimensional, we estimate the following parametric form of $f(X)$:&lt;/p&gt;
+&lt;p&gt;Since $f(X)$ can be infinite dimensional, we usually estimate a parametric form of $f(X)$. The most common one is the linear form $f(X) = \beta X$, where $\beta$ is estimated by solving the corresponding minimization problem:&lt;/p&gt;
 &lt;p&gt;$$
 \hat \beta = \arg \min_{\beta} \mathbb E \big[ Y - \beta X \big]^2
 $$&lt;/p&gt;
-&lt;p&gt;The linear form is not just convenient, but can be interpreted as the best local approximation of $f(x)$, referring to Taylor&amp;rsquo;s expansion.&lt;/p&gt;
-&lt;p&gt;With &lt;strong&gt;quantile regression&lt;/strong&gt;, we do the &lt;strong&gt;same&lt;/strong&gt;. The only difference is that, instead of trying to estimate the conditional expectation of $Y$ with respect to $X$, we want to estimate the $q$-&lt;a href=&#34;https://en.wikipedia.org/wiki/Quantile&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;quantile&lt;/a&gt; of $Y$ with respect to $X$.&lt;/p&gt;
+&lt;p&gt;The linear form is not just convenient, but it can be interpreted as the best local approximation of $f(X)$, referring to Taylor&amp;rsquo;s expansion.&lt;/p&gt;
+&lt;p&gt;With &lt;strong&gt;quantile regression&lt;/strong&gt;, we do the &lt;strong&gt;same&lt;/strong&gt;. The only difference is that, instead of estimating the conditional expectation of $Y$ with respect to $X$, we want to estimate the $q$-&lt;a href=&#34;https://en.wikipedia.org/wiki/Quantile&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;quantile&lt;/a&gt; of $Y$ with respect to $X$.&lt;/p&gt;
 &lt;p&gt;$$
 \mathbb Q_q \big[ Y \big| X \big]
 $$&lt;/p&gt;
@@ -27433,7 +27433,7 @@ $$&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&amp;ldquo;In statistics and probability, quantiles are cut points dividing the range of a probability distribution into continuous intervals with equal probabilities, or dividing the observations in a sample in the same way. Common quantiles have special names, such as quartiles (four groups), deciles (ten groups), and percentiles (100 groups).&amp;rdquo;&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;For example, the 0.1-quantile represents the value that sits on the right of 10% of the mass of the distribution. The median is the 0.5-quantile (or, equivalently, the $50^{th}$ percentile or the $5^{th}$ decile) and corresponds with the value in the center of the distribution. Let&amp;rsquo;s see a simple example with a &lt;a href=&#34;https://en.wikipedia.org/wiki/Log-normal_distribution&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;log-normal distribution&lt;/a&gt;. I plot the three quartiles that divide the data in four equally sized bins.&lt;/p&gt;
+&lt;p&gt;For example, the 0.1-quantile represents the value that sits on the right of 10% of the mass of the distribution. The &lt;strong&gt;median&lt;/strong&gt; is the 0.5-quantile (or, equivalently, the $50^{th}$ percentile or the $5^{th}$ decile) and corresponds with the value in the center of the distribution. Let&amp;rsquo;s see a simple example with a &lt;a href=&#34;https://en.wikipedia.org/wiki/Log-normal_distribution&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;log-normal distribution&lt;/a&gt;. I plot the three quartiles that divide the data in four equally sized bins.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;data = np.random.lognormal(0, 1, 1_000_000);
 sns.histplot(data).set(title=&#39;Lognormal Distribution&#39;, xlim=(0,10))
 plt.axvline(x=np.percentile(data, 25), c=&#39;C8&#39;, label=&#39;25th percentile&#39;)
@@ -27444,11 +27444,13 @@ plt.legend();
 &lt;p&gt;&lt;img src=&#34;img/quantile_reg_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As we can see, the three quartiles divide the data into four bins, of equal size.&lt;/p&gt;
 &lt;p&gt;So, what is the &lt;strong&gt;objective&lt;/strong&gt; of quantile regression? The objective is to find a function $f$ such that $f(X) = F^{-1}(y_q)$, where $F$ is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Cumulative_distribution_function&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;cumulative distribution function&lt;/a&gt; of $Y$ and $y_q$ is the $q$-quantile of the distribution of $Y$.&lt;/p&gt;
-&lt;p&gt;How do we do this? It can be shown with a little linear algebra that we can obtain the quantile as the solution of the following minimization problem:&lt;/p&gt;
+&lt;p&gt;How do we do this? It can be shown with a little linear algebra that we can obtain the conditional quantile as the solution of the following minimization problem:&lt;/p&gt;
 &lt;p&gt;$$
-\hat f(X) = \arg \min_{f} \mathbb E \big[ \rho_q (Y - f(X)) \big] = \arg \min_{f} (1-q) \int_{-\infty}^{f(x)} (y - f(x)) \text{d} F(y) + q \int_{f(x)}^{\infty} (y - f(x)) \text{d} F(y)
+\hat f(X) = \arg \min_{f} \mathbb E \big[ \rho_q (Y - f(X)) \big] = \arg \min_{f} \ (1-q) \int_{-\infty}^{f(x)} (y - f(x)) \text{d} F(y) + q \int_{f(x)}^{\infty} (y - f(x)) \text{d} F(y)
 $$&lt;/p&gt;
-&lt;p&gt;What is the &lt;strong&gt;intuition&lt;/strong&gt; behind this objective function?&lt;/p&gt;
+&lt;p&gt;Where $\rho_q$ is an auxiliary weighting function with the following shape.&lt;/p&gt;
+&lt;img src=&#34;fig/rho.png&#34; width=&#34;400px&#34;/&gt;
+&lt;p&gt;What is the &lt;strong&gt;intuition&lt;/strong&gt; behind the objective function?&lt;/p&gt;
 &lt;p&gt;The idea is that we can interpret the equation as follows&lt;/p&gt;
 &lt;p&gt;$$
 \mathbb E \big[ \rho_q (Y - f(X)) \big] = (1-q) \underset{\color{red}{\text{mass of distribution below }f(x)}}{\int_{-\infty}^{f(x)} (y - f(x)) \text{d} F(y)} + q \underset{\color{red}{\text{mass of distribution above }f(x)}}{\int_{f(x)}^{\infty} (y - f(x)) \text{d} F(y)} \overset{\color{blue}{\text{if } f(x) = y_q}}{=} - (1-q) q + q (1-q) = 0
@@ -27458,11 +27460,10 @@ $$&lt;/p&gt;
 &lt;p&gt;$$
 \hat \beta_q = \arg \min_{\beta} \mathbb E \big[ \rho_q (Y - \beta X ) \big]
 $$&lt;/p&gt;
-&lt;p&gt;Where we wrote $\hat \beta_q$ to indicate that this is the coefficient for the best linear approximation of the conditional $q$-quantile function.&lt;/p&gt;
+&lt;p&gt;We wrote $\hat \beta_q$ to indicate that this is the coefficient for the best linear approximation of the conditional $q$-quantile function.&lt;/p&gt;
+&lt;p&gt;How do we &lt;strong&gt;estimate&lt;/strong&gt; a quantile regression?&lt;/p&gt;
 &lt;h2 id=&#34;estimation&#34;&gt;Estimation&lt;/h2&gt;
-&lt;p&gt;How do we &lt;strong&gt;estimate&lt;/strong&gt; e quantile regression?&lt;/p&gt;
-&lt;p&gt;The main problem is that, in order to estimate $\beta_q$, we need to know the distribution of $Y$. This is not required with linear regression.&lt;/p&gt;
-&lt;p&gt;The &lt;a href=&#34;https://www.statsmodels.org/stable/index.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;statsmodels&lt;/a&gt; package does everything thanks to the &lt;a href=&#34;https://www.statsmodels.org/dev/generated/statsmodels.regression.quantile_regression.QuantReg.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;quantreg()&lt;/code&gt;&lt;/a&gt; function. We just need to specify the quantile $q$ when we fit the model.&lt;/p&gt;
+&lt;p&gt;The &lt;a href=&#34;https://www.statsmodels.org/stable/index.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;statsmodels&lt;/a&gt; package allows us to estimate quantile regression with the the &lt;a href=&#34;https://www.statsmodels.org/dev/generated/statsmodels.regression.quantile_regression.QuantReg.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;quantreg()&lt;/code&gt;&lt;/a&gt; function. We just need to specify the quantile $q$ when we fit the model. Let&amp;rsquo;s use $q=0.5$, which corresponds with the median.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.quantreg(&amp;quot;spend ~ fidelty&amp;quot;, data=df).fit(q=0.5).summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -27476,7 +27477,7 @@ $$&lt;/p&gt;
   &lt;th&gt;fidelty&lt;/th&gt;   &lt;td&gt;    3.4000&lt;/td&gt; &lt;td&gt;    0.217&lt;/td&gt; &lt;td&gt;   15.649&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.974&lt;/td&gt; &lt;td&gt;    3.826&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
-&lt;p&gt;Quantile regression estimates a positive effect of the &lt;code&gt;fidelty&lt;/code&gt; card on &lt;strong&gt;median&lt;/strong&gt; customer &lt;code&gt;spend&lt;/code&gt;. How does this estimate compare with linear regression?&lt;/p&gt;
+&lt;p&gt;Quantile regression estimates a positive coefficient for &lt;code&gt;fidelty&lt;/code&gt;. How does this estimate compare with linear regression?&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;spend ~ fidelty&amp;quot;, data=df).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -27490,8 +27491,8 @@ $$&lt;/p&gt;
   &lt;th&gt;fidelty&lt;/th&gt;   &lt;td&gt;    4.9887&lt;/td&gt; &lt;td&gt;    0.801&lt;/td&gt; &lt;td&gt;    6.230&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    3.419&lt;/td&gt; &lt;td&gt;    6.558&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
-&lt;p&gt;The estimated coefficient is higher: &lt;code&gt;fidelty&lt;/code&gt; cards increase &lt;strong&gt;mean&lt;/strong&gt; &lt;code&gt;spend&lt;/code&gt; more than median &lt;code&gt;spend&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Can we condition on other variables? We suspect that &lt;code&gt;spend&lt;/code&gt; is also affected by other variables and we want to increase the precision of our estimate by also conditioning the analysis on &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;gender&lt;/code&gt;. We can just add the variables to the &lt;code&gt;quantreg()&lt;/code&gt; model.&lt;/p&gt;
+&lt;p&gt;The estimated coefficient with linear regression is higher. What does it mean? We will spend more time on the &lt;em&gt;interpretation&lt;/em&gt; of quantile regression coefficients later.&lt;/p&gt;
+&lt;p&gt;Can we condition the analysis on other variables? We suspect that &lt;code&gt;spend&lt;/code&gt; is also affected by other variables and we want to increase the precision of our estimate by also conditioning the analysis on &lt;code&gt;age&lt;/code&gt; and &lt;code&gt;gender&lt;/code&gt;. We can just add the variables to the &lt;code&gt;quantreg()&lt;/code&gt; model.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.quantreg(&amp;quot;spend ~ fidelty + age + gender&amp;quot;, data=df).fit(q=0.5).summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -27531,19 +27532,20 @@ $$&lt;/p&gt;
   &lt;th&gt;age&lt;/th&gt;            &lt;td&gt;    2.7688&lt;/td&gt; &lt;td&gt;    0.022&lt;/td&gt; &lt;td&gt;  124.800&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.725&lt;/td&gt; &lt;td&gt;    2.812&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
-&lt;p&gt;There is one last (but definitely not least) thing we haven&amp;rsquo;t mentioned yet: &lt;strong&gt;inference&lt;/strong&gt;. How do we compute confidence intervals and p-values for our estimates in quantile regression?&lt;/p&gt;
+&lt;p&gt;There are a couple of things that we haven&amp;rsquo;t mentioned yet. The first one is &lt;strong&gt;inference&lt;/strong&gt;. How do we compute confidence intervals and p-values for our estimates in quantile regression?&lt;/p&gt;
 &lt;h2 id=&#34;inference&#34;&gt;Inference&lt;/h2&gt;
 &lt;p&gt;The asymptotic variance of the estimate $a$ of the quantile $q$ of a distribution $F$ is given by&lt;/p&gt;
 &lt;p&gt;$$
 AVar(a) = q(1-q) f^{-2}(a)
 $$&lt;/p&gt;
 &lt;p&gt;where $f$ is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Probability_density_function&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;density function&lt;/a&gt; of $F$. This expression can be decomposed into &lt;strong&gt;two components&lt;/strong&gt;: $q(1-q)$ and $f^{-2}(a)$.&lt;/p&gt;
-&lt;p&gt;The first component, $q(1-q)$, basically tells us that the variance of a quantile is higher the more the quantile is closer to the center. Why is that so? First, we need to think about when the quantile of a point changes in response to a change in the value of a second point. The quantile changes when the second point swaps from left to right (or viceversa) of the first point. This is intuitively very easy if the first point lies in the middle of the distribution, but very hard if it lies at the extreme.&lt;/p&gt;
+&lt;p&gt;The first component, $q(1-q)$, basically tells us that the variance of a quantile is higher the more the quantile is closer to the center of the distribution. Why is that so? First, we need to think about when the quantile of a point changes in response to a change in the value of a second point. The quantile changes when the second point swaps from left to right (or viceversa) of the first point. This is intuitively very easy if the first point lies in the middle of the distribution, but very hard if it lies at the extreme.&lt;/p&gt;
 &lt;p&gt;The second component, $f^{-2}(a)$, instead tells us that this side swapping is more likely if the first point is surrounded by a lot of points.&lt;/p&gt;
-&lt;p&gt;Importantly, estimating the variance of a quantile requires an estimate of the whole distribution of $Y$. This is done via approximation and can be computationally very intensive. However, alternative procedures like the bootstrap or the &lt;a href=&#34;https://towardsdatascience.com/6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;bayesian bootstrap&lt;/a&gt; are always available.&lt;/p&gt;
+&lt;p&gt;Importantly, estimating the variance of a quantile requires an estimate of the whole distribution of $Y$. This is done via approximation and it can be computationally very intensive. However, alternative procedures like the bootstrap or the &lt;a href=&#34;https://towardsdatascience.com/6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;bayesian bootstrap&lt;/a&gt; are always available.&lt;/p&gt;
+&lt;p&gt;The second thing that we haven&amp;rsquo;t talked about yet is the &lt;strong&gt;interpretation&lt;/strong&gt; of the estimated coefficients. We got a lower coefficient of &lt;code&gt;fidelty&lt;/code&gt; on &lt;code&gt;spend&lt;/code&gt; with median regression. What does it mean?&lt;/p&gt;
 &lt;h2 id=&#34;interpretation&#34;&gt;Interpretation&lt;/h2&gt;
-&lt;p&gt;The &lt;strong&gt;interpretation&lt;/strong&gt; of linear regression coefficients is straightforward: each coefficient is the derivative of the conditional expectation function $\mathbb E[Y|X]$ with respect to one dimension of $X$. In our case, we can interpret the regression coefficient of &lt;code&gt;fidelty&lt;/code&gt; as the average spend increase from being offered a fidelty card. Crucially, here &amp;ldquo;average&amp;rdquo; means that this holds true for &lt;em&gt;each customer&lt;/em&gt;, on average.&lt;/p&gt;
-&lt;p&gt;However, the interpretation of quantile regression coefficients is &lt;strong&gt;tricky&lt;/strong&gt;. Before, we were tempted to say that the &lt;code&gt;fidelty&lt;/code&gt; card increases the spend of the median customer by 3.4$. But &lt;strong&gt;what does it mean&lt;/strong&gt;? Is it the same median customer that spends more or do we have a different median customer? This might seem like a philosophical issue but has important implications on reporting of quantile regression results. In the first case, we are making a statement that, as for the interpretation of linear regression coefficients, applies to a &lt;em&gt;single individual&lt;/em&gt;. In the second case, we are making a statement about the &lt;em&gt;distribution&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;interpretation&lt;/strong&gt; of linear regression coefficients is straightforward: each coefficient is the derivative of the conditional expectation function $\mathbb E[Y|X]$ with respect to one dimension of $X$. In our case, we can interpret the regression coefficient of &lt;code&gt;fidelty&lt;/code&gt; as the average &lt;code&gt;spend&lt;/code&gt; increase from being offered a fidelty card. Crucially, here &amp;ldquo;average&amp;rdquo; means that this holds true for &lt;em&gt;each customer&lt;/em&gt;, on average.&lt;/p&gt;
+&lt;p&gt;However, the interpretation of quantile regression coefficients is &lt;strong&gt;tricky&lt;/strong&gt;. Before, we were tempted to say that the &lt;code&gt;fidelty&lt;/code&gt; card increases the spend of the median customer by 3.4\$. But &lt;strong&gt;what does it mean&lt;/strong&gt;? Is it the same median customer that spends more or do we have a different median customer? This might seem like a philosophical question but it has important implications on reporting of quantile regression results. In the first case, we are making a statement that, as for the interpretation of linear regression coefficients, applies to a &lt;em&gt;single individual&lt;/em&gt;. In the second case, we are making a statement about the &lt;em&gt;distribution&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1468-0262.2005.00570.x&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chernozhukov and Hansen (2005)&lt;/a&gt; show that a strong but helpful assumption is &lt;strong&gt;rank invariance&lt;/strong&gt;: assuming that the treatment &lt;strong&gt;does not shift&lt;/strong&gt; the relative composition of the distribution. In other words, if we rank people by &lt;code&gt;spend&lt;/code&gt; before the experiment, we assume that this ranking is not affected by the introduction of the &lt;code&gt;fidelty&lt;/code&gt; card. If I was spending less than you before, I might spend more afterwards, but still less than you (for any two people).&lt;/p&gt;
 &lt;p&gt;Under this assumption, we can interpret the quantile coefficients as &lt;strong&gt;marginal effects for single individuals&lt;/strong&gt; sitting at different points of the outcome distribution, as in the first interpretation provided above. Moreover, we can report the treatment effect for many quantiles and interpret each one of them as a local effect for a different individual. Let&amp;rsquo;s plot the distribution of treatment effects, for different quantiles of &lt;code&gt;spend&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_quantile_TE(df, formula, q, varname):
@@ -27569,15 +27571,15 @@ $$&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_quantile_TE(df, formula=&amp;quot;spend ~ fidelty&amp;quot;, varname=&#39;fidelty&#39;, q=0.05)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/quantile_reg_35_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;This plot is extremely &lt;strong&gt;insightful&lt;/strong&gt;: for almost half of the customers, the &lt;code&gt;fidelty&lt;/code&gt; card has no effect. On the other hand, customers that were already spending something end up spending even more (around 10/12$ more). This is a very powerful insight that we would have missed with linear regression.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/quantile_reg_37_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;This plot is &lt;strong&gt;extremely insightful&lt;/strong&gt;: for almost half of the customers, the &lt;code&gt;fidelty&lt;/code&gt; card has no effect. On the other hand, customers that were already spending something end up spending even more (around 10/12\$ more). This is a very powerful insight that we would have missed with linear regression that estimated an average effect of 5\$.&lt;/p&gt;
 &lt;p&gt;We can repeat the same exercise, conditioning the analysis on &lt;code&gt;gender&lt;/code&gt; and &lt;code&gt;age&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_quantile_TE(df, formula=&amp;quot;spend ~ fidelty + age + gender&amp;quot;, varname=&#39;fidelty&#39;, q=0.05)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/quantile_reg_37_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/quantile_reg_39_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Conditioning on other covariates removes a lot of the heterogeneity in treatment effects. The &lt;code&gt;fidelty&lt;/code&gt; card increases spending for most people, it&amp;rsquo;s demographic characteristics that are responsible for no spending to begin with.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;In this article, we have seen a different &lt;strong&gt;causal estimand&lt;/strong&gt;: median treatment effects. How does it compare with the average treatment effect that we usually estimate? The pros and cons are closely related to the pros and cons of the median with respect to the mean as a measure of &lt;strong&gt;central tendency&lt;/strong&gt;. Median treatment effects are more informative on what is the effect on the average subject and are more robust to outliers. However, they are extremely more computationally intensive and they require strong assumptions for identification, such as rank invariance.&lt;/p&gt;
+&lt;p&gt;In this article, we have explored a different &lt;strong&gt;causal estimand&lt;/strong&gt;: median treatment effects. How does it compare with the average treatment effect that we usually estimate? The pros and cons are closely related to the pros and cons of the median with respect to the mean as a measure of &lt;em&gt;central tendency&lt;/em&gt;. Median treatment effects are more informative on what is the effect on the average subject and are more robust to outliers. However, they are much more computationally intensive and they require strong assumptions for identification, such as rank invariance.&lt;/p&gt;
 &lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
 &lt;p&gt;[1] R. Koenker, K. Hallock, &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/jep.15.4.143&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Quantile Regression&lt;/a&gt;, (2001), &lt;em&gt;Journal of Economic Perspectives&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[2] V. Chernozhukov, C. Hansen, &lt;a href=&#34;https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1468-0262.2005.00570.x&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;An IV Model of Quantile Treatment Effects&lt;/a&gt; (2005), &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
