@@ -17,75 +17,28 @@
       <link>https://matteocourthoud.github.io/post/delta/</link>
       <pubDate>Fri, 23 Dec 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/delta/</guid>
-      <description>&lt;p&gt;&lt;em&gt;A short introduction to the delta method&lt;/em&gt;.&lt;/p&gt;
-&lt;p&gt;Some of the most common outcome metrics or &lt;strong&gt;key performance indicators (KPI)&lt;/strong&gt; in the industry are &lt;strong&gt;ratios&lt;/strong&gt;: click-through rates (clicks over views), returns on investment (revenue over cost), relative improvements (new value over old value), just to name few. If you want to investigate the causal effect of a treatment of interest (new product, new feature, new interface, &amp;hellip;) on these outcomes, the gold standard are randomized control trials, a.k.a. &lt;strong&gt;AB tests&lt;/strong&gt;. Randomly assigning the treatment to a subset of the population (users, patients, customers, &amp;hellip;) we ensure that, on average, the only difference in outcomes can be attributed to the treatment. However, when the outcome is a ratio of two metrics, AB tests present some additional problems.&lt;/p&gt;
-&lt;p&gt;There are two main problems with estimating ratios, both stemming from the fact that we are not separately analyzing two causal quantities, but jointly. The first problem is that the estimator is biased. Even though, thanks to randomization, we can have unbiased estimates of the effect on page views and clicks, the estimate of the their ratio is biased. Second, computing a conference interval is not trivial.&lt;/p&gt;
+      <description>&lt;p&gt;&lt;em&gt;How to estimate and do inference in click-through rates, returns of investment and more.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Some of the most common outcome metrics or &lt;strong&gt;key performance indicators (KPI)&lt;/strong&gt; in the industry are &lt;strong&gt;ratios&lt;/strong&gt;: click-through rates (clicks over views), returns on investment (revenue over cost), relative improvements (new outcome over old outcome), just to name few. If you want to investigate the causal effect of a treatment of interest (new product, new feature, new interface, &amp;hellip;) on these outcomes, the gold standard are randomized control trials, a.k.a. &lt;strong&gt;AB tests&lt;/strong&gt;. Randomly assigning the treatment to a subset of the population (users, patients, customers, &amp;hellip;) we ensure that, on average, the only difference in outcomes can be attributed to the treatment. However, when the outcome is a ratio of two metrics, AB tests present some additional problems.&lt;/p&gt;
+&lt;p&gt;The first problem is that the estimator is biased. Even though one can estimate numerator and denominator without bias, the estimate of the ration will be biased. Second, computing a conference interval is not trivial and often people resort to bootstrapping, which is computationally intensive. However, a simple solutions exists.&lt;/p&gt;
 &lt;p&gt;In this post we are going to see how to solve both problems. First, we are going to apply a bias correction to the estimate. Second, we are going to explore a very powerful tool for inference with complex metrics: the &lt;strong&gt;delta method&lt;/strong&gt;. While the algebra can be intense, the result is simple: we can compute the confidence interval for our ratio estimator using a simple linear regression.&lt;/p&gt;
 &lt;h2 id=&#34;clicks-and-ads&#34;&gt;Clicks and Ads&lt;/h2&gt;
-&lt;p&gt;To better illustrate the concepts, we are going to use a toy example throughout the article. Support we were a &lt;strong&gt;food delivery&lt;/strong&gt; company that is testing a new UI for their landing page. The object of interest is the &lt;strong&gt;incremental click-through ratio&lt;/strong&gt;: does the number of clicks per view increase?&lt;/p&gt;
+&lt;p&gt;To better illustrate the concepts, we are going to use a toy example throughout the article. Support we were a &lt;strong&gt;food delivery&lt;/strong&gt; company that is testing a new UI for their landing page. The object of interest is the &lt;strong&gt;incremental click-through ratio (CTR)&lt;/strong&gt;: does the number of clicks per view increase?&lt;/p&gt;
 &lt;p&gt;$$
-\text{incremental ctr} = \frac{\text{incremental number of clicks}}{\text{incremental number of views}}
+\text{ctr} = \frac{\text{incremental number of clicks}}{\text{incremental number of views}} = \frac{\mathbb E [\Delta C]}{\mathbb E [\Delta V]}
 $$&lt;/p&gt;
-&lt;p&gt;Differently from usual AB tests or randomized experiments, we are not interested in a single metric, but in the &lt;strong&gt;ratio&lt;/strong&gt; of two metrics, page views and orders. We will still use a &lt;strong&gt;randomized control trial&lt;/strong&gt; or &lt;strong&gt;AB test&lt;/strong&gt; to estimate the incremental CTR: randomly assign users to either a treatment control condition. The treated users will see the new landing page, while the control users will see the old one. Randomization ensures that we can estimate the impact of the new landing page on either clicks or views by comparing users in the treatment and control group: the difference in their average is an unbiased estimator of the average treatment effect. However, things are more complicated for their ratio.&lt;/p&gt;
+&lt;p&gt;Differently from usual AB tests or randomized experiments, we are not interested in a single difference, but in the &lt;strong&gt;ratio&lt;/strong&gt; of two differences: the effect on page views and the effect on clicks. We will still use a &lt;strong&gt;randomized control trial&lt;/strong&gt; or &lt;strong&gt;AB test&lt;/strong&gt; to estimate the incremental CTR: randomly assign users to either a treatment control condition. The treated users will see the new landing page, while the control users will see the old one. Randomization ensures that we can estimate the impact of the new landing page on either clicks or views by comparing users in the treatment and control group: the difference in their average is an unbiased estimator of the average treatment effect. However, things are more complicated for their ratio.&lt;/p&gt;
 &lt;p&gt;I import the data generating process &lt;code&gt;dgp_loyalty()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.  To include not only code but also data and tables, I use &lt;a href=&#34;https://deepnote.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Deepnote&lt;/a&gt;, a Jupyter-like web-based collaborative notebook environment.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
 
 from src.utils import *
+from src.dgp import dgp_clicks
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from dataclasses import dataclass
-from joblib import Parallel, delayed
-
-class DGP:
-    
-    def __init__(self, n: int = 100, p: float = 0.5):
-        self.n = n
-        self.p = p
-        self.df = self.generate_baseline_data() 
-    
-    def generate_baseline_data(self, seed: int = 0) -&amp;gt; pd.DataFrame:
-        return pd.DataFrame()
-    
-    def add_assignment(self, df: pd.DataFrame, seed: int = 0) -&amp;gt; pd.DataFrame:
-        np.random.seed(seed)
-        df[&#39;treatment&#39;] = np.random.binomial(1, self.p, self.n)
-        return df
-    
-    def add_treatment(self, df: pd.DataFrame) -&amp;gt; pd.DataFrame:
-        return pd.DataFrame()
-    
-    def generate_data(self, seed_data: int = 0, seed_assignment: int = 0) -&amp;gt; pd.DataFrame:
-        df = self.df.copy() if seed_data==-1 else self.generate_baseline_data(seed_data)
-        df = self.add_assignment(df, seed_assignment)
-        df = self.add_treatment(df)
-        return df
-    
-    def bootstrap_assignment(self, f, K):
-        results = Parallel(n_jobs=8)(delayed(f)(self.generate_data(seed_assignment=i)) for i in range(K))
-        return results
-    
-    def bootstrap_data(self, f, K):
-        results = Parallel(n_jobs=8)(delayed(f)(self.generate_data(seed_data=i, seed_assignment=i)) for i in range(K))
-        return results
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;class dgp_clicks(DGP):
-    &amp;quot;&amp;quot;&amp;quot;Data Generating Process: clicks and views.&amp;quot;&amp;quot;&amp;quot;
-    
-    def generate_baseline_data(self, seed: int = 0):
-        np.random.seed(seed)
-        u = np.random.uniform(0, 3, self.n)
-        views = 1 + np.random.exponential(u + 5)
-        clicks = np.random.exponential(u / 2)
-        df = pd.DataFrame({&#39;views&#39;: views.copy(), &#39;clicks&#39;: clicks.copy()})
-        return df
-    
-    def add_treatment(self, df):
-        df[&#39;views&#39;] = (df[&#39;views&#39;] + 1*df[&#39;treatment&#39;])//1
-        df[&#39;clicks&#39;] = (df[&#39;clicks&#39;] + 0.1*df[&#39;treatment&#39;])//1
-        return df
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_clicks(n=10_000)
-df = dgp.generate_data(seed_assignment=3)
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_clicks(outcome_vars=[&#39;views&#39;, &#39;clicks&#39;],
+                 assignment_var=&#39;new_ui&#39;,
+                 n=10_000,
+                 p=0.5)
+df = dgp.generate_data()
 df.head()
 &lt;/code&gt;&lt;/pre&gt;
 &lt;div&gt;
@@ -106,41 +59,41 @@ df.head()
   &lt;thead&gt;
     &lt;tr style=&#34;text-align: right;&#34;&gt;
       &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;new_ui&lt;/th&gt;
       &lt;th&gt;views&lt;/th&gt;
       &lt;th&gt;clicks&lt;/th&gt;
-      &lt;th&gt;treatment&lt;/th&gt;
     &lt;/tr&gt;
   &lt;/thead&gt;
   &lt;tbody&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;11.0&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;3.0&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;4.0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;5.0&lt;/td&gt;
       &lt;td&gt;2.0&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
       &lt;td&gt;2.0&lt;/td&gt;
       &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
       &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -150,65 +103,65 @@ df.head()
 sns.histplot(df.views, ax=ax1, color=&#39;C0&#39;, bins=30).set(title=&#39;Distribution of Views&#39;)
 sns.histplot(df.clicks, ax=ax2, color=&#39;C1&#39;, binwidth=.3).set(title=&#39;Distribution of Clicks&#39;);
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/delta_10_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/delta_8_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;We can compute the difference-in-means estimate by regressing the outcome on the treatment indicator.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;views ~ treatment&#39;, data=df).fit().summary().tables[1]
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;views ~ new_ui&#39;, data=df).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
 &lt;tr&gt;
       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    7.0833&lt;/td&gt; &lt;td&gt;    0.093&lt;/td&gt; &lt;td&gt;   76.533&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    6.902&lt;/td&gt; &lt;td&gt;    7.265&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    6.2164&lt;/td&gt; &lt;td&gt;    0.092&lt;/td&gt; &lt;td&gt;   67.597&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    6.036&lt;/td&gt; &lt;td&gt;    6.397&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;treatment&lt;/th&gt; &lt;td&gt;    0.7408&lt;/td&gt; &lt;td&gt;    0.132&lt;/td&gt; &lt;td&gt;    5.624&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.483&lt;/td&gt; &lt;td&gt;    0.999&lt;/td&gt;
+  &lt;th&gt;new_ui&lt;/th&gt;    &lt;td&gt;    2.4971&lt;/td&gt; &lt;td&gt;    0.131&lt;/td&gt; &lt;td&gt;   19.077&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.241&lt;/td&gt; &lt;td&gt;    2.754&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;The number of views has increased by ???. What about clicks?&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;clicks ~ treatment&#39;, data=df).fit().summary().tables[1]
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;clicks ~ new_ui&#39;, data=df).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
 &lt;tr&gt;
       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    0.3998&lt;/td&gt; &lt;td&gt;    0.013&lt;/td&gt; &lt;td&gt;   30.843&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.374&lt;/td&gt; &lt;td&gt;    0.425&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    0.1074&lt;/td&gt; &lt;td&gt;    0.012&lt;/td&gt; &lt;td&gt;    8.761&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.083&lt;/td&gt; &lt;td&gt;    0.131&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;treatment&lt;/th&gt; &lt;td&gt;    0.0519&lt;/td&gt; &lt;td&gt;    0.018&lt;/td&gt; &lt;td&gt;    2.815&lt;/td&gt; &lt;td&gt; 0.005&lt;/td&gt; &lt;td&gt;    0.016&lt;/td&gt; &lt;td&gt;    0.088&lt;/td&gt;
+  &lt;th&gt;new_ui&lt;/th&gt;    &lt;td&gt;    0.6734&lt;/td&gt; &lt;td&gt;    0.017&lt;/td&gt; &lt;td&gt;   38.582&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.639&lt;/td&gt; &lt;td&gt;    0.708&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;Also the number of clicks has increased, by ???. What about their ratio?&lt;/p&gt;
 &lt;p&gt;We can estimate the incremental click-through rate as the ratio of the two previous estimates: the difference between the average clicks in the treatment minus control group, over the difference between the average views in the treatment minus control group.&lt;/p&gt;
 &lt;p&gt;$$
-\overline{\text{ctr}} = \frac{\Delta C}{\Delta V}
+\hat{\text{ctr}} = \frac{\mathbb E_n [\Delta C]}{\mathbb E_n [\Delta V]}
 $$&lt;/p&gt;
-&lt;p&gt;, where $\Delta$ indicates the treatment-control average difference.&lt;/p&gt;
+&lt;p&gt;Note a subtle but crucial difference with respect to the previous formula: we have replaced the &lt;a href=&#34;https://en.wikipedia.org/wiki/Expected_value&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;expected values&lt;/a&gt; $\mathbb E$ with the empirical expectation operators $\mathbb E_n$, also known as the &lt;a href=&#34;https://en.wikipedia.org/wiki/Arithmetic_mean&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;sample average&lt;/a&gt;. The difference in notation is minimal, but the conceptual difference is huge. The first, $\mathbb E$, is a &lt;strong&gt;theoretical&lt;/strong&gt; concept, while the second $\mathbb E_n$, while the second one is &lt;strong&gt;empirical&lt;/strong&gt;: it is a number that depends on the actual data. I personally like the notation since it highlights the close link between the two concepts (the second is the empirical counterpart of the first), while also making it clear that the second crucially depends on the sample size $n$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def estimate_ctr(df):
-    clicks = df.loc[df.treatment==1, &amp;quot;clicks&amp;quot;].mean() - df.loc[df.treatment==0, &amp;quot;clicks&amp;quot;].mean()
-    views = df.loc[df.treatment==1, &amp;quot;views&amp;quot;].mean() - df.loc[df.treatment==0, &amp;quot;views&amp;quot;].mean()
+    clicks = df.loc[df.new_ui==1, &amp;quot;clicks&amp;quot;].mean() - df.loc[df.new_ui==0, &amp;quot;clicks&amp;quot;].mean()
+    views = df.loc[df.new_ui==1, &amp;quot;views&amp;quot;].mean() - df.loc[df.new_ui==0, &amp;quot;views&amp;quot;].mean()
     return clicks / views
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;estimate_ctr(df)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.07009432424234391
+&lt;pre&gt;&lt;code&gt;0.26966010738038276
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The estimate is $0.07$: for each additional page view, we observe 7% of clicks. How much should we trust this number? Is it significantly different form zero, or it is just driven by noise?&lt;/p&gt;
+&lt;p&gt;The estimate is $0.2697$: for each additional page view, there is a 27% that the user clicks on the page. How much should we trust this number? Is it significantly different form zero, or it is just driven by noise?&lt;/p&gt;
 &lt;p&gt;To answer this question, we would like to compute a &lt;a href=&#34;https://en.wikipedia.org/wiki/Confidence_interval&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;confidence interval&lt;/strong&gt;&lt;/a&gt;. How do we compute a a confidence interval for a ratio metric? The first step is to compute the standard deviation of the estimator.&lt;/p&gt;
 &lt;p&gt;One method that is always available is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Bootstrapping_%28statistics%29&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;bootstrap&lt;/strong&gt;&lt;/a&gt;: resample the data with replacement multiple and times and use the distribution of the estimates over samples to compute the standard deviation of the estimator.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s try it in our case. I compute the standard deviation over $10.000$ bootstrapped samples, using the function &lt;code&gt;pd.DataFrame().sample()&lt;/code&gt; to sample with replacement.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.std([estimate_ctr(df.sample(frac=1, replace=True, random_state=i)) for i in range(10_000)])
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.029349926403892786
+&lt;pre&gt;&lt;code&gt;0.016079944440980785
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The bootstrap estimate of the standard deviation is equal to $0.0293$. How good is it?&lt;/p&gt;
+&lt;p&gt;The bootstrap estimate of the standard deviation is equal to $0.0160$. How good is it?&lt;/p&gt;
 &lt;p&gt;Since we fully control the data generating process, we can simulate the &amp;ldquo;true&amp;rdquo; distribution of the estimator. We do that for $10.000$ simulations and we compute the resulting standard deviation of the estimator.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.std(dgp.bootstrap_assignment(estimate_ctr, 10_000))
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.std(dgp.evaluate_f_redrawing_outcomes(estimate_ctr, 10_000))
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.01966553444052361
+&lt;pre&gt;&lt;code&gt;0.015475230927575944
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The &amp;ldquo;true&amp;rdquo; variance of the estimator seems to be lower, around $0.0197$. The issue might be related to the fact that the bootstrap is particularly volatile with skewed distributions. One solution is the &lt;a href=&#34;https://medium.com/towards-data-science/the-bayesian-bootstrap-6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;bayesian boostrap&lt;/strong&gt;&lt;/a&gt; that I have covered in a separate post.&lt;/p&gt;
+&lt;p&gt;The &amp;ldquo;true&amp;rdquo; variance of the estimator seems to be lower, around $0.0154$. The issue might be related to the fact that the bootstrap is particularly volatile with skewed distributions. One solution is the &lt;a href=&#34;https://medium.com/towards-data-science/the-bayesian-bootstrap-6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;bayesian boostrap&lt;/strong&gt;&lt;/a&gt; that I have covered in a separate post.&lt;/p&gt;
 &lt;p&gt;We are now going to explore another &lt;em&gt;extremely&lt;/em&gt; powerful alternative, the &lt;a href=&#34;https://en.wikipedia.org/wiki/Delta_method&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;delta method&lt;/strong&gt;&lt;/a&gt;. The delta method generally allows us to do inference on functions of random variable, therefore it&amp;rsquo;s applications are broader than ratios. However, I don&amp;rsquo;t think there is an easy way to approach the delta method, so the next section is going to be algebra-intense. If you want, you can skip it and go straight to the last section.&lt;/p&gt;
 &lt;h2 id=&#34;the-delta-method&#34;&gt;The Delta Method&lt;/h2&gt;
 &lt;p&gt;What is the &lt;strong&gt;Delta Method&lt;/strong&gt;? In short, it is an incredibly powerful &lt;strong&gt;asymptotic inference&lt;/strong&gt; method for functions of random variables, that exploits Taylor expansions. In short, the Delta Method requires four ingredients&lt;/p&gt;
@@ -218,108 +171,96 @@ $$&lt;/p&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Central_limit_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Central Limit Theorem&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Taylor_series&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Taylor expansions&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;I will assume some basic knowledge of all four concepts. Suppose we had a set of realizations $X_1$, &amp;hellip;, $X_n$ of a random variable that satisfy the requirements for the Central Limit Theorem (CLT): independence, identically distributed with mena $\mu$ and finite variance $\sigma$. Under these conditions, the CLT tells us that the distribution of the sample average $\bar X$ converges in distribution to a normal distribution, or more precisely&lt;/p&gt;
+&lt;p&gt;I will assume some basic knowledge of all four concepts. Suppose we had a set of realizations $X_1$, &amp;hellip;, $X_n$ of a random variable that satisfy the requirements for the Central Limit Theorem (CLT): independence, identically distributed with expected value $\mu$ and finite variance $\sigma^2$. Under these conditions, the CLT tells us that the distribution of the sample average $\mathbb E_n[X]$ converges in distribution to a normal distribution, or more precisely&lt;/p&gt;
 &lt;p&gt;$$
-\sqrt{n} \ \frac{ \bar X - \mu}{\sigma} \ \overset{D}{\to} \ N(0, 1)
+\sqrt{n} \ \frac{ \mathbb E_n[X] - \mu}{\sigma} \ \overset{D}{\to} \ N(0, 1)
 $$&lt;/p&gt;
-&lt;p&gt;, where $\mu$ is the average of $X$ and $\sigma$ is its standard deviation. What does the equation mean? It reads &amp;ldquo;the normalized sample average, scaled by a factor $\sqrt{n}$, converges in distribution to a standard normal distribution, i.e. it is approximately Gaussian for a sufficiently large sample.&lt;/p&gt;
-&lt;p&gt;Now, suppose we were interested in a &lt;strong&gt;function&lt;/strong&gt; of the sample average $f(\bar X)$ instead of the sample average $\bar X$. Note that this is different from the average of the function $\overline{f(X)}$. The Delta Method tells us what the function of the sample average $f(\bar X)$ converges in distribution to.&lt;/p&gt;
+&lt;p&gt;What does the equation mean? It reads &amp;ldquo;the normalized sample average, scaled by a factor $\sqrt{n}$, converges in distribution to a standard normal distribution, i.e. it is approximately Gaussian for a sufficiently large sample.&lt;/p&gt;
+&lt;p&gt;Now, suppose we were interested in a &lt;strong&gt;function&lt;/strong&gt; of the sample average $f\big(\mathbb E_n[X]\big)$ instead of the sample average $\mathbb E_n[X]$. Note that this is different from the average of the function $\mathbb E_n\big[f(X)\big]$. The Delta Method tells us what the function of the sample average $f(\bar X)$ converges in distribution to.&lt;/p&gt;
 &lt;p&gt;$$
-\sqrt{n} \ \frac{ \bar X - f(\mu)}{\sigma} \ \overset{D}{\to} \ N \big(0, f&#39;(\mu)^2 \big)
+\sqrt{n} \ \frac{ f\big(\mathbb E_n[X]\big) - f(\mu)}{\sigma} \ \overset{D}{\to} \ N \big(0, f&#39;(\mu)^2 \big)
 $$&lt;/p&gt;
 &lt;p&gt;, where $f&#39;(\mu)^2$ is the derivative of the function $f$, evaluated at $\mu$.&lt;/p&gt;
-&lt;p&gt;The result directly follows from the Taylor approximation of $f(\bar X)$&lt;/p&gt;
+&lt;p&gt;The result directly follows from the Taylor approximation of $ff\big(\mathbb E_n[X]\big)$&lt;/p&gt;
 &lt;p&gt;$$
-f(\bar X) = f(\mu) + f&#39;(\mu) (\bar X - \mu) + O \big\lbrace (\bar X - \mu)^2 \big\rbrace
+f\big(\mathbb E_n[X]\big) = f(\mu) + f&#39;(\mu) (\mathbb E_n[X] - \mu) + O \big\lbrace (\mathbb E_n[X] - \mu)^2 \big\rbrace
 $$&lt;/p&gt;
 &lt;p&gt;Importantly, asymptotically, the last term disappears and the linear approximation holds exactly!&lt;/p&gt;
-&lt;p&gt;How is this connected to the ratio estimator? We need a bit more math and to switch from a single dimension to two dimensions in order to understand that. In our case, we have a bivariate function that input two random variables, $\Delta C$ and $\delta V$ and returns their ratio. In the case of a multivariate function $f$, the asymptotic variance of the estimator is given by&lt;/p&gt;
+&lt;p&gt;How is this connected to the ratio estimator? We need a bit more math and to switch from a single dimension to two dimensions in order to understand that. In our case, we have a bivariate function that input two random variables, $\Delta C$ and $\Delta V$ and returns their ratio. In the case of a multivariate function $f$, the asymptotic variance of the estimator is given by&lt;/p&gt;
 &lt;p&gt;$$
-\text{AVar} f(\bar X) = \nabla f(\bar X)&#39; \Sigma \nabla f(\bar X)
+\text{AVar} \big( \hat{\text{ctr}} \big) = \nabla \hat{\text{ctr}}&#39; \Sigma_n \nabla \hat{\text{ctr}}
 $$&lt;/p&gt;
-&lt;p&gt;where, $\nabla$ indicates the &lt;a href=&#34;https://en.wikipedia.org/wiki/Gradient&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;gradient&lt;/a&gt; of the function, i.e. the vector of directional derivatives, and $\Sigma$ is the variance-covariance matrix of $X$. In our case, they correspond to&lt;/p&gt;
-&lt;h1 id=&#34;endbmatrix&#34;&gt;$$
+&lt;p&gt;where, $\nabla$ indicates the &lt;a href=&#34;https://en.wikipedia.org/wiki/Gradient&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;gradient&lt;/a&gt; of the function, i.e. the vector of directional derivatives, and $\Sigma_n$ is the empirical variance-covariance matrix of $X$. In our case, they correspond to&lt;/p&gt;
+&lt;h1 id=&#34;nabla-hattextctr&#34;&gt;$$
 \begin{align*}
-\nabla f(\bar X) =
-\begin{bmatrix}
-f_{\Delta V} (\bar X) \ f_{\Delta C} (\bar X)
-\end{bmatrix}&lt;/h1&gt;
+\nabla \hat{\text{ctr}}&lt;/h1&gt;
 &lt;p&gt;\begin{bmatrix}
-\frac{1}{\mathbb E [\Delta V]} \ - \frac{\mathbb E [\Delta C]}{\mathbb E [\Delta V]^2}
+\frac{1}{\mathbb E_n [\Delta V]} \ - \frac{\mathbb E_n [\Delta C]}{\mathbb E_n [\Delta V]^2}
 \end{bmatrix}
 \end{align*}
 $$&lt;/p&gt;
 &lt;p&gt;and&lt;/p&gt;
 &lt;p&gt;$$
 \begin{align*}
-\Sigma =
+\Sigma_n =
 \begin{bmatrix}
-\text{Var} (\Delta C) &amp;amp; \text{Cov} (\Delta C, \Delta V) \
-\text{Cov} (\Delta C, \Delta V) &amp;amp; \text{Var} (\Delta V) \
+\text{Var}_n (\Delta C) &amp;amp; \text{Cov}_n (\Delta C, \Delta V) \
+\text{Cov}_n (\Delta C, \Delta V) &amp;amp; \text{Var}_n (\Delta V) \
 \end{bmatrix}
 \end{align*}
 $$&lt;/p&gt;
-&lt;p&gt;With a little matrix algebra, we get the formula of the asymptotic variance of the ratio estimator.&lt;/p&gt;
+&lt;p&gt;, where the subscripts $n$ indicate the empirical counterparts, as for the expected value. With a little matrix algebra, we get the formula of the asymptotic variance of the ratio estimator.&lt;/p&gt;
 &lt;p&gt;$$
 \begin{align*}
-\text{AVar} \left( \frac{\Delta C}{\Delta V} \right) &amp;amp;= \frac{1}{\mathbb E[\Delta V]^2} \text{Var}(\Delta C) - 2 \frac{\mathbb E[\Delta C]}{\mathbb E[\Delta V]^3} \text{Cov}(\Delta V, \Delta C) + \frac{\mathbb E[\Delta C]^2}{\mathbb E[\Delta V]^4} \text{Var}(\Delta V)
+\text{AVar} \big( \hat{\text{ctr}} \big) &amp;amp;= \frac{1}{\mathbb E_n[\Delta V]^2} \text{Var}_n(\Delta C) - 2 \frac{\mathbb E_n[\Delta C]}{\mathbb E_n[\Delta V]^3} \text{Cov}_n(\Delta V, \Delta C) + \frac{\mathbb E_n[\Delta C]^2}{\mathbb E_n[\Delta V]^4} \text{Var}_n(\Delta V)
 \end{align*}
 $$&lt;/p&gt;
-&lt;p&gt;Importantly, we can rewrite the variance noting that the estimator is given by $\hat \lambda = \frac{\mathbb E[\Delta C]}{\mathbb E[\Delta V]}$&lt;/p&gt;
+&lt;p&gt;Importantly, we can rewrite the variance noting that the estimator is given by $\hat{\text{ctr}} = \frac{\mathbb E_n[\Delta C]}{\mathbb E_n[\Delta V]}$&lt;/p&gt;
 &lt;p&gt;$$
 \begin{align*}
-\text{Var} \left( \frac{\Delta C}{\Delta V} \right) = \frac{1}{\mathbb E[\Delta V]^2} \text{Var} \Big( \Delta C - \hat \lambda \Delta V \Big) = \frac{1}{\mathbb E[\Delta V]^2} \text{Var} \Big( \Delta \big( C - \hat \lambda V \big) \Big)
+\text{AVar} \big( \hat{\text{ctr}} \big) = \frac{1}{\mathbb E_n[\Delta V]^2} \text{Var}_n \Big( \Delta C - \hat{\text{ctr}} \Delta V \Big) = \frac{1}{\mathbb E_n[\Delta V]^2} \text{Var}_n \Big( \Delta \big( C - \hat{\text{ctr}} V \big) \Big)
 \end{align*}
 $$&lt;/p&gt;
 &lt;p&gt;The last expression is very interesting because it suggests that we can estimate the standard deviation of our estimator by &lt;strong&gt;linear regression&lt;/strong&gt;.&lt;/p&gt;
 &lt;h2 id=&#34;inference-with-linear-regression&#34;&gt;Inference with Linear Regression&lt;/h2&gt;
-&lt;p&gt;Did you skip the previous section? No problem! (and good choice)&lt;/p&gt;
-&lt;p&gt;We just realized that we can estimate the variance of our estimator as&lt;/p&gt;
+&lt;p&gt;Did you skip the previous section? No problem!&lt;/p&gt;
+&lt;p&gt;After some algebra, we concluded that we can estimate the variance of our estimator as&lt;/p&gt;
 &lt;p&gt;$$
 \begin{align*}
-\text{Var} \left( \frac{\Delta C}{\Delta V} \right) = \frac{1}{\mathbb E[\Delta V]^2} \text{Var} \big( \Delta \tilde C \big)
+\text{AVar} \big( \hat{\text{ctr}} \big) = \frac{1}{\mathbb E_n[\Delta V]^2} \text{Var}_n \big( \Delta \tilde C \big)
 \end{align*}
 $$&lt;/p&gt;
-&lt;p&gt;, where $\tilde C = C - \hat \lambda V$. This expression might seem very obscure to you, but it&amp;rsquo;s extremely practical. Let&amp;rsquo;s go through it step by step&lt;/p&gt;
+&lt;p&gt;, where $\tilde C = C - \hat{\text{ctr}} V$. This expression might seem obscure at first, but it is incredibly useful. In fact, it gives us (1) an intuitive &lt;strong&gt;interpretation&lt;/strong&gt; of the variance of the estimator and (2) a &lt;strong&gt;practical&lt;/strong&gt; way to estimate it.&lt;/p&gt;
+&lt;p&gt;Interpretation first! How should we read the above expression? We can estimate the variance of the empirical estimator as the variance of a difference-in-means estimator, for a new variable $\tilde C$ that we can easily compute from the data. We just need to scale it down by $\mathbb E_n[\Delta V]^2$. Therefore, the variance is decreasing in the causal effect of the treatment on the views $V$.&lt;/p&gt;
+&lt;p&gt;Now, let&amp;rsquo;s use the equation above to estimate the variance of the click-through rate estimator, in &lt;strong&gt;three steps&lt;/strong&gt;.&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;The term $\mathbb E[\Delta V]$ is just the difference in average clicks between treatment and control group&lt;/li&gt;
+&lt;li&gt;The term $\mathbb E_n[\Delta V]$ is the difference in average views between the treatment and control group.&lt;/li&gt;
 &lt;/ol&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;e_delta_v = df.views[df.treatment==1].mean() - df.views[df.treatment==0].mean()
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;e_delta_v = df.views[df.new_ui==1].mean() - df.views[df.new_ui==0].mean()
 &lt;/code&gt;&lt;/pre&gt;
 &lt;ol start=&#34;2&#34;&gt;
-&lt;li&gt;The variable $\tilde C$ is easier to compute: we just need to subtract from the clicks $C$ the number of views $V$, times the estimated click-through rate $\hat \lambda$.&lt;/li&gt;
+&lt;li&gt;The variable $\tilde C$ is the number of clicks $C$ minus the number of views $V$, scaled by the estimated click-through rate $\hat{\text{ctr}}$.&lt;/li&gt;
 &lt;/ol&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;clicks_tilde&#39;] = df[&#39;clicks&#39;] - estimate_ctr(df) * df[&#39;views&#39;] 
 &lt;/code&gt;&lt;/pre&gt;
 &lt;ol start=&#34;3&#34;&gt;
-&lt;li&gt;The variance of the treatment-control difference $\Delta \tilde C$ can be directly computed by linear regression, as we always do in randomized controlled trials.&lt;/li&gt;
+&lt;li&gt;The variance of the treatment-control difference $\Delta \tilde C$ can be directly computed by linear regression, as in randomized controlled trials for difference-in-means estimators (for more details see Agrist and Pischke, 2008).&lt;/li&gt;
 &lt;/ol&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sd_err = smf.ols(&#39;clicks_tilde ~ treatment&#39;, df).fit().bse[1]
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sd_err = smf.ols(&#39;clicks_tilde ~ new_ui&#39;, df).fit().bse[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;We now have all the ingredients to compute the standard deviation of the estimator..&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sd_err / np.abs(e_delta_v)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0.027268564428518813
+&lt;pre&gt;&lt;code&gt;0.01566505344911916
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We have estimated the variance of the ratio estimator with a simple linear regression! The estimated value $0.0273$ is quite close to the one we estimated with bootstrap.&lt;/p&gt;
-&lt;p&gt;How accurate is it on average? Since we control the data generating process, we can compute the average estimated variance over $10.000$ simulations.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.mean(dgp.bootstrap_assignment(compute_variance, 10_000))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;---------------------------------------------------------------------------
-
-NameError                                 Traceback (most recent call last)
-
-Input In [43], in &amp;lt;module&amp;gt;
-----&amp;gt; 1 np.mean(dgp.bootstrap_assignment(compute_variance, 10_000))
-
-
-NameError: name &#39;compute_variance&#39; is not defined
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;The value is $0.0196$, basically identical to the previously computed one.&lt;/p&gt;
+&lt;p&gt;We have estimated the variance of the ratio estimator with a simple linear regression! The estimated value $0.0156$ is very close to the &amp;ldquo;true&amp;rdquo; value of $0.0152$ and significantly faster than the bootstrap (around 1000 times faster on my machine).&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this article, we have explore a very common causal inference problem in the inference: assessing the effects of a treatment on an outcome metric. The additional complications come from the fact that we are studying not one, but two causal effects, intertwined. The effects are both first- and second-order. First, the estimator is biased. Second, computing the variance of the estimator is not trivial.&lt;/p&gt;
+&lt;p&gt;We have explored an incredibly powerful method to do inference for complex random variables: the &lt;strong&gt;delta method&lt;/strong&gt;. In the particular case of ratio metrics, the delta method delivers a very insightful and practical functional form for the asymptotic variance of the estimator that can be estimated with a simple linear regression.&lt;/p&gt;
 &lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
 &lt;p&gt;[1] A. Deng, U. Knoblich, J. Lu, &lt;a href=&#34;https://arxiv.org/pdf/1803.06336.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Applying the Delta Method in Metric Analytics: A Practical Guide with Novel Ideas&lt;/a&gt; (2018).&lt;/p&gt;
-&lt;p&gt;[2] &lt;a href=&#34;https://dl.acm.org/doi/abs/10.1145/3159652.3159699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Consistent Transformation of Ratio Metrics for Efficient Online Controlled Experiments&lt;/a&gt; (2018). &lt;em&gt;ACM&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] R. Budylin, A. Drutsa, I. Katsev, V. Tsoy, &lt;a href=&#34;https://dl.acm.org/doi/abs/10.1145/3159652.3159699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Consistent Transformation of Ratio Metrics for Efficient Online Controlled Experiments&lt;/a&gt; (2018). &lt;em&gt;ACM&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[3] J. Angrist, J. Pischke, &lt;a href=&#34;https://www.mostlyharmlesseconometrics.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Mostly harmless econometrics: An empiricist&amp;rsquo;s companion&lt;/a&gt; (2009). &lt;em&gt;Princeton university press&lt;/em&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href=&#34;https://medium.com/towards-data-science/the-bayesian-bootstrap-6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Bayesian Bootstrap&lt;/a&gt;&lt;/li&gt;
