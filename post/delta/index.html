@@ -876,8 +876,8 @@ When we run an experiment, we are often not only interested in the effect of a t
           <div class="article-style" align="justify">
             <p><em>An introduction to the delta method for inference on ratio metrics.</em></p>
 <p>When we run an experiment, we are often not only interested in the effect of a treatment (new product, new feature, new interface, &hellip;) on revenue, but in it&rsquo;s <strong>cost-effectiveness</strong>. In other words, is the investment worth the cost? Common examples include investments in computing resources, returns on advertisement, but also click-through rates and other ratio metrics.</p>
-<p>When we investigate causal effects, the gold standard are randomized control trials, a.k.a. <strong>AB tests</strong>. Randomly assigning the treatment to a subset of the population (users, patients, customers, &hellip;) we ensure that, on average, the only difference in outcomes can be attributed to the treatment. However, when the object of interest is cost-effectiveness, AB tests present some additional problems since we are not just interested in one treatment effect, but in the <strong>ratio of two treatment effects</strong>, the outcome of the investment over its cost.</p>
-<p>In this post we are going to see how to do inference when the object of interest is a return on investment (ROI). We are going to explore a very powerful tool for inference with complex metrics: the <strong>delta method</strong>. While the algebra can be intense, the result is simple: we can compute the confidence interval for our ratio estimator using a simple linear regression.</p>
+<p>When we investigate causal effects, the gold standard are randomized control trials, a.k.a. <strong>AB tests</strong>. Randomly assigning the treatment to a subset of the population (users, patients, customers, &hellip;) we ensure that, on average, the difference in outcomes can be attributed to the treatment. However, when the object of interest is cost-effectiveness, AB tests present some additional problems since we are not just interested in one treatment effect, but in the <strong>ratio of two treatment effects</strong>, the outcome of the investment over its cost.</p>
+<p>In this post we are going to see how to do inference when the object of interest is the <strong>return on investment (ROI)</strong>. We are going to explore alternative metrics to measure whether an investment paid off. We will also introduce a very powerful tool for inference with complex metrics: the <strong>delta method</strong>. While the algebra can be intense, the result is simple: we can compute the confidence interval for our ratio estimator using a simple linear regression.</p>
 <h2 id="investing-in-cloud-computing">Investing in Cloud Computing</h2>
 <p>To better illustrate the concepts, we are going to use a toy example throughout the article: suppose we were an <strong>online marketplace</strong> and we wanted to <strong>invest in cloud computing</strong>: we want to increase the computing power behind our internal search engine, by switching to a higher tier server. The idea is that the faster search will improve the user experience, potentially leading to higher sales. Therefore, the question is: is the investment worth the cost? The object of interest is the <strong>return on investment (ROI)</strong>.</p>
 <p>Differently from usual AB tests or randomized experiments, we are not interested in a single causal effect, but in the <strong>ratio</strong> of two metrics: the effect on revenue and the effect on cost. We will still use a <strong>randomized control trial</strong> or <strong>AB test</strong> to estimate the ROI: we randomly assign groups of users to either the treatment or the control group. The treated users will benefit from the faster cloud machines, while the control users will use the old slower machines. Randomization ensures that we can estimate the impact of the new machines on either cost or revenue by comparing users in the treatment and control group: the difference in their average is an unbiased estimator of the average treatment effect. However, things are more complicated for their ratio.</p>
@@ -888,26 +888,8 @@ When we run an experiment, we are often not only interested in the effect of a t
 from src.utils import *
 from src.dgp import dgp_cloud, DGP
 </code></pre>
-<pre><code class="language-python">class dgp_cloud(DGP):
-    &quot;&quot;&quot;DGP: cloud computing and return on investment.&quot;&quot;&quot;
-    assignment_var: str = 'new_machine'
-    outcome_vars: list[str] = ['cost', 'revenue']
-    
-    def generate_potential_outcomes(self, seed: int = 0):
-        np.random.seed(seed)
-        cost_c = np.random.exponential(3, self.n)
-        effect = np.random.uniform(0, 1, self.n)
-        cost_t = cost_c + effect
-        revenue_c = np.random.normal(cost_c*10 - 4, 1, self.n)
-        revenue_t = revenue_c + effect * 2
-        df = pd.DataFrame({'cost_c': np.maximum(cost_c, 0), 
-                           'cost_t': np.maximum(cost_t, 0), 
-                           'revenue_c': np.maximum(revenue_c, 0), 
-                           'revenue_t': np.maximum(revenue_t, 0)})
-        return df.round(2)
-</code></pre>
 <pre><code class="language-python">dgp = dgp_cloud(n=10_000)
-df = dgp.generate_data(seed_assignment=10)
+df = dgp.generate_data(seed_assignment=6)
 df.head()
 </code></pre>
 <div>
@@ -938,41 +920,41 @@ df.head()
       <th>0</th>
       <td>1</td>
       <td>3.14</td>
-      <td>20.99</td>
+      <td>20.90</td>
     </tr>
     <tr>
       <th>1</th>
       <td>0</td>
       <td>3.77</td>
-      <td>33.59</td>
+      <td>33.57</td>
     </tr>
     <tr>
       <th>2</th>
       <td>1</td>
       <td>3.16</td>
-      <td>24.34</td>
+      <td>24.31</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>1</td>
-      <td>2.40</td>
-      <td>20.28</td>
+      <td>0</td>
+      <td>2.36</td>
+      <td>20.35</td>
     </tr>
     <tr>
       <th>4</th>
       <td>0</td>
       <td>1.65</td>
-      <td>12.59</td>
+      <td>12.60</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>The data contains information on the total <code>cost</code> and <code>revenue</code> for a set of $10.000$ users over a period of a month. We also have information on the <code>treatment</code>: the new landing page.  As it often happens with business metrics, both distributions of cost and revenues are very <strong>skewed</strong>. Moreover, most people do not buy anything and therefore generate zero revenue, even though they still use the platform, generating positive costs.</p>
+<p>The data contains information on the total <code>cost</code> and <code>revenue</code> for a set of $10.000$ users over a period of a month. We also have information on the treatment: whether the search engine was running on the old or <code>new machines</code>.  As it often happens with business metrics, both distributions of cost and revenues are very <strong>skewed</strong>. Moreover, most people do not buy anything and therefore generate zero revenue, even though they still use the platform, generating positive costs.</p>
 <pre><code class="language-python">fix, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
 sns.histplot(df.cost, ax=ax1, color='C0').set(title='Distribution of Cost')
 sns.histplot(df.revenue, ax=ax2, color='C1').set(title='Distribution of Revenue');
 </code></pre>
-<p><img src="img/delta_9_0.png" alt="png"></p>
+<p><img src="img/delta_8_0.png" alt="png"></p>
 <p>We can compute the <strong>difference-in-means</strong> estimate for <code>cost</code> and <code>revenue</code> by regressing the outcome on the treatment indicator.</p>
 <pre><code class="language-python">smf.ols('cost ~ new_machine', data=df).fit().summary().tables[1]
 </code></pre>
@@ -981,13 +963,13 @@ sns.histplot(df.revenue, ax=ax2, color='C1').set(title='Distribution of Revenue'
        <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>   <td>    2.9680</td> <td>    0.042</td> <td>   70.373</td> <td> 0.000</td> <td>    2.885</td> <td>    3.051</td>
+  <th>Intercept</th>   <td>    2.9617</td> <td>    0.043</td> <td>   69.034</td> <td> 0.000</td> <td>    2.878</td> <td>    3.046</td>
 </tr>
 <tr>
-  <th>new_machine</th> <td>    0.5076</td> <td>    0.060</td> <td>    8.433</td> <td> 0.000</td> <td>    0.390</td> <td>    0.626</td>
+  <th>new_machine</th> <td>    0.5152</td> <td>    0.060</td> <td>    8.563</td> <td> 0.000</td> <td>    0.397</td> <td>    0.633</td>
 </tr>
 </table>
-<p>The average <code>cost</code> has increased by 0.5076$ per user. What about revenue?</p>
+<p>The average <code>cost</code> has increased by $0.5152$$ per user. What about revenue?</p>
 <pre><code class="language-python">smf.ols('revenue ~ new_machine', data=df).fit().summary().tables[1]
 </code></pre>
 <table class="simpletable">
@@ -995,20 +977,20 @@ sns.histplot(df.revenue, ax=ax2, color='C1').set(title='Distribution of Revenue'
        <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>   <td>   25.9735</td> <td>    0.418</td> <td>   62.159</td> <td> 0.000</td> <td>   25.154</td> <td>   26.793</td>
+  <th>Intercept</th>   <td>   25.9172</td> <td>    0.425</td> <td>   60.950</td> <td> 0.000</td> <td>   25.084</td> <td>   26.751</td>
 </tr>
 <tr>
-  <th>new_machine</th> <td>    0.9505</td> <td>    0.596</td> <td>    1.594</td> <td> 0.111</td> <td>   -0.219</td> <td>    2.120</td>
+  <th>new_machine</th> <td>    1.0664</td> <td>    0.596</td> <td>    1.788</td> <td> 0.074</td> <td>   -0.103</td> <td>    2.235</td>
 </tr>
 </table>
-<p>The average <code>revenue</code> per user has also increased, by 0.9505$. So, was the investment <strong>profitable</strong>?</p>
+<p>The average <code>revenue</code> per user has also increased, by $1.0664$$. So, was the investment <strong>profitable</strong>?</p>
 <p>To answer this question, we first have to decide which metric to use as our <strong>outcome metric</strong>. In case of ratio metrics, this is not trivial.</p>
 <h2 id="average-return-or-return-of-the-average">Average Return or Return of the Average?</h2>
 <p>It is very tempting to approach this problem saying: it is true that we have two variables, by we can just compute their ratio, and then analyze everything as usual, using a <strong>single variable</strong>: the individual level return.</p>
 <p>$$
-\rho_i = \frac{R_i}{C_i}
+\rho_i = \frac{\text{individual revenue}}{\text{individual cost}} = \frac{R_i}{C_i}
 $$</p>
-<p>What happens if we now analyze the experiment using this single metric?</p>
+<p>What happens if we analyze the experiment using this single metric?</p>
 <pre><code class="language-python">df[&quot;rho&quot;] = df[&quot;revenue&quot;] / df[&quot;cost&quot;]
 smf.ols(&quot;rho ~ new_machine&quot;, df).fit().summary().tables[1]
 </code></pre>
@@ -1017,22 +999,22 @@ smf.ols(&quot;rho ~ new_machine&quot;, df).fit().summary().tables[1]
        <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>   <td>    6.6652</td> <td>    0.044</td> <td>  152.744</td> <td> 0.000</td> <td>    6.580</td> <td>    6.751</td>
+  <th>Intercept</th>   <td>    6.6898</td> <td>    0.044</td> <td>  150.832</td> <td> 0.000</td> <td>    6.603</td> <td>    6.777</td>
 </tr>
 <tr>
-  <th>new_machine</th> <td>   -0.7305</td> <td>    0.062</td> <td>  -11.736</td> <td> 0.000</td> <td>   -0.853</td> <td>   -0.609</td>
+  <th>new_machine</th> <td>   -0.7392</td> <td>    0.062</td> <td>  -11.893</td> <td> 0.000</td> <td>   -0.861</td> <td>   -0.617</td>
 </tr>
 </table>
-<p>The estimated effect is <strong>negative and significant</strong>! It seems like the the new machines were not a good investment.</p>
-<p>This result seems to contradict our previous estimates. We have seen before that the revenue has increased on average more than the cost ($0.9505$ vs $0.5076$). Why is it the case? The problem is that we are giving the same weight to heavy users and light users. Let&rsquo;s use a simple example with two users. The first one (blue) is a light user and before was costing 1\$ and returning 10\$, while now is costing 4\$ and returning 20\$. The other user (violet) is a heavy user and before was costing 10\$ and returning 100\$ and now is costing 20\$ and returning 220\$.</p>
+<p>The estimated effect is <strong>negative and significant</strong>, $-0.7392$! It seems like the the new machines were not a good investment, and the returns have decreased by $74%$.</p>
+<p>This result seems to contradict our previous estimates. We have seen before that the revenue has increased on average more than the cost ($0.9505$ vs $0.5076$). Why is it the case? The problem is that we are giving the same weight to heavy users and light users. Let&rsquo;s use a simple example with two users. The first one (blue) is a light user and before was costing $1$$ and returning $10$$, while now is costing $4$$ and returning $20$$. The other user (violet) is a heavy user and before was costing $10$$ and returning 100\$ and now is costing $20$$ and returning $220$$.</p>
 <img src="fig/return.png" width="700px"/>
-<p>The average return is -3x: on average the return per user has decreased by 300%. However, the total return per user is 1000%: the increase in cost of 13\$ has generated 130\$ in revenue! The results are wildly different and entirely driven by the weight of the two users: the effect of the heavy user is low in relative terms but high in absolute terms, while it&rsquo;s the opposite for the light user. The average relative effect is therefore mostly driven by the light user, while the relative average effect is mostly driven by the heavy user.</p>
+<p>The average return is -3x: on average the return per user has decreased by $300%$. However, the total return per user is $1000%$: the increase in cost of $13$$ has generated $130$$ in revenue! The results are wildly different and entirely driven by the weight of the two users: the effect of the heavy user is low in relative terms but high in absolute terms, while it&rsquo;s the opposite for the light user. The average relative effect is therefore mostly driven by the light user, while the relative average effect is mostly driven by the heavy user.</p>
 <p><strong>Which metric</strong> is more relevant in our setting? We talking about return on investment, we are usually interested in understanding whether we got a return on the money we spend. Therefore, the <strong>total return</strong> is more interesting than the average return.</p>
 <p>From now on, the object of interest will be the <strong>return on investment (ROI)</strong>, given by the expected increase in revenue over the expected increase in cost, and we will denote it with the greek letter rho, $\rho$.</p>
 <p>$$
 \rho = \frac{\text{incremental revenue}}{\text{incremental cost}} = \frac{\mathbb E [\Delta R]}{\mathbb E [\Delta C]}
 $$</p>
-<p>We can estimate the ROI as the ratio of the two previous estimates: the average difference in revenue between the treatment and control group, over the difference in average cost between the treatment and control group.</p>
+<p>We can estimate the ROI as the ratio of the two previous estimates: the average difference in revenue between the treatment and control group, over the average difference in cost between the treatment and control group.</p>
 <p>$$
 \hat{\rho} = \frac{\mathbb E_n [\Delta R]}{\mathbb E_n [\Delta C]}
 $$</p>
@@ -1044,18 +1026,19 @@ $$</p>
 
 estimate_roi(df)
 </code></pre>
-<pre><code>1.8724611367410489
+<pre><code>2.0698235970047887
 </code></pre>
-<p>The estimate is $1.8725$: each additional dollar spent in the new machines translated in 1.8725 extra dollars in revenue. Sounds great!</p>
+<p>The estimate is $2.0698$: each additional dollar spent in the new machines translated in $2.0698$ extra dollars in revenue. Sounds great!</p>
 <p>But how much should we trust this number? Is it significantly different form one, or it is just driven by noise?</p>
 <h2 id="inference">Inference</h2>
 <p>To answer this question, we would like to compute a <a href="https://en.wikipedia.org/wiki/Confidence_interval" target="_blank" rel="noopener"><strong>confidence interval</strong></a> for our estimate. How do we compute a confidence interval for a ratio metric? The first step is to compute the standard deviation of the estimator. One method that is always available is the <a href="https://en.wikipedia.org/wiki/Bootstrapping_%28statistics%29" target="_blank" rel="noopener"><strong>bootstrap</strong></a>: resample the data with replacement multiple and times and use the distribution of the estimates over samples to compute the standard deviation of the estimator.</p>
 <p>Let&rsquo;s try it in our case. I compute the standard deviation over $10.000$ bootstrapped samples, using the function <code>pd.DataFrame().sample()</code> with the options <code>frac=1</code> to obtain a dataset of the same size and <code>replace=True</code> to sample with replacement.</p>
-<pre><code class="language-python">np.std([estimate_roi(df.sample(frac=1, replace=True, random_state=i)) for i in range(10_000)])
+<pre><code class="language-python">boot_estimates = [estimate_roi(df.sample(frac=1, replace=True, random_state=i)) for i in range(10_000)]
+np.std(boot_estimates)
 </code></pre>
-<pre><code>1.005890474935509
+<pre><code>0.9790730538161984
 </code></pre>
-<p>The bootstrap estimate of the standard deviation is equal to $1.006$. How good is it?</p>
+<p>The bootstrap estimate of the standard deviation is equal to $0.979$. How good is it?</p>
 <p>Since we fully control the data generating process, we can simulate the &ldquo;true&rdquo; distribution of the estimator. We do that for $10.000$ simulations and we compute the resulting standard deviation of the estimator.</p>
 <pre><code class="language-python">np.std(dgp.evaluate_f_redrawing_outcomes(estimate_roi, 10_000))
 </code></pre>
@@ -1145,7 +1128,7 @@ $$</p>
 <ol start="2">
 <li>The term $| \mathbb E_n[\Delta C] |$ is the absolute difference in average cost between the treatment and control group.</li>
 </ol>
-<pre><code class="language-python">abs_Delta_C = np.abs(Delta_C)
+<pre><code class="language-python">abs_Delta_C = np.abs(df.loc[df.new_machine==1, &quot;cost&quot;].mean() - df.loc[df.new_machine==0, &quot;cost&quot;].mean())
 </code></pre>
 <ol start="3">
 <li>We now have all the ingredients to generate the auxiliary variable $\tilde R$.</li>
@@ -1162,13 +1145,14 @@ $$</p>
        <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th>   <td>   40.2883</td> <td>    0.669</td> <td>   60.241</td> <td> 0.000</td> <td>   38.977</td> <td>   41.599</td>
+  <th>Intercept</th>   <td>   38.4067</td> <td>    0.653</td> <td>   58.771</td> <td> 0.000</td> <td>   37.126</td> <td>   39.688</td>
 </tr>
 <tr>
-  <th>new_machine</th> <td> 9.687e-15</td> <td>    0.955</td> <td> 1.01e-14</td> <td> 1.000</td> <td>   -1.871</td> <td>    1.871</td>
+  <th>new_machine</th> <td> -2.01e-14</td> <td>    0.917</td> <td>-2.19e-14</td> <td> 1.000</td> <td>   -1.797</td> <td>    1.797</td>
 </tr>
 </table>
-<p>The estimated standard error of the ROI is $0.955$, very close to the bootstrap estimate of $1.006$ and the simulated value of $1.055$. However, with respect to bootstrapping, the delta method allowed us to compute it in a single step, making it sensibly <strong>faster</strong> (around $1000$ times on my local machine).</p>
+<p>The estimated standard error of the ROI is $0.917$, very close to the bootstrap estimate of $0.979$ and the simulated value of $1.055$. However, with respect to bootstrapping, the delta method allowed us to compute it in a single step, making it sensibly <strong>faster</strong> (around $1000$ times on my local machine).</p>
+<p>Note that this estimated standard deviation implies a 95% confidence interval of $2.0698 +- 1.96 \times 0.917$, equal to $[-0.2735, 3.8671]$. This might seem like good news since the confidence interval does not cover zero. However, note that in this case, a more interesting <strong>null hypothesis</strong> is that the ROI is equal to 1: we are breaking even. A value larger than 1 implies profits, while a value lower than 1 implies losses. In our case, we cannot reject the null hypothesis that the investment in new machines was not profitable.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>In this article, we have explored a very common causal inference problem: assessing the <strong>return on investment</strong>. Whether it&rsquo;s a physical investment in new hardware, a virtual cost, or advertisement expenditure, we are interested in understanding whether this incremental cost has paid off. The additional complications come from the fact that we are studying not one, but two causal quantities, intertwined.</p>
 <p>We have first explored and compared different outcome metrics to assess whether the investment paid off. Then, we have introduced an incredibly powerful method to do inference with complex random variables: the <strong>delta method</strong>. In the particular case of ratios, the delta method delivers a very insightful and practical functional form for the asymptotic variance of the estimator that can be estimated with a simple linear regression.</p>
