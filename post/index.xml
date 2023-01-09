@@ -5,12 +5,505 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 27 Dec 2022 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Mon, 09 Jan 2023 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://matteocourthoud.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>Bayesian AB Testing</title>
+      <link>https://matteocourthoud.github.io/post/bayes_reg/</link>
+      <pubDate>Mon, 09 Jan 2023 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/bayes_reg/</guid>
+      <description>&lt;p&gt;&lt;em&gt;An introduction to the Bayesian approach to randomized experiments.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;AB testing&lt;/strong&gt; and experimentation is now the established gold standard in the industry to estimate causal effects. Randomly assigning the treatment (new product, feature, UI, &amp;hellip;) to a subset of the population (users, patients, customers, &amp;hellip;) we ensure that, on average, the difference in outcomes (revenue, visits, clicks, &amp;hellip;) can be attributed to the treatment. Many companies, especially in tech, before implementing any major change test them to back up their decisions with numbers. Established companies like &lt;a href=&#34;https://partner.booking.com/en-gb/click-magazine/industry-perspectives/role-experimentation-bookingcom&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Booking.com&lt;/a&gt; report constantly running thousands of AB tests at the same time. And newer growing companies like &lt;a href=&#34;https://blog.duolingo.com/improving-duolingo-one-experiment-at-a-time/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Duolingo&lt;/a&gt; attribute a large chunk of their success to their culture of experimentation at scale.&lt;/p&gt;
+&lt;p&gt;With so many experiments, one question comes natural: in one specific experiment, can you leverage information from previous tests? In this post, I will try to answer this question by introducing the &lt;strong&gt;Bayesian approach to AB testing&lt;/strong&gt;. The Bayesian framework is particularly well suited for this type of task because it naturally allows for the updating of existing knowledge (the prior) using new data. However, the method is particularly sensitive to functional form assumptions and apparently innocuous model choices can translate in sensible differences in the estimates, especially when the data is very skewed.&lt;/p&gt;
+&lt;h2 id=&#34;search-and-infinite-scrolling&#34;&gt;Search and Infinite Scrolling&lt;/h2&gt;
+&lt;p&gt;For the rest of the article, we are going to use a toy example, loosely inspired by &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/pandp.20191003&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Azavedo et al. (2019)&lt;/a&gt;: a &lt;strong&gt;search engine&lt;/strong&gt; that wants to increase its &lt;strong&gt;ad revenue&lt;/strong&gt;, without sacrificing search quality. We are a company with an established experimentation culture and we continuously test new ideas on how to rank results, how to select the most relevant ads for consumers, and the user interface (UI) of the results page. Suppose that, in this specific case, we came up with a new brilliant idea: &lt;a href=&#34;https://blog.google/products/search/continuous-scrolling-mobile/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;infinite scrolling&lt;/a&gt;! Instead of having a discrete sequence of pages, we allow users to keep scrolling down if they want to see more results.&lt;/p&gt;
+&lt;img src=&#34;fig/phones.jpg&#34; width=&#34;300px&#34;/&gt;
+&lt;p&gt;To understand whether infinite scrolling works, we ran an &lt;strong&gt;AB test&lt;/strong&gt;: we randomize users into a treatment and a control group. We implement infinite scrolling only for users in the treatment group. I import the data generating process &lt;code&gt;dgp_infinite_scroll()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. With respect to previous articles, I generated a new DGP parent class that handles randomization and data generation, while its children classes contain the specific use-cases. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.  To include not only code but also data and tables, I use &lt;a href=&#34;https://deepnote.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Deepnote&lt;/a&gt;, a Jupyter-like web-based collaborative notebook environment.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+
+from src.utils import *
+from src.dgp import DGP, dgp_infinite_scroll
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_infinite_scroll(n=10_000)
+df = dgp.generate_data(true_effect=0.14)
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;past_revenue&lt;/th&gt;
+      &lt;th&gt;infinite_scroll&lt;/th&gt;
+      &lt;th&gt;ad_revenue&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;3.76&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;3.70&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2.40&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1.71&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2.98&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4.85&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;4.24&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;4.57&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;3.87&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3.69&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on $10.000$ website visitors for which we observe the monthly &lt;code&gt;ad_revenue&lt;/code&gt; they generated, whether they were assigned to the treatment group and were using the &lt;code&gt;infinite_scroll&lt;/code&gt;, and also the average monthly &lt;code&gt;past_revenue&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The random treatment assignment makes the &lt;strong&gt;difference-in-means&lt;/strong&gt; estimator &lt;a href=&#34;https://en.wikipedia.org/wiki/Bias_of_an_estimator&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;unbiased&lt;/strong&gt;&lt;/a&gt;: we expect the treatment and control group to be comparable on average, so we can causal attribute the average observed difference in outcomes to the treatment effect. We estimate the treatment effect by linear regression. We can interpret the coefficient of &lt;code&gt;infinite_scroll&lt;/code&gt; as the estimated treatment effect.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;ad_revenue ~ infinite_scroll&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+         &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;       &lt;td&gt;    1.9865&lt;/td&gt; &lt;td&gt;    0.020&lt;/td&gt; &lt;td&gt;  101.320&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.948&lt;/td&gt; &lt;td&gt;    2.025&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;infinite_scroll&lt;/th&gt; &lt;td&gt;    0.1524&lt;/td&gt; &lt;td&gt;    0.028&lt;/td&gt; &lt;td&gt;    5.461&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.098&lt;/td&gt; &lt;td&gt;    0.207&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;It seems that the &lt;code&gt;infinite_scroll&lt;/code&gt; was indeed a good idea and it increase the average monthly revenue by $0.1524$$. Moreover, the effect is significantly different from zero at the 1% confidence level.&lt;/p&gt;
+&lt;p&gt;We could further improve the precision of the estimator by controlling for &lt;code&gt;past_revenue&lt;/code&gt; in the regression. We do not expect a sensible change in the estimated coefficient, but the precision should improve (if you want to know more on out control variables, check my other articles on &lt;a href=&#34;https://towardsdatascience.com/understanding-cuped-a822523641af&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CUPED&lt;/a&gt; and &lt;a href=&#34;https://towardsdatascience.com/controls-b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs&lt;/a&gt;).&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;reg = smf.ols(&#39;ad_revenue ~ infinite_scroll + past_revenue&#39;, df).fit()
+reg.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+         &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;       &lt;td&gt;    0.0181&lt;/td&gt; &lt;td&gt;    0.024&lt;/td&gt; &lt;td&gt;    0.741&lt;/td&gt; &lt;td&gt; 0.459&lt;/td&gt; &lt;td&gt;   -0.030&lt;/td&gt; &lt;td&gt;    0.066&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;infinite_scroll&lt;/th&gt; &lt;td&gt;    0.1571&lt;/td&gt; &lt;td&gt;    0.020&lt;/td&gt; &lt;td&gt;    7.910&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.118&lt;/td&gt; &lt;td&gt;    0.196&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;past_revenue&lt;/th&gt;    &lt;td&gt;    0.9922&lt;/td&gt; &lt;td&gt;    0.010&lt;/td&gt; &lt;td&gt;   98.655&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.972&lt;/td&gt; &lt;td&gt;    1.012&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Indeed, &lt;code&gt;past_revenue&lt;/code&gt; is highly predictive of current &lt;code&gt;ad_revenue&lt;/code&gt; and the precision of the estimated coefficient for &lt;code&gt;infinite_scroll&lt;/code&gt; decreases by one-third.&lt;/p&gt;
+&lt;p&gt;So far, everything has been very standard. However, as we said at the beginning, suppose this is not the only experiment we ran trying to improve our browser (and ultimately ad revenue). The infinite scroll is just one idea among thousands of others that we have tested in the past. Is there a way to efficiently use this additional &lt;strong&gt;information&lt;/strong&gt;?&lt;/p&gt;
+&lt;h2 id=&#34;bayesian-statistics&#34;&gt;Bayesian Statistics&lt;/h2&gt;
+&lt;p&gt;One of the main advantages of Bayesian statistics over the frequentist approach is that it easily allows to incorporate additional information into a model. The idea directly follows from the main results behind all Bayesian statistics: &lt;a href=&#34;https://en.wikipedia.org/wiki/Bayes%27_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Bayes Theorem&lt;/strong&gt;&lt;/a&gt;. Bayes theorem, allows you to do inference on a model by &lt;strong&gt;inverting the inference problem&lt;/strong&gt;: from the probability of the model given the data, to the probability of the data given the model, a much easier object to deal with.&lt;/p&gt;
+&lt;p&gt;$$
+\underbrace{ \Pr \big( \text{model} \ \big| \ \text{data} \big) }&lt;em&gt;{\text{posterior}} = \underbrace{ \Pr(\text{model}) }&lt;/em&gt;{\text{prior}} \ \underbrace{ \frac{ \Pr \big( \text{data} \ \big| \ \text{model} \big) }{ \Pr(\text{data}) } }_{\text{likelihood}}
+$$&lt;/p&gt;
+&lt;p&gt;We can split the right-hand side of Bayes Theorem (or Rule) into two components: the &lt;strong&gt;prior&lt;/strong&gt; and the &lt;strong&gt;likelihood&lt;/strong&gt;. The likelihood is the information about the model that comes from the data, the prior instead is any additional information about the model.&lt;/p&gt;
+&lt;p&gt;First of all, let&amp;rsquo;s map Bayes theorem into our context. What is the data, what is the model and what is our object of interest?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the &lt;strong&gt;data&lt;/strong&gt; which consists in our outcome variable &lt;code&gt;ad_revenue&lt;/code&gt;, $y$, the treatment &lt;code&gt;infinite_scroll&lt;/code&gt;, $D$ and the other variables, &lt;code&gt;past_revenue&lt;/code&gt; and a constant, which we jointly denote as $X$&lt;/li&gt;
+&lt;li&gt;the &lt;strong&gt;model&lt;/strong&gt; is the distribution of &lt;code&gt;ad_revenue&lt;/code&gt;, given &lt;code&gt;past_revenue&lt;/code&gt; and the &lt;code&gt;infinite_scroll&lt;/code&gt; feature, $y | D, X$&lt;/li&gt;
+&lt;li&gt;our &lt;strong&gt;object of interest&lt;/strong&gt; is the posterior $\Pr \big( \text{model} \ \big| \ \text{data} \big)$, in particular the relationship between &lt;code&gt;ad_revenue&lt;/code&gt; and &lt;code&gt;infinite_scroll&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X = sm.add_constant(df[[&#39;past_revenue&#39;]].values)
+D = df[&#39;infinite_scroll&#39;].values
+y = df[&#39;ad_revenue&#39;].values
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;How do we use prior information in the context of AB testing, potentially including additional covariates?&lt;/p&gt;
+&lt;h3 id=&#34;bayesian-regression&#34;&gt;Bayesian Regression&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s use a linear model to make it directly comparable with the frequentist approach:&lt;/p&gt;
+&lt;p&gt;$$
+y_i = \beta X_i + \tau D_i + \varepsilon_i \qquad \text{where} \quad \varepsilon_i \sim N \big( 0, \sigma^2 \big)
+$$&lt;/p&gt;
+&lt;p&gt;This is a parametric model with &lt;strong&gt;two sets of parameters&lt;/strong&gt;: the linear coefficients $\beta$ and $\tau$, and the variance of the residuals $\sigma$. An equivalent, but more Bayesian, way to write the model is:&lt;/p&gt;
+&lt;p&gt;$$
+y \ | \ X, D; \beta, \tau, \sigma \sim N \Big( \beta X + \tau D \ , \sigma^2 \Big) ,
+$$&lt;/p&gt;
+&lt;p&gt;where the semi-column separates the data from the model parameters. Differently from the frequentist approach, in Bayesian regressions we do not rely on the &lt;a href=&#34;https://en.wikipedia.org/wiki/Central_limit_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;central limit theorem&lt;/a&gt; to approximate the conditional distribution of $y$, but we directly &lt;strong&gt;assume&lt;/strong&gt; it is normal. Is it just a formality? Not really, but a proper comparison between the frequentist and Bayesian approach is beyond the scope of this article.&lt;/p&gt;
+&lt;p&gt;We are interested in doing inference on the model parameters, $\beta$, $\tau$, and $\sigma$. Another &lt;strong&gt;core difference&lt;/strong&gt; between the frequentist and the Bayesian approach is that the the first assumes that the model parameters are fixed (scalars), while the latter allows them to be stochastic (random variables).&lt;/p&gt;
+&lt;p&gt;This assumption has a very practical &lt;strong&gt;implication&lt;/strong&gt;: you can easily incorporate previous information about the model parameters in the form of &lt;strong&gt;prior&lt;/strong&gt; distributions. As the name says, priors contain information that was available even &lt;em&gt;before&lt;/em&gt; looking at the data. This leads to one of the most relevant questions in Bayesian statistics: &lt;strong&gt;how do you chose a prior&lt;/strong&gt;?&lt;/p&gt;
+&lt;h2 id=&#34;priors&#34;&gt;Priors&lt;/h2&gt;
+&lt;p&gt;When choosing a prior, one analytically appealing restriction is to have a prior distribution such that the posterior belongs to the same family. These priors are called &lt;strong&gt;conjugate priors&lt;/strong&gt;. For example, before seeing the data, I assume my treatment effect is normally distributed and I would like it to be normally distributed also after incorporating the information contained in the data.&lt;/p&gt;
+&lt;p&gt;In the case of Bayesian linear regression, the conjugate priors for $\beta$ and $\sigma$ are normally and inverse-gamma distributed. Let&amp;rsquo;s start a bit blindly, by taking a standard normal and inverse gamma distribution as prior.&lt;/p&gt;
+&lt;p&gt;$$
+\beta_i \sim N(\boldsymbol 0, \boldsymbol 1) \
+\tau_i \sim N(0,1) \
+\sigma^2 \sim \Gamma^{-1} (1, 1)
+$$&lt;/p&gt;
+&lt;p&gt;We use the package &lt;a href=&#34;https://www.pymc.io/projects/docs/en/stable/learn.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyMC&lt;/a&gt; to do inference. First we need to specify the model: what are the distributions of the different parameters (priors) and what is the likelihood of the data.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import pymc as pm
+with pm.Model() as baseline_model:
+
+    # Priors
+    beta = pm.MvNormal(&#39;beta&#39;, mu=np.ones(np.shape(X)[1]), cov=np.eye(np.shape(X)[1]))
+    tau = pm.Normal(&#39;tau&#39;, mu=0, sigma=1)
+    sigma = pm.InverseGamma(&#39;sigma&#39;, mu=1, sigma=1, initval=1)
+    
+    # Likelihood 
+    Ylikelihood = pm.Normal(&#39;y&#39;, mu=(X@beta + D@tau).flatten(), sigma=sigma, observed=y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;PyMC has an extremely nice function that allows us to visualize the model as a graph, &lt;code&gt;model_to_graphviz&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pm.model_to_graphviz(baseline_model)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_reg_25_0.svg&#34; alt=&#34;svg&#34;&gt;&lt;/p&gt;
+&lt;p&gt;From the graphical representation, we can see the various model components, their distributions, and how they interact with each other.&lt;/p&gt;
+&lt;p&gt;We are now ready to &lt;strong&gt;compute&lt;/strong&gt; the model posterior. How does it work? In short, we sample realizations of model parameters, we compute the likelihood of the data given those values and the compute the corresponding posterior.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;idata = pm.sample(model=baseline_model, draws=1000)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [beta, tau, sigma]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;style&gt;
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+&lt;/style&gt;
+&lt;div&gt;
+  &lt;progress value=&#39;8000&#39; class=&#39;&#39; max=&#39;8000&#39; style=&#39;width:300px; height:20px; vertical-align: middle;&#39;&gt;&lt;/progress&gt;
+  100.00% [8000/8000 00:03&amp;lt;00:00 Sampling 4 chains, 0 divergences]
+&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 15 seconds.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The fact that Bayesian inference requires sampling, has been historically one of the main bottlenecks of Bayesian statistics, since it makes it sensibly slower than the frequentist approach. However, this is less and less of a problem with the increased computational power of model computers.&lt;/p&gt;
+&lt;p&gt;We are now ready to print out results. First, with the &lt;code&gt;summary()&lt;/code&gt; method, we can print a model summary very similar to those produced by the &lt;code&gt;statsmodels&lt;/code&gt; package.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pm.summary(idata, hdi_prob=0.95).round(4)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;mean&lt;/th&gt;
+      &lt;th&gt;sd&lt;/th&gt;
+      &lt;th&gt;hdi_2.5%&lt;/th&gt;
+      &lt;th&gt;hdi_97.5%&lt;/th&gt;
+      &lt;th&gt;mcse_mean&lt;/th&gt;
+      &lt;th&gt;mcse_sd&lt;/th&gt;
+      &lt;th&gt;ess_bulk&lt;/th&gt;
+      &lt;th&gt;ess_tail&lt;/th&gt;
+      &lt;th&gt;r_hat&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;beta[0]&lt;/th&gt;
+      &lt;td&gt;0.019&lt;/td&gt;
+      &lt;td&gt;0.025&lt;/td&gt;
+      &lt;td&gt;-0.031&lt;/td&gt;
+      &lt;td&gt;0.068&lt;/td&gt;
+      &lt;td&gt;0.001&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1943.0&lt;/td&gt;
+      &lt;td&gt;1866.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;beta[1]&lt;/th&gt;
+      &lt;td&gt;0.992&lt;/td&gt;
+      &lt;td&gt;0.010&lt;/td&gt;
+      &lt;td&gt;0.970&lt;/td&gt;
+      &lt;td&gt;1.011&lt;/td&gt;
+      &lt;td&gt;0.000&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;2239.0&lt;/td&gt;
+      &lt;td&gt;1721.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;tau&lt;/th&gt;
+      &lt;td&gt;0.157&lt;/td&gt;
+      &lt;td&gt;0.021&lt;/td&gt;
+      &lt;td&gt;0.117&lt;/td&gt;
+      &lt;td&gt;0.197&lt;/td&gt;
+      &lt;td&gt;0.000&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;2770.0&lt;/td&gt;
+      &lt;td&gt;2248.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;sigma&lt;/th&gt;
+      &lt;td&gt;0.993&lt;/td&gt;
+      &lt;td&gt;0.007&lt;/td&gt;
+      &lt;td&gt;0.980&lt;/td&gt;
+      &lt;td&gt;1.007&lt;/td&gt;
+      &lt;td&gt;0.000&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;3473.0&lt;/td&gt;
+      &lt;td&gt;2525.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;The estimated parameters are extremely close to the ones we got with the frequentist approach, with an estimated effect of the &lt;code&gt;infinite_scroll&lt;/code&gt; equal to $0.157$.&lt;/p&gt;
+&lt;p&gt;If sampling had the disadvantage of being slow, it has the advantage of being very &lt;strong&gt;transparent&lt;/strong&gt;. We can directly plot the distribution of the posterior. Let&amp;rsquo;s do it for the treatment effect $\tau$. The PyMC function &lt;code&gt;plot_posterior&lt;/code&gt; plots the distribution of the posterior, with a black bar for the Bayesian equivalent of a 95% confidence interval.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pm.plot_posterior(idata, kind=&amp;quot;hist&amp;quot;, var_names=(&#39;tau&#39;), hdi_prob=0.95, figsize=(6, 3), bins=30); 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_reg_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As expected, since we chose conjugate priors, the posterior distribution looks gaussian.&lt;/p&gt;
+&lt;p&gt;So far we have chosen the prior without much guidance. However, suppose we had access to past experiments. How do we incorporate this specific information?&lt;/p&gt;
+&lt;h2 id=&#34;past-experiments&#34;&gt;Past Experiments&lt;/h2&gt;
+&lt;p&gt;Suppose the idea of the infinite scroll, was just one among a ton of other ones that we tried and tested in the past. For each idea we have the data for the corresponding experiment, with the corresponding estimated coefficient. Suppose we had a thousand of them.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;past_experiments = [dgp.generate_data(seed_data=i) for i in range(1000)]
+taus = [smf.ols(&#39;ad_revenue ~ infinite_scroll + past_revenue&#39;, pe).fit().params.values for pe in past_experiments]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;How do we use this additional information?&lt;/p&gt;
+&lt;h3 id=&#34;normal-prior&#34;&gt;Normal Prior&lt;/h3&gt;
+&lt;p&gt;The first idea could be to calibrate our prior to reflect the data distribution in the past. Keeping the normality assumption, we use the estimated average and standard deviations of the estimates from past experiments.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;taus_mean = np.mean(taus, axis=0)[1]
+taus_mean
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.0009094486420266667
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;On average, had practically no effect on &lt;code&gt;ad_revenue&lt;/code&gt;, with a average effect of $0.0009$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;taus_std = np.sqrt(np.cov(taus, rowvar=0)[1,1])
+taus_std
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.029014447772168384
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, there was sensible variation across experiments, with a standard deviation of $0.029$.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s now estimate the&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;with pm.Model() as model_normal_prior:
+    k = np.shape(X)[1]
+    beta = pm.MvNormal(&#39;beta&#39;, mu=np.ones(k), cov=np.eye(k))
+    tau = pm.Normal(&#39;tau&#39;, mu=taus_mean, sigma=taus_std)
+    sigma = pm.InverseGamma(&#39;sigma&#39;, mu=1, sigma=1, initval=1)
+    Ylikelihood = pm.Normal(&#39;y&#39;, mu=(X@beta + D@tau).flatten(), sigma=sigma, observed=y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s sample from the model.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;idata_normal_prior = pm.sample(model=model_normal_prior, draws=1000)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [beta, tau, sigma]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;style&gt;
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+&lt;/style&gt;
+&lt;div&gt;
+  &lt;progress value=&#39;8000&#39; class=&#39;&#39; max=&#39;8000&#39; style=&#39;width:300px; height:20px; vertical-align: middle;&#39;&gt;&lt;/progress&gt;
+  100.00% [8000/8000 00:04&amp;lt;00:00 Sampling 4 chains, 0 divergences]
+&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 14 seconds.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And plot the sample posterior distribution of the treatment effect parameter $\tau$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pm.plot_posterior(idata_normal_prior, kind=&amp;quot;hist&amp;quot;, var_names=(&#39;tau&#39;), hdi_prob=0.95, figsize=(6, 3), bins=30); 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_reg_47_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The estimated coefficient is sensibly smaller: $0.08$ instead of the previous estimate of $0.12$. Why is it the case?&lt;/p&gt;
+&lt;p&gt;The fact is that the previous coefficient of $0.12$ is extremely unlikey, given our prior. We can compute the probability of getting the same or a more extreme value, given the prior.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;1 - sp.stats.norm(taus_mean, taus_std).cdf(0.12)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;2.025724712373389e-05
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The probability of such value is almost zero. Therefore, the estimated coefficient has moved towards the prior mean of $0.0009$.&lt;/p&gt;
+&lt;h3 id=&#34;student-t-prior&#34;&gt;Student t Prior&lt;/h3&gt;
+&lt;p&gt;So far, we have assumed a normal distribution for all linear coefficients. Is it appropriate? Let&amp;rsquo;s check it visually (check &lt;a href=&#34;https://medium.com/towards-data-science/how-to-compare-two-or-more-distributions-9b06ee4d30bf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt; for other methods on how to compare distributions).&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot([tau[0] for tau in taus]).set(title=r&#39;Distribution of $\hat{\beta}_0$ in past experiments&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_reg_53_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The distribution seems pretty normal. What the treatment effect paramenter $\tau$?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plt.subplots()
+sns.histplot([tau[1] for tau in taus], label=&#39;past experiments&#39;);
+ax.axvline(reg.params[&#39;infinite_scroll&#39;], lw=2, c=&#39;C3&#39;, ls=&#39;--&#39;, label=&#39;current experiment&#39;)
+plt.legend();
+plt.title(r&#39;Distribution of $\hat{\tau}$ in past experiments&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_reg_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The distribution very &lt;strong&gt;heavy tailed&lt;/strong&gt;! While at the center it looks like a normal distributions, the tails are much &amp;ldquo;fatter&amp;rdquo; and we have a couple of very extreme values. excluding the case of measurement error, this is a setting that happens often in the industry, where most ideas have extremely small or null effects and very rarely an idea is actually a breakthrough.&lt;/p&gt;
+&lt;p&gt;One way to model this distribution is a &lt;a href=&#34;&#34;&gt;student-t distribution&lt;/a&gt;. In particular, we use a t-student with mean $0.0009$, variance $0.003$ and $1.3$ degrees of freedom to match the moments of the empirical distributions of past estimates.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;with pm.Model() as model_studentt_prior:
+
+    # Priors
+    k = np.shape(X)[1]
+    beta = pm.MvNormal(&#39;beta&#39;, mu=np.ones(k), cov=np.eye(k))
+    tau = pm.StudentT(&#39;tau&#39;, mu=taus_mean, sigma=0.003, nu=1.3)
+    sigma = pm.InverseGamma(&#39;sigma&#39;, mu=1, sigma=1, initval=1)
+    
+    # Likelihood 
+    Ylikelihood = pm.Normal(&#39;y&#39;, mu=(X@beta + D@tau).flatten(), sigma=sigma, observed=y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s sample from the model.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;idata_studentt_priors = pm.sample(model=model_studentt_prior, draws=1000)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [beta, tau, sigma]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;style&gt;
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+&lt;/style&gt;
+&lt;div&gt;
+  &lt;progress value=&#39;8000&#39; class=&#39;&#39; max=&#39;8000&#39; style=&#39;width:300px; height:20px; vertical-align: middle;&#39;&gt;&lt;/progress&gt;
+  100.00% [8000/8000 00:03&amp;lt;00:00 Sampling 4 chains, 0 divergences]
+&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 15 seconds.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And plot the sample posterior distribution of the treatment effect parameter $\tau$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pm.plot_posterior(idata_studentt_priors, kind=&amp;quot;hist&amp;quot;, var_names=(&#39;tau&#39;), hdi_prob=0.95, figsize=(6, 3), bins=30); 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_reg_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The estimated coefficient is now again similar to the one we got with the standard normal prior, $0.11$. However, the estimate is more precise since the confidence interval has shrunk from $[0.077, 0.016]$ to $[0.065, 0.015]$.&lt;/p&gt;
+&lt;p&gt;What has happened?&lt;/p&gt;
+&lt;h3 id=&#34;shrinking&#34;&gt;Shrinking&lt;/h3&gt;
+&lt;p&gt;The answer lies in the shape of the different &lt;strong&gt;prior distributions&lt;/strong&gt; that we have used:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;standard normal, $N(0,1)$&lt;/li&gt;
+&lt;li&gt;normal with matched moments, $N(0, 0.03)$&lt;/li&gt;
+&lt;li&gt;t-student with matched moments, $t_{1.3}$(0, 0.003)$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;t_hats = np.linspace(-0.3, 0.3, 1_000)
+distributions = {
+    &#39;N(0,1)&#39;: sp.stats.norm(0, 1).pdf(t_hats),
+    &#39;N(0, 0.03)&#39;: sp.stats.norm(0, 0.03).pdf(t_hats),
+    &#39;$t_{1.3}$(0, 0.003)&#39;: sp.stats.t(df=1.3).pdf(t_hats / 0.003)*300,
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s plot all of them together.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;for i, (label, y) in enumerate(distributions.items()):
+    sns.lineplot(x=t_hats, y=y, color=f&#39;C{i}&#39;, label=label);
+plt.xlim(-0.15, 0.15);
+plt.legend(); 
+plt.title(&#39;Prior Distributions&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_reg_67_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, all distributions are centered on zero, but they have very different shapes. The standard normal distribution is essentially flat over the $[-0.15, 0.15]$ interval. Every value has basically the same probability. The last two instead, even though they have the same mean and variance, have very different shapes.&lt;/p&gt;
+&lt;p&gt;How does it translate into our estimation? We can plot the implied posterior for different estimates, for each prior distribution.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def compute_posterior(b, prior):
+    likelihood = sp.stats.norm(b, taus_std).pdf(t_hats)
+    return np.average(t_hats, weights=prior*likelihood)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plt.subplots(figsize=(7,6))
+ax.axvline(0, lw=1.5, c=&#39;k&#39;);
+ax.axhline(0, lw=1.5, c=&#39;k&#39;);
+ax.axvline(0.12, lw=2, ls=&#39;--&#39;, c=&#39;darkgray&#39;);
+for i, (label, y) in enumerate(distributions.items()):
+    sns.lineplot(x=t_hats, y=[compute_posterior(t, y) for t in t_hats] , color=f&#39;C{i}&#39;, label=label);
+ax.set_xlim(-0.16, 0.16);
+ax.set_ylim(-0.16, 0.16);
+plt.legend(); 
+ax.set_xlabel(&#39;Experiment Estimate&#39;);
+ax.set_ylabel(&#39;Posterior&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_reg_70_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the different priors transform the experimental estimates in very different ways. The standard normal prior essentially has no effect for estimates in the $[-0.15, 0.15]$ interval. The normal prior with matched moments instead shrinks each estimate by approximately 2/3. The effect of the t-student prior is instead &lt;strong&gt;non-linear&lt;/strong&gt;: it shrinks small estimates towards zero, while it keeps large estimates as they are.&lt;/p&gt;
+&lt;p&gt;My &lt;strong&gt;intuition&lt;/strong&gt; is the following. A prior distribution very skewed or with &amp;ldquo;fat tails&amp;rdquo; means that large values are rare but not impossible. In practice, it means accepting that breakthrough improvements are possible. On the other hand, for the same variance, the distribution is more concentrated around zero than a standard normal so that small values are shrunk even more.&lt;/p&gt;
+&lt;img src=&#34;fig/scroll.jpg&#34; width=&#34;300px&#34;/&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this article we have seen how to extend the analysis of AB test to incorporate &lt;strong&gt;information from past experiments&lt;/strong&gt;. In particular, we have seen the importance of choosing a prior. Selecting the distribution function is just as important as tuning its parameters. The shape of the prior distribution can drastically affect our inference, especially in a world with skewed distributions.&lt;/p&gt;
+&lt;p&gt;Despite the length of the article, this was just a glimpse in the world of &lt;strong&gt;AB testing and Bayesian statistics&lt;/strong&gt;. While being computationally more intensive and requiring additional assumptions, the Bayesian approach is often more natural, powerful and flexible than the frequentist one. Knowing pros and cons of both approaches is crucial to get the best of both worlds, picking the approach that work best or combining them efficiently.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;E. Azevedo, A. Deng, J. Olea, G. Weyl, &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/pandp.20191003&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Empirical Bayes Estimation of Treatment Effects with Many A/B Tests: An Overview&lt;/a&gt; (2019). &lt;em&gt;AEA Papers and Proceedings&lt;/em&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;A. Deng, &lt;a href=&#34;https://dl.acm.org/doi/abs/10.1145/2740908.2742563&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Objective Bayesian Two Sample Hypothesis Testing for Online Controlled Experiments&lt;/a&gt; (2018), &lt;em&gt;WWW15&lt;/em&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://medium.com/towards-data-science/the-bayesian-bootstrap-6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Bayesian Bootstrap&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/understanding-cuped-a822523641af&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding CUPED&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/controls-b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/delta.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/delta.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Experiments on Returns on Investment</title>

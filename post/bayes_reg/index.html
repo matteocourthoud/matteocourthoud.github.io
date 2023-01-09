@@ -1,0 +1,1789 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="An introduction to the Bayesian approach to randomized experiments.
+AB testing and experimentation is now the established gold standard in the industry to estimate causal effects. Randomly assigning the treatment (new product, feature, UI, &hellip;) to a subset of the population (users, patients, customers, &hellip;) we ensure that, on average, the difference in outcomes (revenue, visits, clicks, &hellip;) can be attributed to the treatment." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/bayes_reg/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.5c4def4f00a521426f4eb098155f3342.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/bayes_reg/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/bayes_reg/" />
+  <meta property="og:title" content="Bayesian AB Testing | Matteo Courthoud" />
+  <meta property="og:description" content="An introduction to the Bayesian approach to randomized experiments.
+AB testing and experimentation is now the established gold standard in the industry to estimate causal effects. Randomly assigning the treatment (new product, feature, UI, &hellip;) to a subset of the population (users, patients, customers, &hellip;) we ensure that, on average, the difference in outcomes (revenue, visits, clicks, &hellip;) can be attributed to the treatment." /><meta property="og:image" content="https://matteocourthoud.github.io/post/bayes_reg/featured.jpg" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/bayes_reg/featured.jpg" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2023-01-09T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2023-01-09T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/bayes_reg/"
+  },
+  "headline": "Bayesian AB Testing",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/bayes_reg/featured.jpg"
+  ],
+  
+  "datePublished": "2023-01-09T00:00:00Z",
+  "dateModified": "2023-01-09T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "An introduction to the Bayesian approach to randomized experiments.\nAB testing and experimentation is now the established gold standard in the industry to estimate causal effects. Randomly assigning the treatment (new product, feature, UI, \u0026hellip;) to a subset of the population (users, patients, customers, \u0026hellip;) we ensure that, on average, the difference in outcomes (revenue, visits, clicks, \u0026hellip;) can be attributed to the treatment."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Bayesian AB Testing | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="dfeaad011d9a9eaebd1b71292285840d" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#search-and-infinite-scrolling">Search and Infinite Scrolling</a></li>
+    <li><a href="#bayesian-statistics">Bayesian Statistics</a>
+      <ul>
+        <li><a href="#bayesian-regression">Bayesian Regression</a></li>
+      </ul>
+    </li>
+    <li><a href="#priors">Priors</a></li>
+    <li><a href="#past-experiments">Past Experiments</a>
+      <ul>
+        <li><a href="#normal-prior">Normal Prior</a></li>
+        <li><a href="#student-t-prior">Student t Prior</a></li>
+        <li><a href="#shrinking">Shrinking</a></li>
+      </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="article-container pt-3">
+  <h1>Bayesian AB Testing</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Jan 9, 2023
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    16 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1280px; max-height: 768px;">
+  <div style="position: relative">
+    <img src="/post/bayes_reg/featured.jpg" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p><em>An introduction to the Bayesian approach to randomized experiments.</em></p>
+<p><strong>AB testing</strong> and experimentation is now the established gold standard in the industry to estimate causal effects. Randomly assigning the treatment (new product, feature, UI, &hellip;) to a subset of the population (users, patients, customers, &hellip;) we ensure that, on average, the difference in outcomes (revenue, visits, clicks, &hellip;) can be attributed to the treatment. Many companies, especially in tech, before implementing any major change test them to back up their decisions with numbers. Established companies like <a href="https://partner.booking.com/en-gb/click-magazine/industry-perspectives/role-experimentation-bookingcom" target="_blank" rel="noopener">Booking.com</a> report constantly running thousands of AB tests at the same time. And newer growing companies like <a href="https://blog.duolingo.com/improving-duolingo-one-experiment-at-a-time/" target="_blank" rel="noopener">Duolingo</a> attribute a large chunk of their success to their culture of experimentation at scale.</p>
+<p>With so many experiments, one question comes natural: in one specific experiment, can you leverage information from previous tests? In this post, I will try to answer this question by introducing the <strong>Bayesian approach to AB testing</strong>. The Bayesian framework is particularly well suited for this type of task because it naturally allows for the updating of existing knowledge (the prior) using new data. However, the method is particularly sensitive to functional form assumptions and apparently innocuous model choices can translate in sensible differences in the estimates, especially when the data is very skewed.</p>
+<h2 id="search-and-infinite-scrolling">Search and Infinite Scrolling</h2>
+<p>For the rest of the article, we are going to use a toy example, loosely inspired by <a href="https://www.aeaweb.org/articles?id=10.1257/pandp.20191003" target="_blank" rel="noopener">Azavedo et al. (2019)</a>: a <strong>search engine</strong> that wants to increase its <strong>ad revenue</strong>, without sacrificing search quality. We are a company with an established experimentation culture and we continuously test new ideas on how to rank results, how to select the most relevant ads for consumers, and the user interface (UI) of the results page. Suppose that, in this specific case, we came up with a new brilliant idea: <a href="https://blog.google/products/search/continuous-scrolling-mobile/" target="_blank" rel="noopener">infinite scrolling</a>! Instead of having a discrete sequence of pages, we allow users to keep scrolling down if they want to see more results.</p>
+<img src="fig/phones.jpg" width="300px"/>
+<p>To understand whether infinite scrolling works, we ran an <strong>AB test</strong>: we randomize users into a treatment and a control group. We implement infinite scrolling only for users in the treatment group. I import the data generating process <code>dgp_infinite_scroll()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. With respect to previous articles, I generated a new DGP parent class that handles randomization and data generation, while its children classes contain the specific use-cases. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.  To include not only code but also data and tables, I use <a href="https://deepnote.com" target="_blank" rel="noopener">Deepnote</a>, a Jupyter-like web-based collaborative notebook environment.</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+
+from src.utils import *
+from src.dgp import DGP, dgp_infinite_scroll
+</code></pre>
+<pre><code class="language-python">dgp = dgp_infinite_scroll(n=10_000)
+df = dgp.generate_data(true_effect=0.14)
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>past_revenue</th>
+      <th>infinite_scroll</th>
+      <th>ad_revenue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>3.76</td>
+      <td>1</td>
+      <td>3.70</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2.40</td>
+      <td>1</td>
+      <td>1.71</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2.98</td>
+      <td>1</td>
+      <td>4.85</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.24</td>
+      <td>1</td>
+      <td>4.57</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>3.87</td>
+      <td>0</td>
+      <td>3.69</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We have information on $10.000$ website visitors for which we observe the monthly <code>ad_revenue</code> they generated, whether they were assigned to the treatment group and were using the <code>infinite_scroll</code>, and also the average monthly <code>past_revenue</code>.</p>
+<p>The random treatment assignment makes the <strong>difference-in-means</strong> estimator <a href="https://en.wikipedia.org/wiki/Bias_of_an_estimator" target="_blank" rel="noopener"><strong>unbiased</strong></a>: we expect the treatment and control group to be comparable on average, so we can causal attribute the average observed difference in outcomes to the treatment effect. We estimate the treatment effect by linear regression. We can interpret the coefficient of <code>infinite_scroll</code> as the estimated treatment effect.</p>
+<pre><code class="language-python">smf.ols('ad_revenue ~ infinite_scroll', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+         <td></td>            <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>       <td>    1.9865</td> <td>    0.020</td> <td>  101.320</td> <td> 0.000</td> <td>    1.948</td> <td>    2.025</td>
+</tr>
+<tr>
+  <th>infinite_scroll</th> <td>    0.1524</td> <td>    0.028</td> <td>    5.461</td> <td> 0.000</td> <td>    0.098</td> <td>    0.207</td>
+</tr>
+</table>
+<p>It seems that the <code>infinite_scroll</code> was indeed a good idea and it increase the average monthly revenue by $0.1524$$. Moreover, the effect is significantly different from zero at the 1% confidence level.</p>
+<p>We could further improve the precision of the estimator by controlling for <code>past_revenue</code> in the regression. We do not expect a sensible change in the estimated coefficient, but the precision should improve (if you want to know more on out control variables, check my other articles on <a href="https://towardsdatascience.com/understanding-cuped-a822523641af" target="_blank" rel="noopener">CUPED</a> and <a href="https://towardsdatascience.com/controls-b63dc69e3d8c" target="_blank" rel="noopener">DAGs</a>).</p>
+<pre><code class="language-python">reg = smf.ols('ad_revenue ~ infinite_scroll + past_revenue', df).fit()
+reg.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+         <td></td>            <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>       <td>    0.0181</td> <td>    0.024</td> <td>    0.741</td> <td> 0.459</td> <td>   -0.030</td> <td>    0.066</td>
+</tr>
+<tr>
+  <th>infinite_scroll</th> <td>    0.1571</td> <td>    0.020</td> <td>    7.910</td> <td> 0.000</td> <td>    0.118</td> <td>    0.196</td>
+</tr>
+<tr>
+  <th>past_revenue</th>    <td>    0.9922</td> <td>    0.010</td> <td>   98.655</td> <td> 0.000</td> <td>    0.972</td> <td>    1.012</td>
+</tr>
+</table>
+<p>Indeed, <code>past_revenue</code> is highly predictive of current <code>ad_revenue</code> and the precision of the estimated coefficient for <code>infinite_scroll</code> decreases by one-third.</p>
+<p>So far, everything has been very standard. However, as we said at the beginning, suppose this is not the only experiment we ran trying to improve our browser (and ultimately ad revenue). The infinite scroll is just one idea among thousands of others that we have tested in the past. Is there a way to efficiently use this additional <strong>information</strong>?</p>
+<h2 id="bayesian-statistics">Bayesian Statistics</h2>
+<p>One of the main advantages of Bayesian statistics over the frequentist approach is that it easily allows to incorporate additional information into a model. The idea directly follows from the main results behind all Bayesian statistics: <a href="https://en.wikipedia.org/wiki/Bayes%27_theorem" target="_blank" rel="noopener"><strong>Bayes Theorem</strong></a>. Bayes theorem, allows you to do inference on a model by <strong>inverting the inference problem</strong>: from the probability of the model given the data, to the probability of the data given the model, a much easier object to deal with.</p>
+<p>$$
+\underbrace{ \Pr \big( \text{model} \ \big| \ \text{data} \big) }<em>{\text{posterior}} = \underbrace{ \Pr(\text{model}) }</em>{\text{prior}} \ \underbrace{ \frac{ \Pr \big( \text{data} \ \big| \ \text{model} \big) }{ \Pr(\text{data}) } }_{\text{likelihood}}
+$$</p>
+<p>We can split the right-hand side of Bayes Theorem (or Rule) into two components: the <strong>prior</strong> and the <strong>likelihood</strong>. The likelihood is the information about the model that comes from the data, the prior instead is any additional information about the model.</p>
+<p>First of all, let&rsquo;s map Bayes theorem into our context. What is the data, what is the model and what is our object of interest?</p>
+<ul>
+<li>the <strong>data</strong> which consists in our outcome variable <code>ad_revenue</code>, $y$, the treatment <code>infinite_scroll</code>, $D$ and the other variables, <code>past_revenue</code> and a constant, which we jointly denote as $X$</li>
+<li>the <strong>model</strong> is the distribution of <code>ad_revenue</code>, given <code>past_revenue</code> and the <code>infinite_scroll</code> feature, $y | D, X$</li>
+<li>our <strong>object of interest</strong> is the posterior $\Pr \big( \text{model} \ \big| \ \text{data} \big)$, in particular the relationship between <code>ad_revenue</code> and <code>infinite_scroll</code></li>
+</ul>
+<pre><code class="language-python">X = sm.add_constant(df[['past_revenue']].values)
+D = df['infinite_scroll'].values
+y = df['ad_revenue'].values
+</code></pre>
+<p>How do we use prior information in the context of AB testing, potentially including additional covariates?</p>
+<h3 id="bayesian-regression">Bayesian Regression</h3>
+<p>Let&rsquo;s use a linear model to make it directly comparable with the frequentist approach:</p>
+<p>$$
+y_i = \beta X_i + \tau D_i + \varepsilon_i \qquad \text{where} \quad \varepsilon_i \sim N \big( 0, \sigma^2 \big)
+$$</p>
+<p>This is a parametric model with <strong>two sets of parameters</strong>: the linear coefficients $\beta$ and $\tau$, and the variance of the residuals $\sigma$. An equivalent, but more Bayesian, way to write the model is:</p>
+<p>$$
+y \ | \ X, D; \beta, \tau, \sigma \sim N \Big( \beta X + \tau D \ , \sigma^2 \Big) ,
+$$</p>
+<p>where the semi-column separates the data from the model parameters. Differently from the frequentist approach, in Bayesian regressions we do not rely on the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem" target="_blank" rel="noopener">central limit theorem</a> to approximate the conditional distribution of $y$, but we directly <strong>assume</strong> it is normal. Is it just a formality? Not really, but a proper comparison between the frequentist and Bayesian approach is beyond the scope of this article.</p>
+<p>We are interested in doing inference on the model parameters, $\beta$, $\tau$, and $\sigma$. Another <strong>core difference</strong> between the frequentist and the Bayesian approach is that the the first assumes that the model parameters are fixed (scalars), while the latter allows them to be stochastic (random variables).</p>
+<p>This assumption has a very practical <strong>implication</strong>: you can easily incorporate previous information about the model parameters in the form of <strong>prior</strong> distributions. As the name says, priors contain information that was available even <em>before</em> looking at the data. This leads to one of the most relevant questions in Bayesian statistics: <strong>how do you chose a prior</strong>?</p>
+<h2 id="priors">Priors</h2>
+<p>When choosing a prior, one analytically appealing restriction is to have a prior distribution such that the posterior belongs to the same family. These priors are called <strong>conjugate priors</strong>. For example, before seeing the data, I assume my treatment effect is normally distributed and I would like it to be normally distributed also after incorporating the information contained in the data.</p>
+<p>In the case of Bayesian linear regression, the conjugate priors for $\beta$ and $\sigma$ are normally and inverse-gamma distributed. Let&rsquo;s start a bit blindly, by taking a standard normal and inverse gamma distribution as prior.</p>
+<p>$$
+\beta_i \sim N(\boldsymbol 0, \boldsymbol 1) \
+\tau_i \sim N(0,1) \
+\sigma^2 \sim \Gamma^{-1} (1, 1)
+$$</p>
+<p>We use the package <a href="https://www.pymc.io/projects/docs/en/stable/learn.html" target="_blank" rel="noopener">PyMC</a> to do inference. First we need to specify the model: what are the distributions of the different parameters (priors) and what is the likelihood of the data.</p>
+<pre><code class="language-python">import pymc as pm
+with pm.Model() as baseline_model:
+
+    # Priors
+    beta = pm.MvNormal('beta', mu=np.ones(np.shape(X)[1]), cov=np.eye(np.shape(X)[1]))
+    tau = pm.Normal('tau', mu=0, sigma=1)
+    sigma = pm.InverseGamma('sigma', mu=1, sigma=1, initval=1)
+    
+    # Likelihood 
+    Ylikelihood = pm.Normal('y', mu=(X@beta + D@tau).flatten(), sigma=sigma, observed=y)
+</code></pre>
+<p>PyMC has an extremely nice function that allows us to visualize the model as a graph, <code>model_to_graphviz</code>.</p>
+<pre><code class="language-python">pm.model_to_graphviz(baseline_model)
+</code></pre>
+<p><img src="img/bayes_reg_25_0.svg" alt="svg"></p>
+<p>From the graphical representation, we can see the various model components, their distributions, and how they interact with each other.</p>
+<p>We are now ready to <strong>compute</strong> the model posterior. How does it work? In short, we sample realizations of model parameters, we compute the likelihood of the data given those values and the compute the corresponding posterior.</p>
+<pre><code class="language-python">idata = pm.sample(model=baseline_model, draws=1000)
+</code></pre>
+<pre><code>Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [beta, tau, sigma]
+</code></pre>
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+<div>
+  <progress value='8000' class='' max='8000' style='width:300px; height:20px; vertical-align: middle;'></progress>
+  100.00% [8000/8000 00:03&lt;00:00 Sampling 4 chains, 0 divergences]
+</div>
+<pre><code>Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 15 seconds.
+</code></pre>
+<p>The fact that Bayesian inference requires sampling, has been historically one of the main bottlenecks of Bayesian statistics, since it makes it sensibly slower than the frequentist approach. However, this is less and less of a problem with the increased computational power of model computers.</p>
+<p>We are now ready to print out results. First, with the <code>summary()</code> method, we can print a model summary very similar to those produced by the <code>statsmodels</code> package.</p>
+<pre><code class="language-python">pm.summary(idata, hdi_prob=0.95).round(4)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>mean</th>
+      <th>sd</th>
+      <th>hdi_2.5%</th>
+      <th>hdi_97.5%</th>
+      <th>mcse_mean</th>
+      <th>mcse_sd</th>
+      <th>ess_bulk</th>
+      <th>ess_tail</th>
+      <th>r_hat</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>beta[0]</th>
+      <td>0.019</td>
+      <td>0.025</td>
+      <td>-0.031</td>
+      <td>0.068</td>
+      <td>0.001</td>
+      <td>0.0</td>
+      <td>1943.0</td>
+      <td>1866.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>beta[1]</th>
+      <td>0.992</td>
+      <td>0.010</td>
+      <td>0.970</td>
+      <td>1.011</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2239.0</td>
+      <td>1721.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>tau</th>
+      <td>0.157</td>
+      <td>0.021</td>
+      <td>0.117</td>
+      <td>0.197</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2770.0</td>
+      <td>2248.0</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>sigma</th>
+      <td>0.993</td>
+      <td>0.007</td>
+      <td>0.980</td>
+      <td>1.007</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>3473.0</td>
+      <td>2525.0</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>The estimated parameters are extremely close to the ones we got with the frequentist approach, with an estimated effect of the <code>infinite_scroll</code> equal to $0.157$.</p>
+<p>If sampling had the disadvantage of being slow, it has the advantage of being very <strong>transparent</strong>. We can directly plot the distribution of the posterior. Let&rsquo;s do it for the treatment effect $\tau$. The PyMC function <code>plot_posterior</code> plots the distribution of the posterior, with a black bar for the Bayesian equivalent of a 95% confidence interval.</p>
+<pre><code class="language-python">pm.plot_posterior(idata, kind=&quot;hist&quot;, var_names=('tau'), hdi_prob=0.95, figsize=(6, 3), bins=30); 
+</code></pre>
+<p><img src="img/bayes_reg_31_0.png" alt="png"></p>
+<p>As expected, since we chose conjugate priors, the posterior distribution looks gaussian.</p>
+<p>So far we have chosen the prior without much guidance. However, suppose we had access to past experiments. How do we incorporate this specific information?</p>
+<h2 id="past-experiments">Past Experiments</h2>
+<p>Suppose the idea of the infinite scroll, was just one among a ton of other ones that we tried and tested in the past. For each idea we have the data for the corresponding experiment, with the corresponding estimated coefficient. Suppose we had a thousand of them.</p>
+<pre><code class="language-python">past_experiments = [dgp.generate_data(seed_data=i) for i in range(1000)]
+taus = [smf.ols('ad_revenue ~ infinite_scroll + past_revenue', pe).fit().params.values for pe in past_experiments]
+</code></pre>
+<p>How do we use this additional information?</p>
+<h3 id="normal-prior">Normal Prior</h3>
+<p>The first idea could be to calibrate our prior to reflect the data distribution in the past. Keeping the normality assumption, we use the estimated average and standard deviations of the estimates from past experiments.</p>
+<pre><code class="language-python">taus_mean = np.mean(taus, axis=0)[1]
+taus_mean
+</code></pre>
+<pre><code>0.0009094486420266667
+</code></pre>
+<p>On average, had practically no effect on <code>ad_revenue</code>, with a average effect of $0.0009$.</p>
+<pre><code class="language-python">taus_std = np.sqrt(np.cov(taus, rowvar=0)[1,1])
+taus_std
+</code></pre>
+<pre><code>0.029014447772168384
+</code></pre>
+<p>However, there was sensible variation across experiments, with a standard deviation of $0.029$.</p>
+<p>Let&rsquo;s now estimate the</p>
+<pre><code class="language-python">with pm.Model() as model_normal_prior:
+    k = np.shape(X)[1]
+    beta = pm.MvNormal('beta', mu=np.ones(k), cov=np.eye(k))
+    tau = pm.Normal('tau', mu=taus_mean, sigma=taus_std)
+    sigma = pm.InverseGamma('sigma', mu=1, sigma=1, initval=1)
+    Ylikelihood = pm.Normal('y', mu=(X@beta + D@tau).flatten(), sigma=sigma, observed=y)
+</code></pre>
+<p>Let&rsquo;s sample from the model.</p>
+<pre><code class="language-python">idata_normal_prior = pm.sample(model=model_normal_prior, draws=1000)
+</code></pre>
+<pre><code>Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [beta, tau, sigma]
+</code></pre>
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+<div>
+  <progress value='8000' class='' max='8000' style='width:300px; height:20px; vertical-align: middle;'></progress>
+  100.00% [8000/8000 00:04&lt;00:00 Sampling 4 chains, 0 divergences]
+</div>
+<pre><code>Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 14 seconds.
+</code></pre>
+<p>And plot the sample posterior distribution of the treatment effect parameter $\tau$.</p>
+<pre><code class="language-python">pm.plot_posterior(idata_normal_prior, kind=&quot;hist&quot;, var_names=('tau'), hdi_prob=0.95, figsize=(6, 3), bins=30); 
+</code></pre>
+<p><img src="img/bayes_reg_47_0.png" alt="png"></p>
+<p>The estimated coefficient is sensibly smaller: $0.08$ instead of the previous estimate of $0.12$. Why is it the case?</p>
+<p>The fact is that the previous coefficient of $0.12$ is extremely unlikey, given our prior. We can compute the probability of getting the same or a more extreme value, given the prior.</p>
+<pre><code class="language-python">1 - sp.stats.norm(taus_mean, taus_std).cdf(0.12)
+</code></pre>
+<pre><code>2.025724712373389e-05
+</code></pre>
+<p>The probability of such value is almost zero. Therefore, the estimated coefficient has moved towards the prior mean of $0.0009$.</p>
+<h3 id="student-t-prior">Student t Prior</h3>
+<p>So far, we have assumed a normal distribution for all linear coefficients. Is it appropriate? Let&rsquo;s check it visually (check <a href="https://medium.com/towards-data-science/how-to-compare-two-or-more-distributions-9b06ee4d30bf" target="_blank" rel="noopener">here</a> for other methods on how to compare distributions).</p>
+<pre><code class="language-python">sns.histplot([tau[0] for tau in taus]).set(title=r'Distribution of $\hat{\beta}_0$ in past experiments');
+</code></pre>
+<p><img src="img/bayes_reg_53_0.png" alt="png"></p>
+<p>The distribution seems pretty normal. What the treatment effect paramenter $\tau$?</p>
+<pre><code class="language-python">fig, ax = plt.subplots()
+sns.histplot([tau[1] for tau in taus], label='past experiments');
+ax.axvline(reg.params['infinite_scroll'], lw=2, c='C3', ls='--', label='current experiment')
+plt.legend();
+plt.title(r'Distribution of $\hat{\tau}$ in past experiments');
+</code></pre>
+<p><img src="img/bayes_reg_55_0.png" alt="png"></p>
+<p>The distribution very <strong>heavy tailed</strong>! While at the center it looks like a normal distributions, the tails are much &ldquo;fatter&rdquo; and we have a couple of very extreme values. excluding the case of measurement error, this is a setting that happens often in the industry, where most ideas have extremely small or null effects and very rarely an idea is actually a breakthrough.</p>
+<p>One way to model this distribution is a <a href="">student-t distribution</a>. In particular, we use a t-student with mean $0.0009$, variance $0.003$ and $1.3$ degrees of freedom to match the moments of the empirical distributions of past estimates.</p>
+<pre><code class="language-python">with pm.Model() as model_studentt_prior:
+
+    # Priors
+    k = np.shape(X)[1]
+    beta = pm.MvNormal('beta', mu=np.ones(k), cov=np.eye(k))
+    tau = pm.StudentT('tau', mu=taus_mean, sigma=0.003, nu=1.3)
+    sigma = pm.InverseGamma('sigma', mu=1, sigma=1, initval=1)
+    
+    # Likelihood 
+    Ylikelihood = pm.Normal('y', mu=(X@beta + D@tau).flatten(), sigma=sigma, observed=y)
+</code></pre>
+<p>Let&rsquo;s sample from the model.</p>
+<pre><code class="language-python">idata_studentt_priors = pm.sample(model=model_studentt_prior, draws=1000)
+</code></pre>
+<pre><code>Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [beta, tau, sigma]
+</code></pre>
+<style>
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+</style>
+<div>
+  <progress value='8000' class='' max='8000' style='width:300px; height:20px; vertical-align: middle;'></progress>
+  100.00% [8000/8000 00:03&lt;00:00 Sampling 4 chains, 0 divergences]
+</div>
+<pre><code>Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 15 seconds.
+</code></pre>
+<p>And plot the sample posterior distribution of the treatment effect parameter $\tau$.</p>
+<pre><code class="language-python">pm.plot_posterior(idata_studentt_priors, kind=&quot;hist&quot;, var_names=('tau'), hdi_prob=0.95, figsize=(6, 3), bins=30); 
+</code></pre>
+<p><img src="img/bayes_reg_61_0.png" alt="png"></p>
+<p>The estimated coefficient is now again similar to the one we got with the standard normal prior, $0.11$. However, the estimate is more precise since the confidence interval has shrunk from $[0.077, 0.016]$ to $[0.065, 0.015]$.</p>
+<p>What has happened?</p>
+<h3 id="shrinking">Shrinking</h3>
+<p>The answer lies in the shape of the different <strong>prior distributions</strong> that we have used:</p>
+<ul>
+<li>standard normal, $N(0,1)$</li>
+<li>normal with matched moments, $N(0, 0.03)$</li>
+<li>t-student with matched moments, $t_{1.3}$(0, 0.003)$</li>
+</ul>
+<pre><code class="language-python">t_hats = np.linspace(-0.3, 0.3, 1_000)
+distributions = {
+    'N(0,1)': sp.stats.norm(0, 1).pdf(t_hats),
+    'N(0, 0.03)': sp.stats.norm(0, 0.03).pdf(t_hats),
+    '$t_{1.3}$(0, 0.003)': sp.stats.t(df=1.3).pdf(t_hats / 0.003)*300,
+}
+</code></pre>
+<p>Let&rsquo;s plot all of them together.</p>
+<pre><code class="language-python">for i, (label, y) in enumerate(distributions.items()):
+    sns.lineplot(x=t_hats, y=y, color=f'C{i}', label=label);
+plt.xlim(-0.15, 0.15);
+plt.legend(); 
+plt.title('Prior Distributions');
+</code></pre>
+<p><img src="img/bayes_reg_67_0.png" alt="png"></p>
+<p>As we can see, all distributions are centered on zero, but they have very different shapes. The standard normal distribution is essentially flat over the $[-0.15, 0.15]$ interval. Every value has basically the same probability. The last two instead, even though they have the same mean and variance, have very different shapes.</p>
+<p>How does it translate into our estimation? We can plot the implied posterior for different estimates, for each prior distribution.</p>
+<pre><code class="language-python">def compute_posterior(b, prior):
+    likelihood = sp.stats.norm(b, taus_std).pdf(t_hats)
+    return np.average(t_hats, weights=prior*likelihood)
+</code></pre>
+<pre><code class="language-python">fig, ax = plt.subplots(figsize=(7,6))
+ax.axvline(0, lw=1.5, c='k');
+ax.axhline(0, lw=1.5, c='k');
+ax.axvline(0.12, lw=2, ls='--', c='darkgray');
+for i, (label, y) in enumerate(distributions.items()):
+    sns.lineplot(x=t_hats, y=[compute_posterior(t, y) for t in t_hats] , color=f'C{i}', label=label);
+ax.set_xlim(-0.16, 0.16);
+ax.set_ylim(-0.16, 0.16);
+plt.legend(); 
+ax.set_xlabel('Experiment Estimate');
+ax.set_ylabel('Posterior');
+</code></pre>
+<p><img src="img/bayes_reg_70_0.png" alt="png"></p>
+<p>As we can see, the different priors transform the experimental estimates in very different ways. The standard normal prior essentially has no effect for estimates in the $[-0.15, 0.15]$ interval. The normal prior with matched moments instead shrinks each estimate by approximately 2/3. The effect of the t-student prior is instead <strong>non-linear</strong>: it shrinks small estimates towards zero, while it keeps large estimates as they are.</p>
+<p>My <strong>intuition</strong> is the following. A prior distribution very skewed or with &ldquo;fat tails&rdquo; means that large values are rare but not impossible. In practice, it means accepting that breakthrough improvements are possible. On the other hand, for the same variance, the distribution is more concentrated around zero than a standard normal so that small values are shrunk even more.</p>
+<img src="fig/scroll.jpg" width="300px"/>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this article we have seen how to extend the analysis of AB test to incorporate <strong>information from past experiments</strong>. In particular, we have seen the importance of choosing a prior. Selecting the distribution function is just as important as tuning its parameters. The shape of the prior distribution can drastically affect our inference, especially in a world with skewed distributions.</p>
+<p>Despite the length of the article, this was just a glimpse in the world of <strong>AB testing and Bayesian statistics</strong>. While being computationally more intensive and requiring additional assumptions, the Bayesian approach is often more natural, powerful and flexible than the frequentist one. Knowing pros and cons of both approaches is crucial to get the best of both worlds, picking the approach that work best or combining them efficiently.</p>
+<h3 id="references">References</h3>
+<ul>
+<li>
+<p>E. Azevedo, A. Deng, J. Olea, G. Weyl, <a href="https://www.aeaweb.org/articles?id=10.1257/pandp.20191003" target="_blank" rel="noopener">Empirical Bayes Estimation of Treatment Effects with Many A/B Tests: An Overview</a> (2019). <em>AEA Papers and Proceedings</em>.</p>
+</li>
+<li>
+<p>A. Deng, <a href="https://dl.acm.org/doi/abs/10.1145/2740908.2742563" target="_blank" rel="noopener">Objective Bayesian Two Sample Hypothesis Testing for Online Controlled Experiments</a> (2018), <em>WWW15</em>.</p>
+</li>
+</ul>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li>
+<p><a href="https://medium.com/towards-data-science/the-bayesian-bootstrap-6ca4a1d45148" target="_blank" rel="noopener">The Bayesian Bootstrap</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/understanding-cuped-a822523641af" target="_blank" rel="noopener">Understanding CUPED</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/controls-b63dc69e3d8c" target="_blank" rel="noopener">DAGs and Control Variables</a></p>
+</li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/delta.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/delta.ipynb</a></p>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/bayes_reg/&amp;text=Bayesian%20AB%20Testing" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/bayes_reg/&amp;t=Bayesian%20AB%20Testing" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Bayesian%20AB%20Testing&amp;body=https://matteocourthoud.github.io/post/bayes_reg/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/bayes_reg/&amp;title=Bayesian%20AB%20Testing" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Bayesian%20AB%20Testing%20https://matteocourthoud.github.io/post/bayes_reg/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/bayes_reg/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+          <i class="fab fa-telegram"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">My research fields are empirical Industrial Organization and Competition Policy. My research interests include the relationship between competition and innovation, big data, artificial intelligence, platform markets, peer to peer services.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>
