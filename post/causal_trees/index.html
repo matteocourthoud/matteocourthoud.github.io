@@ -30,9 +30,8 @@
   
     
   
-  <meta name="description" content="In this tutorial, we are going to see how to estimate heterogeneous treatment effects using regression trees.
-For this tutorial, I assume you are familiar with the following concepts:
- Rubin&rsquo;s potential outcome framework Decision tree methods Propensity score matching  Setting We assume that for a set of i." />
+  <meta name="description" content="How to use regression trees to estimate heterogeneous treatment effects.
+In causal inference we are usually interested in estimating the causal effect of a treatment (a drug, ad, product, &hellip;) on an outcome of interest (a disease, firm revenue, customer satisfaction, &hellip;)." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/causal_trees/" />
@@ -334,19 +333,18 @@ For this tutorial, I assume you are familiar with the following concepts:
   
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/causal_trees/" />
-  <meta property="og:title" content="Causal Trees | Matteo Courthoud" />
-  <meta property="og:description" content="In this tutorial, we are going to see how to estimate heterogeneous treatment effects using regression trees.
-For this tutorial, I assume you are familiar with the following concepts:
- Rubin&rsquo;s potential outcome framework Decision tree methods Propensity score matching  Setting We assume that for a set of i." /><meta property="og:image" content="https://matteocourthoud.github.io/post/causal_trees/featured.png" />
+  <meta property="og:title" content="Understanding Causal Trees | Matteo Courthoud" />
+  <meta property="og:description" content="How to use regression trees to estimate heterogeneous treatment effects.
+In causal inference we are usually interested in estimating the causal effect of a treatment (a drug, ad, product, &hellip;) on an outcome of interest (a disease, firm revenue, customer satisfaction, &hellip;)." /><meta property="og:image" content="https://matteocourthoud.github.io/post/causal_trees/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/causal_trees/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-04-15T00:00:00&#43;00:00"
+        content="2023-02-01T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-15T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2023-02-01T00:00:00&#43;00:00">
   
 
   
@@ -372,14 +370,14 @@ For this tutorial, I assume you are familiar with the following concepts:
     "@type": "WebPage",
     "@id": "https://matteocourthoud.github.io/post/causal_trees/"
   },
-  "headline": "Causal Trees",
+  "headline": "Understanding Causal Trees",
   
   "image": [
     "https://matteocourthoud.github.io/post/causal_trees/featured.png"
   ],
   
-  "datePublished": "2022-04-15T00:00:00Z",
-  "dateModified": "2022-04-15T00:00:00Z",
+  "datePublished": "2023-02-01T00:00:00Z",
+  "dateModified": "2023-02-01T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -389,7 +387,7 @@ For this tutorial, I assume you are familiar with the following concepts:
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "In this tutorial, we are going to see how to estimate heterogeneous treatment effects using regression trees.\nFor this tutorial, I assume you are familiar with the following concepts:\n Rubin\u0026rsquo;s potential outcome framework Decision tree methods Propensity score matching  Setting We assume that for a set of i."
+  "description": "How to use regression trees to estimate heterogeneous treatment effects.\nIn causal inference we are usually interested in estimating the causal effect of a treatment (a drug, ad, product, \u0026hellip;) on an outcome of interest (a disease, firm revenue, customer satisfaction, \u0026hellip;)."
 }
 </script>
 
@@ -435,7 +433,7 @@ For this tutorial, I assume you are familiar with the following concepts:
 
 
 
-  <title>Causal Trees | Matteo Courthoud</title>
+  <title>Understanding Causal Trees | Matteo Courthoud</title>
 </head>
 
 
@@ -771,11 +769,21 @@ For this tutorial, I assume you are familiar with the following concepts:
       </ul>
       <nav id="TableOfContents">
   <ul>
-    <li><a href="#setting">Setting</a></li>
-    <li><a href="#prediction-problem">Prediction Problem</a></li>
-    <li><a href="#example-1-simulated-data">Example 1: Simulated Data</a></li>
-    <li><a href="#example-2-lalonde-data">Example 2: Lalonde Data</a></li>
-    <li><a href="#references">References</a></li>
+    <li><a href="#online-discounts">Online Discounts</a></li>
+    <li><a href="#conditional-average-treatment-effects">Conditional Average Treatment Effects</a></li>
+    <li><a href="#causal-trees">Causal Trees</a>
+      <ul>
+        <li><a href="#inference">Inference</a></li>
+        <li><a href="#performance">Performance</a></li>
+      </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
     </div>
@@ -807,7 +815,7 @@ For this tutorial, I assume you are familiar with the following concepts:
 
 
 <div class="article-container pt-3">
-  <h1>Causal Trees</h1>
+  <h1>Understanding Causal Trees</h1>
 
   
 
@@ -825,7 +833,7 @@ For this tutorial, I assume you are familiar with the following concepts:
     
       
     
-    Apr 15, 2022
+    Feb 1, 2023
   </span>
   
 
@@ -834,7 +842,7 @@ For this tutorial, I assume you are familiar with the following concepts:
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    9 min read
+    14 min read
   </span>
   
 
@@ -859,7 +867,7 @@ For this tutorial, I assume you are familiar with the following concepts:
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1144px; max-height: 681px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 2304px; max-height: 1536px;">
   <div style="position: relative">
     <img src="/post/causal_trees/featured.png" alt="" class="featured-image">
     
@@ -869,87 +877,21 @@ For this tutorial, I assume you are familiar with the following concepts:
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>In this tutorial, we are going to see how to estimate heterogeneous treatment effects using regression trees.</p>
-<p>For this tutorial, I assume you are familiar with the following concepts:</p>
-<ul>
-<li>Rubin&rsquo;s potential outcome framework</li>
-<li>Decision tree methods</li>
-<li>Propensity score matching</li>
-</ul>
-<h2 id="setting">Setting</h2>
-<p>We assume that for a set of i.i.d. subjects $i = 1, &hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of</p>
-<ul>
-<li>a feature vector $X_i \in \mathbb R^n$</li>
-<li>a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$</li>
-<li>a response $Y_i \in \mathbb R$</li>
-</ul>
-<p>Our goal is to estimate the <strong>conditional average treatment effect</strong></p>
-<p>$$
-\tau(x) = \mathbb E \Big [ Y^{(1)} - Y^{(0)} \ \Big| \ X = x \Big ]
-$$</p>
-<p>Crucially, we only get to observe $Y_i = Y_i^{(T_i)}$.</p>
-<p>Wihtout further assumptions, we cannot estimate $\tau(x)$.</p>
-<p><strong>Assumption: unconfoundedness</strong> (or ignorability, or selection on observables)</p>
-<p>$$
-\lbrace Y_i^{(1)} , Y^{(0)} \rbrace \perp W_i \ | \ X_i
-$$</p>
-<p>i.e. conditional on observable characteristics the treatment assignment is as good as random.</p>
-<p>When unconfoundedness holds, matching methods usually provide consistent estimates of the conditional average treatment effect.</p>
-<h2 id="prediction-problem">Prediction Problem</h2>
-<p>How can we make the inference problem a <strong>prediction problem</strong>?</p>
-<p>In principle, we would like to divide the population in subgroups in order to minimize the mean squared error (MSE) of treatment effects.</p>
-<p>The objective function is</p>
-<p>$$
-\sum_i \Big [ ( \tau_i - \hat \tau_i(X))^2 \Big ]
-$$</p>
-<p>However, this objective function is <strong>unfeasible</strong> since we do not observe $\tau_i$.</p>
-<p>The <strong>idea</strong> is to transform our outcome variable as</p>
-<p>$$
-Y_i^* = \frac{Y_i}{D_i * p(X_i) - (1-D_i) * (1-p(X_i))}
-$$</p>
-<p>where $p_i$ is the <strong>propensity score</strong> of observation $i$, i.e. its probability of being treated.</p>
-<p>It&rsquo;s intuitive to verify that, given this specification, the expected value of $Y_i^*$ is the <strong>conditional average treatment effect</strong>.</p>
-<p>Here is a proof:</p>
-<p>$$
-\begin{aligned}
-\mathbb E \left[ Y_i^{*} \mid X_i = x \right] &amp;= \mathbb E \left[ \frac{Y_i}{T_i * p(X_i) - (1-T_i) * (1-p(X_i))} \ \Big | \ X_i = x \right]
-\newline
-&amp;= \mathbb E \left[ Y_i * \frac{T_i - p(X_i)}{p(X_i) (1-p(X_i))} \ \Big | \ X_i = x \right]
-\newline
-&amp;= \mathbb E \left[ Y_i T_i * \frac{T_i - p(X_i)}{p(X_i) (1 - p(X_i))} + Y_i (1-T_i) * \frac{T_i - p(X_i)}{p(X_i) (1 - p(X_i))} \ \Big | \ X_i = x \right]
-\newline
-&amp;= \mathbb E \Big[ Y^{(1)}_i * \frac{D_i (1 - p(X_i))}{p(X_i) (1 - p(X_i))} \ \Big | \ X_i = x \Big] - \mathbb E \left[Y^{(0)}_i * \frac{(1 - T_i) p(X_i)}{p(X_i) (1-p(X_i))} \ \Big | \ X_i = x \right]
-\newline
-&amp;= \frac{1}{p(X_i)} \mathbb E \Big[ Y^{(1)}_i * T_i \ \Big | \ X_i = x \Big] - \frac{1}{1-p(X_i)} \mathbb E \left[ Y^{(0)}_i * (1 - T_i) \ \Big | \ X_i = x \right]
-\newline
-&amp;= \frac{1}{p(X_i)} \mathbb E \left[ Y^{(1)}_i \ \Big | \ X_i = x \right] * \mathbb E \Big[ T_i \ \Big | \ X_i = x \Big] - \frac{1}{1 - p(X_i)} \mathbb E \left[ Y^{(0)}_i \ \Big | \ X_i = x \right] * \mathbb E \left[ (1 - T_i) \ \Big | \ X_i = x \right]
-\newline
-&amp;= \mathbb E \Big[ Y^{(1)}_i \ \Big | \ X_i = x \Big] - \mathbb E \Big[Y^{(0)}_i \ \Big | \ X_i = x \Big]
-\newline
-&amp;= \tau_i(x)
-\end{aligned}
-$$</p>
-<p>How can <strong>regression trees</strong> help estimate heterogeneous treatment effects?</p>
-<p>If we fit a tree model on the modified outcome $Y^*$, we will get a partition of the data that minimizes the expected mean squared error of the conditional treatment effect. While the individual estimates are going to be inaccurate, within each leaf, we can estimate <strong>heterogeneous treatment effects</strong>.</p>
-<p>In order to get an <strong>unbiased estimate</strong> however, we need to use different data to build the tree and to estimate the effect. This procedure comes at the cost of increased variance.</p>
-<h2 id="example-1-simulated-data">Example 1: Simulated Data</h2>
-<p>Let&rsquo;s start with an example on synthetic data. We have the following individual characteristics:</p>
-<ul>
-<li><code>male</code>: gender</li>
-<li><code>black</code>: race</li>
-<li><code>age</code>: age</li>
-<li><code>educ</code>: education, which depends on age and race</li>
-</ul>
-<p>Moreover, we maketreatment status <code>D</code> depend on both gender and race so that it will be important to condition on observables.</p>
-<p>Our outcome variable <code>y</code> depends on the treatment assignment differently according to education and age.</p>
+            <p><em>How to use regression trees to estimate heterogeneous treatment effects.</em></p>
+<p>In causal inference we are usually interested in estimating the causal effect of a treatment (a drug, ad, product, &hellip;) on an outcome of interest (a disease, firm revenue, customer satisfaction, &hellip;). However, knowing that a treatment works on average is often not sufficient and we would like to know for which subjects (patients, users, customers, &hellip;) it works better or worse, i.e. we would like to estimate <strong>heterogeneous treatment effects</strong>.</p>
+<p>Estimating heterogeneous treatments effects allows us to do <strong>targeting</strong>. Knowing which customers are more likely to react to a discount allows a company to spend less money by offering fewer but better targeted discounts. This works also for negative effects: knowing for which patients a certain drug has side effects allows a pharmaceutical company to warn or exclude them from the treatment. There is also a more subtle advantage of estimating heterogeneous treatment effects: knowing <strong>for whom</strong> a treatment works allows us to better understand <strong>how</strong> a treatment works. Knowing that the effect of a discount does not depend on the income of its recipient but rather by its buying habits  tells us that maybe it is not a matter of money, but rather a matter of attention or loyalty.</p>
+<p>In this article, we will explore the estimation of heterogeneous treatment effects using a modified version of regression trees (and forests). From a machine learning perspective, there are two fundamental <strong>differences between causal trees and predictive trees</strong>. First of all, the target is the treatment effect, which is an inherently unobservable object. Second, we are interested in doing inference, which means quantifying the uncertainty of our estimates.</p>
+<h2 id="online-discounts">Online Discounts</h2>
+<p>For the rest of the article, we are going to use a toy example, for the sake of exposition: suppose we were an <strong>online shop</strong> and we are interested in understanding whether offering discounts to new customers increases their expenditure. In particular, we would like to know if offering discounts is more effective for some customers with respect to others, since we would prefer not to give discounts to customers that would spend anyways. Moreover, it could also be that spamming customers with pop-ups could deter them from buying, having the opposite effect.</p>
+<img src="fig/causal_trees1.jpg" width="300px"/>
+<p>To understand whether and how much the discounts are effective we run an <strong>A/B test</strong>: whenever a new user visits our online shop, we randomly decide whether to offer them the discount or not. I import the data-generating process <code>dgp_online_discounts()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. With respect to previous articles, I generated a new DGP parent class that handles randomization and data generation, while its children classes contain specific use cases. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>. To include not only code but also data and tables, I use <a href="https://deepnote.com/" target="_blank" rel="noopener">Deepnote</a>, a Jupyter-like web-based collaborative notebook environment.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
+
+from src.utils import *
+from src.dgp import dgp_online_discounts
 </code></pre>
-<pre><code class="language-python">from src.utils import *
-from src.dgp import dgp_ad
-</code></pre>
-<p>We generate a dataset out of our DGP.</p>
-<pre><code class="language-python">dgp = dgp_ad()
+<pre><code class="language-python">dgp = dgp_online_discounts(n=100_000)
 df = dgp.generate_data()
 df.head()
 </code></pre>
@@ -971,540 +913,250 @@ df.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>male</th>
-      <th>black</th>
-      <th>age</th>
-      <th>educ</th>
-      <th>ad_exposure</th>
-      <th>revenue</th>
+      <th>time</th>
+      <th>device</th>
+      <th>browser</th>
+      <th>region</th>
+      <th>discount</th>
+      <th>spend</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
+      <td>10.78</td>
+      <td>mobile</td>
+      <td>edge</td>
+      <td>9</td>
       <td>0</td>
-      <td>0</td>
-      <td>55.0</td>
-      <td>1</td>
-      <td>False</td>
-      <td>-0.327221</td>
+      <td>0.46</td>
     </tr>
     <tr>
       <th>1</th>
+      <td>0.57</td>
+      <td>desktop</td>
+      <td>firefox</td>
+      <td>9</td>
       <td>1</td>
-      <td>1</td>
-      <td>47.0</td>
-      <td>2</td>
-      <td>False</td>
-      <td>0.659393</td>
+      <td>11.04</td>
     </tr>
     <tr>
       <th>2</th>
+      <td>3.74</td>
+      <td>mobile</td>
+      <td>safari</td>
+      <td>7</td>
       <td>0</td>
-      <td>1</td>
-      <td>31.0</td>
-      <td>2</td>
-      <td>True</td>
-      <td>2.805178</td>
+      <td>1.81</td>
     </tr>
     <tr>
       <th>3</th>
+      <td>13.37</td>
+      <td>desktop</td>
+      <td>other</td>
+      <td>5</td>
       <td>0</td>
-      <td>1</td>
-      <td>51.0</td>
-      <td>2</td>
-      <td>False</td>
-      <td>-0.508548</td>
+      <td>31.90</td>
     </tr>
     <tr>
       <th>4</th>
+      <td>0.71</td>
+      <td>mobile</td>
+      <td>explorer</td>
+      <td>2</td>
       <td>0</td>
-      <td>0</td>
-      <td>48.0</td>
-      <td>0</td>
-      <td>True</td>
-      <td>0.762280</td>
+      <td>15.42</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>We can check the distribution of variables across treatment assignment.</p>
-<pre><code class="language-python">df.groupby(dgp.T).agg(['mean', 'std']).T.unstack(1)
+<p>We have data on 100.000 website visitors, for whom we observe the <code>time</code> of the day, the <code>device</code> they use, their <code>browser</code> and their geographical <code>region</code>. We also see whether they were offered the <code>discount</code>, our treatment, and what is their <code>spend</code>, the outcome of interest.</p>
+<p>Since the treatment was randomly assigned, we can use a simple <strong>difference-in-means</strong> estimator to estimate the treatment effect. We expect the treatment and control group to be similar, except for the <code>discount</code>, therefore we can causally attribute any difference in <code>spend</code> to the <code>discount</code>.</p>
+<pre><code class="language-python">smf.ols('spend ~ discount', df).fit().summary().tables[1]
 </code></pre>
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-<pre><code>.dataframe tbody tr th {
-    vertical-align: top;
-}
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    5.0306</td> <td>    0.046</td> <td>  109.949</td> <td> 0.000</td> <td>    4.941</td> <td>    5.120</td>
+</tr>
+<tr>
+  <th>discount</th>  <td>    3.8568</td> <td>    0.065</td> <td>   59.597</td> <td> 0.000</td> <td>    3.730</td> <td>    3.984</td>
+</tr>
+</table>
+<p>The discount seems to be effective: on average the spend in the treatment group increases by 3.86$. But are all customers equally affected?</p>
+<p>To answer this question, we would like to estimate <strong>heterogeneous treatment effects</strong>, possibly at the individual level.</p>
+<h2 id="conditional-average-treatment-effects">Conditional Average Treatment Effects</h2>
+<p>There are many possible ways to estimate heterogenous treatment effects. The most common is to split the population in groups based on some observable characteristic, which in our case could be the <code>device</code>, the <code>browser</code> or the geographical <code>region</code>. Splitting is easy for categorical variables, but for a continuous variable like <code>time</code> it is not intuitive where to split. Every hour? And which dimension is more informative? It would be temping to try all possible splits, but the more we split the data, the more it is likely that we find spurious results (i.e. we overfit, in machine learning lingo). It would be great if we could <strong>let the data speak</strong> and select the minimum and most informative splits.</p>
+<p>In a <a href="https://medium.com/towards-data-science/understanding-meta-learners-8a9c1e340832" target="_blank" rel="noopener">separate post</a>, I have shown how the so-called <strong>meta-learners</strong> take this approach to causal inference. The idea is to predict the outcome conditional on the treatment status for each observation, and then compare the predicted conditional on treatment, with the predicted outcome conditional on control. The difference is the individual treatment effect.</p>
+<p>The problem with meta-learners is that they use all their <a href="https://en.wikipedia.org/wiki/Degrees_of_freedom_%28statistics%29" target="_blank" rel="noopener">degrees of freedom</a> in predicting the outcome. However, we are interested to predict treatment effect heterogeneity. If most of the variation in the outcome is <em>not</em> in the treatment dimension, we will get very poor estimates of the treatment effects.</p>
+<p>Is it possible to instead directly concentrate on the <strong>prediction of individual treatment effects</strong>? Let&rsquo;s define $Y$ the outcome of interest, <code>spend</code> in our case, $D$ the treatment, the <code>discount</code>, and $X$ other observable characteristics. The <em>ideal</em> objective function is</p>
+<p>$$
+\sum_i \Big [ ( \tau_i - \hat \tau_i(X))^2 \Big ]
+$$</p>
+<p>where $\tau_i$ is the treatment effect of individual $i$. However, this objective function is <strong>unfeasible</strong> since we do not observe $\tau_i$.</p>
+<p>But, turns out that there is a way to get an unbiased estimate of the <strong>individual treatment effect</strong>. The <strong>idea</strong> is to use an auxiliary outcome variable, whose expected value for each individual is the individual treatment effect. This variable is</p>
+<p>$$
+Y_i^* = \frac{Y_i}{D_i \cdot p(X_i) - (1-D_i) \cdot (1-p(X_i))}
+$$</p>
+<p>where $p(X_i)$ is the <a href="https://en.wikipedia.org/wiki/Propensity_score_matching" target="_blank" rel="noopener"><strong>propensity score</strong></a> of observation $i$, i.e. its probability of being treated.</p>
+<p>In randomized experiments, the propensity score is known since randomization is fully under control of the experimenter. For example, in our case, the probability of treatment was 50%. In quasi-experimental studies instead, when the treatment probability is not known, it has to be estimated. Even in randomized experiments, it is always better to estimate rather than inpute the propensity scores, since it guards against sampling variation in the randomization. For more details on the propensity scores and how they are used in causal inference, I have a separate post <a href="https://medium.com/towards-data-science/matching-weighting-or-regression-99bf5cffa0d9" target="_blank" rel="noopener">here</a>.</p>
+<p>Let&rsquo;s first generate dummy variables for our categorical variables, <code>device</code>, <code>browser</code> and <code>region</code>.</p>
+<pre><code class="language-python">df_dummies = pd.get_dummies(df[dgp.X[1:]], drop_first=True)
+df = pd.concat([df, df_dummies], axis=1)
+X = ['time'] + list(df_dummies.columns)
+</code></pre>
+<p>We fit a <code>LogisticRegression</code> and use it to predict the treatment probability, i.e. construct the propensity score.</p>
+<pre><code class="language-python">from sklearn.linear_model import LogisticRegression
 
-.dataframe thead tr th {
-    text-align: left;
-}
+df['pscore'] = LogisticRegression().fit(df[X], df[dgp.D]).predict_proba(df[X])[:,1]
+sns.histplot(data=df, x='pscore', hue='discount').set(title='Predicted propensity scores');
 </code></pre>
-<p></style></p>
-<table border="1" class="dataframe">
-  <thead>
-    <tr>
-      <th>ad_exposure</th>
-      <th colspan="2" halign="left">False</th>
-      <th colspan="2" halign="left">True</th>
-    </tr>
-    <tr>
-      <th></th>
-      <th>mean</th>
-      <th>std</th>
-      <th>mean</th>
-      <th>std</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>male</th>
-      <td>0.42000</td>
-      <td>0.494053</td>
-      <td>0.592000</td>
-      <td>0.491955</td>
-    </tr>
-    <tr>
-      <th>black</th>
-      <td>0.58800</td>
-      <td>0.492688</td>
-      <td>0.470000</td>
-      <td>0.499599</td>
-    </tr>
-    <tr>
-      <th>age</th>
-      <td>44.57600</td>
-      <td>10.350386</td>
-      <td>44.970000</td>
-      <td>9.961102</td>
-    </tr>
-    <tr>
-      <th>educ</th>
-      <td>2.19200</td>
-      <td>1.824773</td>
-      <td>1.968000</td>
-      <td>1.724216</td>
-    </tr>
-    <tr>
-      <th>revenue</th>
-      <td>-0.11697</td>
-      <td>1.057941</td>
-      <td>1.156387</td>
-      <td>2.147342</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-<p>As we can see, <code>male</code> and <code>black</code> are now balanced across groups.</p>
-<p>We can get a first estimate of the <strong>average treatment effect</strong> as a simple comparison of means.</p>
-<pre><code class="language-python">df.loc[df[dgp.T]==1, dgp.Y].mean() - df.loc[df[dgp.T]==0, dgp.Y].mean()
+<p><img src="img/causal_trees_16_0.png" alt="png"></p>
+<p>As expected, most propensity scores are very close to 0.5, the probability of treatment used in randomization.</p>
+<p>We now have all the elements to compute our auxiliary outcome variable $Y^*$.</p>
+<pre><code class="language-python">df['y_star'] = df[dgp.Y[0]] / (df[dgp.D] * df['pscore'] - (1-df[dgp.D]) * (1-df['pscore']))
 </code></pre>
-<pre><code>1.2733576182695898
+<p>As we said before, the idea is to use $Y^*$ as the target of a prediction problem, since the expected value is exactly the individual treatment effect. Let&rsquo;s check its average in the data.</p>
+<pre><code class="language-python">df['y_star'].mean()
 </code></pre>
-<p>We can visualize the difference with a barplot.</p>
-<pre><code class="language-python">sns.barplot(x=dgp.T, y=dgp.Y, data=df);
+<pre><code>3.851294369598394
 </code></pre>
-<p><img src="img/causal_trees_18_0.png" alt="png"></p>
-<p>It seems there is a significant difference between the two groups. We can get a standard error around the estimate by regressing $Y$ on $D$.</p>
-<pre><code class="language-python">est = smf.ols(f'{dgp.Y} ~ {dgp.T}', df).fit()
-est.summary().tables[1]
+<p>Indeed its average is almost identical to the previously estimated average treatment effect of 3.85.</p>
+<p>How is it possible that, with a single observation and an estimate of the propensity score, we can estimate the individual treatment effect? What are the drawbacks?</p>
+<p>The <strong>intuition</strong> is to approach the problem from a different perspective: <em>ex-ante</em>, before the experiment. Imagine that our dataset had a single observation, $i$. We know that the treatment probability is $p(X_i)$, the propensity score. Therefore, in expectation, our dataset has $p(X_i)$ observations in the treatment group and $1 - p(X_i)$ observations in the control group. The rest is business as usual: we estimate the treatment effect as the difference in average outcomes between the two groups! And indeed that is what we would do:</p>
+<p>$$
+Y_i^* = \frac{Y_i D_i}{p(X_i)} - \frac{Y_i (1-D_i)}{1-p(X_i)}
+$$</p>
+<p>The only difference is that we have a single observation.</p>
+<p>This trick comes at a cost: $Y_i^*$ is an unbiased estimator for the individual treatment effect, but has a very <strong>high variance</strong>. This is immediately visible by plotting its distribution.</p>
+<pre><code class="language-python">sns.histplot(df['y_star']).set(title='Distribution of Auxiliary Variable');
 </code></pre>
-<table class="simpletable">
-<tr>
-           <td></td>              <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th>           <td>   -0.1170</td> <td>    0.076</td> <td>   -1.545</td> <td> 0.123</td> <td>   -0.266</td> <td>    0.032</td>
-</tr>
-<tr>
-  <th>ad_exposure[T.True]</th> <td>    1.2734</td> <td>    0.107</td> <td>   11.894</td> <td> 0.000</td> <td>    1.063</td> <td>    1.483</td>
-</tr>
-</table>
-<p>The coefficient is statistically significant. However, we know that the treatment assignment is not <strong>unconditionally exogenous</strong>. We need to condition on observables $X$.</p>
-<pre><code class="language-python">est = smf.ols(f'{dgp.Y} ~ {dgp.T} +' + ' + '.join(dgp.X), df).fit()
-est.summary().tables[1]
-</code></pre>
-<table class="simpletable">
-<tr>
-           <td></td>              <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th>           <td>   -0.1026</td> <td>    0.247</td> <td>   -0.416</td> <td> 0.678</td> <td>   -0.587</td> <td>    0.382</td>
-</tr>
-<tr>
-  <th>ad_exposure[T.True]</th> <td>    1.0342</td> <td>    0.103</td> <td>   10.044</td> <td> 0.000</td> <td>    0.832</td> <td>    1.236</td>
-</tr>
-<tr>
-  <th>male</th>                <td>    0.9987</td> <td>    0.102</td> <td>    9.765</td> <td> 0.000</td> <td>    0.798</td> <td>    1.199</td>
-</tr>
-<tr>
-  <th>black</th>               <td>   -0.8234</td> <td>    0.126</td> <td>   -6.555</td> <td> 0.000</td> <td>   -1.070</td> <td>   -0.577</td>
-</tr>
-<tr>
-  <th>age</th>                 <td>   -0.0050</td> <td>    0.005</td> <td>   -1.001</td> <td> 0.317</td> <td>   -0.015</td> <td>    0.005</td>
-</tr>
-<tr>
-  <th>educ</th>                <td>    0.1240</td> <td>    0.035</td> <td>    3.533</td> <td> 0.000</td> <td>    0.055</td> <td>    0.193</td>
-</tr>
-</table>
-<p>We do not need to actually condition on the full vector of observables $X$. It is sufficient to condition on the <strong>propensity score</strong> $p(X)$, i.e. the conditional probability of treatment.</p>
-<p>We can estimate the propensity score with any method we want. The more flexible, the better.</p>
-<pre><code class="language-python">df['pscore'] = RandomForestRegressor().fit(df[dgp.X], df[dgp.T]).predict(df[dgp.X])
-df['pscore'].head()
-</code></pre>
-<pre><code>0    0.368726
-1    0.036667
-2    0.675000
-3    0.701702
-4    0.307456
-Name: pscore, dtype: float64
-</code></pre>
-<p>We now estiamte the conditional average treatment effect regressing $Y$ on $D$ and on the p-score.</p>
-<pre><code class="language-python">est = smf.ols(f'{dgp.Y} ~ {dgp.T} + pscore', df).fit()
-est.summary().tables[1]
-</code></pre>
-<table class="simpletable">
-<tr>
-           <td></td>              <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th>           <td>   -0.3402</td> <td>    0.103</td> <td>   -3.315</td> <td> 0.001</td> <td>   -0.542</td> <td>   -0.139</td>
-</tr>
-<tr>
-  <th>ad_exposure[T.True]</th> <td>    0.8957</td> <td>    0.159</td> <td>    5.638</td> <td> 0.000</td> <td>    0.584</td> <td>    1.208</td>
-</tr>
-<tr>
-  <th>pscore</th>              <td>    0.8235</td> <td>    0.257</td> <td>    3.204</td> <td> 0.001</td> <td>    0.319</td> <td>    1.328</td>
-</tr>
-</table>
-<p>We are now ready to estimate <strong>heterogeneous treatment effects</strong>. First, we need to compute the transformed outcome</p>
+<p><img src="img/causal_trees_22_0.png" alt="png"></p>
+<p>We are now ready to estimate <strong>heterogeneous treatment effects</strong>, by translating the causal inference problem into a prediction problem, predicting the auxiliary outcome $Y^*$, given observable characteristics $X$.</p>
+<img src="fig/causal_trees2.jpg" width="300px"/>
+<h2 id="causal-trees">Causal Trees</h2>
+<p>In the previous section, we have see that we can transform the estimation of <strong>heterogeneous treatment effects</strong> into a prediction problem, where the outcome is the auxiliary outcome variable</p>
 <p>$$
 Y_i^* = \frac{Y_i}{T_i * e_i - (1-T_i) * (1-e_i)}
 $$</p>
-<pre><code class="language-python">df['y_star'] = df[dgp.Y] /(df[dgp.T] * df['pscore'] - (1-df[dgp.T]) * (1-df['pscore']))
-</code></pre>
-<p>Now we train a small tree on the transformed outcome $Y^*$.</p>
-<pre><code class="language-python">tree = DecisionTreeRegressor(max_depth=2, min_samples_leaf=30).fit(df[dgp.X], df['y_star'])
-df['y_hat'] = tree.predict(df[dgp.X])
-</code></pre>
-<p>We can plot the tree and visualize the estimated groups and treatment effects.</p>
-<pre><code class="language-python"># Plot tree
-plot_tree(tree, filled=True, fontsize=12, feature_names=dgp.X, impurity=False);
-</code></pre>
-<p><img src="img/causal_trees_32_0.png" alt="png"></p>
-<p>We still have one issue: we have trained our tree model and estimated the treatment effects using the same data. This introduces bias in the estimates.</p>
-<pre><code class="language-python">from econml.causal_forest import CausalForest
+<p>We can in principle use any machine learning algorithm at this point to estimate individual treatment effects. However, <a href="https://en.wikipedia.org/wiki/Decision_tree_learning" target="_blank" rel="noopener"><strong>regression trees</strong></a> have particularly convenient characteristics.</p>
+<p>First of all, how do regression trees work? Without going too much in detail, they are an algorithm that recursively <strong>partitions the data in bins</strong> such that the outcome $Y$ <em>within</em> each bin is as homogeneous as possible and the outcome <em>across</em> bins is as heterogeneous as possible. The predicted values are simply the averages within each bin.</p>
+<p>The <strong>averaging</strong> part is one of the big advantages of regression trees for inference since we know very well how to do inference with averages, with the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem" target="_blank" rel="noopener"><strong>Central Limit Theorem</strong></a>. The second advantage is that trees are very <strong>interpretable</strong>, since we can directly plot the data partition as a tree structure. We will see more of this later. Last but not least, regression trees are still at the core the <a href="https://arxiv.org/abs/2207.08815" target="_blank" rel="noopener">best performing predictive algorithms</a> with tabular data, as of 2022.</p>
+<p>Let&rsquo;s use the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html" target="_blank" rel="noopener"><code>DecisionTreeRegressor</code></a> function from <code>sklearn</code> to fit our regression tree and estimate heterogeneous treatment effects of <code>discounts</code> on customers' <code>spend</code>.</p>
+<pre><code class="language-python">from sklearn.tree import DecisionTreeRegressor
 
-model = CausalForest(max_depth=2).fit(Y=df[dgp.Y], X=df[dgp.X], T=df[dgp.T])
+tree = DecisionTreeRegressor(max_depth=2).fit(df[X], df['y_star'])
+df['y_hat'] = tree.predict(df[X])
 </code></pre>
-<p>We can plot a tree</p>
+<p>We have restricted the tree to have a maximum depth of 2 and at least 30 observation per partition (also called <em>leaf</em>) so that we can easily plot the tree and visualize the estimated groups and treatment effects.</p>
+<pre><code class="language-python">from sklearn.tree import plot_tree
+
+plot_tree(tree, filled=True, fontsize=12, feature_names=X, impurity=False, rounded=True);
+</code></pre>
+<p><img src="img/causal_trees_29_0.png" alt="png"></p>
+<p>How should we <strong>interpret</strong> the tree? On the top, we can see the average $Y^*$ in the data, 3.851. Starting from there, the data gets split into different branches, according to the rules highlighted at the top of each node. For example, the first node splits the data into two groups of size 42970 and 57030 depending on whether the <code>time</code> is later than 10.365. At the bottom, we have our final partitions, with the predicted values. For example, the leftmost leaf contains 36846 observation with <code>time</code> earlier than 10.365 and non-Safari <code>browser</code>, for which we predict a spend of 1.078. Darker node colors indicate higher prediction values.</p>
+<p>Should we believe these estimates? Not really, because of a couple of reasons. The <strong>first problem</strong> is that we have an unbiased estimate of the average treatment effect only if, <em>within each leaf</em>, we have the same number of treated and control units. This is not automatically the case with an off-the-shelf <code>DecisionTreeRegressor()</code>.</p>
+<p>Moreover, we have used the <strong>same data</strong> to generate the tree and evaluate it. This generates some bias because of overfitting. We can split the sample in 2 and use different data to generate the tree and compute the predictions. These trees are called <strong>honest trees</strong>.</p>
+<p>Last but not least, how should the tree be generated? The default rule to generate splits with the <code>DecisionTreeRegressor</code> function is the <code>squared_error</code> and there is no restriction on the minimum number of observations per leaf. However, since we are interested in doing inference, we would like to have a sufficient sample size in each leaf to detect a treatment effect.</p>
+<p>Luckily, there are multiple libraries where the so-called <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1510489113" target="_blank" rel="noopener"><strong>causal trees</strong></a> are implemented. We import <code>CausalForestDML</code> from Microsoft&rsquo;s <a href="https://econml.azurewebsites.net/" target="_blank" rel="noopener">EconML</a> library, one of the best libraries for causal inference.</p>
+<pre><code class="language-python">from econml.dml import CausalForestDML
+tree_model = CausalForestDML(n_estimators=1, subforest_size=1, inference=False, max_depth=4)
+tree_model = tree_model.fit(Y=df[dgp.Y], X=df[X], T=df[dgp.D])
+</code></pre>
+<p>We have restricted the number of estimators to 1 to have a single tree instead of multiple ones, the so-called <a href="https://en.wikipedia.org/wiki/Random_forest" target="_blank" rel="noopener"><strong>random forests</strong></a> that we will cover in a separate article.</p>
 <pre><code class="language-python">from econml.cate_interpreter import SingleTreeCateInterpreter
+%matplotlib inline
 
-intrp = SingleTreeCateInterpreter(max_depth=2).interpret(model, df[dgp.X])
-intrp.plot(feature_names=dgp.X, fontsize=10)
+intrp = SingleTreeCateInterpreter(max_depth=2).interpret(tree_model, df[X])
+intrp.plot(feature_names=X, fontsize=12)
 </code></pre>
-<p><img src="img/causal_trees_36_0.png" alt="png"></p>
-<h2 id="example-2-lalonde-data">Example 2: Lalonde Data</h2>
-<p>For this tutorial, we are goind to use the data from Lalonde (1981). You can find the data here: <a href="https://users.nber.org/~rdehejia/nswdata.html" target="_blank" rel="noopener">https://users.nber.org/~rdehejia/nswdata.html</a></p>
-<pre><code class="language-python">df = pd.read_csv('data/lalonde86.csv')
-df.head()
+<p><img src="img/causal_trees_33_0.png" alt="png"></p>
+<p>As we can see, the tree representation looks extremely similar to the one we got before using the <code>DecisionTreeRegressor</code> function. However, now the model not only reports estimates of the conditional average treatment effects, but also the standard errors of the estimates (at the bottom). How were they computed?</p>
+<h3 id="inference">Inference</h3>
+<p>Honest trees, besides improving the out-of-sample prediction accuracy of the model, have another great implication: they allow us to <strong>compute standard errors as if the tree structure was exogenous</strong>. In fact, since the data used to compute the predictions is independent from the data used to build the tree (split the data), we can just treat the tree structure as independent from the estimated treatment effects. As a consequence, we can estimate the standard errors of the the estimates as standard errors of difference between sample averages, as in a standard AB test.</p>
+<p>If we had used the same data to build the tree and estimate the treatment effects, we would have introduced <strong>bias</strong>, because of the spurious correlation between the covariates and the outcomes. This bias usually disappears for very large sample sizes, but honest trees do not require than.</p>
+<h3 id="performance">Performance</h3>
+<p>How well does the model perform? Since we control the data generating process, we can do something that is not possible with real data: check the predicted treatment effects against the true ones. The <code>generate_potential_outcomes()</code> function loads the data with both potential outcomes for each observation, under both treatment (<code>outcome_t</code>) and control (<code>outcome_c</code>).</p>
+<pre><code class="language-python">def compute_discrete_effects(df, hte_model):
+    temp_df = df.copy()
+    temp_df.time = 0
+    temp_df = dgp.add_treatment_effect(temp_df)
+    temp_df = temp_df.rename(columns={'effect_on_spend': 'True'})
+    temp_df['Predicted'] = hte_model.effect(temp_df[X])
+    df_effects = pd.DataFrame()
+    for var in X[1:]:
+        for effect in ['True', 'Predicted']:
+            v = temp_df[effect][temp_df[var]==1].mean() - temp_df[effect][temp_df[var]==0].mean()
+            effect_var = {'Variable': [var], 'Effect': [effect], 'Value': [v]}
+            df_effects = pd.concat([df_effects, pd.DataFrame(effect_var)]).reset_index(drop=True)
+    return df_effects, temp_df['Predicted'].mean()
 </code></pre>
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-<pre><code>.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
+<pre><code class="language-python">df_effects_tree, avg_effect_notime_tree = compute_discrete_effects(df, tree_model)
 </code></pre>
-<p></style></p>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>treat</th>
-      <th>age</th>
-      <th>education</th>
-      <th>black</th>
-      <th>hispanic</th>
-      <th>married</th>
-      <th>nodegree</th>
-      <th>re74</th>
-      <th>re75</th>
-      <th>re78</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1.0</td>
-      <td>37.0</td>
-      <td>11.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>9930.0460</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1.0</td>
-      <td>22.0</td>
-      <td>9.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>3595.8940</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1.0</td>
-      <td>30.0</td>
-      <td>12.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>24909.4500</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>1.0</td>
-      <td>27.0</td>
-      <td>11.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>7506.1460</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>1.0</td>
-      <td>33.0</td>
-      <td>8.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>289.7899</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-<p>We can summarize each variable by its treatment status.</p>
-<pre><code class="language-python">df.groupby('treat').agg(['mean', 'std']).T.unstack(1)
+<pre><code class="language-python">fig, ax = plt.subplots()
+sns.barplot(data=df_effects_tree, x=&quot;Variable&quot;, y=&quot;Value&quot;, hue=&quot;Effect&quot;, ax=ax).set(
+    xlabel='', ylabel='', title='Heterogeneous Treatment Effects')
+ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha=&quot;right&quot;);
 </code></pre>
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-<pre><code>.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead tr th {
-    text-align: left;
-}
+<p><img src="img/causal_trees_42_0.png" alt="png"></p>
+<p>The causal tree is pretty good at detecting the heterogeneous treatment effects for the categorical variables. It only missed the heterogeneity in the third region.</p>
+<p>However, this is also where we expect a tree model to perform particularly well: where the effects are <strong>discrete</strong>. How well does it do on our continuous variable, time? First, let&rsquo;s again isolate the predicted treatment effects on <code>time</code> and ignore the other covariates.</p>
+<pre><code class="language-python">def compute_time_effect(df, hte_model, avg_effect_notime):
+    df_time = df.copy()
+    df_time[[X[1:]] + ['device', 'browser', 'region']] = 0
+    df_time = dgp.add_treatment_effect(df_time)
+    df_time['predicted'] = hte_model.effect(df_time[X]) + avg_effect_notime
+    return df_time
 </code></pre>
-<p></style></p>
-<table border="1" class="dataframe">
-  <thead>
-    <tr>
-      <th>treat</th>
-      <th colspan="2" halign="left">0.0</th>
-      <th colspan="2" halign="left">1.0</th>
-    </tr>
-    <tr>
-      <th></th>
-      <th>mean</th>
-      <th>std</th>
-      <th>mean</th>
-      <th>std</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>age</th>
-      <td>25.053846</td>
-      <td>7.057745</td>
-      <td>25.816216</td>
-      <td>7.155019</td>
-    </tr>
-    <tr>
-      <th>education</th>
-      <td>10.088462</td>
-      <td>1.614325</td>
-      <td>10.345946</td>
-      <td>2.010650</td>
-    </tr>
-    <tr>
-      <th>black</th>
-      <td>0.826923</td>
-      <td>0.379043</td>
-      <td>0.843243</td>
-      <td>0.364558</td>
-    </tr>
-    <tr>
-      <th>hispanic</th>
-      <td>0.107692</td>
-      <td>0.310589</td>
-      <td>0.059459</td>
-      <td>0.237124</td>
-    </tr>
-    <tr>
-      <th>married</th>
-      <td>0.153846</td>
-      <td>0.361497</td>
-      <td>0.189189</td>
-      <td>0.392722</td>
-    </tr>
-    <tr>
-      <th>nodegree</th>
-      <td>0.834615</td>
-      <td>0.372244</td>
-      <td>0.708108</td>
-      <td>0.455867</td>
-    </tr>
-    <tr>
-      <th>re74</th>
-      <td>2107.026658</td>
-      <td>5687.905694</td>
-      <td>2095.573689</td>
-      <td>4886.620353</td>
-    </tr>
-    <tr>
-      <th>re75</th>
-      <td>1266.909002</td>
-      <td>3102.982044</td>
-      <td>1532.055314</td>
-      <td>3219.250870</td>
-    </tr>
-    <tr>
-      <th>re78</th>
-      <td>4554.801126</td>
-      <td>5483.835991</td>
-      <td>6349.143530</td>
-      <td>7867.402218</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-<pre><code class="language-python">y = 're78'
-D = 'treat'
+<pre><code class="language-python">df_time_tree = compute_time_effect(df, tree_model, avg_effect_notime_tree)
 </code></pre>
-<pre><code class="language-python">est = smf.ols('re78 ~ treat', df).fit()
-est.summary().tables[1]
+<p>We now plot the predicted treatment effects against the true ones, along the <code>time</code> dimension.</p>
+<pre><code class="language-python">sns.scatterplot(x='time', y='effect_on_spend', data=df_time_tree, label='True')
+sns.scatterplot(x='time', y='predicted', data=df_time_tree, label='Predicted').set(
+    ylabel='', title='Heterogeneous Treatment Effects')
+plt.legend(title='Effect');
 </code></pre>
-<table class="simpletable">
-<tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th> <td> 4554.8011</td> <td>  408.046</td> <td>   11.162</td> <td> 0.000</td> <td> 3752.855</td> <td> 5356.747</td>
-</tr>
-<tr>
-  <th>treat</th>     <td> 1794.3424</td> <td>  632.853</td> <td>    2.835</td> <td> 0.005</td> <td>  550.574</td> <td> 3038.110</td>
-</tr>
-</table>
-<pre><code class="language-python">X = ['age', 'education', 'black', 'hispanic', 'married', 'nodegree']
-</code></pre>
-<pre><code class="language-python">est = smf.ols('re78 ~ treat +' + ' + '.join(X), df).fit()
-est.summary().tables[1]
-</code></pre>
-<table class="simpletable">
-<tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th> <td> 1168.0035</td> <td> 3360.588</td> <td>    0.348</td> <td> 0.728</td> <td>-5436.921</td> <td> 7772.928</td>
-</tr>
-<tr>
-  <th>treat</th>     <td> 1671.1304</td> <td>  637.973</td> <td>    2.619</td> <td> 0.009</td> <td>  417.254</td> <td> 2925.007</td>
-</tr>
-<tr>
-  <th>age</th>       <td>   52.8219</td> <td>   45.255</td> <td>    1.167</td> <td> 0.244</td> <td>  -36.123</td> <td>  141.767</td>
-</tr>
-<tr>
-  <th>education</th> <td>  393.8213</td> <td>  227.114</td> <td>    1.734</td> <td> 0.084</td> <td>  -52.549</td> <td>  840.192</td>
-</tr>
-<tr>
-  <th>black</th>     <td>-2220.2622</td> <td> 1168.317</td> <td>   -1.900</td> <td> 0.058</td> <td>-4516.480</td> <td>   75.956</td>
-</tr>
-<tr>
-  <th>hispanic</th>  <td>   83.7193</td> <td> 1550.348</td> <td>    0.054</td> <td> 0.957</td> <td>-2963.346</td> <td> 3130.785</td>
-</tr>
-<tr>
-  <th>married</th>   <td>  158.2084</td> <td>  850.326</td> <td>    0.186</td> <td> 0.852</td> <td>-1513.029</td> <td> 1829.446</td>
-</tr>
-<tr>
-  <th>nodegree</th>  <td> -128.2203</td> <td>  995.416</td> <td>   -0.129</td> <td> 0.898</td> <td>-2084.617</td> <td> 1828.177</td>
-</tr>
-</table>
-<pre><code class="language-python">df['pscore'] = RandomForestRegressor().fit(df[X], df[D]).predict(df[X])
-df['pscore'].head()
-</code></pre>
-<pre><code>0    0.810000
-1    0.752000
-2    0.485786
-3    0.670023
-4    0.731667
-Name: pscore, dtype: float64
-</code></pre>
-<pre><code class="language-python">est = smf.ols('re78 ~ treat + pscore', df).fit()
-est.summary().tables[1]
-</code></pre>
-<table class="simpletable">
-<tr>
-      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>Intercept</th> <td> 4313.9001</td> <td>  591.433</td> <td>    7.294</td> <td> 0.000</td> <td> 3151.530</td> <td> 5476.270</td>
-</tr>
-<tr>
-  <th>treat</th>     <td> 1461.6324</td> <td>  866.171</td> <td>    1.687</td> <td> 0.092</td> <td> -240.692</td> <td> 3163.957</td>
-</tr>
-<tr>
-  <th>pscore</th>    <td>  894.6072</td> <td> 1588.766</td> <td>    0.563</td> <td> 0.574</td> <td>-2227.867</td> <td> 4017.082</td>
-</tr>
-</table>
-<p>Estimate CATE</p>
-<pre><code class="language-python">from econml.causal_forest import CausalForest
-
-model = CausalForest(max_depth=2).fit(Y=df[y], X=df[X], T=df[D])
-</code></pre>
-<pre><code class="language-python">from econml.cate_interpreter import SingleTreeCateInterpreter
-
-intrp = SingleTreeCateInterpreter(max_depth=2).interpret(model, df[X])
-intrp.plot(feature_names=X, fontsize=10)
-</code></pre>
-<p><img src="img/causal_trees_50_0.png" alt="png"></p>
-<h2 id="references">References</h2>
+<p><img src="img/causal_trees_47_0.png" alt="png"></p>
+<p>From the plot, we can appreciate the discrete nature of causal trees: the model is only able to split the continuous variable into 5 bins. These bins are close to the true treatment effects, but they fail to capture a big chunk of the treatment effect heterogeneity.</p>
+<p>Can these predictions be improved? The answer is yes, and we will explore how in the next post.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this article, we have seen how to use causal trees to estimate <strong>heterogeneous treatment effects</strong>. The main insight comes from the definition of an auxiliary outcome variable that allows us to frame the inference problem as a prediction problem. While we can then use any algorithm to predict treatment effects, regression trees are particularly useful because of their interpretability, prediction accuracy, and feature of generating prediction as subsample averages.</p>
+<p>The work by <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1510489113" target="_blank" rel="noopener">Athey and Imbens (2016)</a> on regression trees to compute heterogeneous treatment effects brought together two separate literatures, causal inference and machine learning in a very fruitful <strong>synergy</strong>. The causal inference literature (re)discovered the inference benefits of sample splitting, that allows us to do correct inference even when the data partition is complex and hard to analyze. On the other hand, splitting the tree generation phase from the within-leaf prediction phase has strong benefits in terms of prediction accuracy, by safeguarding against overfitting.</p>
+<h3 id="references">References</h3>
 <ul>
-<li>Original paper: <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1510489113" target="_blank" rel="noopener">Recursive partitioning for heterogeneous causal effects</a> (2016) by Athey and Imbens</li>
-<li><a href="https://www.youtube.com/watch?v=JtDRpM6Mnnw" target="_blank" rel="noopener">Video lecture</a> by Prof. Susan Athey (Stanford)</li>
+<li>
+<p>S. Athey, G. Imbens, <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1510489113" target="_blank" rel="noopener">Recursive partitioning for heterogeneous causal effects</a> (2016), <em>PNAS</em>.</p>
+</li>
+<li>
+<p>S. Wager, S. Athey, <a href="https://www.tandfonline.com/doi/full/10.1080/01621459.2017.1319839" target="_blank" rel="noopener">Estimation and Inference of Heterogeneous Treatment Effects using Random Forests</a> (2018), <em>Journal of the American Statistical Association</em>.</p>
+</li>
+<li>
+<p>S. Athey, J. Tibshirani, S. Wager, <a href="https://projecteuclid.org/journals/annals-of-statistics/volume-47/issue-2/Generalized-random-forests/10.1214/18-AOS1709.full" target="_blank" rel="noopener">Generalized Random Forests</a> (2019). <em>The Annals of Statistics</em>.</p>
+</li>
+<li>
+<p>M. Oprescu, V. Syrgkanis, Z. Wu, <a href="http://proceedings.mlr.press/v97/oprescu19a.html?ref=https://githubhelp.com" target="_blank" rel="noopener">Orthogonal Random Forest for Causal Inference</a> (2019). <em>Proceedings of the 36th International Conference on Machine Learning</em>.</p>
+</li>
 </ul>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li>
+<p><a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">DAGs and Control Variables</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">Matching, Weighting, or Regression?</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">Understanding Meta Learners</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/ed4097dab27a" target="_blank" rel="noopener">Understanding AIPW, the Doubly-Robust Estimator</a></p>
+</li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/causal_trees.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/causal_trees.ipynb</a></p>
 
           </div>
           
@@ -1527,7 +1179,7 @@ intrp.plot(feature_names=X, fontsize=10)
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/causal_trees/&amp;text=Causal%20Trees" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/causal_trees/&amp;text=Understanding%20Causal%20Trees" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -1540,7 +1192,7 @@ intrp.plot(feature_names=X, fontsize=10)
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/causal_trees/&amp;t=Causal%20Trees" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/causal_trees/&amp;t=Understanding%20Causal%20Trees" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook"></i>
         </a>
       </li>
@@ -1553,7 +1205,7 @@ intrp.plot(feature_names=X, fontsize=10)
       
       
       <li>
-        <a href="mailto:?subject=Causal%20Trees&amp;body=https://matteocourthoud.github.io/post/causal_trees/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=Understanding%20Causal%20Trees&amp;body=https://matteocourthoud.github.io/post/causal_trees/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -1566,7 +1218,7 @@ intrp.plot(feature_names=X, fontsize=10)
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/causal_trees/&amp;title=Causal%20Trees" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/causal_trees/&amp;title=Understanding%20Causal%20Trees" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -1579,7 +1231,7 @@ intrp.plot(feature_names=X, fontsize=10)
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=Causal%20Trees%20https://matteocourthoud.github.io/post/causal_trees/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=Understanding%20Causal%20Trees%20https://matteocourthoud.github.io/post/causal_trees/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>

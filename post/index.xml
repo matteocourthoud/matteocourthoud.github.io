@@ -5,12 +5,793 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Mon, 09 Jan 2023 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Wed, 01 Feb 2023 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://matteocourthoud.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>Bayesian AB Testing</title>
+      <link>https://matteocourthoud.github.io/post/bayes_ab/</link>
+      <pubDate>Wed, 01 Feb 2023 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/bayes_ab/</guid>
+      <description>&lt;p&gt;&lt;em&gt;An introduction to the Bayesian approach to randomized experiments.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Randomized experiments, a.k.a. &lt;strong&gt;AB tests&lt;/strong&gt;, are now the established gold standard in the industry to estimate causal effects. Randomly assigning the treatment (new product, feature, UI, &amp;hellip;) to a subset of the population (users, patients, customers, &amp;hellip;) we ensure that, on average, the difference in outcomes (revenue, visits, clicks, &amp;hellip;) can be attributed to the treatment. Established companies like &lt;a href=&#34;https://partner.booking.com/en-gb/click-magazine/industry-perspectives/role-experimentation-bookingcom&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Booking.com&lt;/a&gt; report constantly running thousands of AB tests at the same time. And newer growing companies like &lt;a href=&#34;https://blog.duolingo.com/improving-duolingo-one-experiment-at-a-time/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Duolingo&lt;/a&gt; attribute a large chunk of their success to their culture of experimentation at scale.&lt;/p&gt;
+&lt;p&gt;With so many experiments, one question comes natural: in one specific experiment, can you leverage information from previous tests? How? In this post, I will try to answer these questions by introducing the &lt;strong&gt;Bayesian approach to AB testing&lt;/strong&gt;. The Bayesian framework is well suited for this type of task because it naturally allows for the updating of existing knowledge (the prior) using new data. However, the method is particularly sensitive to functional form assumptions and apparently innocuous model choices can translate in sensible differences in the estimates, especially when the data is very skewed.&lt;/p&gt;
+&lt;h2 id=&#34;search-and-infinite-scrolling&#34;&gt;Search and Infinite Scrolling&lt;/h2&gt;
+&lt;p&gt;For the rest of the article, we are going to use a toy example, loosely inspired by &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/pandp.20191003&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Azavedo et al. (2019)&lt;/a&gt;: a &lt;strong&gt;search engine&lt;/strong&gt; that wants to increase its &lt;strong&gt;ad revenue&lt;/strong&gt;, without sacrificing search quality. We are a company with an established experimentation culture and we continuously test new ideas on how to rank results, how to select the most relevant ads for consumers, and the user interface (UI) of the results page. Suppose that, in this specific case, we came up with a new brilliant idea: &lt;a href=&#34;https://blog.google/products/search/continuous-scrolling-mobile/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;infinite scrolling&lt;/a&gt;! Instead of having a discrete sequence of pages, we allow users to keep scrolling down if they want to see more results.&lt;/p&gt;
+&lt;img src=&#34;fig/phones.jpg&#34; width=&#34;300px&#34;/&gt;
+&lt;p&gt;To understand whether infinite scrolling works, we ran an &lt;strong&gt;AB test&lt;/strong&gt;: we randomize users into a treatment and a control group. We implement infinite scrolling only for users in the treatment group. I import the data generating process &lt;code&gt;dgp_infinite_scroll()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. With respect to previous articles, I generated a new DGP parent class that handles randomization and data generation, while its children classes contain the specific use-cases. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;.  To include not only code but also data and tables, I use &lt;a href=&#34;https://deepnote.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Deepnote&lt;/a&gt;, a Jupyter-like web-based collaborative notebook environment.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+
+from src.utils import *
+from src.dgp import DGP, dgp_infinite_scroll
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_infinite_scroll(n=10_000)
+df = dgp.generate_data(true_effect=0.14)
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;past_revenue&lt;/th&gt;
+      &lt;th&gt;infinite_scroll&lt;/th&gt;
+      &lt;th&gt;ad_revenue&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;3.76&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3.56&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2.40&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1.71&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2.98&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;4.71&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;4.24&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;4.43&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;3.87&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3.69&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on $10.000$ website visitors for which we observe the monthly &lt;code&gt;ad_revenue&lt;/code&gt; they generated, whether they were assigned to the treatment group and were using the &lt;code&gt;infinite_scroll&lt;/code&gt;, and also the average monthly &lt;code&gt;past_revenue&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The random treatment assignment makes the &lt;strong&gt;difference-in-means&lt;/strong&gt; estimator &lt;a href=&#34;https://en.wikipedia.org/wiki/Bias_of_an_estimator&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;unbiased&lt;/strong&gt;&lt;/a&gt;: we expect the treatment and control group to be comparable on average, so we can causal attribute the average observed difference in outcomes to the treatment effect. We estimate the treatment effect by linear regression. We can interpret the coefficient of &lt;code&gt;infinite_scroll&lt;/code&gt; as the estimated treatment effect.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;ad_revenue ~ infinite_scroll&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+         &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;       &lt;td&gt;    1.9906&lt;/td&gt; &lt;td&gt;    0.020&lt;/td&gt; &lt;td&gt;  100.783&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.952&lt;/td&gt; &lt;td&gt;    2.029&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;infinite_scroll&lt;/th&gt; &lt;td&gt;    0.1441&lt;/td&gt; &lt;td&gt;    0.028&lt;/td&gt; &lt;td&gt;    5.163&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.089&lt;/td&gt; &lt;td&gt;    0.199&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;It seems that the &lt;code&gt;infinite_scroll&lt;/code&gt; was indeed a good idea and it increase the average monthly revenue by $0.1524$$. Moreover, the effect is significantly different from zero at the 1% confidence level.&lt;/p&gt;
+&lt;p&gt;We could further improve the precision of the estimator by controlling for &lt;code&gt;past_revenue&lt;/code&gt; in the regression. We do not expect a sensible change in the estimated coefficient, but the precision should improve (if you want to know more on out control variables, check my other articles on &lt;a href=&#34;https://towardsdatascience.com/understanding-cuped-a822523641af&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CUPED&lt;/a&gt; and &lt;a href=&#34;https://towardsdatascience.com/controls-b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs&lt;/a&gt;).&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;reg = smf.ols(&#39;ad_revenue ~ infinite_scroll + past_revenue&#39;, df).fit()
+reg.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+         &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;       &lt;td&gt;    0.0170&lt;/td&gt; &lt;td&gt;    0.024&lt;/td&gt; &lt;td&gt;    0.696&lt;/td&gt; &lt;td&gt; 0.487&lt;/td&gt; &lt;td&gt;   -0.031&lt;/td&gt; &lt;td&gt;    0.065&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;infinite_scroll&lt;/th&gt; &lt;td&gt;    0.1588&lt;/td&gt; &lt;td&gt;    0.020&lt;/td&gt; &lt;td&gt;    7.992&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.120&lt;/td&gt; &lt;td&gt;    0.198&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;past_revenue&lt;/th&gt;    &lt;td&gt;    0.9923&lt;/td&gt; &lt;td&gt;    0.010&lt;/td&gt; &lt;td&gt;   98.659&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.973&lt;/td&gt; &lt;td&gt;    1.012&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Indeed, &lt;code&gt;past_revenue&lt;/code&gt; is highly predictive of current &lt;code&gt;ad_revenue&lt;/code&gt; and the precision of the estimated coefficient for &lt;code&gt;infinite_scroll&lt;/code&gt; decreases by one-third.&lt;/p&gt;
+&lt;p&gt;So far, everything has been very standard. However, as we said at the beginning, suppose this is not the only experiment we ran trying to improve our browser (and ultimately ad revenue). The infinite scroll is just one idea among thousands of others that we have tested in the past. Is there a way to efficiently use this additional &lt;strong&gt;information&lt;/strong&gt;?&lt;/p&gt;
+&lt;h2 id=&#34;bayesian-statistics&#34;&gt;Bayesian Statistics&lt;/h2&gt;
+&lt;p&gt;One of the main advantages of Bayesian statistics over the frequentist approach is that it easily allows to incorporate additional information into a model. The idea directly follows from the main results behind all Bayesian statistics: &lt;a href=&#34;https://en.wikipedia.org/wiki/Bayes%27_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Bayes Theorem&lt;/strong&gt;&lt;/a&gt;. Bayes theorem, allows you to do inference on a model by &lt;strong&gt;inverting the inference problem&lt;/strong&gt;: from the probability of the model given the data, to the probability of the data given the model, a much easier object to deal with.&lt;/p&gt;
+&lt;p&gt;$$
+\underbrace{ \Pr \big( \text{model} \ \big| \ \text{data} \big) }&lt;em&gt;{\text{posterior}} = \underbrace{ \Pr(\text{model}) }&lt;/em&gt;{\text{prior}} \ \underbrace{ \frac{ \Pr \big( \text{data} \ \big| \ \text{model} \big) }{ \Pr(\text{data}) } }_{\text{likelihood}}
+$$&lt;/p&gt;
+&lt;p&gt;We can split the right-hand side of Bayes Theorem (or Rule) into two components: the &lt;strong&gt;prior&lt;/strong&gt; and the &lt;strong&gt;likelihood&lt;/strong&gt;. The likelihood is the information about the model that comes from the data, the prior instead is any additional information about the model.&lt;/p&gt;
+&lt;p&gt;First of all, let&amp;rsquo;s map Bayes theorem into our context. What is the data, what is the model and what is our object of interest?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the &lt;strong&gt;data&lt;/strong&gt; which consists in our outcome variable &lt;code&gt;ad_revenue&lt;/code&gt;, $y$, the treatment &lt;code&gt;infinite_scroll&lt;/code&gt;, $D$ and the other variables, &lt;code&gt;past_revenue&lt;/code&gt; and a constant, which we jointly denote as $X$&lt;/li&gt;
+&lt;li&gt;the &lt;strong&gt;model&lt;/strong&gt; is the distribution of &lt;code&gt;ad_revenue&lt;/code&gt;, given &lt;code&gt;past_revenue&lt;/code&gt; and the &lt;code&gt;infinite_scroll&lt;/code&gt; feature, $y | D, X$&lt;/li&gt;
+&lt;li&gt;our &lt;strong&gt;object of interest&lt;/strong&gt; is the posterior $\Pr \big( \text{model} \ \big| \ \text{data} \big)$, in particular the relationship between &lt;code&gt;ad_revenue&lt;/code&gt; and &lt;code&gt;infinite_scroll&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X = sm.add_constant(df[[&#39;past_revenue&#39;]].values)
+D = df[&#39;infinite_scroll&#39;].values
+y = df[&#39;ad_revenue&#39;].values
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;How do we use prior information in the context of AB testing, potentially including additional covariates?&lt;/p&gt;
+&lt;h3 id=&#34;bayesian-regression&#34;&gt;Bayesian Regression&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s use a linear model to make it directly comparable with the frequentist approach:&lt;/p&gt;
+&lt;p&gt;$$
+y_i = \beta X_i + \tau D_i + \varepsilon_i \qquad \text{where} \quad \varepsilon_i \sim N \big( 0, \sigma^2 \big)
+$$&lt;/p&gt;
+&lt;p&gt;This is a parametric model with &lt;strong&gt;two sets of parameters&lt;/strong&gt;: the linear coefficients $\beta$ and $\tau$, and the variance of the residuals $\sigma$. An equivalent, but more Bayesian, way to write the model is:&lt;/p&gt;
+&lt;p&gt;$$
+y \ | \ X, D; \beta, \tau, \sigma \sim N \Big( \beta X + \tau D \ , \sigma^2 \Big) ,
+$$&lt;/p&gt;
+&lt;p&gt;where the semi-column separates the data from the model parameters. Differently from the frequentist approach, in Bayesian regressions we do not rely on the &lt;a href=&#34;https://en.wikipedia.org/wiki/Central_limit_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;central limit theorem&lt;/a&gt; to approximate the conditional distribution of $y$, but we directly &lt;strong&gt;assume&lt;/strong&gt; it is normal. Is it just a formality? Not really, but a proper comparison between the frequentist and Bayesian approach is beyond the scope of this article.&lt;/p&gt;
+&lt;p&gt;We are interested in doing inference on the model parameters, $\beta$, $\tau$, and $\sigma$. Another &lt;strong&gt;core difference&lt;/strong&gt; between the frequentist and the Bayesian approach is that the the first assumes that the model parameters are fixed (scalars), while the latter allows them to be stochastic (random variables).&lt;/p&gt;
+&lt;p&gt;This assumption has a very practical &lt;strong&gt;implication&lt;/strong&gt;: you can easily incorporate previous information about the model parameters in the form of &lt;strong&gt;prior&lt;/strong&gt; distributions. As the name says, priors contain information that was available even &lt;em&gt;before&lt;/em&gt; looking at the data. This leads to one of the most relevant questions in Bayesian statistics: &lt;strong&gt;how do you chose a prior&lt;/strong&gt;?&lt;/p&gt;
+&lt;h2 id=&#34;priors&#34;&gt;Priors&lt;/h2&gt;
+&lt;p&gt;When choosing a prior, one analytically appealing restriction is to have a prior distribution such that the posterior belongs to the same family. These priors are called &lt;strong&gt;conjugate priors&lt;/strong&gt;. For example, before seeing the data, I assume my treatment effect is normally distributed and I would like it to be normally distributed also after incorporating the information contained in the data.&lt;/p&gt;
+&lt;p&gt;In the case of Bayesian linear regression, the conjugate priors for $\beta$ and $\sigma$ are normally and inverse-gamma distributed. Let&amp;rsquo;s start a bit blindly, by taking a standard normal and inverse gamma distribution as prior.&lt;/p&gt;
+&lt;p&gt;$$
+\beta_i \sim N(\boldsymbol 0, \boldsymbol 1) \
+\tau_i \sim N(0,1) \
+\sigma^2 \sim \Gamma^{-1} (1, 1)
+$$&lt;/p&gt;
+&lt;p&gt;We use the package &lt;a href=&#34;https://www.pymc.io/projects/docs/en/stable/learn.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;PyMC&lt;/a&gt; to do inference. First we need to specify the model: what are the distributions of the different parameters (priors) and what is the likelihood of the data.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import pymc as pm
+with pm.Model() as baseline_model:
+
+    # Priors
+    beta = pm.MvNormal(&#39;beta&#39;, mu=np.ones(np.shape(X)[1]), cov=np.eye(np.shape(X)[1]))
+    tau = pm.Normal(&#39;tau&#39;, mu=0, sigma=1)
+    sigma = pm.InverseGamma(&#39;sigma&#39;, mu=1, sigma=1, initval=1)
+    
+    # Likelihood 
+    Ylikelihood = pm.Normal(&#39;y&#39;, mu=(X@beta + D@tau).flatten(), sigma=sigma, observed=y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;PyMC has an extremely nice function that allows us to visualize the model as a graph, &lt;code&gt;model_to_graphviz&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pm.model_to_graphviz(baseline_model)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_ab_25_0.svg&#34; alt=&#34;svg&#34;&gt;&lt;/p&gt;
+&lt;p&gt;From the graphical representation, we can see the various model components, their distributions, and how they interact with each other.&lt;/p&gt;
+&lt;p&gt;We are now ready to &lt;strong&gt;compute&lt;/strong&gt; the model posterior. How does it work? In short, we sample realizations of model parameters, we compute the likelihood of the data given those values and the compute the corresponding posterior.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;idata = pm.sample(model=baseline_model, draws=1000)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [beta, tau, sigma]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;style&gt;
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+&lt;/style&gt;
+&lt;div&gt;
+  &lt;progress value=&#39;8000&#39; class=&#39;&#39; max=&#39;8000&#39; style=&#39;width:300px; height:20px; vertical-align: middle;&#39;&gt;&lt;/progress&gt;
+  100.00% [8000/8000 00:03&amp;lt;00:00 Sampling 4 chains, 0 divergences]
+&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 15 seconds.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The fact that Bayesian inference requires sampling, has been historically one of the main bottlenecks of Bayesian statistics, since it makes it sensibly slower than the frequentist approach. However, this is less and less of a problem with the increased computational power of model computers.&lt;/p&gt;
+&lt;p&gt;We are now ready to print out results. First, with the &lt;code&gt;summary()&lt;/code&gt; method, we can print a model summary very similar to those produced by the &lt;code&gt;statsmodels&lt;/code&gt; package.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pm.summary(idata, hdi_prob=0.95).round(4)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;mean&lt;/th&gt;
+      &lt;th&gt;sd&lt;/th&gt;
+      &lt;th&gt;hdi_2.5%&lt;/th&gt;
+      &lt;th&gt;hdi_97.5%&lt;/th&gt;
+      &lt;th&gt;mcse_mean&lt;/th&gt;
+      &lt;th&gt;mcse_sd&lt;/th&gt;
+      &lt;th&gt;ess_bulk&lt;/th&gt;
+      &lt;th&gt;ess_tail&lt;/th&gt;
+      &lt;th&gt;r_hat&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;beta[0]&lt;/th&gt;
+      &lt;td&gt;0.017&lt;/td&gt;
+      &lt;td&gt;0.025&lt;/td&gt;
+      &lt;td&gt;-0.029&lt;/td&gt;
+      &lt;td&gt;0.067&lt;/td&gt;
+      &lt;td&gt;0.001&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1765.0&lt;/td&gt;
+      &lt;td&gt;2233.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;beta[1]&lt;/th&gt;
+      &lt;td&gt;0.992&lt;/td&gt;
+      &lt;td&gt;0.010&lt;/td&gt;
+      &lt;td&gt;0.972&lt;/td&gt;
+      &lt;td&gt;1.012&lt;/td&gt;
+      &lt;td&gt;0.000&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;1810.0&lt;/td&gt;
+      &lt;td&gt;1964.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;tau&lt;/th&gt;
+      &lt;td&gt;0.159&lt;/td&gt;
+      &lt;td&gt;0.020&lt;/td&gt;
+      &lt;td&gt;0.120&lt;/td&gt;
+      &lt;td&gt;0.200&lt;/td&gt;
+      &lt;td&gt;0.000&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;2885.0&lt;/td&gt;
+      &lt;td&gt;1792.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;sigma&lt;/th&gt;
+      &lt;td&gt;0.993&lt;/td&gt;
+      &lt;td&gt;0.007&lt;/td&gt;
+      &lt;td&gt;0.980&lt;/td&gt;
+      &lt;td&gt;1.008&lt;/td&gt;
+      &lt;td&gt;0.000&lt;/td&gt;
+      &lt;td&gt;0.0&lt;/td&gt;
+      &lt;td&gt;3537.0&lt;/td&gt;
+      &lt;td&gt;2692.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;The estimated parameters are extremely close to the ones we got with the frequentist approach, with an estimated effect of the &lt;code&gt;infinite_scroll&lt;/code&gt; equal to $0.157$.&lt;/p&gt;
+&lt;p&gt;If sampling had the disadvantage of being slow, it has the advantage of being very &lt;strong&gt;transparent&lt;/strong&gt;. We can directly plot the distribution of the posterior. Let&amp;rsquo;s do it for the treatment effect $\tau$. The PyMC function &lt;code&gt;plot_posterior&lt;/code&gt; plots the distribution of the posterior, with a black bar for the Bayesian equivalent of a 95% confidence interval.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pm.plot_posterior(idata, kind=&amp;quot;hist&amp;quot;, var_names=(&#39;tau&#39;), hdi_prob=0.95, figsize=(6, 3), bins=30); 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_ab_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As expected, since we chose conjugate priors, the posterior distribution looks gaussian.&lt;/p&gt;
+&lt;p&gt;So far we have chosen the prior without much guidance. However, suppose we had access to past experiments. How do we incorporate this specific information?&lt;/p&gt;
+&lt;h2 id=&#34;past-experiments&#34;&gt;Past Experiments&lt;/h2&gt;
+&lt;p&gt;Suppose the idea of the infinite scroll, was just one among a ton of other ones that we tried and tested in the past. For each idea we have the data for the corresponding experiment, with the corresponding estimated coefficient. Suppose we had a thousand of them.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;past_experiments = [dgp.generate_data(seed_data=i) for i in range(1000)]
+taus = [smf.ols(&#39;ad_revenue ~ infinite_scroll + past_revenue&#39;, pe).fit().params.values for pe in past_experiments]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;How do we use this additional information?&lt;/p&gt;
+&lt;h3 id=&#34;normal-prior&#34;&gt;Normal Prior&lt;/h3&gt;
+&lt;p&gt;The first idea could be to calibrate our prior to reflect the data distribution in the past. Keeping the normality assumption, we use the estimated average and standard deviations of the estimates from past experiments.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;taus_mean = np.mean(taus, axis=0)[1]
+taus_mean
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.0047987091716528915
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;On average, had practically no effect on &lt;code&gt;ad_revenue&lt;/code&gt;, with a average effect of $0.0009$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;taus_std = np.sqrt(np.cov(taus, rowvar=0)[1,1])
+taus_std
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.15153398725701195
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, there was sensible variation across experiments, with a standard deviation of $0.029$.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s now estimate the&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;with pm.Model() as model_normal_prior:
+    k = np.shape(X)[1]
+    beta = pm.MvNormal(&#39;beta&#39;, mu=np.ones(k), cov=np.eye(k))
+    tau = pm.Normal(&#39;tau&#39;, mu=taus_mean, sigma=taus_std)
+    sigma = pm.InverseGamma(&#39;sigma&#39;, mu=1, sigma=1, initval=1)
+    Ylikelihood = pm.Normal(&#39;y&#39;, mu=(X@beta + D@tau).flatten(), sigma=sigma, observed=y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s sample from the model.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;idata_normal_prior = pm.sample(model=model_normal_prior, draws=1000)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [beta, tau, sigma]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;style&gt;
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+&lt;/style&gt;
+&lt;div&gt;
+  &lt;progress value=&#39;8000&#39; class=&#39;&#39; max=&#39;8000&#39; style=&#39;width:300px; height:20px; vertical-align: middle;&#39;&gt;&lt;/progress&gt;
+  100.00% [8000/8000 00:03&amp;lt;00:00 Sampling 4 chains, 0 divergences]
+&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 14 seconds.
+The acceptance probability does not match the target. It is 0.9025, but should be close to 0.8. Try to increase the number of tuning steps.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And plot the sample posterior distribution of the treatment effect parameter $\tau$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pm.plot_posterior(idata_normal_prior, kind=&amp;quot;hist&amp;quot;, var_names=(&#39;tau&#39;), hdi_prob=0.95, figsize=(6, 3), bins=30); 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_ab_47_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The estimated coefficient is sensibly smaller: $0.08$ instead of the previous estimate of $0.12$. Why is it the case?&lt;/p&gt;
+&lt;p&gt;The fact is that the previous coefficient of $0.12$ is extremely unlikey, given our prior. We can compute the probability of getting the same or a more extreme value, given the prior.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;1 - sp.stats.norm(taus_mean, taus_std).cdf(0.12)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.22355735943737898
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The probability of such value is almost zero. Therefore, the estimated coefficient has moved towards the prior mean of $0.0009$.&lt;/p&gt;
+&lt;h3 id=&#34;student-t-prior&#34;&gt;Student t Prior&lt;/h3&gt;
+&lt;p&gt;So far, we have assumed a normal distribution for all linear coefficients. Is it appropriate? Let&amp;rsquo;s check it visually (check &lt;a href=&#34;https://medium.com/towards-data-science/how-to-compare-two-or-more-distributions-9b06ee4d30bf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt; for other methods on how to compare distributions).&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot([tau[0] for tau in taus]).set(title=r&#39;Distribution of $\hat{\beta}_0$ in past experiments&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_ab_53_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The distribution seems pretty normal. What the treatment effect paramenter $\tau$?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plt.subplots()
+sns.histplot([tau[1] for tau in taus], label=&#39;past experiments&#39;);
+ax.axvline(reg.params[&#39;infinite_scroll&#39;], lw=2, c=&#39;C3&#39;, ls=&#39;--&#39;, label=&#39;current experiment&#39;)
+plt.legend();
+plt.title(r&#39;Distribution of $\hat{\tau}$ in past experiments&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_ab_55_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The distribution very &lt;strong&gt;heavy tailed&lt;/strong&gt;! While at the center it looks like a normal distributions, the tails are much &amp;ldquo;fatter&amp;rdquo; and we have a couple of very extreme values. excluding the case of measurement error, this is a setting that happens often in the industry, where most ideas have extremely small or null effects and very rarely an idea is actually a breakthrough.&lt;/p&gt;
+&lt;p&gt;One way to model this distribution is a &lt;a href=&#34;&#34;&gt;student-t distribution&lt;/a&gt;. In particular, we use a t-student with mean $0.0009$, variance $0.003$ and $1.3$ degrees of freedom to match the moments of the empirical distributions of past estimates.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;with pm.Model() as model_studentt_prior:
+
+    # Priors
+    k = np.shape(X)[1]
+    beta = pm.MvNormal(&#39;beta&#39;, mu=np.ones(k), cov=np.eye(k))
+    tau = pm.StudentT(&#39;tau&#39;, mu=taus_mean, sigma=0.003, nu=1.3)
+    sigma = pm.InverseGamma(&#39;sigma&#39;, mu=1, sigma=1, initval=1)
+    
+    # Likelihood 
+    Ylikelihood = pm.Normal(&#39;y&#39;, mu=(X@beta + D@tau).flatten(), sigma=sigma, observed=y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s sample from the model.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;idata_studentt_priors = pm.sample(model=model_studentt_prior, draws=1000)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Auto-assigning NUTS sampler...
+Initializing NUTS using jitter+adapt_diag...
+Multiprocess sampling (4 chains in 4 jobs)
+NUTS: [beta, tau, sigma]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;style&gt;
+    /* Turns off some styling */
+    progress {
+        /* gets rid of default border in Firefox and Opera. */
+        border: none;
+        /* Needs to be in here for Safari polyfill so background images work as expected. */
+        background-size: auto;
+    }
+    progress:not([value]), progress:not([value])::-webkit-progress-bar {
+        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
+    }
+    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
+        background: #F44336;
+    }
+&lt;/style&gt;
+&lt;div&gt;
+  &lt;progress value=&#39;8000&#39; class=&#39;&#39; max=&#39;8000&#39; style=&#39;width:300px; height:20px; vertical-align: middle;&#39;&gt;&lt;/progress&gt;
+  100.00% [8000/8000 00:03&amp;lt;00:00 Sampling 4 chains, 0 divergences]
+&lt;/div&gt;
+&lt;pre&gt;&lt;code&gt;Sampling 4 chains for 1_000 tune and 1_000 draw iterations (4_000 + 4_000 draws total) took 15 seconds.
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And plot the sample posterior distribution of the treatment effect parameter $\tau$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;pm.plot_posterior(idata_studentt_priors, kind=&amp;quot;hist&amp;quot;, var_names=(&#39;tau&#39;), hdi_prob=0.95, figsize=(6, 3), bins=30); 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_ab_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The estimated coefficient is now again similar to the one we got with the standard normal prior, $0.11$. However, the estimate is more precise since the confidence interval has shrunk from $[0.077, 0.016]$ to $[0.065, 0.015]$.&lt;/p&gt;
+&lt;p&gt;What has happened?&lt;/p&gt;
+&lt;h3 id=&#34;shrinking&#34;&gt;Shrinking&lt;/h3&gt;
+&lt;p&gt;The answer lies in the shape of the different &lt;strong&gt;prior distributions&lt;/strong&gt; that we have used:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;standard normal, $N(0,1)$&lt;/li&gt;
+&lt;li&gt;normal with matched moments, $N(0, 0.03)$&lt;/li&gt;
+&lt;li&gt;t-student with matched moments, $t_{1.3}$(0, 0.003)$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;t_hats = np.linspace(-0.3, 0.3, 1_000)
+distributions = {
+    &#39;N(0,1)&#39;: sp.stats.norm(0, 1).pdf(t_hats),
+    &#39;N(0, 0.03)&#39;: sp.stats.norm(0, 0.03).pdf(t_hats),
+    &#39;$t_{1.3}$(0, 0.003)&#39;: sp.stats.t(df=1.3).pdf(t_hats / 0.003)*300,
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s plot all of them together.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;for i, (label, y) in enumerate(distributions.items()):
+    sns.lineplot(x=t_hats, y=y, color=f&#39;C{i}&#39;, label=label);
+plt.legend(); 
+plt.title(&#39;Prior Distributions&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_ab_67_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, all distributions are centered on zero, but they have very different shapes. The standard normal distribution is essentially flat over the $[-0.15, 0.15]$ interval. Every value has basically the same probability. The last two instead, even though they have the same mean and variance, have very different shapes.&lt;/p&gt;
+&lt;p&gt;How does it translate into our estimation? We can plot the implied posterior for different estimates, for each prior distribution.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def compute_posterior(b, prior):
+    likelihood = sp.stats.norm(b, taus_std).pdf(t_hats)
+    return np.average(t_hats, weights=prior*likelihood)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plt.subplots(figsize=(7,6))
+ax.axvline(0, lw=1.5, c=&#39;k&#39;);
+ax.axhline(0, lw=1.5, c=&#39;k&#39;);
+ax.axvline(reg.params[&#39;infinite_scroll&#39;], lw=2, ls=&#39;--&#39;, c=&#39;darkgray&#39;);
+for i, (label, y) in enumerate(distributions.items()):
+    sns.lineplot(x=t_hats, y=[compute_posterior(t, y) for t in t_hats] , color=f&#39;C{i}&#39;, label=label);
+ax.set_xlim(-0.17, 0.17);
+ax.set_ylim(-0.17, 0.17);
+plt.legend(); 
+ax.set_xlabel(&#39;Experiment Estimate&#39;);
+ax.set_ylabel(&#39;Posterior&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/bayes_ab_70_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the different priors transform the experimental estimates in very different ways. The standard normal prior essentially has no effect for estimates in the $[-0.15, 0.15]$ interval. The normal prior with matched moments instead shrinks each estimate by approximately 2/3. The effect of the t-student prior is instead &lt;strong&gt;non-linear&lt;/strong&gt;: it shrinks small estimates towards zero, while it keeps large estimates as they are.&lt;/p&gt;
+&lt;p&gt;My &lt;strong&gt;intuition&lt;/strong&gt; is the following. A prior distribution very skewed or with &amp;ldquo;fat tails&amp;rdquo; means that large values are rare but not impossible. In practice, it means accepting that breakthrough improvements are possible. On the other hand, for the same variance, the distribution is more concentrated around zero than a standard normal so that small values are shrunk even more.&lt;/p&gt;
+&lt;img src=&#34;fig/scroll.jpg&#34; width=&#34;300px&#34;/&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this article we have seen how to extend the analysis of AB test to incorporate &lt;strong&gt;information from past experiments&lt;/strong&gt;. In particular, we have seen the importance of choosing a prior. Selecting the distribution function is just as important as tuning its parameters. The shape of the prior distribution can drastically affect our inference, especially in a world with skewed distributions.&lt;/p&gt;
+&lt;p&gt;Despite the length of the article, this was just a glimpse in the world of &lt;strong&gt;AB testing and Bayesian statistics&lt;/strong&gt;. While being computationally more intensive and requiring additional assumptions, the Bayesian approach is often more natural, powerful and flexible than the frequentist one. Knowing pros and cons of both approaches is crucial to get the best of both worlds, picking the approach that work best or combining them efficiently.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;E. Azevedo, A. Deng, J. Olea, G. Weyl, &lt;a href=&#34;https://www.aeaweb.org/articles?id=10.1257/pandp.20191003&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Empirical Bayes Estimation of Treatment Effects with Many A/B Tests: An Overview&lt;/a&gt; (2019). &lt;em&gt;AEA Papers and Proceedings&lt;/em&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;A. Deng, &lt;a href=&#34;https://dl.acm.org/doi/abs/10.1145/2740908.2742563&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Objective Bayesian Two Sample Hypothesis Testing for Online Controlled Experiments&lt;/a&gt; (2018), &lt;em&gt;WWW15&lt;/em&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://medium.com/towards-data-science/the-bayesian-bootstrap-6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Bayesian Bootstrap&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/understanding-cuped-a822523641af&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding CUPED&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/controls-b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/bayes_ab.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/bayes_ab.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Understanding Causal Trees</title>
+      <link>https://matteocourthoud.github.io/post/causal_trees/</link>
+      <pubDate>Wed, 01 Feb 2023 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/causal_trees/</guid>
+      <description>&lt;p&gt;&lt;em&gt;How to use regression trees to estimate heterogeneous treatment effects.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;In causal inference we are usually interested in estimating the causal effect of a treatment (a drug, ad, product, &amp;hellip;) on an outcome of interest (a disease, firm revenue, customer satisfaction, &amp;hellip;). However, knowing that a treatment works on average is often not sufficient and we would like to know for which subjects (patients, users, customers, &amp;hellip;) it works better or worse, i.e. we would like to estimate &lt;strong&gt;heterogeneous treatment effects&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Estimating heterogeneous treatments effects allows us to do &lt;strong&gt;targeting&lt;/strong&gt;. Knowing which customers are more likely to react to a discount allows a company to spend less money by offering fewer but better targeted discounts. This works also for negative effects: knowing for which patients a certain drug has side effects allows a pharmaceutical company to warn or exclude them from the treatment. There is also a more subtle advantage of estimating heterogeneous treatment effects: knowing &lt;strong&gt;for whom&lt;/strong&gt; a treatment works allows us to better understand &lt;strong&gt;how&lt;/strong&gt; a treatment works. Knowing that the effect of a discount does not depend on the income of its recipient but rather by its buying habits  tells us that maybe it is not a matter of money, but rather a matter of attention or loyalty.&lt;/p&gt;
+&lt;p&gt;In this article, we will explore the estimation of heterogeneous treatment effects using a modified version of regression trees (and forests). From a machine learning perspective, there are two fundamental &lt;strong&gt;differences between causal trees and predictive trees&lt;/strong&gt;. First of all, the target is the treatment effect, which is an inherently unobservable object. Second, we are interested in doing inference, which means quantifying the uncertainty of our estimates.&lt;/p&gt;
+&lt;h2 id=&#34;online-discounts&#34;&gt;Online Discounts&lt;/h2&gt;
+&lt;p&gt;For the rest of the article, we are going to use a toy example, for the sake of exposition: suppose we were an &lt;strong&gt;online shop&lt;/strong&gt; and we are interested in understanding whether offering discounts to new customers increases their expenditure. In particular, we would like to know if offering discounts is more effective for some customers with respect to others, since we would prefer not to give discounts to customers that would spend anyways. Moreover, it could also be that spamming customers with pop-ups could deter them from buying, having the opposite effect.&lt;/p&gt;
+&lt;img src=&#34;fig/causal_trees1.jpg&#34; width=&#34;300px&#34;/&gt;
+&lt;p&gt;To understand whether and how much the discounts are effective we run an &lt;strong&gt;A/B test&lt;/strong&gt;: whenever a new user visits our online shop, we randomly decide whether to offer them the discount or not. I import the data-generating process &lt;code&gt;dgp_online_discounts()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt;. With respect to previous articles, I generated a new DGP parent class that handles randomization and data generation, while its children classes contain specific use cases. I also import some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;. To include not only code but also data and tables, I use &lt;a href=&#34;https://deepnote.com/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Deepnote&lt;/a&gt;, a Jupyter-like web-based collaborative notebook environment.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+
+from src.utils import *
+from src.dgp import dgp_online_discounts
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_online_discounts(n=100_000)
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;time&lt;/th&gt;
+      &lt;th&gt;device&lt;/th&gt;
+      &lt;th&gt;browser&lt;/th&gt;
+      &lt;th&gt;region&lt;/th&gt;
+      &lt;th&gt;discount&lt;/th&gt;
+      &lt;th&gt;spend&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;10.78&lt;/td&gt;
+      &lt;td&gt;mobile&lt;/td&gt;
+      &lt;td&gt;edge&lt;/td&gt;
+      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0.46&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;0.57&lt;/td&gt;
+      &lt;td&gt;desktop&lt;/td&gt;
+      &lt;td&gt;firefox&lt;/td&gt;
+      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;11.04&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;3.74&lt;/td&gt;
+      &lt;td&gt;mobile&lt;/td&gt;
+      &lt;td&gt;safari&lt;/td&gt;
+      &lt;td&gt;7&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1.81&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;13.37&lt;/td&gt;
+      &lt;td&gt;desktop&lt;/td&gt;
+      &lt;td&gt;other&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;31.90&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;0.71&lt;/td&gt;
+      &lt;td&gt;mobile&lt;/td&gt;
+      &lt;td&gt;explorer&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;15.42&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have data on 100.000 website visitors, for whom we observe the &lt;code&gt;time&lt;/code&gt; of the day, the &lt;code&gt;device&lt;/code&gt; they use, their &lt;code&gt;browser&lt;/code&gt; and their geographical &lt;code&gt;region&lt;/code&gt;. We also see whether they were offered the &lt;code&gt;discount&lt;/code&gt;, our treatment, and what is their &lt;code&gt;spend&lt;/code&gt;, the outcome of interest.&lt;/p&gt;
+&lt;p&gt;Since the treatment was randomly assigned, we can use a simple &lt;strong&gt;difference-in-means&lt;/strong&gt; estimator to estimate the treatment effect. We expect the treatment and control group to be similar, except for the &lt;code&gt;discount&lt;/code&gt;, therefore we can causally attribute any difference in &lt;code&gt;spend&lt;/code&gt; to the &lt;code&gt;discount&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;spend ~ discount&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    5.0306&lt;/td&gt; &lt;td&gt;    0.046&lt;/td&gt; &lt;td&gt;  109.949&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.941&lt;/td&gt; &lt;td&gt;    5.120&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;discount&lt;/th&gt;  &lt;td&gt;    3.8568&lt;/td&gt; &lt;td&gt;    0.065&lt;/td&gt; &lt;td&gt;   59.597&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    3.730&lt;/td&gt; &lt;td&gt;    3.984&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The discount seems to be effective: on average the spend in the treatment group increases by 3.86$. But are all customers equally affected?&lt;/p&gt;
+&lt;p&gt;To answer this question, we would like to estimate &lt;strong&gt;heterogeneous treatment effects&lt;/strong&gt;, possibly at the individual level.&lt;/p&gt;
+&lt;h2 id=&#34;conditional-average-treatment-effects&#34;&gt;Conditional Average Treatment Effects&lt;/h2&gt;
+&lt;p&gt;There are many possible ways to estimate heterogenous treatment effects. The most common is to split the population in groups based on some observable characteristic, which in our case could be the &lt;code&gt;device&lt;/code&gt;, the &lt;code&gt;browser&lt;/code&gt; or the geographical &lt;code&gt;region&lt;/code&gt;. Splitting is easy for categorical variables, but for a continuous variable like &lt;code&gt;time&lt;/code&gt; it is not intuitive where to split. Every hour? And which dimension is more informative? It would be temping to try all possible splits, but the more we split the data, the more it is likely that we find spurious results (i.e. we overfit, in machine learning lingo). It would be great if we could &lt;strong&gt;let the data speak&lt;/strong&gt; and select the minimum and most informative splits.&lt;/p&gt;
+&lt;p&gt;In a &lt;a href=&#34;https://medium.com/towards-data-science/understanding-meta-learners-8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;separate post&lt;/a&gt;, I have shown how the so-called &lt;strong&gt;meta-learners&lt;/strong&gt; take this approach to causal inference. The idea is to predict the outcome conditional on the treatment status for each observation, and then compare the predicted conditional on treatment, with the predicted outcome conditional on control. The difference is the individual treatment effect.&lt;/p&gt;
+&lt;p&gt;The problem with meta-learners is that they use all their &lt;a href=&#34;https://en.wikipedia.org/wiki/Degrees_of_freedom_%28statistics%29&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;degrees of freedom&lt;/a&gt; in predicting the outcome. However, we are interested to predict treatment effect heterogeneity. If most of the variation in the outcome is &lt;em&gt;not&lt;/em&gt; in the treatment dimension, we will get very poor estimates of the treatment effects.&lt;/p&gt;
+&lt;p&gt;Is it possible to instead directly concentrate on the &lt;strong&gt;prediction of individual treatment effects&lt;/strong&gt;? Let&amp;rsquo;s define $Y$ the outcome of interest, &lt;code&gt;spend&lt;/code&gt; in our case, $D$ the treatment, the &lt;code&gt;discount&lt;/code&gt;, and $X$ other observable characteristics. The &lt;em&gt;ideal&lt;/em&gt; objective function is&lt;/p&gt;
+&lt;p&gt;$$
+\sum_i \Big [ ( \tau_i - \hat \tau_i(X))^2 \Big ]
+$$&lt;/p&gt;
+&lt;p&gt;where $\tau_i$ is the treatment effect of individual $i$. However, this objective function is &lt;strong&gt;unfeasible&lt;/strong&gt; since we do not observe $\tau_i$.&lt;/p&gt;
+&lt;p&gt;But, turns out that there is a way to get an unbiased estimate of the &lt;strong&gt;individual treatment effect&lt;/strong&gt;. The &lt;strong&gt;idea&lt;/strong&gt; is to use an auxiliary outcome variable, whose expected value for each individual is the individual treatment effect. This variable is&lt;/p&gt;
+&lt;p&gt;$$
+Y_i^* = \frac{Y_i}{D_i \cdot p(X_i) - (1-D_i) \cdot (1-p(X_i))}
+$$&lt;/p&gt;
+&lt;p&gt;where $p(X_i)$ is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Propensity_score_matching&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;propensity score&lt;/strong&gt;&lt;/a&gt; of observation $i$, i.e. its probability of being treated.&lt;/p&gt;
+&lt;p&gt;In randomized experiments, the propensity score is known since randomization is fully under control of the experimenter. For example, in our case, the probability of treatment was 50%. In quasi-experimental studies instead, when the treatment probability is not known, it has to be estimated. Even in randomized experiments, it is always better to estimate rather than inpute the propensity scores, since it guards against sampling variation in the randomization. For more details on the propensity scores and how they are used in causal inference, I have a separate post &lt;a href=&#34;https://medium.com/towards-data-science/matching-weighting-or-regression-99bf5cffa0d9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s first generate dummy variables for our categorical variables, &lt;code&gt;device&lt;/code&gt;, &lt;code&gt;browser&lt;/code&gt; and &lt;code&gt;region&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_dummies = pd.get_dummies(df[dgp.X[1:]], drop_first=True)
+df = pd.concat([df, df_dummies], axis=1)
+X = [&#39;time&#39;] + list(df_dummies.columns)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We fit a &lt;code&gt;LogisticRegression&lt;/code&gt; and use it to predict the treatment probability, i.e. construct the propensity score.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.linear_model import LogisticRegression
+
+df[&#39;pscore&#39;] = LogisticRegression().fit(df[X], df[dgp.D]).predict_proba(df[X])[:,1]
+sns.histplot(data=df, x=&#39;pscore&#39;, hue=&#39;discount&#39;).set(title=&#39;Predicted propensity scores&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/causal_trees_16_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As expected, most propensity scores are very close to 0.5, the probability of treatment used in randomization.&lt;/p&gt;
+&lt;p&gt;We now have all the elements to compute our auxiliary outcome variable $Y^*$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;y_star&#39;] = df[dgp.Y[0]] / (df[dgp.D] * df[&#39;pscore&#39;] - (1-df[dgp.D]) * (1-df[&#39;pscore&#39;]))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As we said before, the idea is to use $Y^*$ as the target of a prediction problem, since the expected value is exactly the individual treatment effect. Let&amp;rsquo;s check its average in the data.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;y_star&#39;].mean()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;3.851294369598394
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Indeed its average is almost identical to the previously estimated average treatment effect of 3.85.&lt;/p&gt;
+&lt;p&gt;How is it possible that, with a single observation and an estimate of the propensity score, we can estimate the individual treatment effect? What are the drawbacks?&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;intuition&lt;/strong&gt; is to approach the problem from a different perspective: &lt;em&gt;ex-ante&lt;/em&gt;, before the experiment. Imagine that our dataset had a single observation, $i$. We know that the treatment probability is $p(X_i)$, the propensity score. Therefore, in expectation, our dataset has $p(X_i)$ observations in the treatment group and $1 - p(X_i)$ observations in the control group. The rest is business as usual: we estimate the treatment effect as the difference in average outcomes between the two groups! And indeed that is what we would do:&lt;/p&gt;
+&lt;p&gt;$$
+Y_i^* = \frac{Y_i D_i}{p(X_i)} - \frac{Y_i (1-D_i)}{1-p(X_i)}
+$$&lt;/p&gt;
+&lt;p&gt;The only difference is that we have a single observation.&lt;/p&gt;
+&lt;p&gt;This trick comes at a cost: $Y_i^*$ is an unbiased estimator for the individual treatment effect, but has a very &lt;strong&gt;high variance&lt;/strong&gt;. This is immediately visible by plotting its distribution.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.histplot(df[&#39;y_star&#39;]).set(title=&#39;Distribution of Auxiliary Variable&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/causal_trees_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;We are now ready to estimate &lt;strong&gt;heterogeneous treatment effects&lt;/strong&gt;, by translating the causal inference problem into a prediction problem, predicting the auxiliary outcome $Y^*$, given observable characteristics $X$.&lt;/p&gt;
+&lt;img src=&#34;fig/causal_trees2.jpg&#34; width=&#34;300px&#34;/&gt;
+&lt;h2 id=&#34;causal-trees&#34;&gt;Causal Trees&lt;/h2&gt;
+&lt;p&gt;In the previous section, we have see that we can transform the estimation of &lt;strong&gt;heterogeneous treatment effects&lt;/strong&gt; into a prediction problem, where the outcome is the auxiliary outcome variable&lt;/p&gt;
+&lt;p&gt;$$
+Y_i^* = \frac{Y_i}{T_i * e_i - (1-T_i) * (1-e_i)}
+$$&lt;/p&gt;
+&lt;p&gt;We can in principle use any machine learning algorithm at this point to estimate individual treatment effects. However, &lt;a href=&#34;https://en.wikipedia.org/wiki/Decision_tree_learning&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;regression trees&lt;/strong&gt;&lt;/a&gt; have particularly convenient characteristics.&lt;/p&gt;
+&lt;p&gt;First of all, how do regression trees work? Without going too much in detail, they are an algorithm that recursively &lt;strong&gt;partitions the data in bins&lt;/strong&gt; such that the outcome $Y$ &lt;em&gt;within&lt;/em&gt; each bin is as homogeneous as possible and the outcome &lt;em&gt;across&lt;/em&gt; bins is as heterogeneous as possible. The predicted values are simply the averages within each bin.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;averaging&lt;/strong&gt; part is one of the big advantages of regression trees for inference since we know very well how to do inference with averages, with the &lt;a href=&#34;https://en.wikipedia.org/wiki/Central_limit_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Central Limit Theorem&lt;/strong&gt;&lt;/a&gt;. The second advantage is that trees are very &lt;strong&gt;interpretable&lt;/strong&gt;, since we can directly plot the data partition as a tree structure. We will see more of this later. Last but not least, regression trees are still at the core the &lt;a href=&#34;https://arxiv.org/abs/2207.08815&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;best performing predictive algorithms&lt;/a&gt; with tabular data, as of 2022.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s use the &lt;a href=&#34;https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;DecisionTreeRegressor&lt;/code&gt;&lt;/a&gt; function from &lt;code&gt;sklearn&lt;/code&gt; to fit our regression tree and estimate heterogeneous treatment effects of &lt;code&gt;discounts&lt;/code&gt; on customers&#39; &lt;code&gt;spend&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.tree import DecisionTreeRegressor
+
+tree = DecisionTreeRegressor(max_depth=2).fit(df[X], df[&#39;y_star&#39;])
+df[&#39;y_hat&#39;] = tree.predict(df[X])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We have restricted the tree to have a maximum depth of 2 and at least 30 observation per partition (also called &lt;em&gt;leaf&lt;/em&gt;) so that we can easily plot the tree and visualize the estimated groups and treatment effects.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.tree import plot_tree
+
+plot_tree(tree, filled=True, fontsize=12, feature_names=X, impurity=False, rounded=True);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/causal_trees_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;How should we &lt;strong&gt;interpret&lt;/strong&gt; the tree? On the top, we can see the average $Y^*$ in the data, 3.851. Starting from there, the data gets split into different branches, according to the rules highlighted at the top of each node. For example, the first node splits the data into two groups of size 42970 and 57030 depending on whether the &lt;code&gt;time&lt;/code&gt; is later than 10.365. At the bottom, we have our final partitions, with the predicted values. For example, the leftmost leaf contains 36846 observation with &lt;code&gt;time&lt;/code&gt; earlier than 10.365 and non-Safari &lt;code&gt;browser&lt;/code&gt;, for which we predict a spend of 1.078. Darker node colors indicate higher prediction values.&lt;/p&gt;
+&lt;p&gt;Should we believe these estimates? Not really, because of a couple of reasons. The &lt;strong&gt;first problem&lt;/strong&gt; is that we have an unbiased estimate of the average treatment effect only if, &lt;em&gt;within each leaf&lt;/em&gt;, we have the same number of treated and control units. This is not automatically the case with an off-the-shelf &lt;code&gt;DecisionTreeRegressor()&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Moreover, we have used the &lt;strong&gt;same data&lt;/strong&gt; to generate the tree and evaluate it. This generates some bias because of overfitting. We can split the sample in 2 and use different data to generate the tree and compute the predictions. These trees are called &lt;strong&gt;honest trees&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Last but not least, how should the tree be generated? The default rule to generate splits with the &lt;code&gt;DecisionTreeRegressor&lt;/code&gt; function is the &lt;code&gt;squared_error&lt;/code&gt; and there is no restriction on the minimum number of observations per leaf. However, since we are interested in doing inference, we would like to have a sufficient sample size in each leaf to detect a treatment effect.&lt;/p&gt;
+&lt;p&gt;Luckily, there are multiple libraries where the so-called &lt;a href=&#34;https://www.pnas.org/doi/abs/10.1073/pnas.1510489113&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;causal trees&lt;/strong&gt;&lt;/a&gt; are implemented. We import &lt;code&gt;CausalForestDML&lt;/code&gt; from Microsoft&amp;rsquo;s &lt;a href=&#34;https://econml.azurewebsites.net/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;EconML&lt;/a&gt; library, one of the best libraries for causal inference.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.dml import CausalForestDML
+tree_model = CausalForestDML(n_estimators=1, subforest_size=1, inference=False, max_depth=4)
+tree_model = tree_model.fit(Y=df[dgp.Y], X=df[X], T=df[dgp.D])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We have restricted the number of estimators to 1 to have a single tree instead of multiple ones, the so-called &lt;a href=&#34;https://en.wikipedia.org/wiki/Random_forest&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;random forests&lt;/strong&gt;&lt;/a&gt; that we will cover in a separate article.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.cate_interpreter import SingleTreeCateInterpreter
+%matplotlib inline
+
+intrp = SingleTreeCateInterpreter(max_depth=2).interpret(tree_model, df[X])
+intrp.plot(feature_names=X, fontsize=12)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/causal_trees_33_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the tree representation looks extremely similar to the one we got before using the &lt;code&gt;DecisionTreeRegressor&lt;/code&gt; function. However, now the model not only reports estimates of the conditional average treatment effects, but also the standard errors of the estimates (at the bottom). How were they computed?&lt;/p&gt;
+&lt;h3 id=&#34;inference&#34;&gt;Inference&lt;/h3&gt;
+&lt;p&gt;Honest trees, besides improving the out-of-sample prediction accuracy of the model, have another great implication: they allow us to &lt;strong&gt;compute standard errors as if the tree structure was exogenous&lt;/strong&gt;. In fact, since the data used to compute the predictions is independent from the data used to build the tree (split the data), we can just treat the tree structure as independent from the estimated treatment effects. As a consequence, we can estimate the standard errors of the the estimates as standard errors of difference between sample averages, as in a standard AB test.&lt;/p&gt;
+&lt;p&gt;If we had used the same data to build the tree and estimate the treatment effects, we would have introduced &lt;strong&gt;bias&lt;/strong&gt;, because of the spurious correlation between the covariates and the outcomes. This bias usually disappears for very large sample sizes, but honest trees do not require than.&lt;/p&gt;
+&lt;h3 id=&#34;performance&#34;&gt;Performance&lt;/h3&gt;
+&lt;p&gt;How well does the model perform? Since we control the data generating process, we can do something that is not possible with real data: check the predicted treatment effects against the true ones. The &lt;code&gt;generate_potential_outcomes()&lt;/code&gt; function loads the data with both potential outcomes for each observation, under both treatment (&lt;code&gt;outcome_t&lt;/code&gt;) and control (&lt;code&gt;outcome_c&lt;/code&gt;).&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def compute_discrete_effects(df, hte_model):
+    temp_df = df.copy()
+    temp_df.time = 0
+    temp_df = dgp.add_treatment_effect(temp_df)
+    temp_df = temp_df.rename(columns={&#39;effect_on_spend&#39;: &#39;True&#39;})
+    temp_df[&#39;Predicted&#39;] = hte_model.effect(temp_df[X])
+    df_effects = pd.DataFrame()
+    for var in X[1:]:
+        for effect in [&#39;True&#39;, &#39;Predicted&#39;]:
+            v = temp_df[effect][temp_df[var]==1].mean() - temp_df[effect][temp_df[var]==0].mean()
+            effect_var = {&#39;Variable&#39;: [var], &#39;Effect&#39;: [effect], &#39;Value&#39;: [v]}
+            df_effects = pd.concat([df_effects, pd.DataFrame(effect_var)]).reset_index(drop=True)
+    return df_effects, temp_df[&#39;Predicted&#39;].mean()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_effects_tree, avg_effect_notime_tree = compute_discrete_effects(df, tree_model)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plt.subplots()
+sns.barplot(data=df_effects_tree, x=&amp;quot;Variable&amp;quot;, y=&amp;quot;Value&amp;quot;, hue=&amp;quot;Effect&amp;quot;, ax=ax).set(
+    xlabel=&#39;&#39;, ylabel=&#39;&#39;, title=&#39;Heterogeneous Treatment Effects&#39;)
+ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha=&amp;quot;right&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/causal_trees_42_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The causal tree is pretty good at detecting the heterogeneous treatment effects for the categorical variables. It only missed the heterogeneity in the third region.&lt;/p&gt;
+&lt;p&gt;However, this is also where we expect a tree model to perform particularly well: where the effects are &lt;strong&gt;discrete&lt;/strong&gt;. How well does it do on our continuous variable, time? First, let&amp;rsquo;s again isolate the predicted treatment effects on &lt;code&gt;time&lt;/code&gt; and ignore the other covariates.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def compute_time_effect(df, hte_model, avg_effect_notime):
+    df_time = df.copy()
+    df_time[[X[1:]] + [&#39;device&#39;, &#39;browser&#39;, &#39;region&#39;]] = 0
+    df_time = dgp.add_treatment_effect(df_time)
+    df_time[&#39;predicted&#39;] = hte_model.effect(df_time[X]) + avg_effect_notime
+    return df_time
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_time_tree = compute_time_effect(df, tree_model, avg_effect_notime_tree)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We now plot the predicted treatment effects against the true ones, along the &lt;code&gt;time&lt;/code&gt; dimension.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(x=&#39;time&#39;, y=&#39;effect_on_spend&#39;, data=df_time_tree, label=&#39;True&#39;)
+sns.scatterplot(x=&#39;time&#39;, y=&#39;predicted&#39;, data=df_time_tree, label=&#39;Predicted&#39;).set(
+    ylabel=&#39;&#39;, title=&#39;Heterogeneous Treatment Effects&#39;)
+plt.legend(title=&#39;Effect&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/causal_trees_47_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;From the plot, we can appreciate the discrete nature of causal trees: the model is only able to split the continuous variable into 5 bins. These bins are close to the true treatment effects, but they fail to capture a big chunk of the treatment effect heterogeneity.&lt;/p&gt;
+&lt;p&gt;Can these predictions be improved? The answer is yes, and we will explore how in the next post.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this article, we have seen how to use causal trees to estimate &lt;strong&gt;heterogeneous treatment effects&lt;/strong&gt;. The main insight comes from the definition of an auxiliary outcome variable that allows us to frame the inference problem as a prediction problem. While we can then use any algorithm to predict treatment effects, regression trees are particularly useful because of their interpretability, prediction accuracy, and feature of generating prediction as subsample averages.&lt;/p&gt;
+&lt;p&gt;The work by &lt;a href=&#34;https://www.pnas.org/doi/abs/10.1073/pnas.1510489113&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Athey and Imbens (2016)&lt;/a&gt; on regression trees to compute heterogeneous treatment effects brought together two separate literatures, causal inference and machine learning in a very fruitful &lt;strong&gt;synergy&lt;/strong&gt;. The causal inference literature (re)discovered the inference benefits of sample splitting, that allows us to do correct inference even when the data partition is complex and hard to analyze. On the other hand, splitting the tree generation phase from the within-leaf prediction phase has strong benefits in terms of prediction accuracy, by safeguarding against overfitting.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;S. Athey, G. Imbens, &lt;a href=&#34;https://www.pnas.org/doi/abs/10.1073/pnas.1510489113&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Recursive partitioning for heterogeneous causal effects&lt;/a&gt; (2016), &lt;em&gt;PNAS&lt;/em&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;S. Wager, S. Athey, &lt;a href=&#34;https://www.tandfonline.com/doi/full/10.1080/01621459.2017.1319839&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Estimation and Inference of Heterogeneous Treatment Effects using Random Forests&lt;/a&gt; (2018), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;S. Athey, J. Tibshirani, S. Wager, &lt;a href=&#34;https://projecteuclid.org/journals/annals-of-statistics/volume-47/issue-2/Generalized-random-forests/10.1214/18-AOS1709.full&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Generalized Random Forests&lt;/a&gt; (2019). &lt;em&gt;The Annals of Statistics&lt;/em&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;M. Oprescu, V. Syrgkanis, Z. Wu, &lt;a href=&#34;http://proceedings.mlr.press/v97/oprescu19a.html?ref=https://githubhelp.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Orthogonal Random Forest for Causal Inference&lt;/a&gt; (2019). &lt;em&gt;Proceedings of the 36th International Conference on Machine Learning&lt;/em&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/99bf5cffa0d9&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Matching, Weighting, or Regression?&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Meta Learners&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/ed4097dab27a&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding AIPW, the Doubly-Robust Estimator&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/causal_trees.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/causal_trees.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Bayesian AB Testing</title>
@@ -9892,650 +10673,6 @@ mono_font = &amp;quot;Roboto Mono&amp;quot;
 &lt;li&gt;Wowchemy website: &lt;a href=&#34;https://wowchemy.com/docs/getting-started/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://wowchemy.com/docs/getting-started/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Old Academic website: &lt;a href=&#34;https://sourcethemes.com/academic/docs/install/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://sourcethemes.com/academic/docs/install/&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Guide for the Terminal: &lt;a href=&#34;https://github.com/fliptanedo/FlipWebsite2017&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/fliptanedo/FlipWebsite2017&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>Causal Trees</title>
-      <link>https://matteocourthoud.github.io/post/causal_trees/</link>
-      <pubDate>Fri, 15 Apr 2022 00:00:00 +0000</pubDate>
-      <guid>https://matteocourthoud.github.io/post/causal_trees/</guid>
-      <description>&lt;p&gt;In this tutorial, we are going to see how to estimate heterogeneous treatment effects using regression trees.&lt;/p&gt;
-&lt;p&gt;For this tutorial, I assume you are familiar with the following concepts:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Rubin&amp;rsquo;s potential outcome framework&lt;/li&gt;
-&lt;li&gt;Decision tree methods&lt;/li&gt;
-&lt;li&gt;Propensity score matching&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;setting&#34;&gt;Setting&lt;/h2&gt;
-&lt;p&gt;We assume that for a set of i.i.d. subjects $i = 1, &amp;hellip;, n$ we observed a tuple $(X_i, D_i, Y_i)$ comprised of&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;a feature vector $X_i \in \mathbb R^n$&lt;/li&gt;
-&lt;li&gt;a treatment assignment $T_i \in \lbrace 0, 1 \rbrace$&lt;/li&gt;
-&lt;li&gt;a response $Y_i \in \mathbb R$&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Our goal is to estimate the &lt;strong&gt;conditional average treatment effect&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;$$
-\tau(x) = \mathbb E \Big [ Y^{(1)} - Y^{(0)} \ \Big| \ X = x \Big ]
-$$&lt;/p&gt;
-&lt;p&gt;Crucially, we only get to observe $Y_i = Y_i^{(T_i)}$.&lt;/p&gt;
-&lt;p&gt;Wihtout further assumptions, we cannot estimate $\tau(x)$.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Assumption: unconfoundedness&lt;/strong&gt; (or ignorability, or selection on observables)&lt;/p&gt;
-&lt;p&gt;$$
-\lbrace Y_i^{(1)} , Y^{(0)} \rbrace \perp W_i \ | \ X_i
-$$&lt;/p&gt;
-&lt;p&gt;i.e. conditional on observable characteristics the treatment assignment is as good as random.&lt;/p&gt;
-&lt;p&gt;When unconfoundedness holds, matching methods usually provide consistent estimates of the conditional average treatment effect.&lt;/p&gt;
-&lt;h2 id=&#34;prediction-problem&#34;&gt;Prediction Problem&lt;/h2&gt;
-&lt;p&gt;How can we make the inference problem a &lt;strong&gt;prediction problem&lt;/strong&gt;?&lt;/p&gt;
-&lt;p&gt;In principle, we would like to divide the population in subgroups in order to minimize the mean squared error (MSE) of treatment effects.&lt;/p&gt;
-&lt;p&gt;The objective function is&lt;/p&gt;
-&lt;p&gt;$$
-\sum_i \Big [ ( \tau_i - \hat \tau_i(X))^2 \Big ]
-$$&lt;/p&gt;
-&lt;p&gt;However, this objective function is &lt;strong&gt;unfeasible&lt;/strong&gt; since we do not observe $\tau_i$.&lt;/p&gt;
-&lt;p&gt;The &lt;strong&gt;idea&lt;/strong&gt; is to transform our outcome variable as&lt;/p&gt;
-&lt;p&gt;$$
-Y_i^* = \frac{Y_i}{D_i * p(X_i) - (1-D_i) * (1-p(X_i))}
-$$&lt;/p&gt;
-&lt;p&gt;where $p_i$ is the &lt;strong&gt;propensity score&lt;/strong&gt; of observation $i$, i.e. its probability of being treated.&lt;/p&gt;
-&lt;p&gt;It&amp;rsquo;s intuitive to verify that, given this specification, the expected value of $Y_i^*$ is the &lt;strong&gt;conditional average treatment effect&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;Here is a proof:&lt;/p&gt;
-&lt;p&gt;$$
-\begin{aligned}
-\mathbb E \left[ Y_i^{*} \mid X_i = x \right] &amp;amp;= \mathbb E \left[ \frac{Y_i}{T_i * p(X_i) - (1-T_i) * (1-p(X_i))} \ \Big | \ X_i = x \right]
-\newline
-&amp;amp;= \mathbb E \left[ Y_i * \frac{T_i - p(X_i)}{p(X_i) (1-p(X_i))} \ \Big | \ X_i = x \right]
-\newline
-&amp;amp;= \mathbb E \left[ Y_i T_i * \frac{T_i - p(X_i)}{p(X_i) (1 - p(X_i))} + Y_i (1-T_i) * \frac{T_i - p(X_i)}{p(X_i) (1 - p(X_i))} \ \Big | \ X_i = x \right]
-\newline
-&amp;amp;= \mathbb E \Big[ Y^{(1)}_i * \frac{D_i (1 - p(X_i))}{p(X_i) (1 - p(X_i))} \ \Big | \ X_i = x \Big] - \mathbb E \left[Y^{(0)}_i * \frac{(1 - T_i) p(X_i)}{p(X_i) (1-p(X_i))} \ \Big | \ X_i = x \right]
-\newline
-&amp;amp;= \frac{1}{p(X_i)} \mathbb E \Big[ Y^{(1)}_i * T_i \ \Big | \ X_i = x \Big] - \frac{1}{1-p(X_i)} \mathbb E \left[ Y^{(0)}_i * (1 - T_i) \ \Big | \ X_i = x \right]
-\newline
-&amp;amp;= \frac{1}{p(X_i)} \mathbb E \left[ Y^{(1)}_i \ \Big | \ X_i = x \right] * \mathbb E \Big[ T_i \ \Big | \ X_i = x \Big] - \frac{1}{1 - p(X_i)} \mathbb E \left[ Y^{(0)}_i \ \Big | \ X_i = x \right] * \mathbb E \left[ (1 - T_i) \ \Big | \ X_i = x \right]
-\newline
-&amp;amp;= \mathbb E \Big[ Y^{(1)}_i \ \Big | \ X_i = x \Big] - \mathbb E \Big[Y^{(0)}_i \ \Big | \ X_i = x \Big]
-\newline
-&amp;amp;= \tau_i(x)
-\end{aligned}
-$$&lt;/p&gt;
-&lt;p&gt;How can &lt;strong&gt;regression trees&lt;/strong&gt; help estimate heterogeneous treatment effects?&lt;/p&gt;
-&lt;p&gt;If we fit a tree model on the modified outcome $Y^*$, we will get a partition of the data that minimizes the expected mean squared error of the conditional treatment effect. While the individual estimates are going to be inaccurate, within each leaf, we can estimate &lt;strong&gt;heterogeneous treatment effects&lt;/strong&gt;.&lt;/p&gt;
-&lt;p&gt;In order to get an &lt;strong&gt;unbiased estimate&lt;/strong&gt; however, we need to use different data to build the tree and to estimate the effect. This procedure comes at the cost of increased variance.&lt;/p&gt;
-&lt;h2 id=&#34;example-1-simulated-data&#34;&gt;Example 1: Simulated Data&lt;/h2&gt;
-&lt;p&gt;Let&amp;rsquo;s start with an example on synthetic data. We have the following individual characteristics:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;male&lt;/code&gt;: gender&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;black&lt;/code&gt;: race&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;age&lt;/code&gt;: age&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;educ&lt;/code&gt;: education, which depends on age and race&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Moreover, we maketreatment status &lt;code&gt;D&lt;/code&gt; depend on both gender and race so that it will be important to condition on observables.&lt;/p&gt;
-&lt;p&gt;Our outcome variable &lt;code&gt;y&lt;/code&gt; depends on the treatment assignment differently according to education and age.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
-%config InlineBackend.figure_format = &#39;retina&#39;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
-from src.dgp import dgp_ad
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We generate a dataset out of our DGP.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_ad()
-df = dgp.generate_data()
-df.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;male&lt;/th&gt;
-      &lt;th&gt;black&lt;/th&gt;
-      &lt;th&gt;age&lt;/th&gt;
-      &lt;th&gt;educ&lt;/th&gt;
-      &lt;th&gt;ad_exposure&lt;/th&gt;
-      &lt;th&gt;revenue&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;55.0&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-      &lt;td&gt;-0.327221&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;47.0&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-      &lt;td&gt;0.659393&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;31.0&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
-      &lt;td&gt;2.805178&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;51.0&lt;/td&gt;
-      &lt;td&gt;2&lt;/td&gt;
-      &lt;td&gt;False&lt;/td&gt;
-      &lt;td&gt;-0.508548&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;48.0&lt;/td&gt;
-      &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;True&lt;/td&gt;
-      &lt;td&gt;0.762280&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;We can check the distribution of variables across treatment assignment.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.groupby(dgp.T).agg([&#39;mean&#39;, &#39;std&#39;]).T.unstack(1)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead tr th {
-    text-align: left;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;ad_exposure&lt;/th&gt;
-      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;False&lt;/th&gt;
-      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;True&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;mean&lt;/th&gt;
-      &lt;th&gt;std&lt;/th&gt;
-      &lt;th&gt;mean&lt;/th&gt;
-      &lt;th&gt;std&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;male&lt;/th&gt;
-      &lt;td&gt;0.42000&lt;/td&gt;
-      &lt;td&gt;0.494053&lt;/td&gt;
-      &lt;td&gt;0.592000&lt;/td&gt;
-      &lt;td&gt;0.491955&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;black&lt;/th&gt;
-      &lt;td&gt;0.58800&lt;/td&gt;
-      &lt;td&gt;0.492688&lt;/td&gt;
-      &lt;td&gt;0.470000&lt;/td&gt;
-      &lt;td&gt;0.499599&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;age&lt;/th&gt;
-      &lt;td&gt;44.57600&lt;/td&gt;
-      &lt;td&gt;10.350386&lt;/td&gt;
-      &lt;td&gt;44.970000&lt;/td&gt;
-      &lt;td&gt;9.961102&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;educ&lt;/th&gt;
-      &lt;td&gt;2.19200&lt;/td&gt;
-      &lt;td&gt;1.824773&lt;/td&gt;
-      &lt;td&gt;1.968000&lt;/td&gt;
-      &lt;td&gt;1.724216&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;revenue&lt;/th&gt;
-      &lt;td&gt;-0.11697&lt;/td&gt;
-      &lt;td&gt;1.057941&lt;/td&gt;
-      &lt;td&gt;1.156387&lt;/td&gt;
-      &lt;td&gt;2.147342&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;As we can see, &lt;code&gt;male&lt;/code&gt; and &lt;code&gt;black&lt;/code&gt; are now balanced across groups.&lt;/p&gt;
-&lt;p&gt;We can get a first estimate of the &lt;strong&gt;average treatment effect&lt;/strong&gt; as a simple comparison of means.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.loc[df[dgp.T]==1, dgp.Y].mean() - df.loc[df[dgp.T]==0, dgp.Y].mean()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;1.2733576182695898
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can visualize the difference with a barplot.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.barplot(x=dgp.T, y=dgp.Y, data=df);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/causal_trees_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;It seems there is a significant difference between the two groups. We can get a standard error around the estimate by regressing $Y$ on $D$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(f&#39;{dgp.Y} ~ {dgp.T}&#39;, df).fit()
-est.summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-           &lt;td&gt;&lt;/td&gt;              &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;           &lt;td&gt;   -0.1170&lt;/td&gt; &lt;td&gt;    0.076&lt;/td&gt; &lt;td&gt;   -1.545&lt;/td&gt; &lt;td&gt; 0.123&lt;/td&gt; &lt;td&gt;   -0.266&lt;/td&gt; &lt;td&gt;    0.032&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;ad_exposure[T.True]&lt;/th&gt; &lt;td&gt;    1.2734&lt;/td&gt; &lt;td&gt;    0.107&lt;/td&gt; &lt;td&gt;   11.894&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.063&lt;/td&gt; &lt;td&gt;    1.483&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;p&gt;The coefficient is statistically significant. However, we know that the treatment assignment is not &lt;strong&gt;unconditionally exogenous&lt;/strong&gt;. We need to condition on observables $X$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(f&#39;{dgp.Y} ~ {dgp.T} +&#39; + &#39; + &#39;.join(dgp.X), df).fit()
-est.summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-           &lt;td&gt;&lt;/td&gt;              &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;           &lt;td&gt;   -0.1026&lt;/td&gt; &lt;td&gt;    0.247&lt;/td&gt; &lt;td&gt;   -0.416&lt;/td&gt; &lt;td&gt; 0.678&lt;/td&gt; &lt;td&gt;   -0.587&lt;/td&gt; &lt;td&gt;    0.382&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;ad_exposure[T.True]&lt;/th&gt; &lt;td&gt;    1.0342&lt;/td&gt; &lt;td&gt;    0.103&lt;/td&gt; &lt;td&gt;   10.044&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.832&lt;/td&gt; &lt;td&gt;    1.236&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;male&lt;/th&gt;                &lt;td&gt;    0.9987&lt;/td&gt; &lt;td&gt;    0.102&lt;/td&gt; &lt;td&gt;    9.765&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.798&lt;/td&gt; &lt;td&gt;    1.199&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;black&lt;/th&gt;               &lt;td&gt;   -0.8234&lt;/td&gt; &lt;td&gt;    0.126&lt;/td&gt; &lt;td&gt;   -6.555&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.070&lt;/td&gt; &lt;td&gt;   -0.577&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;age&lt;/th&gt;                 &lt;td&gt;   -0.0050&lt;/td&gt; &lt;td&gt;    0.005&lt;/td&gt; &lt;td&gt;   -1.001&lt;/td&gt; &lt;td&gt; 0.317&lt;/td&gt; &lt;td&gt;   -0.015&lt;/td&gt; &lt;td&gt;    0.005&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;educ&lt;/th&gt;                &lt;td&gt;    0.1240&lt;/td&gt; &lt;td&gt;    0.035&lt;/td&gt; &lt;td&gt;    3.533&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.055&lt;/td&gt; &lt;td&gt;    0.193&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;p&gt;We do not need to actually condition on the full vector of observables $X$. It is sufficient to condition on the &lt;strong&gt;propensity score&lt;/strong&gt; $p(X)$, i.e. the conditional probability of treatment.&lt;/p&gt;
-&lt;p&gt;We can estimate the propensity score with any method we want. The more flexible, the better.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;pscore&#39;] = RandomForestRegressor().fit(df[dgp.X], df[dgp.T]).predict(df[dgp.X])
-df[&#39;pscore&#39;].head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0    0.368726
-1    0.036667
-2    0.675000
-3    0.701702
-4    0.307456
-Name: pscore, dtype: float64
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We now estiamte the conditional average treatment effect regressing $Y$ on $D$ and on the p-score.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(f&#39;{dgp.Y} ~ {dgp.T} + pscore&#39;, df).fit()
-est.summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-           &lt;td&gt;&lt;/td&gt;              &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt;           &lt;td&gt;   -0.3402&lt;/td&gt; &lt;td&gt;    0.103&lt;/td&gt; &lt;td&gt;   -3.315&lt;/td&gt; &lt;td&gt; 0.001&lt;/td&gt; &lt;td&gt;   -0.542&lt;/td&gt; &lt;td&gt;   -0.139&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;ad_exposure[T.True]&lt;/th&gt; &lt;td&gt;    0.8957&lt;/td&gt; &lt;td&gt;    0.159&lt;/td&gt; &lt;td&gt;    5.638&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.584&lt;/td&gt; &lt;td&gt;    1.208&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;pscore&lt;/th&gt;              &lt;td&gt;    0.8235&lt;/td&gt; &lt;td&gt;    0.257&lt;/td&gt; &lt;td&gt;    3.204&lt;/td&gt; &lt;td&gt; 0.001&lt;/td&gt; &lt;td&gt;    0.319&lt;/td&gt; &lt;td&gt;    1.328&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;p&gt;We are now ready to estimate &lt;strong&gt;heterogeneous treatment effects&lt;/strong&gt;. First, we need to compute the transformed outcome&lt;/p&gt;
-&lt;p&gt;$$
-Y_i^* = \frac{Y_i}{T_i * e_i - (1-T_i) * (1-e_i)}
-$$&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;y_star&#39;] = df[dgp.Y] /(df[dgp.T] * df[&#39;pscore&#39;] - (1-df[dgp.T]) * (1-df[&#39;pscore&#39;]))
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Now we train a small tree on the transformed outcome $Y^*$.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;tree = DecisionTreeRegressor(max_depth=2, min_samples_leaf=30).fit(df[dgp.X], df[&#39;y_star&#39;])
-df[&#39;y_hat&#39;] = tree.predict(df[dgp.X])
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can plot the tree and visualize the estimated groups and treatment effects.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Plot tree
-plot_tree(tree, filled=True, fontsize=12, feature_names=dgp.X, impurity=False);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/causal_trees_32_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;p&gt;We still have one issue: we have trained our tree model and estimated the treatment effects using the same data. This introduces bias in the estimates.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.causal_forest import CausalForest
-
-model = CausalForest(max_depth=2).fit(Y=df[dgp.Y], X=df[dgp.X], T=df[dgp.T])
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can plot a tree&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.cate_interpreter import SingleTreeCateInterpreter
-
-intrp = SingleTreeCateInterpreter(max_depth=2).interpret(model, df[dgp.X])
-intrp.plot(feature_names=dgp.X, fontsize=10)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/causal_trees_36_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;example-2-lalonde-data&#34;&gt;Example 2: Lalonde Data&lt;/h2&gt;
-&lt;p&gt;For this tutorial, we are goind to use the data from Lalonde (1981). You can find the data here: &lt;a href=&#34;https://users.nber.org/~rdehejia/nswdata.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://users.nber.org/~rdehejia/nswdata.html&lt;/a&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = pd.read_csv(&#39;data/lalonde86.csv&#39;)
-df.head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr style=&#34;text-align: right;&#34;&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;treat&lt;/th&gt;
-      &lt;th&gt;age&lt;/th&gt;
-      &lt;th&gt;education&lt;/th&gt;
-      &lt;th&gt;black&lt;/th&gt;
-      &lt;th&gt;hispanic&lt;/th&gt;
-      &lt;th&gt;married&lt;/th&gt;
-      &lt;th&gt;nodegree&lt;/th&gt;
-      &lt;th&gt;re74&lt;/th&gt;
-      &lt;th&gt;re75&lt;/th&gt;
-      &lt;th&gt;re78&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;0&lt;/th&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;37.0&lt;/td&gt;
-      &lt;td&gt;11.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;9930.0460&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;1&lt;/th&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;22.0&lt;/td&gt;
-      &lt;td&gt;9.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;3595.8940&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;2&lt;/th&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;30.0&lt;/td&gt;
-      &lt;td&gt;12.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;24909.4500&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;3&lt;/th&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;27.0&lt;/td&gt;
-      &lt;td&gt;11.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;7506.1460&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;4&lt;/th&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;33.0&lt;/td&gt;
-      &lt;td&gt;8.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;1.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;0.0&lt;/td&gt;
-      &lt;td&gt;289.7899&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;p&gt;We can summarize each variable by its treatment status.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.groupby(&#39;treat&#39;).agg([&#39;mean&#39;, &#39;std&#39;]).T.unstack(1)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;div&gt;
-&lt;style scoped&gt;
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead tr th {
-    text-align: left;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
-&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;treat&lt;/th&gt;
-      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;0.0&lt;/th&gt;
-      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;1.0&lt;/th&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;&lt;/th&gt;
-      &lt;th&gt;mean&lt;/th&gt;
-      &lt;th&gt;std&lt;/th&gt;
-      &lt;th&gt;mean&lt;/th&gt;
-      &lt;th&gt;std&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;th&gt;age&lt;/th&gt;
-      &lt;td&gt;25.053846&lt;/td&gt;
-      &lt;td&gt;7.057745&lt;/td&gt;
-      &lt;td&gt;25.816216&lt;/td&gt;
-      &lt;td&gt;7.155019&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;education&lt;/th&gt;
-      &lt;td&gt;10.088462&lt;/td&gt;
-      &lt;td&gt;1.614325&lt;/td&gt;
-      &lt;td&gt;10.345946&lt;/td&gt;
-      &lt;td&gt;2.010650&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;black&lt;/th&gt;
-      &lt;td&gt;0.826923&lt;/td&gt;
-      &lt;td&gt;0.379043&lt;/td&gt;
-      &lt;td&gt;0.843243&lt;/td&gt;
-      &lt;td&gt;0.364558&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;hispanic&lt;/th&gt;
-      &lt;td&gt;0.107692&lt;/td&gt;
-      &lt;td&gt;0.310589&lt;/td&gt;
-      &lt;td&gt;0.059459&lt;/td&gt;
-      &lt;td&gt;0.237124&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;married&lt;/th&gt;
-      &lt;td&gt;0.153846&lt;/td&gt;
-      &lt;td&gt;0.361497&lt;/td&gt;
-      &lt;td&gt;0.189189&lt;/td&gt;
-      &lt;td&gt;0.392722&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;nodegree&lt;/th&gt;
-      &lt;td&gt;0.834615&lt;/td&gt;
-      &lt;td&gt;0.372244&lt;/td&gt;
-      &lt;td&gt;0.708108&lt;/td&gt;
-      &lt;td&gt;0.455867&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;re74&lt;/th&gt;
-      &lt;td&gt;2107.026658&lt;/td&gt;
-      &lt;td&gt;5687.905694&lt;/td&gt;
-      &lt;td&gt;2095.573689&lt;/td&gt;
-      &lt;td&gt;4886.620353&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;re75&lt;/th&gt;
-      &lt;td&gt;1266.909002&lt;/td&gt;
-      &lt;td&gt;3102.982044&lt;/td&gt;
-      &lt;td&gt;1532.055314&lt;/td&gt;
-      &lt;td&gt;3219.250870&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;th&gt;re78&lt;/th&gt;
-      &lt;td&gt;4554.801126&lt;/td&gt;
-      &lt;td&gt;5483.835991&lt;/td&gt;
-      &lt;td&gt;6349.143530&lt;/td&gt;
-      &lt;td&gt;7867.402218&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;y = &#39;re78&#39;
-D = &#39;treat&#39;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;re78 ~ treat&#39;, df).fit()
-est.summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt; 4554.8011&lt;/td&gt; &lt;td&gt;  408.046&lt;/td&gt; &lt;td&gt;   11.162&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt; 3752.855&lt;/td&gt; &lt;td&gt; 5356.747&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt; 1794.3424&lt;/td&gt; &lt;td&gt;  632.853&lt;/td&gt; &lt;td&gt;    2.835&lt;/td&gt; &lt;td&gt; 0.005&lt;/td&gt; &lt;td&gt;  550.574&lt;/td&gt; &lt;td&gt; 3038.110&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X = [&#39;age&#39;, &#39;education&#39;, &#39;black&#39;, &#39;hispanic&#39;, &#39;married&#39;, &#39;nodegree&#39;]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;re78 ~ treat +&#39; + &#39; + &#39;.join(X), df).fit()
-est.summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt; 1168.0035&lt;/td&gt; &lt;td&gt; 3360.588&lt;/td&gt; &lt;td&gt;    0.348&lt;/td&gt; &lt;td&gt; 0.728&lt;/td&gt; &lt;td&gt;-5436.921&lt;/td&gt; &lt;td&gt; 7772.928&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt; 1671.1304&lt;/td&gt; &lt;td&gt;  637.973&lt;/td&gt; &lt;td&gt;    2.619&lt;/td&gt; &lt;td&gt; 0.009&lt;/td&gt; &lt;td&gt;  417.254&lt;/td&gt; &lt;td&gt; 2925.007&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;age&lt;/th&gt;       &lt;td&gt;   52.8219&lt;/td&gt; &lt;td&gt;   45.255&lt;/td&gt; &lt;td&gt;    1.167&lt;/td&gt; &lt;td&gt; 0.244&lt;/td&gt; &lt;td&gt;  -36.123&lt;/td&gt; &lt;td&gt;  141.767&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;education&lt;/th&gt; &lt;td&gt;  393.8213&lt;/td&gt; &lt;td&gt;  227.114&lt;/td&gt; &lt;td&gt;    1.734&lt;/td&gt; &lt;td&gt; 0.084&lt;/td&gt; &lt;td&gt;  -52.549&lt;/td&gt; &lt;td&gt;  840.192&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;black&lt;/th&gt;     &lt;td&gt;-2220.2622&lt;/td&gt; &lt;td&gt; 1168.317&lt;/td&gt; &lt;td&gt;   -1.900&lt;/td&gt; &lt;td&gt; 0.058&lt;/td&gt; &lt;td&gt;-4516.480&lt;/td&gt; &lt;td&gt;   75.956&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;hispanic&lt;/th&gt;  &lt;td&gt;   83.7193&lt;/td&gt; &lt;td&gt; 1550.348&lt;/td&gt; &lt;td&gt;    0.054&lt;/td&gt; &lt;td&gt; 0.957&lt;/td&gt; &lt;td&gt;-2963.346&lt;/td&gt; &lt;td&gt; 3130.785&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;married&lt;/th&gt;   &lt;td&gt;  158.2084&lt;/td&gt; &lt;td&gt;  850.326&lt;/td&gt; &lt;td&gt;    0.186&lt;/td&gt; &lt;td&gt; 0.852&lt;/td&gt; &lt;td&gt;-1513.029&lt;/td&gt; &lt;td&gt; 1829.446&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;nodegree&lt;/th&gt;  &lt;td&gt; -128.2203&lt;/td&gt; &lt;td&gt;  995.416&lt;/td&gt; &lt;td&gt;   -0.129&lt;/td&gt; &lt;td&gt; 0.898&lt;/td&gt; &lt;td&gt;-2084.617&lt;/td&gt; &lt;td&gt; 1828.177&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;pscore&#39;] = RandomForestRegressor().fit(df[X], df[D]).predict(df[X])
-df[&#39;pscore&#39;].head()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;0    0.810000
-1    0.752000
-2    0.485786
-3    0.670023
-4    0.731667
-Name: pscore, dtype: float64
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;est = smf.ols(&#39;re78 ~ treat + pscore&#39;, df).fit()
-est.summary().tables[1]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table class=&#34;simpletable&#34;&gt;
-&lt;tr&gt;
-      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt; 4313.9001&lt;/td&gt; &lt;td&gt;  591.433&lt;/td&gt; &lt;td&gt;    7.294&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt; 3151.530&lt;/td&gt; &lt;td&gt; 5476.270&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;treat&lt;/th&gt;     &lt;td&gt; 1461.6324&lt;/td&gt; &lt;td&gt;  866.171&lt;/td&gt; &lt;td&gt;    1.687&lt;/td&gt; &lt;td&gt; 0.092&lt;/td&gt; &lt;td&gt; -240.692&lt;/td&gt; &lt;td&gt; 3163.957&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-  &lt;th&gt;pscore&lt;/th&gt;    &lt;td&gt;  894.6072&lt;/td&gt; &lt;td&gt; 1588.766&lt;/td&gt; &lt;td&gt;    0.563&lt;/td&gt; &lt;td&gt; 0.574&lt;/td&gt; &lt;td&gt;-2227.867&lt;/td&gt; &lt;td&gt; 4017.082&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/table&gt;
-&lt;p&gt;Estimate CATE&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.causal_forest import CausalForest
-
-model = CausalForest(max_depth=2).fit(Y=df[y], X=df[X], T=df[D])
-&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.cate_interpreter import SingleTreeCateInterpreter
-
-intrp = SingleTreeCateInterpreter(max_depth=2).interpret(model, df[X])
-intrp.plot(feature_names=X, fontsize=10)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/causal_trees_50_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Original paper: &lt;a href=&#34;https://www.pnas.org/doi/abs/10.1073/pnas.1510489113&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Recursive partitioning for heterogeneous causal effects&lt;/a&gt; (2016) by Athey and Imbens&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.youtube.com/watch?v=JtDRpM6Mnnw&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Video lecture&lt;/a&gt; by Prof. Susan Athey (Stanford)&lt;/li&gt;
 &lt;/ul&gt;
 </description>
     </item>
