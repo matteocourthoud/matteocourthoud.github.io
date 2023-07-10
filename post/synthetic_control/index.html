@@ -30,7 +30,9 @@
   
     
   
-  <meta name="description" content="In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods." />
+  <meta name="description" content="INTRO
+Self-Driving Cars Suppose you were a ride-sharing platform and you want to test the effect of self-driving cars in your fleet.
+As you can imagine, there are many limitations to running an AB/test for this type of feature." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/synthetic_control/" />
@@ -333,16 +335,18 @@
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/synthetic_control/" />
   <meta property="og:title" content="Synthetic Control | Matteo Courthoud" />
-  <meta property="og:description" content="In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods." /><meta property="og:image" content="https://matteocourthoud.github.io/post/synthetic_control/featured.png" />
+  <meta property="og:description" content="INTRO
+Self-Driving Cars Suppose you were a ride-sharing platform and you want to test the effect of self-driving cars in your fleet.
+As you can imagine, there are many limitations to running an AB/test for this type of feature." /><meta property="og:image" content="https://matteocourthoud.github.io/post/synthetic_control/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/synthetic_control/featured.png" /><meta property="og:locale" content="en-us" />
   
     
       <meta
         property="article:published_time"
-        content="2022-04-19T00:00:00&#43;00:00"
+        content="2023-07-10T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2022-04-19T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2023-07-10T00:00:00&#43;00:00">
   
 
   
@@ -374,8 +378,8 @@
     "https://matteocourthoud.github.io/post/synthetic_control/featured.png"
   ],
   
-  "datePublished": "2022-04-19T00:00:00Z",
-  "dateModified": "2022-04-19T00:00:00Z",
+  "datePublished": "2023-07-10T00:00:00Z",
+  "dateModified": "2023-07-10T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -385,7 +389,7 @@
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods."
+  "description": "INTRO\nSelf-Driving Cars Suppose you were a ride-sharing platform and you want to test the effect of self-driving cars in your fleet.\nAs you can imagine, there are many limitations to running an AB/test for this type of feature."
 }
 </script>
 
@@ -445,7 +449,7 @@
   
   
   
-  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
 
   
 
@@ -767,15 +771,28 @@
       </ul>
       <nav id="TableOfContents">
   <ul>
-    <li><a href="#setting">Setting</a></li>
+    <li><a href="#self-driving-cars">Self-Driving Cars</a></li>
     <li><a href="#synthetic-control">Synthetic Control</a>
       <ul>
-        <li><a href="#weights">Weights</a></li>
-        <li><a href="#synthetic-control-vs-ols">Synthetic Control vs OLS</a></li>
+        <li><a href="#setting">Setting</a></li>
+        <li><a href="#the-problem">The Problem</a></li>
+        <li><a href="#the-solution">The Solution</a></li>
+        <li><a href="#back-to-self-driving-cars">Back to self-driving cars</a></li>
       </ul>
     </li>
-    <li><a href="#academic-application">Academic Application</a></li>
-    <li><a href="#references">References</a></li>
+    <li><a href="#extensions">Extensions</a>
+      <ul>
+        <li><a href="#weights">Weights</a></li>
+        <li><a href="#inference">Inference</a></li>
+        <li><a href="#synthetic-control-vs-other-methods">Synthetic Control vs Other Methods</a></li>
+      </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
     </div>
@@ -825,7 +842,7 @@
     
       
     
-    Apr 19, 2022
+    Jul 10, 2023
   </span>
   
 
@@ -834,7 +851,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    12 min read
+    14 min read
   </span>
   
 
@@ -859,7 +876,7 @@
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1192px; max-height: 817px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1540px; max-height: 874px;">
   <div style="position: relative">
     <img src="/post/synthetic_control/featured.png" alt="" class="featured-image">
     
@@ -869,127 +886,22 @@
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>In this tutorial, we are going to see how to estimate causal effects when the treatment is not randomly assigned, we have acces to a control group and we observe few units but potentially many time periods. These settings are extremely common in observational studies and, in these cases, claims of causality are relatively weak. However, there still exist methods for causal inference, under certain assumptions.</p>
-<p><strong>Requisites</strong></p>
-<p>For this tutorial, I assume you are familiar with the following concepts:</p>
-<ul>
-<li>Rubin&rsquo;s potential outcome framework</li>
-<li>Ordinary least squares regression</li>
-<li><a href="https://matteocourthoud.github.io/post/permutation_test/" target="_blank" rel="noopener">Randomization/permutation inference</a></li>
-<li><a href="https://matteocourthoud.github.io/post/diff_in_diffs/" target="_blank" rel="noopener">Difference in differences</a></li>
-</ul>
-<p><strong>Academic Application</strong></p>
-<p>As an academic application, we are going to replicate <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program</a> (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.</p>
-<p><strong>Business Case</strong></p>
-<p>TBD</p>
-<h2 id="setting">Setting</h2>
-<p>We assume that for a panel of i.i.d. subjects $i = 1, &hellip;, n$ over time $t=1, &hellip;,T$ we observed a tuple $(X_{it}, Y_{it})$ comprised of</p>
-<ul>
-<li>a feature vector $X_{i,t} \in \mathbb R^p$</li>
-<li>a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$</li>
-<li>a response $Y_{i,t} \in \mathbb R$</li>
-</ul>
-<p>Moreover, one unit is treated at time $t^*$. We distinguish time periods before treatment and time periods after treatment.</p>
-<p>Crucially, treatment $D_i$ is not randomly assignment, therefore a difference in means between the treated unit(s) and the control group is not an unbiased estimator of the average treatment effect.</p>
-<h2 id="synthetic-control">Synthetic Control</h2>
-<p>The problem is that, as usual, we do not observe the counterfactual outcome for treated units, i.e. we do not know what would have happened to them, if they had not been treated. This is known as the <strong>fundamental problem of causal inference</strong>.</p>
-<p>The simplest approach, would be just to compare pre and post periods. This is called the <strong>event study</strong> approach.</p>
-<p>However, we can do better than this. In fact, even though treatment was not randomly assigned, we still have access to some units that were not treated.</p>
-<p>For the outcome variable we have the following setup</p>
-<p>$$
-Y =
-\begin{bmatrix}
-Y_{t, post} \ &amp; Y_{c, post} \newline
-Y_{t, pre} \ &amp; Y_{c, pre}
-\end{bmatrix}
-$$</p>
-<p>which we can rewrite as</p>
-<p>$$
-Y =
-\begin{bmatrix}
-Y^{(1)} _ {t, post} \ &amp; Y^{(0)} _ {c, post} \newline
-Y^{(0)} _ {t, pre} \ &amp; Y^{(0)} _ {c, pre}
-\end{bmatrix}
-$$</p>
-<p>We basically have a <strong>missing data problem</strong> since we do not observe $Y^{(0)} _ {t, post}$.</p>
-<p>Following Doudchenko and Inbens (2018), we can formulate an estimate of the counterfactual outcome for the treated unit as a linear combination of the observed outcomes for the control units.</p>
-<p>$$
-\hat Y^{(0)} _ {t, post} = \alpha + \sum_{i \in c} \beta_{i} Y^{(0)} _ {i, post}
-$$</p>
-<p>where</p>
-<ul>
-<li>the constant $\alpha$ allows for different averages between the two groups</li>
-<li>the weights $\beta_i$ are allowed to vary across control units $i$
-<ul>
-<li>otherwise it would be a diff-in-diff</li>
-</ul>
-</li>
-</ul>
-<h3 id="weights">Weights</h3>
-<p>How should we choose which weights to use? One <strong>option</strong> could be to simply run a linear regression of the pre-treatment outcome of the treatment unit $Y^{(0)} _ {t, pre}$ on the pre-treatment outcome of the control group $Y^{(0)} _ {c, pre}$.</p>
-<p>There are two problems with this approach:</p>
-<ol>
-<li>
-<p>the weights might be negative</p>
-<ul>
-<li>how should we interpret them?</li>
-<li>they make no sense in the potential outcome framework</li>
-</ul>
-</li>
-<li>
-<p>weights could be greater or lower than one</p>
-<ul>
-<li>therefore we would not be able to interpret the synthetic control as a weighted average of untreated units</li>
-</ul>
-</li>
-</ol>
-<p>To solve this problem, Abadie et al. (2010) propose the following weights:</p>
-<p>$$
-\hat \beta = \arg \min_{\beta} || \boldsymbol X_t - \boldsymbol \beta \boldsymbol X_c || = \sqrt{ \sum_{p} \left( X_{t, p}  - \sum_{i \in c} \beta_{p} X_{c, p} \right)^2 }
-\quad \text{s.t.} \quad \sum_{p} \beta_p = 1 \quad \text{and} \quad \beta_p \geq 0 \ \forall p
-$$</p>
-<p>With this approach we get an interpretable counterfactual as a weighted avarage of untreated units.</p>
-<h3 id="synthetic-control-vs-ols">Synthetic Control vs OLS</h3>
-<p>What are the advantages and disadvantages of synthetic control methods with respect to a simple regression?</p>
-<ol>
-<li>
-<p>As long as we use positive weights that are constrained to sum to one, the method avoid extrapolation</p>
-<ul>
-<li>we will never go out of the support of the data</li>
-</ul>
-</li>
-<li>
-<p>It can be &ldquo;pre-registered&rdquo; in the sense that you don&rsquo;t need post-treatment observations to build the method</p>
-<ul>
-<li>could avoid p-hacking and cherry picking</li>
-</ul>
-</li>
-<li>
-<p>Weights make explicit the counterfactual analysis</p>
-<ul>
-<li>one can look at the weights and understand which comparison we are making</li>
-</ul>
-</li>
-<li>
-<p>It&rsquo;s a bridge between quantitative and qualitative research</p>
-<ul>
-<li>can be used to inspect single-treated unit cases</li>
-</ul>
-</li>
-</ol>
-<h2 id="academic-application">Academic Application</h2>
-<p>As an academic application, we are going to replicate <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program</a> (2010) by Abadie, Diamond and Hainmueller. The authors study the effect of a tobacco control program in California on smoking habits.</p>
-<p>This is how the authors describe the policy:</p>
-<blockquote>
-<p>Its primary effect is to impose a 25-cent per pack state excise tax on the sale of tobacco cigarettes within California, with approximately equivalent excise taxes similarly imposed on the retail sale of other commercial tobacco products, such as cigars and chewing tobacco. Additional restrictions placed on the sale of tobacco include a ban on cigarette vending machines in public areas accessible by juveniles, and a ban on the individual sale of single cigarettes. Revenue generated by the act was earmarked for various environmental and health care programs, and anti-tobacco advertisements.</p>
-</blockquote>
-<p>Let&rsquo;s start by loading the data. We have information on cigarette costs, sales, tax rate and revenues for all US states for years from 1970 to 2014.</p>
+            <p>INTRO</p>
+<h2 id="self-driving-cars">Self-Driving Cars</h2>
+<p>Suppose you were a <strong>ride-sharing platform</strong> and you want to test the effect of self-driving cars in your fleet.</p>
+<p>As you can imagine, there are many <strong>limitations</strong> to running an AB/test for this type of feature. First of all, it&rsquo;s complicated to randomize individual rides. Second, it&rsquo;s a very expensive intervention. Third, and statistically most important, you cannot run this intervention at the ride level. The problem is that there are <strong>spillover</strong> effects from treated to control units: if indeed self-driving cars are more efficient, it means that they can serve more customers in the same amount of time, reducing the customers available to normal drivers (the control group). This spillover <strong>contaminates</strong> the experiment and prevents a causal interpretation of the results.</p>
+<p>For all these reasons, we select only one city at random to run this experiment&hellip; (drum roll)&hellip; Miami!</p>
+<img src="fig/miami2.jpg" width="700px"/>
+<p>I generate a simulated dataset in which we observe a panel of U.S. cities over time. The revenue data is made up, while the socio-economic variables are taken from the <a href="https://stats.oecd.org/" target="_blank" rel="noopener">OECD database</a>. I import the data generating process <code>dgp_selfdriving()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
 </code></pre>
 <pre><code class="language-python">from src.utils import *
-</code></pre>
-<pre><code class="language-python">df = pd.read_csv('data/adh10.csv')
+from src.dgp import dgp_selfdriving
+
+treatment_year = 2013
+treated_city = 'Miami'
+df = dgp_selfdriving().generate_data(year=treatment_year, city=treated_city)
 df.head()
 </code></pre>
 <div>
@@ -1010,85 +922,90 @@ df.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>state</th>
+      <th>city</th>
       <th>year</th>
-      <th>cig_sales</th>
-      <th>lnincome</th>
-      <th>beer</th>
-      <th>age15to24</th>
-      <th>retprice</th>
-      <th>california</th>
-      <th>after_treatment</th>
+      <th>density</th>
+      <th>employment</th>
+      <th>gdp</th>
+      <th>population</th>
+      <th>treated</th>
+      <th>post</th>
+      <th>revenue</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>Alabama</td>
-      <td>1970</td>
-      <td>89.800003</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>0.178862</td>
-      <td>39.599998</td>
+      <td>Atlanta</td>
+      <td>2003</td>
+      <td>290</td>
+      <td>0.629761</td>
+      <td>6.4523</td>
+      <td>4.267538</td>
       <td>False</td>
       <td>False</td>
+      <td>25.713947</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>Alabama</td>
-      <td>1971</td>
-      <td>95.400002</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>0.179928</td>
-      <td>42.700001</td>
+      <td>Atlanta</td>
+      <td>2004</td>
+      <td>295</td>
+      <td>0.635595</td>
+      <td>6.5836</td>
+      <td>4.349712</td>
       <td>False</td>
       <td>False</td>
+      <td>23.852279</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>Alabama</td>
-      <td>1972</td>
-      <td>101.099998</td>
-      <td>9.498476</td>
-      <td>NaN</td>
-      <td>0.180994</td>
-      <td>42.299999</td>
+      <td>Atlanta</td>
+      <td>2005</td>
+      <td>302</td>
+      <td>0.645614</td>
+      <td>6.6998</td>
+      <td>4.455273</td>
       <td>False</td>
       <td>False</td>
+      <td>24.332397</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>Alabama</td>
-      <td>1973</td>
-      <td>102.900002</td>
-      <td>9.550107</td>
-      <td>NaN</td>
-      <td>0.182060</td>
-      <td>42.099998</td>
+      <td>Atlanta</td>
+      <td>2006</td>
+      <td>313</td>
+      <td>0.648573</td>
+      <td>6.5653</td>
+      <td>4.609096</td>
       <td>False</td>
       <td>False</td>
+      <td>23.816017</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>Alabama</td>
-      <td>1974</td>
-      <td>108.199997</td>
-      <td>9.537163</td>
-      <td>NaN</td>
-      <td>0.183126</td>
-      <td>43.099998</td>
+      <td>Atlanta</td>
+      <td>2007</td>
+      <td>321</td>
+      <td>0.650976</td>
+      <td>6.4184</td>
+      <td>4.737037</td>
       <td>False</td>
       <td>False</td>
+      <td>25.786902</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>Is the sample balanced? Let&rsquo;s check the distribution of covariates, by treatment assignment.</p>
+<pre><code class="language-python">len(df.city.unique())
+</code></pre>
+<pre><code>46
+</code></pre>
+<p>We have information on the largest 46 U.S. cities for the period 2002-2019. The panel is <strong>balanced</strong>, which means that we observe all cities for all time periods.</p>
+<p>Is the <strong>treated</strong> unit, Miami, comparable to the rest of the sample? Let&rsquo;s use the <code>create_table_one</code> function from Uber&rsquo;s <a href="https://causalml.readthedocs.io/" target="_blank" rel="noopener"><code>causalml</code></a> package to produce a <strong>covariate balance table</strong>, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.</p>
 <pre><code class="language-python">from causalml.match import create_table_one
 
-create_table_one(df, 'california', ['cig_sales', 'lnincome', 'beer', 'age15to24', 'retprice'])
+create_table_one(df, 'treated', ['density', 'employment', 'gdp', 'population', 'revenue'])
 </code></pre>
 <div>
 <style scoped>
@@ -1122,265 +1039,205 @@ create_table_one(df, 'california', ['cig_sales', 'lnincome', 'beer', 'age15to24'
   <tbody>
     <tr>
       <th>n</th>
-      <td>1178</td>
-      <td>31</td>
+      <td>765</td>
+      <td>17</td>
       <td></td>
     </tr>
     <tr>
-      <th>age15to24</th>
-      <td>0.18 (0.02)</td>
-      <td>0.18 (0.01)</td>
-      <td>0.0454</td>
+      <th>density</th>
+      <td>256.63 (172.90)</td>
+      <td>364.94 (19.61)</td>
+      <td>0.8802</td>
     </tr>
     <tr>
-      <th>beer</th>
-      <td>23.46 (4.26)</td>
-      <td>22.26 (2.11)</td>
-      <td>-0.3559</td>
+      <th>employment</th>
+      <td>0.63 (0.05)</td>
+      <td>0.60 (0.04)</td>
+      <td>-0.5266</td>
     </tr>
     <tr>
-      <th>cig_sales</th>
-      <td>119.53 (32.60)</td>
-      <td>94.59 (30.01)</td>
-      <td>-0.7962</td>
+      <th>gdp</th>
+      <td>6.07 (1.16)</td>
+      <td>5.12 (0.29)</td>
+      <td>-1.1124</td>
     </tr>
     <tr>
-      <th>lnincome</th>
-      <td>9.86 (0.17)</td>
-      <td>10.07 (0.08)</td>
-      <td>1.6107</td>
+      <th>population</th>
+      <td>3.53 (3.81)</td>
+      <td>5.85 (0.31)</td>
+      <td>0.861</td>
     </tr>
     <tr>
-      <th>retprice</th>
-      <td>108.04 (64.00)</td>
-      <td>119.92 (77.90)</td>
-      <td>0.1667</td>
+      <th>revenue</th>
+      <td>25.25 (2.45)</td>
+      <td>23.86 (2.39)</td>
+      <td>-0.5737</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>The sample is quite unbalanced. In particular, California is a richer state with a higher income, <code>lnincome</code>.</p>
-<p>We are interested in the sales of cigarettes <code>cig_sales</code> over time. Let&rsquo;s start by reshaping the dataset so that each state is a time series.</p>
-<pre><code class="language-python">df = df.pivot(index='year', columns='state', values='cig_sales').reset_index()
-df.head()
+<p>As expected, the groups are <strong>not balanced</strong>: Miami is more densely populated, poorer, larger and has lower employment rate than the other cities in the US in our sample.</p>
+<p>We are interested in understanding the impact of the introduction of <strong>self-driving cars</strong> on <code>revenue</code>.</p>
+<p>One initial idea could be to analyze the data as we would in an A/B test, comparing control and treatment group. We can estimate the treatment effect as a difference in means in <code>revenue</code> between the treatment and control group, after the introduction of self-driving cars.</p>
+<pre><code class="language-python">smf.ols('revenue ~ treated', data=df[df['post']==True]).fit().summary().tables[1]
 </code></pre>
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-<pre><code>.dataframe tbody tr th {
-    vertical-align: top;
-}
-
-.dataframe thead th {
-    text-align: right;
-}
-</code></pre>
-<p></style></p>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>state</th>
-      <th>year</th>
-      <th>Alabama</th>
-      <th>Arkansas</th>
-      <th>California</th>
-      <th>Colorado</th>
-      <th>Connecticut</th>
-      <th>Delaware</th>
-      <th>Georgia</th>
-      <th>Idaho</th>
-      <th>Illinois</th>
-      <th>...</th>
-      <th>South Carolina</th>
-      <th>South Dakota</th>
-      <th>Tennessee</th>
-      <th>Texas</th>
-      <th>Utah</th>
-      <th>Vermont</th>
-      <th>Virginia</th>
-      <th>West Virginia</th>
-      <th>Wisconsin</th>
-      <th>Wyoming</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1970</td>
-      <td>89.800003</td>
-      <td>100.300003</td>
-      <td>123.000000</td>
-      <td>124.800003</td>
-      <td>120.000000</td>
-      <td>155.000000</td>
-      <td>109.900002</td>
-      <td>102.400002</td>
-      <td>124.800003</td>
-      <td>...</td>
-      <td>103.599998</td>
-      <td>92.699997</td>
-      <td>99.800003</td>
-      <td>106.400002</td>
-      <td>65.500000</td>
-      <td>122.599998</td>
-      <td>124.300003</td>
-      <td>114.500000</td>
-      <td>106.400002</td>
-      <td>132.199997</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1971</td>
-      <td>95.400002</td>
-      <td>104.099998</td>
-      <td>121.000000</td>
-      <td>125.500000</td>
-      <td>117.599998</td>
-      <td>161.100006</td>
-      <td>115.699997</td>
-      <td>108.500000</td>
-      <td>125.599998</td>
-      <td>...</td>
-      <td>115.000000</td>
-      <td>96.699997</td>
-      <td>106.300003</td>
-      <td>108.900002</td>
-      <td>67.699997</td>
-      <td>124.400002</td>
-      <td>128.399994</td>
-      <td>111.500000</td>
-      <td>105.400002</td>
-      <td>131.699997</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1972</td>
-      <td>101.099998</td>
-      <td>103.900002</td>
-      <td>123.500000</td>
-      <td>134.300003</td>
-      <td>110.800003</td>
-      <td>156.300003</td>
-      <td>117.000000</td>
-      <td>126.099998</td>
-      <td>126.599998</td>
-      <td>...</td>
-      <td>118.699997</td>
-      <td>103.000000</td>
-      <td>111.500000</td>
-      <td>108.599998</td>
-      <td>71.300003</td>
-      <td>138.000000</td>
-      <td>137.000000</td>
-      <td>117.500000</td>
-      <td>108.800003</td>
-      <td>140.000000</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>1973</td>
-      <td>102.900002</td>
-      <td>108.000000</td>
-      <td>124.400002</td>
-      <td>137.899994</td>
-      <td>109.300003</td>
-      <td>154.699997</td>
-      <td>119.800003</td>
-      <td>121.800003</td>
-      <td>124.400002</td>
-      <td>...</td>
-      <td>125.500000</td>
-      <td>103.500000</td>
-      <td>109.699997</td>
-      <td>110.400002</td>
-      <td>72.699997</td>
-      <td>146.800003</td>
-      <td>143.100006</td>
-      <td>116.599998</td>
-      <td>109.500000</td>
-      <td>141.199997</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>1974</td>
-      <td>108.199997</td>
-      <td>109.699997</td>
-      <td>126.699997</td>
-      <td>132.800003</td>
-      <td>112.400002</td>
-      <td>151.300003</td>
-      <td>123.699997</td>
-      <td>125.599998</td>
-      <td>131.899994</td>
-      <td>...</td>
-      <td>129.699997</td>
-      <td>108.400002</td>
-      <td>114.800003</td>
-      <td>114.699997</td>
-      <td>75.599998</td>
-      <td>151.800003</td>
-      <td>149.600006</td>
-      <td>119.900002</td>
-      <td>111.800003</td>
-      <td>145.800003</td>
-    </tr>
-  </tbody>
+<table class="simpletable">
+<tr>
+         <td></td>            <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>       <td>   26.6006</td> <td>    0.127</td> <td>  210.061</td> <td> 0.000</td> <td>   26.351</td> <td>   26.850</td>
+</tr>
+<tr>
+  <th>treated[T.True]</th> <td>   -0.7156</td> <td>    0.859</td> <td>   -0.833</td> <td> 0.405</td> <td>   -2.405</td> <td>    0.974</td>
+</tr>
 </table>
-<p>5 rows × 40 columns</p>
-</div>
-<p>In an ideal world, one could use the average of all the other states in the United States as a control group for California. Let&rsquo;s plot the average cigarette consumption over time.</p>
-<pre><code class="language-python">states = [c for c in df.columns if c not in ['year']]
-df['Other States'] = df[[s for s in states if s != 'California']].mean(axis=1)
+<p>The effect of self-driving cars seems to be negative but not significant.</p>
+<p>The main <strong>problem</strong> here is that we have a <strong>single treated unit</strong>: Miami. It&rsquo;s very hard to argue that Miami is comparable to other cities. Randomization ensures that this simple estimator is unbiased, ex-ante. However, with a single treated unit, the estimator suffers from severe small sample bias .</p>
+<p>One alternative procedure, is to compare revenue <strong>before and after</strong> the treatment, within the city of Miami.</p>
+<pre><code class="language-python">smf.ols('revenue ~ post', data=df[df['city']==treated_city]).fit().summary().tables[1]
 </code></pre>
-<pre><code class="language-python">def plot_lines(df, line1, line2, hline=True):
+<table class="simpletable">
+<tr>
+        <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>    <td>   22.4485</td> <td>    0.534</td> <td>   42.044</td> <td> 0.000</td> <td>   21.310</td> <td>   23.587</td>
+</tr>
+<tr>
+  <th>post[T.True]</th> <td>    3.4364</td> <td>    0.832</td> <td>    4.130</td> <td> 0.001</td> <td>    1.663</td> <td>    5.210</td>
+</tr>
+</table>
+<p>The effect of self-driving cars seems to be positive and statistically significant.</p>
+<p>However, the <strong>problem</strong> of this procedure is that there might have been many <strong>other things happening</strong> after 2016. It&rsquo;s a very strong stretch to attribute all differences to self-driving cars.</p>
+<p>We can better understand this concern if we plot the time trend of revenue over cities. First, we need to reshape the data into a <strong>wide format</strong>, with one column per city and one row per year.</p>
+<pre><code class="language-python">df = df.pivot(index='year', columns='city', values='revenue').reset_index()
+</code></pre>
+<p>Now, let&rsquo;s plot the revenue over time for Miami and for the other cities.</p>
+<pre><code class="language-python">cities = [c for c in df.columns if c!='year']
+df['Other Cities'] = df[[c for c in cities if c != treated_city]].mean(axis=1)
+</code></pre>
+<pre><code class="language-python">def plot_lines(df, line1, line2, year, hline=True):
     sns.lineplot(x=df['year'], y=df[line1].values, label=line1)
     sns.lineplot(x=df['year'], y=df[line2].values, label=line2)
-    plt.axvline(x=1988, ls=&quot;:&quot;, color='C2', label='Proposition 99', zorder=1)
+    plt.axvline(x=year, ls=&quot;:&quot;, color='C2', label='Self-Driving Cars', zorder=1)
     plt.legend();
-    plt.title(&quot;Per-capita cigarette sales (in packs)&quot;);
+    plt.title(&quot;Average revenue per day (in M$)&quot;);
 </code></pre>
-<pre><code class="language-python">plot_lines(df, 'California', 'Other States')
+<p>Since we are talking about Miami, let&rsquo;s use an appropriate color palette.</p>
+<pre><code class="language-python">sns.set_palette(sns.color_palette(['#f14db3', '#0dc3e2', '#443a84']))
+</code></pre>
+<pre><code class="language-python">plot_lines(df, treated_city, 'Other Cities', treatment_year)
 </code></pre>
 <p><img src="img/synthetic_control_22_0.png" alt="png"></p>
-<p>People in California on average smoke less than in other states. This would not be a problem in a diff-in-diff setting if</p>
+<p>As we can see, revenue seems to be increasing after the treatment in Miami. But it&rsquo;s a very volatile time series. And revenue was increasing also in the rest of the country. It&rsquo;s very hard from this plot to attribute the change to self-driving case.</p>
+<p>Can we do better?</p>
+<h2 id="synthetic-control">Synthetic Control</h2>
+<p>The answer is yes! Synthetic control methods were first introduced by <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Abadie, Diamond and Hainmueller (2010)</a> and allow us to do causal inference when we have as few as one treated unit and many control units and we observe them over time.</p>
+<h3 id="setting">Setting</h3>
+<p>We assume that for a panel of i.i.d. subjects $i = 1, &hellip;, n$ over time $t=1, &hellip;,T$ we observed a set of variables $(X_{it}, D_i, Y_{it})$ that includes</p>
 <ul>
-<li>we had enough observations in each group</li>
-<li>trends were parallel</li>
-<li>other diff-in-diff assumptions were holding</li>
+<li>a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$ (<code>treated</code>)</li>
+<li>a response $Y_{i,t} \in \mathbb R$ (<code>revenue</code>)</li>
+<li>a feature vector $X_{i,t} \in \mathbb R^n$ (<code>population</code>, <code>density</code>, <code>employment</code> and <code>GDP</code>)</li>
 </ul>
-<p>However, we have just one treated unit and very few control units. Morover, the trends were definitely not parallel before treatment. Therefore, it feels quite a stretch to attribute the differences in cigarette sales post 1989 to Proposition 99 alone.</p>
-<p>The idea is to exploit the time dimension and <strong>build a synthetic control</strong> state for California. Maybe no single state is a good control, but a combination of them could actually provide a good approximation to California. Moreover, we can exploit the time dimension to compensate for the fact that we have few observations. We are going to try to match the sales of cigarettes in california for all the pre-treatment years, from 1970 to 1988.</p>
-<p>Let&rsquo;s start by using <code>LinearRegression</code> of <code>cigsales</code> in California onto <code>cigsales</code> of all the other states, pre 1989.</p>
-<pre><code class="language-python">from sklearn.linear_model import LinearRegression
-
-def synth_predict(df, state, model):
-    y = df.loc[df['year'] &lt;= 1988, state]
-    other_states = [c for c in states if c not in ['year', state]]
-    X = df.loc[df['year'] &lt;= 1988, other_states]
-    df[f'Synthetic {state}'] = model.fit(X, y).predict(df[other_states])
+<p>Moreover, one unit (Miami in our case) is treated at time $t^*$ (2016 in our case). We distinguish time periods before treatment and time periods after treatment.</p>
+<p>Crucially, treatment $D_i$ is not randomly assigned, therefore a difference in means between the treated unit(s) and the control group is not an unbiased estimator of the average treatment effect.</p>
+<h3 id="the-problem">The Problem</h3>
+<p>The problem is that, as usual, we do not observe the counterfactual outcome for treated units, i.e. we do not know what would have happened to them, if they had not been treated. This is known as the <strong>fundamental problem of causal inference</strong>.</p>
+<p>The simplest approach, would be just to compare pre and post periods. This is called the <strong>event study</strong> approach.</p>
+<p>However, we can do better than this. In fact, even though treatment was not randomly assigned, we still have access to some units that were not treated.</p>
+<p>For the outcome variable we have the following setup</p>
+<p>$$
+Y =
+\begin{bmatrix}
+Y_{t, post} \ &amp; Y_{c, post} \newline
+Y_{t, pre} \ &amp; Y_{c, pre}
+\end{bmatrix}
+$$</p>
+<p>which we can rewrite as</p>
+<p>$$
+Y =
+\begin{bmatrix}
+Y^{(1)} _ {t, post} \ &amp; Y^{(0)} _ {c, post} \newline
+Y^{(0)} _ {t, pre} \ &amp; Y^{(0)} _ {c, pre}
+\end{bmatrix}
+$$</p>
+<p>We basically have a <strong>missing data problem</strong> since we do not observe $Y^{(0)} _ {t, post}$.</p>
+<h3 id="the-solution">The Solution</h3>
+<p>Following <a href="https://arxiv.org/pdf/1610.07748.pdf" target="_blank" rel="noopener">Doudchenko and Inbens (2018)</a>, we can formulate an estimate of the counterfactual outcome for the treated unit as a linear combination of the observed outcomes for the control units.</p>
+<p>$$
+\hat Y^{(0)} _ {t, post} = \alpha + \sum_{i \in c} \beta_{i} Y^{(0)} _ {i, post}
+$$</p>
+<p>where</p>
+<ul>
+<li>the constant $\alpha$ allows for different averages between the two groups</li>
+<li>the weights $\beta_i$ are allowed to vary across control units $i$ (otherwise, it would be a difference-in-differences)</li>
+</ul>
+<p>How should we <strong>choose which weights</strong> to use? We want our synthetic control to approximate the outcome as closely as possible, before the treatment. The first approach could be to define the weights as</p>
+<p>$$
+\hat \beta = \arg \min_{\beta} || \boldsymbol X_{t, pre} - \boldsymbol \beta \boldsymbol X_{c, pre} || = \sqrt{ \sum_{p} \left( X_{t, p, pre}  - \sum_{i \in c} \beta_{p} X_{c, p, pre} \right)^2 }
+$$</p>
+<p>I.e. the weights are such that they minimize the distance between observable characteristics of control units $X_c$ and the treated unit $X_t$ before the treatment.</p>
+<p>You might notice a very close similarity to <strong>linear regression</strong>.  Indeed, we are doing something very similar.</p>
+<p>In linear regression, we usually have <strong>many units</strong> (observations), <strong>few exogenous features</strong> and <strong>one endogenous feature</strong> and we try to express the endogenous feature as a linear combination of the endogenous features, for each unit.</p>
+<img src="fig/synth1.png" width="500px"/>
+<p>With synthetic control, we instead have <strong>many time periods</strong> (features), few <strong>control units</strong> and a single <strong>treated unit</strong> and we try to express the treated unit as a linear combination of the control units, for each time period</p>
+<img src="fig/synth2.png" width="500px"/>
+<p>In the end, we are doing the same thing, but with a transposed dataset.</p>
+<img src="fig/synth3.png" width="500px"/>
+<h3 id="back-to-self-driving-cars">Back to self-driving cars</h3>
+<p>Let&rsquo;s go back to the data now! First, we write a <code>synth_predict</code> function that takes as input a model that is trained on control cities and tries to predict the outcome of the treated city, Miami, before the introduction of self-driving cars.</p>
+<pre><code class="language-python">def synth_predict(df, model, city, year):
+    other_cities = [c for c in cities if c not in ['year', city]]
+    y = df.loc[df['year'] &lt;= year, city]
+    X = df.loc[df['year'] &lt;= year, other_cities]
+    df[f'Synthetic {city}'] = model.fit(X, y).predict(df[other_cities])
     return model
 </code></pre>
-<pre><code class="language-python">coef = synth_predict(df, 'California', LinearRegression()).coef_
+<p>Let&rsquo;s estimate the model via linear regression.</p>
+<pre><code class="language-python">from sklearn.linear_model import LinearRegression
+
+coef = synth_predict(df, LinearRegression(), treated_city, treatment_year).coef_
 </code></pre>
-<p>How well did we predict pre-1989 sales of cigarettes in California? If we believe that that&rsquo;s a sensible control, what is the treatment effect?</p>
-<p>We can visually answe both questions by plotting the actual sales of cigarettes in California against the predicted ones.</p>
-<pre><code class="language-python">plot_lines(df, 'California', 'Synthetic California')
+<p>How well did we <strong>match</strong> pre-self-driving cars <code>revenue</code> in Miami? What is the implied <strong>effect</strong> of self-driving cars?</p>
+<p>We can visually answer both questions by plotting the actual revenue in Miami against the predicted one.</p>
+<pre><code class="language-python">plot_lines(df, treated_city, f'Synthetic {treated_city}', treatment_year)
 </code></pre>
-<p><img src="img/synthetic_control_27_0.png" alt="png"></p>
-<p>It looks like the policy had a sensible <strong>negative effect</strong> on cigarette sales: the predicted trend is higher than the actual sales and diverges right after the approval of Proposition 99.</p>
-<p>We can also observe that we are clearly <strong>overfitting</strong>: the pre-policy predicted cigarette sales line is perfectly overlapping with the actual data.</p>
-<p>Another problem concerns the <strong>weights</strong>. We have not set any constraint on the weights.</p>
-<pre><code class="language-python">df_states = pd.DataFrame({'state': df.columns[[i for i in range(2,40) if i!=3]], 'ols_coef': coef[1:]})
-sns.barplot(data=df_states, x='ols_coef', y='state');
+<p><img src="img/synthetic_control_43_0.png" alt="png"></p>
+<p>It looks like self-driving cars had a sensible <strong>positive effect</strong> on <code>revenue</code> in Miami: the predicted trend is lower than the actual data and diverges right after the introduction of self-driving cars.</p>
+<p>On the other hand, we are clearly <strong>overfitting</strong>: the pre-treatment predicted <code>revenue</code> line is perfectly overlapping with the actual data. Given the high variability of <code>revenue</code> in Miami, this is suspicious, to say the least.</p>
+<p>Another problem concerns the <strong>weights</strong>. Let&rsquo;s plot them.</p>
+<pre><code class="language-python">df_states = pd.DataFrame({'city': [c for c in cities if c!=treated_city], 'ols_coef': coef})
+plt.figure(figsize=(10, 10))
+sns.barplot(data=df_states, x='ols_coef', y='city');
 </code></pre>
-<p><img src="img/synthetic_control_29_0.png" alt="png"></p>
-<p>We have many <strong>negative weights</strong>, which do not make much sense from a causal inference perspective. Since we would like to interpret our synthetic control as a <strong>weighted average</strong> of untreated states, all weights should be positive  and they should sum to one.</p>
-<p>To address both concerns, we are going to build a new estimator called <code>SyntheticControl()</code> which constrains the weights to be positive and to sum to one.</p>
-<pre><code class="language-python">from typing import List
-from operator import add
-from toolz import reduce, partial
+<p><img src="img/synthetic_control_45_0.png" alt="png"></p>
+<p>We have many <strong>negative weights</strong>, which do not make much sense from a causal inference perspective. I can understand that Miami can be expressed as a combination of 0.2 St. Louis, 0.15 Oklahoma and 0.15 Hartford. But what does it mean that Miami is -0.15 Milwaukee?</p>
+<p>Since we would like to interpret our synthetic control as a <strong>weighted average</strong> of untreated states, all weights should be positive  and they should sum to one.</p>
+<p>To address both concerns (weighting and overfitting), we need to impose some <strong>restrictions on the weights</strong>.</p>
+<h2 id="extensions">Extensions</h2>
+<h3 id="weights">Weights</h3>
+<p>To solve the problems of overweighting and negative weights, <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Abadie, Diamond and Hainmueller (2010)</a> propose the following weights:</p>
+<p>$$
+\hat \beta = \arg \min_{\beta} || \boldsymbol X_t - \boldsymbol \beta \boldsymbol X_c || = \sqrt{ \sum_{p} \left( X_{t, p}  - \sum_{i \in c} \beta_{p} X_{c, p} \right)^2 }
+\quad \text{s.t.} \quad \sum_{p} \beta_p = 1 \quad \text{and} \quad \beta_p \geq 0 \quad \forall p
+$$</p>
+<p>Which means, a set of weights $\beta$ such that</p>
+<ul>
+<li>
+<p>weighted observable characteristics of the control group $X_c$, match the observable characteristics of the treatment group $X_t$, before the treatment</p>
+</li>
+<li>
+<p>they sum to 1</p>
+</li>
+<li>
+<p>and are not negative.</p>
+</li>
+</ul>
+<p>With this approach we get an <strong>interpretable counterfactual</strong> as a weighted avarage of untreated units.</p>
+<p>Let&rsquo;s write now our own objective function. I create a new class <code>SyntheticControl()</code> which has both a <code>loss</code> function, as described above, a method to <code>fit</code> it and <code>predict</code> the values for the treated unit.</p>
+<pre><code class="language-python">from toolz import partial
 from scipy.optimize import fmin_slsqp
 
 class SyntheticControl():
@@ -1404,50 +1261,72 @@ class SyntheticControl():
     def predict(self, X):
         return X.dot(self.coef_)
 </code></pre>
-<p>We can now plot the actual and predicted cigarette sales in California using the <code>SyntheticControl</code> method.</p>
-<pre><code class="language-python">coef_new = synth_predict(df, 'California', SyntheticControl()).coef_
-plot_lines(df, 'California', 'Synthetic California')
+<p>We can now repeat the same procedure as before, but using the <code>SyntheticControl</code> method instead of the simple, unconstrained <code>LinearRegression</code>.</p>
+<pre><code class="language-python">df_states['coef_synth'] = synth_predict(df, SyntheticControl(), treated_city, treatment_year).coef_
+plot_lines(df, treated_city, f'Synthetic {treated_city}', treatment_year)
 </code></pre>
-<p><img src="img/synthetic_control_33_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_52_0.png" alt="png"></p>
+<p>As we can see, now we are <strong>not overfitting</strong> anymore. The actual and predicted <code>revenue</code> pre-treatment are close but not identical. The reason is that the non-negativity constraint is constraining most coefficients to be zero (as <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html" target="_blank" rel="noopener">Lasso</a> does).</p>
 <p>It looks like the effect is again negative. However, let&rsquo;s plot the <strong>difference</strong> between the two lines to better visualize the magnitude.</p>
-<pre><code class="language-python">def plot_difference(df, state, vline=True, hline=True, **kwargs):
-    sns.lineplot(x=df['year'], y=df[state] - df[f'Synthetic {state}'], **kwargs)
+<pre><code class="language-python">def plot_difference(df, city, year, vline=True, hline=True, **kwargs):
+    sns.lineplot(x=df['year'], y=df[city] - df[f'Synthetic {city}'], **kwargs)
     if vline: 
-        plt.axvline(x=1988, ls=&quot;:&quot;, color='C2', label='Proposition 99', zorder=1)
+        plt.axvline(x=year, ls=&quot;:&quot;, color='C2', lw=3, label='Self-driving Cars', zorder=100)
         plt.legend()
-    if hline: sns.lineplot(x=df['year'], y=0, lw=1, color='black', zorder=1)
-    plt.title(&quot;Normalized per-capita cigarette sales (in packs)&quot;);
+    if hline: sns.lineplot(x=df['year'], y=0, lw=3, color='k', zorder=1)
+    plt.title(&quot;Estimated effect of self-driving cars&quot;);
 </code></pre>
-<pre><code class="language-python">plot_difference(df, 'California', label='California')
+<pre><code class="language-python">plot_difference(df, treated_city, treatment_year)
 </code></pre>
-<p><img src="img/synthetic_control_36_0.png" alt="png"></p>
-<p>The difference is clearly negative and decreasing over time. Moreover, now we see that the estimator is not overfitting the pre-period anymore. The reason is that the non-negativity constraint is constraining most coefficients to be zero (as <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html" target="_blank" rel="noopener">Lasso</a> does).</p>
-<p>We can visualize it by plotting the distribution of coefficients.</p>
-<pre><code class="language-python">df_states['coef_synth'] = coef_new[1:]
-sns.barplot(data=df_states, x='coef_synth', y='state');
+<p><img src="img/synthetic_control_55_0.png" alt="png"></p>
+<p>The difference is clearly positive and slightly increasing over time.</p>
+<p>We can also visualize the <strong>weights</strong> to interpret the estimated counterfactual (what would have happened in Miami, without self-driving cars).</p>
+<pre><code class="language-python">plt.figure(figsize=(10, 10))
+sns.barplot(data=df_states, x='coef_synth', y='city');
 </code></pre>
-<p><img src="img/synthetic_control_38_0.png" alt="png"></p>
+<p><img src="img/synthetic_control_57_0.png" alt="png"></p>
+<p>As we can see, now we are expressing <code>revenue</code> in Miami as a linear combination of just a couple of cities: Tampa, St. Louis and, to a lower extent, Las Vegas. This makes the whole procedure very <strong>transparent</strong>.</p>
+<h3 id="inference">Inference</h3>
 <p>What about <strong>inference</strong>? Is the estimate significantly different from zero? Or, more practically, &ldquo;<em>how unusual is this estimate under the null hypothesis of no policy effect</em>?&rdquo;.</p>
-<p>We are going to perform a <strong>randomization/permutation test</strong> in order to answer this question. The <strong>idea</strong> is that if the policy has no effect, the effect we observe for California should not be significantly different from the effect we observe for any other state.</p>
-<p>Therefore, we are going to replicate the procedure above, but for all other states and observe how unusual is California.</p>
-<pre><code class="language-python">for state in states:
-    synth_predict(df, state, SyntheticControl())
-    plot_difference(df, state, vline=False, alpha=0.2, color='grey')
-plot_difference(df, 'California', label='California')
+<p>We are going to perform a <a href="https://en.wikipedia.org/wiki/Permutation_test" target="_blank" rel="noopener"><strong>randomization/permutation test</strong></a> in order to answer this question. The <strong>idea</strong> is that if the policy has no effect, the effect we observe for Miami should not be significantly different from the effect we observe for any other city.</p>
+<p>Therefore, we are going to replicate the procedure above, but for all other cities and compare them with the estimate for Miami.</p>
+<pre><code class="language-python">from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+
+fig, ax = plt.subplots()
+for city in cities:
+    synth_predict(df, SyntheticControl(), city, treatment_year)
+    plot_difference(df, city, treatment_year, vline=False, alpha=0.2, color='C1', lw=3)
+plot_difference(df, treated_city, treatment_year)
+ax.add_artist(AnnotationBbox(OffsetImage(mpimg.imread('fig/miami.png'), zoom=0.25), (2015, 2.7), frameon=False));
 </code></pre>
-<p><img src="img/synthetic_control_40_0.png" alt="png"></p>
+<pre><code>---------------------------------------------------------------------------
+
+NameError                                 Traceback (most recent call last)
+
+Input In [21], in &lt;module&gt;
+      6     plot_difference(df, city, treatment_year, vline=False, alpha=0.2, color='C1', lw=3)
+      7 plot_difference(df, treated_city, treatment_year)
+----&gt; 8 ax.add_artist(AnnotationBbox(OffsetImage(mpimg.imread('fig/miami.png'), zoom=0.25), (2015, 2.7), frameon=False))
+
+
+NameError: name 'mpimg' is not defined
+</code></pre>
+<p><img src="img/synthetic_control_61_1.png" alt="png"></p>
 <p>From the graph we notice two things. First, the effect for California is quite extreme and therefore likely not to be driven by random noise.</p>
 <p>Second, we also notice that there are a couple of states for which we cannot fit the pre-trend very well. This is expected since, for each state, we are building the counterfactual trend as a <strong>convex combination</strong> of all other states. States that are quite extreme in terms of cigarette consumpion are very useful to build the counterfactuals of other states, but it&rsquo;s hard to build a counterfactual for them. Not to bias the analysis, let&rsquo;s exclude states for which we cannot build a &ldquo;good enough&rdquo; counterfectual, in terms of pre-treatment MSE.</p>
 <p>$$
 MSE_{pre} = \frac{1}{n} \sum_{t \in \text{pre}} \left( Y_t - \hat Y_t \right)^2
 $$</p>
-<pre><code class="language-python">for state in states:
-    mse = synth_predict(df, state, SyntheticControl()).mse
-    if mse &lt; 15:
-        plot_difference(df, state, vline=False, alpha=0.2, color='grey')
-plot_difference(df, 'California', label='California')
+<pre><code class="language-python">mse_treated = synth_predict(df, SyntheticControl(), treated_city, treatment_year).mse
+
+fig, ax = plt.subplots()
+for city in cities:
+    mse = synth_predict(df, SyntheticControl(), city, treatment_year).mse
+    if mse &lt; 2 * mse_treated:
+        plot_difference(df, city, treatment_year, vline=False, alpha=0.2, color='C1', lw=3)
+plot_difference(df, treated_city, treatment_year)
+ax.add_artist(AnnotationBbox(OffsetImage(mpimg.imread('fig/miami.png'), zoom=0.25), (2015, 2.7), frameon=False));
 </code></pre>
-<p><img src="img/synthetic_control_42_0.png" alt="png"></p>
 <p>After exluding extreme observations, it looks like the effect for California is very unusual, especially if we consider a one-sided hypothesis test (it feels weird to assume that the policy could ever increase cigarette sales).</p>
 <p>One <strong>statistic</strong> that the authors suggest to perform a randomization test is the ratio between pre-treatment MSE and post-treatment MSE.</p>
 <p>$$
@@ -1455,29 +1334,48 @@ plot_difference(df, 'California', label='California')
 $$</p>
 <p>We can compute a p-value as the number of observations with higher ratio.</p>
 <pre><code class="language-python">lambdas = {}
-for state in states:
-    mse_pre = synth_predict(df, state, SyntheticControl()).mse
-    mse_tot = np.mean((df[f'Synthetic {state}'] - df[state])**2)
-    lambdas[state] = (mse_tot - mse_pre) / mse_pre
+for city in cities:
+    mse_pre = synth_predict(df, SyntheticControl(), city, treatment_year).mse
+    mse_tot = np.mean((df[f'Synthetic {city}'] - df[city])**2)
+    lambdas[city] = (mse_tot - mse_pre) / mse_pre
     
-print(f&quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype='float') &gt; lambdas['California']):.4}&quot;)
+print(f&quot;p-value: {np.mean(np.fromiter(lambdas.values(), dtype='float') &gt; lambdas[treated_city]):.4}&quot;)
 </code></pre>
-<pre><code>p-value: 0.02564
+<p>It seems that only $4.3%$ of the cities had a larger MSE ratio. We can visualize the distribution of the statistic under permutation with a histogram.</p>
+<pre><code class="language-python">fig, ax = plt.subplots()
+_, bins, _ = plt.hist(lambdas.values(), bins=20, color=&quot;C1&quot;);
+plt.hist([lambdas[treated_city]], bins=bins)
+plt.title('Ratio of $MSE_{post}$ and $MSE_{pre}$ across cities');
+ax.add_artist(AnnotationBbox(OffsetImage(plt.imread('fig/miami.png'), zoom=0.25), (2.7, 1.6), frameon=False));
 </code></pre>
-<p>It seems that only $2.5%$ of the states had a larger MSE ratio. We can visualize the distribution of the statistic under permutation with a histogram.</p>
-<pre><code class="language-python">_, bins, _ = plt.hist(lambdas.values(), bins=20);
-plt.hist([lambdas['California']], bins=bins, color=&quot;C2&quot;, label=&quot;California&quot;)
-plt.legend();
-plt.title('Ratio of $MSE_{post}$ and $MSE_{pre}$ across states');
-</code></pre>
-<p><img src="img/synthetic_control_46_0.png" alt="png"></p>
-<p>Indeed, the California statistic is quite extreme.</p>
-<h2 id="references">References</h2>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=BsRqy7juMus" target="_blank" rel="noopener">Video lecture on Synthetic Controls</a> by Paul Goldsmith-Pinkham (Yale)</li>
-<li><a href="https://matheusfacure.github.io/python-causality-handbook/15-Synthetic-Control.html" target="_blank" rel="noopener">Chapter 10</a> of Causal Inference for the Brave and True by Matheus Facure</li>
-<li><a href="https://mixtape.scunning.com/synthetic-control.html" target="_blank" rel="noopener">Chapter 15</a> of Causal Inference: The Mixtape by Scott Cunningham</li>
-</ul>
+<p>Indeed, the statistic for Miami is quite extreme.</p>
+<h3 id="synthetic-control-vs-other-methods">Synthetic Control vs Other Methods</h3>
+<p>What are the advantages and disadvantages of synthetic control methods with respect to other methods?</p>
+<ol>
+<li>
+<p>As long as we use positive weights that are constrained to sum to one, the method <strong>avoids extrapolation</strong>: we will never go out of the support of the data</p>
+</li>
+<li>
+<p>It can be <strong>&ldquo;pre-registered&rdquo;</strong> in the sense that you don&rsquo;t need post-treatment observations to build the method: could avoid p-hacking and cherry picking</p>
+</li>
+<li>
+<p>Weights make the counterfactual analysis <strong>explicit</strong>: one can look at the weights and understand which comparison we are making</p>
+</li>
+<li>
+<p>It&rsquo;s a <strong>bridge</strong> between quantitative and qualitative research: can be used to inspect single-treated unit cases</p>
+</li>
+</ol>
+<h2 id="conclusion">Conclusion</h2>
+<p>TBD</p>
+<h3 id="references">References</h3>
+<p>[1] A. Abadie, A. Diamond and J. Hainmueller, <a href="https://www.tandfonline.com/doi/abs/10.1198/jasa.2009.ap08746" target="_blank" rel="noopener">Synthetic Control Methods for Comparative Case Studies: Estimating the Effect of California’s Tobacco Control Program</a> (2010), <em>Journal of the American Statistical Association</em>.</p>
+<p>[2] A. Abadie, J. L&rsquo;Hour, <a href="https://www.tandfonline.com/doi/full/10.1080/01621459.2021.1971535" target="_blank" rel="noopener">A Penalized Synthetic Control Estimator for Disaggregated Data</a> (2020), <em>Journal of the American Statistical Association</em>.</p>
+<p>[3] N. Doudchenko, G. Imbens, <a href="https://arxiv.org/pdf/1610.07748.pdf" target="_blank" rel="noopener">Balancing, Regression, Difference-In-Differences and Synthetic Control Methods: A Synthesis</a> (2017), <em>working paper</em>.</p>
+<p>[] Matrix completion methods for causal panel data models</p>
+<p>[] Using Synthetic Controls: Feasibility, Data Requirements, and Methodological Aspects</p>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/synthetic_control.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/synthetic_control.ipynb</a></p>
 
           </div>
           
@@ -1746,10 +1644,6 @@ plt.title('Ratio of $MSE_{post}$ and $MSE_{pre}$ across states');
   
 
   
-  <p class="powered-by">
-    Theme edited by Matteo Courthoud© - Want to have a similar website? <a href="https://matteocourthoud.github.io/post/website/">Guide here</a>.
-  </p>
-  
 
   
   
@@ -1891,7 +1785,7 @@ plt.title('Ratio of $MSE_{post}$ and $MSE_{pre}$ across states');
       
     
     
-    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+    <script src="/en/js/wowchemy.min.4ea9cc8d09c5c158656ac1a804743b34.js"></script>
 
     
   <script async defer src="https://buttons.github.io/buttons.js"></script>

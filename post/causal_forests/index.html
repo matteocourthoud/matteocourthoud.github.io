@@ -1,0 +1,1645 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="How to use regression trees to do policy targeting.
+In my previous blog post, we have seen how to use causal trees to estimate heterogeneous treatment effects of a policy. If you haven&rsquo;t read it, I recommend starting there first, since we are going to take the content of that article for granted and start from there." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/causal_forests/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.5c4def4f00a521426f4eb098155f3342.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/causal_forests/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/causal_forests/" />
+  <meta property="og:title" content="From Causal Trees to Forests | Matteo Courthoud" />
+  <meta property="og:description" content="How to use regression trees to do policy targeting.
+In my previous blog post, we have seen how to use causal trees to estimate heterogeneous treatment effects of a policy. If you haven&rsquo;t read it, I recommend starting there first, since we are going to take the content of that article for granted and start from there." /><meta property="og:image" content="https://matteocourthoud.github.io/post/causal_forests/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/causal_forests/featured.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2023-07-10T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2023-07-10T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/causal_forests/"
+  },
+  "headline": "From Causal Trees to Forests",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/causal_forests/featured.png"
+  ],
+  
+  "datePublished": "2023-07-10T00:00:00Z",
+  "dateModified": "2023-07-10T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "How to use regression trees to do policy targeting.\nIn my previous blog post, we have seen how to use causal trees to estimate heterogeneous treatment effects of a policy. If you haven\u0026rsquo;t read it, I recommend starting there first, since we are going to take the content of that article for granted and start from there."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>From Causal Trees to Forests | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="59e96353605e7508a8766be21fb75aeb" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#online-discounts">Online Discounts</a></li>
+    <li><a href="#causal-forests">Causal Forests</a>
+      <ul>
+        <li><a href="#performance">Performance</a></li>
+      </ul>
+    </li>
+    <li><a href="#policy">Policy</a></li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="article-container pt-3">
+  <h1>From Causal Trees to Forests</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Jul 10, 2023
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    16 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1540px; max-height: 874px;">
+  <div style="position: relative">
+    <img src="/post/causal_forests/featured.png" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p><em>How to use regression trees to do policy targeting.</em></p>
+<p>In my <a href="https://medium.com/towards-data-science/understanding-causal-trees-920177462149" target="_blank" rel="noopener">previous blog post</a>, we have seen how to use <strong>causal trees</strong> to estimate heterogeneous treatment effects of a policy. If you haven&rsquo;t read it, I recommend starting there first, since we are going to take the content of that article for granted and start from there.</p>
+<p>Why heterogenous treatment effects (HTE)? The estimation of heterogeneous treatments effects is important because it allows us to do <strong>targeting</strong>. Knowing which customers are more likely to react to a discount allows a company to spend less money by offering fewer but better targeted discounts. This works also for negative effects: knowing for which patients a certain drug has side effects allows a pharmaceutical company to warn or exclude them from the treatment. There is also a more subtle advantage of estimating heterogeneous treatment effects: knowing <strong>for whom</strong> a treatment works allows us to better understand <strong>how</strong> a treatment works. Knowing that the effect of a discount does not depend on the income of its recipient but rather by its buying habits  tells us that maybe it is not a matter of money, but rather a matter of attention or loyalty.</p>
+<p>In this article, we will explore an extention of causal trees: causal forests. Exactly as random forests extend regression trees by averaging multiple bootstrapped trees together, causal forests extend causal trees. The main difference comes from the inference perspective, which is less straighforward. We are also going to see how to compare outputs of different HTE estimation algorithms and how to use them for <strong>policy targeting</strong>.</p>
+<h2 id="online-discounts">Online Discounts</h2>
+<p>For the rest of the article, we resume the toy example used in the <a href="https://medium.com/towards-data-science/understanding-causal-trees-920177462149" target="_blank" rel="noopener">causal trees article</a>: we assume we are an <strong>online store</strong> and we are interested in understanding whether offering discounts to new customers increases their expenditure in the store.</p>
+<img src="fig/causal_forests1.jpg" width="300px"/>
+<p>To understand whether and how much the discounts are effective we run an <strong>A/B test</strong>: whenever a new user visits our online store, we randomly decide whether to offer them the discount or not. I import the data-generating process <code>dgp_online_discounts()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>. To include not only code but also data and tables, I use <a href="https://deepnote.com/" target="_blank" rel="noopener">Deepnote</a>, a Jupyter-like web-based collaborative notebook environment.</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+
+from src.utils import *
+from src.dgp import dgp_online_discounts
+</code></pre>
+<pre><code class="language-python">dgp = dgp_online_discounts(n=100_000)
+df = dgp.generate_data()
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>time</th>
+      <th>device</th>
+      <th>browser</th>
+      <th>region</th>
+      <th>discount</th>
+      <th>spend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>10.78</td>
+      <td>mobile</td>
+      <td>edge</td>
+      <td>9</td>
+      <td>0</td>
+      <td>0.46</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0.57</td>
+      <td>desktop</td>
+      <td>firefox</td>
+      <td>9</td>
+      <td>1</td>
+      <td>11.04</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3.74</td>
+      <td>mobile</td>
+      <td>safari</td>
+      <td>7</td>
+      <td>0</td>
+      <td>1.81</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>13.37</td>
+      <td>desktop</td>
+      <td>other</td>
+      <td>5</td>
+      <td>0</td>
+      <td>31.90</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.71</td>
+      <td>mobile</td>
+      <td>explorer</td>
+      <td>2</td>
+      <td>0</td>
+      <td>15.42</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We have data on 100.000 store visitors, for whom we observe the <code>time</code> of the day the acessed the website, the <code>device</code> they use, their <code>browser</code>, and their geographical <code>region</code>. We also see whether they were offered the <code>discount</code>, our treatment, and what is their <code>spend</code>, the outcome of interest.</p>
+<p>Since the treatment was randomly assigned, we can use a simple <strong>difference-in-means</strong> estimator to estimate the treatment effect. We expect the treatment and control group to be similar, except for the <code>discount</code>, therefore we can causally attribute any difference in <code>spend</code> to the <code>discount</code>.</p>
+<pre><code class="language-python">smf.ols('spend ~ discount', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    5.0306</td> <td>    0.045</td> <td>  110.772</td> <td> 0.000</td> <td>    4.942</td> <td>    5.120</td>
+</tr>
+<tr>
+  <th>discount</th>  <td>    1.9492</td> <td>    0.064</td> <td>   30.346</td> <td> 0.000</td> <td>    1.823</td> <td>    2.075</td>
+</tr>
+</table>
+<p>The discount seems to be effective: on average the spend in the treatment group increases by 1.95$. But are all customers equally affected?</p>
+<p>To answer this question, we would like to estimate <strong>heterogeneous treatment effects</strong>, possibly at the individual level.</p>
+<h2 id="causal-forests">Causal Forests</h2>
+<p>There are many different options to compute heterogeneous treatment effects. The simplest one is to interact the outcome of interest with a dimension of heterogeneity. The problem with this approach is which variable to pick. Sometimes we have prior information that might guide out actions; for example, we might know that <code>mobile</code> users on average spend more than <code>desktop</code> users. Other times, we might be interested in one dimension for business reasons; for example we might want to invest more in a certain <code>region</code>. However, when we do not extra information we would like this process to be data-driven.</p>
+<p>In the <a href="https://medium.com/towards-data-science/understanding-causal-trees-920177462149" target="_blank" rel="noopener">previous article</a> we have explored one data-drive approach to estimate heterogeneous treatment effects: <strong>causal trees</strong>. We will now expand them to causal forests. However, before we start, we have to give an introduction to its non-causal cousing: random forests.</p>
+<img src="fig/causal_forests2.jpg" width="300px"/>
+<p><a href="https://en.wikipedia.org/wiki/Random_forest" target="_blank" rel="noopener"><strong>Random forests</strong></a>, as the name suggests, are an extension of regression trees, adding two separate sources of randomness of top of them. In particular, a random forest algorithm takes the predictions of many different regression trees, each trained on a bootstrapped sample of the data, and averages them together. This procedure is generally known as <a href="https://en.wikipedia.org/wiki/Bootstrap_aggregating" target="_blank" rel="noopener"><strong>bagging</strong></a>, boostrap-aggregating, and can be applied to any prediction algorithm and is not specific to random forest. The additional source of randomness comes from feature selection since at each split, only a random subset of all the features $X$ is considered for the optimal split.</p>
+<p>These two extra sources of randomness are extremely important and controbute to a superior performance of random forests. First of all, bagging allows random forests to <strong>produce smoother</strong> prediction than regression trees by averaging multiple discrete predictions. Random feature selection instead allows random forests to <strong>explore the feature space</strong> more in depth, allowing it to discover more interations than simple regression trees. In fact, there might be interactions between variables that are on their own not very predictive (and therefore would not generate splits) but together very powerful.</p>
+<p>Causal Forests are the equivalent of random forests, but for the estimation of heterogeneous treatment effects, exaxtly as for causal trees and regression trees. Exactly as for Causal Trees, we have a fundamental problem: we are interested in predicting an object that we do not observe: the individua treatment effects $\tau_i$. The solution is to create an auxiliary outcome variable $Y^*$ whose expected value for each single observation is exactly the treatment effect.</p>
+<p>$$
+Y_i^* = \frac{Y_i}{D_i \cdot p(X_i) - (1-D_i) \cdot (1-p(X_i))}
+$$</p>
+<p>If you want to know more details on why this variable is unbiased for the individual treatment effect, have a look at my <a href="https://towardsdatascience.com/920177462149" target="_blank" rel="noopener">previous post</a> where I go more in detail. In short, you can interpret $Y_i^*$ as the difference-in-means estimator for a single observation.</p>
+<p>Once we have an outcome variable, there are still a couple of things we need to do in order to use Random Forests to estimate heterogeneous treatment effects. First, we need to build trees that have an equal number of treated and control units in each leaf. Second, we need to use different samples to build the tree and evaluate it, i.e. compute the average outcome per leaf. This procedure is often referred to as <strong>honest trees</strong> and it&rsquo;s extremely helpful for inference, since we can treat the sample of each leaf as independent from the tree structure.</p>
+<p>Before we go into the estimation, let&rsquo;s first generate dummy variables for our categorical variables, <code>device</code>, <code>browser</code> and <code>region</code>.</p>
+<pre><code class="language-python">df_dummies = pd.get_dummies(df[dgp.X[1:]], drop_first=True)
+df = pd.concat([df, df_dummies], axis=1)
+X = ['time'] + list(df_dummies.columns)
+</code></pre>
+<p>We can now estimate the heterogeneous treatment effects using the Random Forest algorithm. Luckily, we don&rsquo;t have to do all this by hand, but there is a great implementation of Causal Trees and Forests in Microsoft&rsquo;s <a href="https://econml.azurewebsites.net/" target="_blank" rel="noopener">EconML</a> package. We will use the <code>CausalForestDML</code> function. We set a seed for reproducibility.</p>
+<pre><code class="language-python">from econml.dml import CausalForestDML
+
+np.random.seed(0)
+forest_model = CausalForestDML(max_depth=3)
+forest_model = forest_model.fit(Y=df[dgp.Y], X=df[X], T=df[dgp.D])
+</code></pre>
+<p>Differently from Causal Trees, Causal Forests are harder to interpret since we cannot visualize every single tree. We can use the <code>SingleTreeCateInterpreter</code> function to plot an equivalent representation of the Causal Forest algorithm.</p>
+<pre><code class="language-python">from econml.cate_interpreter import SingleTreeCateInterpreter
+%matplotlib inline
+
+intrp = SingleTreeCateInterpreter(max_depth=2).interpret(forest_model, df[X])
+intrp.plot(feature_names=X, fontsize=12)
+</code></pre>
+<p><img src="img/causal_forests_20_0.png" alt="png"></p>
+<p>We can interpret the tree diagram exactly as for the Causal Tree model. On the top, we can see the average $Y^*$ in the data, $1.917$. Starting from there, the data gets split into different branches, according to the rules highlighted at the top of each node. For example, the first node splits the data into two groups of size $46878$ and $53122$ depending on whether the <code>time</code> is later than $11.295$. At the bottom, we have our final partitions, with the predicted values. For example, the leftmost leaf contains $40191$ observation with <code>time</code> earlier than $11.295$ and non-Safari <code>browser</code>, for which we predict a spend of $0.264$. Darker node colors indicate higher prediction values.</p>
+<p>The problem with this representation is that, differently from the case of Causal Trees, it is only an interpretation of the model. Since Causal Forests are made of many bootstrapped trees, there is no way to directly inspect each decision tree. One way to understand which feature is most important in detemining the tree split is the so-called <a href="https://scikit-learn.org/stable/auto_examples/ensemble/plot_forest_importances.html" target="_blank" rel="noopener">feature importance</a>.</p>
+<pre><code class="language-python">fig, ax = plt.subplots()
+sns.barplot(x=X, y=forest_model.feature_importances()[0], color='C0').set(
+    title='Feature Importances', ylabel='Importance')
+ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha=&quot;right&quot;);
+</code></pre>
+<p><img src="img/causal_forests_22_0.png" alt="png"></p>
+<p>Clearly <code>time</code> is the first dimension of heterogeneity, followed by <code>device</code> (mobile in particular) and <code>browser</code> (safari in particular). Other dimensions do not matter much.</p>
+<p>Let&rsquo;s now check the model performance.</p>
+<h3 id="performance">Performance</h3>
+<p>Since we control the data generating process, we can do something that is not possible with real data: check the predicted treatment effects against the true ones. The <code>generate_potential_outcomes()</code> function loads the data with both potential outcomes for each observation, under both treatment (<code>outcome_t</code>) and control (<code>outcome_c</code>). Let&rsquo;s start first by evaluating how well the algorithm predicts the effects along the discrete dimensions of the data.</p>
+<pre><code class="language-python">def compute_discrete_effects(df, hte_model):
+    temp_df = df.copy()
+    temp_df.time = 0
+    temp_df = dgp.add_treatment_effect(temp_df)
+    temp_df = temp_df.rename(columns={'effect_on_spend': 'True'})
+    temp_df['Predicted'] = hte_model.effect(temp_df[X])
+    df_effects = pd.DataFrame()
+    for var in X[1:]:
+        for effect in ['True', 'Predicted']:
+            v = temp_df.loc[temp_df[var]==1, effect].mean() - temp_df[effect][temp_df[var]==0].mean()
+            effect_var = {'Variable': [var], 'Effect': [effect], 'Value': [v]}
+            df_effects = pd.concat([df_effects, pd.DataFrame(effect_var)]).reset_index(drop=True)
+    return df_effects, temp_df['Predicted'].mean()
+</code></pre>
+<pre><code class="language-python">df_effects, avg_effect_notime = compute_discrete_effects(df, forest_model)
+</code></pre>
+<pre><code class="language-python">fig, ax = plt.subplots()
+sns.barplot(data=df_effects, x=&quot;Variable&quot;, y=&quot;Value&quot;, hue=&quot;Effect&quot;, ax=ax).set(
+    xlabel='', ylabel='', title='Heterogeneous Treatment Effects')
+ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha=&quot;right&quot;);
+</code></pre>
+<p><img src="img/causal_forests_28_0.png" alt="png"></p>
+<p>The Causal Forest algorithm is pretty good at predicting the treatment effects related to the categorical variables. As for Causal Trees, this is expected since the algorithm has a very discrete nature. However, differently from Causal Trees, the predictions are more nuanced.</p>
+<p>We can now do a more relevant test: how well the algorithm performs with a continuous variable such as <code>time</code>? First, let&rsquo;s again isolate the predicted treatment effects on <code>time</code> and ignore the other covariates.</p>
+<pre><code class="language-python">def compute_time_effect(df, hte_model, avg_effect_notime):
+    df_time = df.copy()
+    df_time[[X[1:]] + ['device', 'browser', 'region']] = 0
+    df_time = dgp.add_treatment_effect(df_time)
+    df_time['predicted'] = hte_model.effect(df_time[X]) + avg_effect_notime
+    return df_time
+</code></pre>
+<pre><code class="language-python">df_time = compute_time_effect(df, forest_model, avg_effect_notime)
+</code></pre>
+<p>We now plot the predicted treatment effects against the true ones, along the <code>time</code> dimension.</p>
+<pre><code class="language-python">sns.scatterplot(x='time', y='effect_on_spend', data=df_time, label='True')
+sns.scatterplot(x='time', y='predicted', data=df_time, label='Predicted').set(
+    ylabel='', title='Heterogeneous Treatment Effects')
+plt.legend(title='Effect');
+</code></pre>
+<p><img src="img/causal_forests_33_0.png" alt="png"></p>
+<p>We can now fully appreciate the difference between Causal Trees and Forests: while in the case of Causal Trees the estimates were essentially a very coarse step function, we can now see how Causal Forests produce <strong>smoother estimates</strong>.</p>
+<p>We have now explored the model, it&rsquo;s time to use it!</p>
+<h2 id="policy">Policy</h2>
+<p>Suppose that we were considering offering a 4$ discount to new customers that visit our online store.</p>
+<pre><code class="language-python">cost = 4
+</code></pre>
+<p>For which customers is the discount effective? We have estimated an average treatment effect of 1.9492$ which means that the discount is not really profitable on average. However, we are now able to target single individuals and we can offer the discount only to a subset of the incoming customers. We will now explore how to do <strong>policy targeting</strong> and in order to get a better understanding of the quality of the targeting, we will use the Causal Tree model as a reference point.</p>
+<p>We build a Causal Tree using the same <code>CausalForestDML</code> function but restricting the number of estimators and the forest size to 1.</p>
+<pre><code class="language-python">from econml.dml import CausalForestDML
+
+np.random.seed(0)
+tree_model = CausalForestDML(n_estimators=1, subforest_size=1, inference=False, max_depth=3)
+tree_model = tree_model.fit(Y=df[dgp.Y], X=df[X], T=df[dgp.D])
+</code></pre>
+<p>Next, we split the dataset into a train and a test set. The idea is very similar to <a href="https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29" target="_blank" rel="noopener"><strong>cross-validation</strong></a>: we use the training set to train the model - in our case the estimator for the heterogeneous treatment effects - and the test set to assess its quality. The main difference is that we do not observe the true outcome in the test dataset. But we can still use the train-test split to compare in-sample predictions with out-of-sample predictions.</p>
+<p>We put 80% of all observations in the training set and 20% in the test set.</p>
+<pre><code class="language-python">df_train, df_test = df.iloc[:80_000, :], df.iloc[20_000:,]
+</code></pre>
+<p>First, let&rsquo;s retrain the models only on the training sample.</p>
+<pre><code class="language-python">np.random.seed(0)
+tree_model = tree_model.fit(Y=df_train[dgp.Y], X=df_train[X], T=df_train[dgp.D])
+forest_model = forest_model.fit(Y=df_train[dgp.Y], X=df_train[X], T=df_train[dgp.D])
+</code></pre>
+<p>Now we can decide on a targeting policy, i.e. decide to which customers we offer the discount. The answer seems simple: we offer the discount to all the customers for whom we anticipate a treatment effect larger than the cost, 4$.</p>
+<p>A visualization tool that allows us to understand on whom the treatment is effective and how, is the so-called <strong>Treatment Operative Characteristic (TOC)</strong> curve. The name is remindful of the much more famous <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic" target="_blank" rel="noopener">receiver operating characteristic (ROC)</a> curve that plots the true positive rate against the false positive rate for different thresholds of a binary classifier. The idea is similar: we plot the average treatment effect for different shares of the treated population. At one extreme, when all customers are treated, and the curve takes value equal to the average treatement effect, while at the other extreme, when only one customer is treated, and the curve takes value equal to the maximum treatment effect.</p>
+<p>Now let&rsquo;s compute the curve.</p>
+<pre><code class="language-python">def compute_toc(df, hte_model, cost, truth=False):
+    df_toc = pd.DataFrame()
+    for q in np.linspace(0, 1, 101):
+        if truth:
+            df = dgp.add_treatment_effect(df_test)
+            effect = df['effect_on_spend']
+        else:
+            effect = hte_model.effect(df[X])
+        ate = np.mean(effect[effect &gt;= np.quantile(effect, 1-q)])
+        temp = pd.DataFrame({'q': [q], 'ate': [ate]})
+        df_toc = pd.concat([df_toc, temp]).reset_index(drop=True)
+    return df_toc
+</code></pre>
+<pre><code class="language-python">df_toc_tree = compute_toc(df_train, tree_model, cost)
+df_toc_forest = compute_toc(df_train, forest_model, cost)
+</code></pre>
+<p>Now we can plot the Treatment Operating Curves for the two CATE estimators.</p>
+<pre><code class="language-python">def plot_toc(df_toc, cost, ax, color, title):
+    ax.axhline(y=cost, lw=2, c='k')
+    ax.fill_between(x=df_toc.q, y1=cost, y2=df_toc.ate, where=(df_toc.ate &gt; cost), color=color, alpha=0.3)
+    if any(df_toc.ate &gt; cost):
+        q = df_toc_tree.loc[df_toc.ate &gt; cost, 'q'].values[-1]
+    else: 
+        q = 0
+    ax.axvline(x=q, ymin=0, ymax=0.36, lw=2, c='k', ls='--')
+    sns.lineplot(data=df_toc, x='q', y='ate', ax=ax, color=color).set(
+        title=title, ylabel='ATT', xlabel='Share of treated', ylim=[1.5, 8.5]) 
+    ax.text(0.7, cost+0.1, f'Discount cost: {cost:.0f}$', fontsize=12)
+</code></pre>
+<pre><code class="language-python">fix, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+plot_toc(df_toc_tree, cost, ax1, 'C0', 'TOC - Causal Tree')
+plot_toc(df_toc_forest, cost, ax2, 'C1', 'TOC - Causal Forest')
+</code></pre>
+<p><img src="img/causal_forests_49_0.png" alt="png"></p>
+<p>As expected, the TOC curve is decreasing for both estimators since the average effect decreases as we increase the share of treated customers. In other words, the more selective we are in releasing discounts, the higher the effect of the coupon, per customer. I have also plotted an horizontal line with the discount cost so that we can interpret the shaded area below the TOC curve and above the cost line as the <strong>expected profits</strong>.</p>
+<p>The two algorims predict a similar share of treated, around 20%, with the Causal Forest algorithm targeting slightly more customers. However, they predict very different profits. The Causal Tree algorithm predicts a small and constant margin, while the Causal Forest algorithm predicts a larger and steeper margin. Which algorithm is more accurate?</p>
+<p>In order to compare them, we can evaluate them in the test set. We take the model trained on the training set, we predict the treatment effects and we compare them with the predictions from a model trained on the test set. Note that, differently from machine learning standard testing procedures, there is a substantial <strong>difference</strong>: in our case, we cannot evaluate our predictions against the ground truth, since the treatment effects are not observed. We can only compare two predictions with each other.</p>
+<pre><code class="language-python">def compute_effect_test(df_test, hte_model, cost, ax, title, truth=False):
+    df_test['Treated'] = hte_model.effect(df_test[X]) &gt; cost
+    if truth:
+        df_test = dgp.add_treatment_effect(df_test)
+        df_test['Effect'] = df_test['effect_on_spend']
+    else:
+        np.random.seed(0)
+        hte_model_test = copy.deepcopy(hte_model).fit(Y=df_test[dgp.Y], X=df_test[X], T=df_test[dgp.D])
+        df_test['Effect'] = hte_model_test.effect(df_test[X])
+    df_test['Cost Effective'] = df_test['Effect'] &gt; cost
+    tot_effect = ((df_test['Effect'] - cost) * df_test['Treated']).sum()
+    sns.barplot(data=df_test, x='Cost Effective', y='Treated', errorbar=None, width=0.5, ax=ax, palette=['C3', 'C2']).set(
+        title=title + '\n', ylim=[0,1])
+    ax.text(0.5, 1.08, f'Total effect: {tot_effect:.2f}', fontsize=14, ha='center')
+    return 
+</code></pre>
+<pre><code class="language-python">fix, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+compute_effect_test(df_test, tree_model, cost, ax1, 'Causal Tree')
+compute_effect_test(df_test, forest_model, cost, ax2, 'Causal Forest')
+</code></pre>
+<p><img src="img/causal_forests_52_0.png" alt="png"></p>
+<p>It seems that the Causal Tree model performs better than the Causal Forest model, with a total net effect of $8386$$ against $4948$$. From the plot we can also understand the source of the discrepancy. The Causal Forest algorithm  tends to be more restrictive and treat fewer customers, making no false positives but also having a lot of false negatives. On the other hand, the Causal Tree algorithm, is much more generous and distributes the <code>discount</code> to mamy more new customers. This translates in both more true positives but also false positives. The net effect seem to favor the causal tree algorithm.</p>
+<p>Normally, we would stop here since there is not much more we can do. However, in our case, we have access to the <strong>true data generating process</strong>. Therefore we can check the ground-truth accuracy of the two algorithms.</p>
+<p>First, let&rsquo;s compare them in terms of prediction error of the treatment effects. For each algorithm we compute the <a href="https://en.wikipedia.org/wiki/Mean_squared_error" target="_blank" rel="noopener">mean squared error</a> of the treatment effects.</p>
+<pre><code class="language-python">from sklearn.metrics import mean_squared_error as mse
+
+def compute_mse_test(df_test, hte_model):
+    df_test = dgp.add_treatment_effect(df_test)
+    print(f&quot;MSE = {mse(df_test['effect_on_spend'], hte_model.effect(df_test[X])):.4f}&quot;)
+</code></pre>
+<pre><code class="language-python">compute_mse_test(df_test, tree_model)
+compute_mse_test(df_test, forest_model)
+</code></pre>
+<pre><code>MSE = 0.9035
+MSE = 0.5555
+</code></pre>
+<p>The Random Forest model better predicts the average treatment effect, with a mean squared error of $0.5555$ instead of $0.9035$.</p>
+<p>Does this map into a <strong>better targeting</strong>? We can now replicate the same barplot we did above, to understand how well the two algorithms perform in terms of policy targeting.</p>
+<pre><code class="language-python">fix, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+compute_effect_test(df_test, tree_model, cost, ax1, 'Causal Tree', True)
+compute_effect_test(df_test, forest_model, cost, ax2, 'Causal Forest', True)
+</code></pre>
+<p><img src="img/causal_forests_57_0.png" alt="png"></p>
+<p>The plot is very similar, but the result differ substantially. In fact, the Causal Forest algorithm now outperforms the Causal Tree algorithm with a total effect of $10395$$ compared to $8828$$. Why this sudden difference?</p>
+<p>To better understand the source of the discrepancy let&rsquo;s plot the TOC based on the ground truth.</p>
+<pre><code class="language-python">df_toc = compute_toc(df_test, tree_model, cost, True)
+
+fix, ax = plt.subplots(1, 1, figsize=(7, 5))
+plot_toc(df_toc, cost, ax, 'C2', 'TOC - Ground Truth')
+</code></pre>
+<p><img src="img/causal_forests_59_0.png" alt="png"></p>
+<p>As we can see, the TOC is very skewed and there exist a few customers with very high average treatment effects. The Random Forest algorothm is better able to indentify them and therefore is overall more effective, despite targeting fewer customers.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this post, we have seen a very powerful algorithm for the estimation of heterogeneous treatment effects: <strong>causal forests</strong>. Causal forests are built on the same principle of causal trees, but benefit from a much deeper exploration of the parameter space and bagging.</p>
+<p>We have also seen how to use the estimates of the heterogeneous treatment effects to perform policy <strong>targeting</strong>. By identifying users with the highest treatment effects, we are able to make profitable a policy that wouldn&rsquo;t be otherwise. We have also see how the objective of policy targeting might differ from the objective of heterogeneous treatment effect estimation since the tails of the distribution might be more relevant than the average.</p>
+<h3 id="references">References</h3>
+<ul>
+<li>
+<p>S. Athey, G. Imbens, <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1510489113" target="_blank" rel="noopener">Recursive partitioning for heterogeneous causal effects</a> (2016), <em>PNAS</em>.</p>
+</li>
+<li>
+<p>S. Wager, S. Athey, <a href="https://www.tandfonline.com/doi/full/10.1080/01621459.2017.1319839" target="_blank" rel="noopener">Estimation and Inference of Heterogeneous Treatment Effects using Random Forests</a> (2018), <em>Journal of the American Statistical Association</em>.</p>
+</li>
+<li>
+<p>S. Athey, J. Tibshirani, S. Wager, <a href="https://projecteuclid.org/journals/annals-of-statistics/volume-47/issue-2/Generalized-random-forests/10.1214/18-AOS1709.full" target="_blank" rel="noopener">Generalized Random Forests</a> (2019). <em>The Annals of Statistics</em>.</p>
+</li>
+<li>
+<p>M. Oprescu, V. Syrgkanis, Z. Wu, <a href="http://proceedings.mlr.press/v97/oprescu19a.html?ref=https://githubhelp.com" target="_blank" rel="noopener">Orthogonal Random Forest for Causal Inference</a> (2019). <em>Proceedings of the 36th International Conference on Machine Learning</em>.</p>
+</li>
+</ul>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li>
+<p><a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">DAGs and Control Variables</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/99bf5cffa0d9" target="_blank" rel="noopener">Matching, Weighting, or Regression?</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">Understanding Meta Learners</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/ed4097dab27a" target="_blank" rel="noopener">Understanding AIPW, the Doubly-Robust Estimator</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/920177462149" target="_blank" rel="noopener">Understanding Causal Trees</a></p>
+</li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/causal_forests.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/causal_forests.ipynb</a></p>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/causal_forests/&amp;text=From%20Causal%20Trees%20to%20Forests" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/causal_forests/&amp;t=From%20Causal%20Trees%20to%20Forests" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=From%20Causal%20Trees%20to%20Forests&amp;body=https://matteocourthoud.github.io/post/causal_forests/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/causal_forests/&amp;title=From%20Causal%20Trees%20to%20Forests" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=From%20Causal%20Trees%20to%20Forests%20https://matteocourthoud.github.io/post/causal_forests/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/causal_forests/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+          <i class="fab fa-telegram"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">My research fields are empirical Industrial Organization and Competition Policy. My research interests include the relationship between competition and innovation, big data, artificial intelligence, platform markets, peer to peer services.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.4ea9cc8d09c5c158656ac1a804743b34.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,1596 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="An introduction to the delta method for inference on ratio metrics.
+When we run an experiment, we are often not only interested in the effect of a treatment (new product, new feature, new interface, &hellip;) on revenue, but in it&rsquo;s cost-effectiveness." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/delta_method/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.5c4def4f00a521426f4eb098155f3342.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/delta_method/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/delta_method/" />
+  <meta property="og:title" content="Experiments on Returns on Investment | Matteo Courthoud" />
+  <meta property="og:description" content="An introduction to the delta method for inference on ratio metrics.
+When we run an experiment, we are often not only interested in the effect of a treatment (new product, new feature, new interface, &hellip;) on revenue, but in it&rsquo;s cost-effectiveness." /><meta property="og:image" content="https://matteocourthoud.github.io/post/delta_method/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/delta_method/featured.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2023-07-10T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2023-07-10T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/delta_method/"
+  },
+  "headline": "Experiments on Returns on Investment",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/delta_method/featured.png"
+  ],
+  
+  "datePublished": "2023-07-10T00:00:00Z",
+  "dateModified": "2023-07-10T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "An introduction to the delta method for inference on ratio metrics.\nWhen we run an experiment, we are often not only interested in the effect of a treatment (new product, new feature, new interface, \u0026hellip;) on revenue, but in it\u0026rsquo;s cost-effectiveness."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Experiments on Returns on Investment | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="4253d081092abf61d2ff5390e4348a92" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#investing-in-cloud-computing">Investing in Cloud Computing</a></li>
+    <li><a href="#average-return-or-return-of-the-average">Average Return or Return of the Average?</a></li>
+    <li><a href="#inference">Inference</a></li>
+    <li><a href="#the-delta-method">The Delta Method</a></li>
+    <li><a href="#inference-with-linear-regression">Inference with Linear Regression</a></li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="article-container pt-3">
+  <h1>Experiments on Returns on Investment</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Jul 10, 2023
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    15 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1540px; max-height: 874px;">
+  <div style="position: relative">
+    <img src="/post/delta_method/featured.png" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p><em>An introduction to the delta method for inference on ratio metrics.</em></p>
+<p>When we run an experiment, we are often not only interested in the effect of a treatment (new product, new feature, new interface, &hellip;) on revenue, but in it&rsquo;s <strong>cost-effectiveness</strong>. In other words, is the investment worth the cost? Common examples include investments in computing resources, returns on advertisement, but also click-through rates and other ratio metrics.</p>
+<p>When we investigate causal effects, the gold standard is randomized control trials, a.k.a. <strong>AB tests</strong>. Randomly assigning the treatment to a subset of the population (users, patients, customers, &hellip;) we ensure that, on average, the difference in outcomes can be attributed to the treatment. However, when the object of interest is cost-effectiveness, AB tests present some additional problems since we are not just interested in one treatment effect, but in the <strong>ratio of two treatment effects</strong>, the outcome of the investment over its cost.</p>
+<p>In this post we are going to see how to analyze randomized experiments when the object of interest is the <strong>return on investment (ROI)</strong>. We are going to explore alternative metrics to measure whether an investment paid off. We will also introduce a very powerful tool for inference with complex metrics: the <strong>delta method</strong>. While the algebra can be intense, the result is simple: we can compute the confidence interval for our ratio estimator using a simple linear regression.</p>
+<h2 id="investing-in-cloud-computing">Investing in Cloud Computing</h2>
+<p>To better illustrate the concepts, we are going to use a toy example throughout the article: suppose we were an <strong>online marketplace</strong> and we wanted to <strong>invest in cloud computing</strong>: we want to increase the computing power behind our internal search engine, by switching to a higher tier server. The idea is that the faster search will improve the user experience, potentially leading to higher sales. Therefore, the question is: is the investment worth the cost? The object of interest is the <strong>return on investment (ROI)</strong>.</p>
+<p>Differently from usual AB tests or randomized experiments, we are not interested in a single causal effect, but in the <strong>ratio</strong> of two metrics: the effect on revenue and the effect on cost. We will still use a <strong>randomized control trial</strong> or <strong>AB test</strong> to estimate the ROI: we randomly assign groups of users to either the treatment or the control group. The treated users will benefit from the faster cloud machines, while the control users will use the old slower machines. Randomization ensures that we can estimate the impact of the new machines on either cost or revenue by comparing users in the treatment and control group: the difference in their average is an unbiased estimator of the average treatment effect. However, things are more complicated for their ratio.</p>
+<p>I import the data generating process <code>dgp_cloud()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. With respect to previous articles, I generated a new DGP parent class that handles randomization and data generation, while its children classes contain the specific use-cases. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.  To include not only code but also data and tables, I use <a href="https://deepnote.com" target="_blank" rel="noopener">Deepnote</a>, a Jupyter-like web-based collaborative notebook environment.</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+
+from src.utils import *
+from src.dgp import dgp_cloud, DGP
+</code></pre>
+<pre><code class="language-python">dgp = dgp_cloud(n=10_000)
+df = dgp.generate_data(seed_assignment=6)
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>new_machine</th>
+      <th>cost</th>
+      <th>revenue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>3.14</td>
+      <td>20.90</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>3.77</td>
+      <td>33.57</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>3.16</td>
+      <td>24.31</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>2.36</td>
+      <td>20.35</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>1.65</td>
+      <td>12.60</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>The data contains information on the total <code>cost</code> and <code>revenue</code> for a set of $10.000$ users over a period of a month. We also have information on the treatment: whether the search engine was running on the old or <code>new machines</code>.  As it often happens with business metrics, both distributions of cost and revenues are very <strong>skewed</strong>. Moreover, most people do not buy anything and therefore generate zero revenue, even though they still use the platform, generating positive costs.</p>
+<pre><code class="language-python">fix, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+sns.histplot(df.cost, ax=ax1, color='C0').set(title='Distribution of Cost')
+sns.histplot(df.revenue, ax=ax2, color='C1').set(title='Distribution of Revenue');
+</code></pre>
+<p><img src="img/delta_method_8_0.png" alt="png"></p>
+<p>We can compute the <strong>difference-in-means</strong> estimate for <code>cost</code> and <code>revenue</code> by regressing the outcome on the treatment indicator.</p>
+<pre><code class="language-python">smf.ols('cost ~ new_machine', data=df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>   <td>    2.9617</td> <td>    0.043</td> <td>   69.034</td> <td> 0.000</td> <td>    2.878</td> <td>    3.046</td>
+</tr>
+<tr>
+  <th>new_machine</th> <td>    0.5152</td> <td>    0.060</td> <td>    8.563</td> <td> 0.000</td> <td>    0.397</td> <td>    0.633</td>
+</tr>
+</table>
+<p>The average <code>cost</code> has increased by $0.5152$$ per user. What about revenue?</p>
+<pre><code class="language-python">smf.ols('revenue ~ new_machine', data=df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>   <td>   25.9172</td> <td>    0.425</td> <td>   60.950</td> <td> 0.000</td> <td>   25.084</td> <td>   26.751</td>
+</tr>
+<tr>
+  <th>new_machine</th> <td>    1.0664</td> <td>    0.596</td> <td>    1.788</td> <td> 0.074</td> <td>   -0.103</td> <td>    2.235</td>
+</tr>
+</table>
+<p>The average <code>revenue</code> per user has also increased, by $1.0664$$. So, was the investment <strong>profitable</strong>?</p>
+<p>To answer this question, we first have to decide which metric to use as our <strong>outcome metric</strong>. In case of ratio metrics, this is not trivial.</p>
+<h2 id="average-return-or-return-of-the-average">Average Return or Return of the Average?</h2>
+<p>It is very tempting to approach this problem saying: it is true that we have two variables, by we can just compute their ratio, and then analyze everything as usual, using a <strong>single variable</strong>: the individual level return.</p>
+<p>$$
+\rho_i = \frac{\text{individual revenue}}{\text{individual cost}} = \frac{R_i}{C_i}
+$$</p>
+<p>What happens if we analyze the experiment using this single metric?</p>
+<pre><code class="language-python">df[&quot;rho&quot;] = df[&quot;revenue&quot;] / df[&quot;cost&quot;]
+smf.ols(&quot;rho ~ new_machine&quot;, df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>   <td>    6.6898</td> <td>    0.044</td> <td>  150.832</td> <td> 0.000</td> <td>    6.603</td> <td>    6.777</td>
+</tr>
+<tr>
+  <th>new_machine</th> <td>   -0.7392</td> <td>    0.062</td> <td>  -11.893</td> <td> 0.000</td> <td>   -0.861</td> <td>   -0.617</td>
+</tr>
+</table>
+<p>The estimated effect is <strong>negative and significant</strong>, $-0.7392$! It seems like the the new machines were not a good investment, and the returns have decreased by $74%$.</p>
+<p>This result seems to contradict our previous estimates. We have seen before that the revenue has increased on average more than the cost ($0.9505$ vs $0.5076$). Why is it the case? The problem is that we are giving the same weight to heavy users and light users. Let&rsquo;s use a simple example with two users. The first one (blue) is a light user and before was costing $1$ $ and returning $10$ $, while now is costing $4$ $ and returning $20$ $. The other user (violet) is a heavy user and before was costing $10$ $ and returning $100$ $ and now is costing $20$ $ and returning $220$ $.</p>
+<img src="fig/return.png" width="700px"/>
+<p>The average return is -3x: on average the return per user has decreased by $300%$. However, the total return per user is $1000%$: the increase in cost of $13$$ has generated $130$$ in revenue! The results are wildly different and entirely driven by the weight of the two users: the effect of the heavy user is low in relative terms but high in absolute terms, while it&rsquo;s the opposite for the light user. The average relative effect is therefore mostly driven by the light user, while the relative average effect is mostly driven by the heavy user.</p>
+<p><strong>Which metric</strong> is more relevant in our setting? We talking about return on investment, we are usually interested in understanding whether we got a return on the money we spend. Therefore, the <strong>total return</strong> is more interesting than the average return.</p>
+<p>From now on, the object of interest will be the <strong>return on investment (ROI)</strong>, given by the expected increase in revenue over the expected increase in cost, and we will denote it with the greek letter rho, $\rho$.</p>
+<p>$$
+\rho = \frac{\text{incremental revenue}}{\text{incremental cost}} = \frac{\mathbb E [\Delta R]}{\mathbb E [\Delta C]}
+$$</p>
+<p>We can estimate the ROI as the ratio of the two previous estimates: the average difference in revenue between the treatment and control group, over the average difference in cost between the treatment and control group.</p>
+<p>$$
+\hat{\rho} = \frac{\mathbb E_n [\Delta R]}{\mathbb E_n [\Delta C]}
+$$</p>
+<p>Note a subtle but crucial difference with respect to the previous formula: we have replaced the <a href="https://en.wikipedia.org/wiki/Expected_value" target="_blank" rel="noopener">expected values</a> $\mathbb E$ with the empirical expectation operators $\mathbb E_n$, also known as the <a href="https://en.wikipedia.org/wiki/Arithmetic_mean" target="_blank" rel="noopener">sample average</a>. The difference in notation is minimal, but the conceptual difference is huge. The first, $\mathbb E$, is a <strong>theoretical</strong> concept, while the second, $\mathbb E_n$, is <strong>empirical</strong>: it is a number that depends on the actual data. I personally like the notation since it highlights the close link between the two concepts (the second is the empirical counterpart of the first), while also making it clear that the second crucially depends on the sample size $n$.</p>
+<pre><code class="language-python">def estimate_roi(df):
+    Delta_C = df.loc[df.new_machine==1, &quot;cost&quot;].mean() - df.loc[df.new_machine==0, &quot;cost&quot;].mean()
+    Delta_R = df.loc[df.new_machine==1, &quot;revenue&quot;].mean() - df.loc[df.new_machine==0, &quot;revenue&quot;].mean()
+    return Delta_R / Delta_C
+
+estimate_roi(df)
+</code></pre>
+<pre><code>2.0698235970047887
+</code></pre>
+<p>The estimate is $2.0698$: each additional dollar spent in the new machines translated in $2.0698$ extra dollars in revenue. Sounds great!</p>
+<p>But how much should we trust this number? Is it significantly different form one, or it is just driven by noise?</p>
+<h2 id="inference">Inference</h2>
+<p>To answer this question, we would like to compute a <a href="https://en.wikipedia.org/wiki/Confidence_interval" target="_blank" rel="noopener"><strong>confidence interval</strong></a> for our estimate. How do we compute a confidence interval for a ratio metric? The first step is to compute the standard deviation of the estimator. One method that is always available is the <a href="https://en.wikipedia.org/wiki/Bootstrapping_%28statistics%29" target="_blank" rel="noopener"><strong>bootstrap</strong></a>: resample the data with replacement multiple times and use the distribution of the estimates over samples to compute the standard deviation of the estimator.</p>
+<p>Let&rsquo;s try it in our case. I compute the standard deviation over $10.000$ bootstrapped samples, using the function <code>pd.DataFrame().sample()</code> with the options <code>frac=1</code> to obtain a dataset of the same size and <code>replace=True</code> to sample with replacement.</p>
+<pre><code class="language-python">boot_estimates = [estimate_roi(df.sample(frac=1, replace=True, random_state=i)) for i in range(10_000)]
+np.std(boot_estimates)
+</code></pre>
+<pre><code>0.9790730538161984
+</code></pre>
+<p>The bootstrap estimate of the standard deviation is equal to $0.979$. How good is it?</p>
+<p>Since we fully control the data generating process, we can simulate the &ldquo;true&rdquo; distribution of the estimator. We do that for $10.000$ simulations and we compute the resulting standard deviation of the estimator.</p>
+<pre><code class="language-python">np.std(dgp.evaluate_f_redrawing_outcomes(estimate_roi, 10_000))
+</code></pre>
+<pre><code>1.0547776958025372
+</code></pre>
+<p>The estimated variance of the estimator using the &ldquo;true&rdquo; data generating process is slightly higher but very similar, around $1.055$.</p>
+<p>The issue with the bootstrap is that it is very computational intense since it requires repeating the estimating procedure thousands of times. We are now going to explore another <em>extremely</em> powerful alternative that requires a single estimation step, the <a href="https://en.wikipedia.org/wiki/Delta_method" target="_blank" rel="noopener"><strong>delta method</strong></a>. The delta method generally allows us to do inference on functions of random variable, therefore its applications are broader than ratios.</p>
+<p>⚠️ <strong>Warning</strong>: the next section is going to be algebra-intense. If you want, you can skip it and go straight to the last section.</p>
+<h2 id="the-delta-method">The Delta Method</h2>
+<p>What is the <strong>delta method</strong>? In short, it is an incredibly powerful <strong>asymptotic inference</strong> method for functions of random variables, that exploits Taylor expansions. In short, the delta method requires four ingredients</p>
+<ul>
+<li>One or more <a href="https://en.wikipedia.org/wiki/Random_variable" target="_blank" rel="noopener">random variables</a></li>
+<li>A function</li>
+<li><a href="https://en.wikipedia.org/wiki/Central_limit_theorem" target="_blank" rel="noopener">The Central Limit Theorem</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Taylor_series" target="_blank" rel="noopener">Taylor expansions</a></li>
+</ul>
+<p>I will assume some basic knowledge of all four concepts. Suppose we had a set of realizations $X_1$, &hellip;, $X_n$ of a random variable that satisfy the requirements for the Central Limit Theorem (CLT): independence, identically distributions with expected value $\mu$, and finite variance $\sigma^2$. Under these conditions, the CLT tells us that the sample average $\mathbb E_n[X]$ converges in distribution to a normal distribution, or more precisely</p>
+<p>$$
+\sqrt{n} \ \frac{ \mathbb E_n[X] - \mu}{\sigma} \ \overset{D}{\to} \ N(0, 1)
+$$</p>
+<p>What does the equation mean? It reads &ldquo;the normalized sample average, scaled by a factor $\sqrt{n}$, converges in distribution to a standard normal distribution, i.e. it is approximately Gaussian for a sufficiently large sample.</p>
+<p>Now, suppose we were interested in a <strong>function</strong> of the sample average $f\big(\mathbb E_n[X]\big)$. Note that this is different from the sample average of the function $\mathbb E_n\big[f(X)\big]$. The delta method tells us what the function of the sample average converges to.</p>
+<p>$$
+\sqrt{n} \ \frac{ f\big(\mathbb E_n[X]\big) - f(\mu)}{\sigma} \ \overset{D}{\to} \ N \big(0, f&rsquo;(\mu)^2 \big)
+$$</p>
+<p>, where $f&rsquo;(\mu)^2$ is the derivative of the function $f$, evaluated at $\mu$.</p>
+<p>What is the <strong>intuition</strong> behind this formula? We now have a new term inside the expression of the variance, the squared first derivative $f&rsquo;(\mu)^2$ ($\neq$ second derivative). If the derivative of the function is low, the variance decreases since different inputs translate into similar outputs. On the contrary, if the derivative of the function is high, the variance of the distribution is amplified, since different inputs translate into even more different outputs.</p>
+<img src="fig/delta_intuition.png" width="700px"/>
+<p>The result directly follows from the Taylor approximation of $f \big(\mathbb E_n[X]\big)$</p>
+<p>$$
+f\big(\mathbb E_n[X]\big) = f(\mu) + f&rsquo;(\mu) (\mathbb E_n[X] - \mu) + \text{residual}
+$$</p>
+<p>Importantly, asymptotically, the last term disappears and the linear approximation holds exactly!</p>
+<p>How is this connected to the ratio estimator? We need a bit more math and to switch from a single dimension to two dimensions in order to understand that. In our case, we have a bivariate function of two random variables, $\Delta R$ and $\Delta C$, which returns their ratio. In the case of a multivariate function $f$, the asymptotic variance of the estimator is given by</p>
+<p>$$
+\text{AVar} \big( \hat{\rho} \big) = \nabla \hat{\rho}&rsquo; \Sigma_n \nabla \hat{\rho}
+$$</p>
+<p>where, $\nabla$ indicates the <a href="https://en.wikipedia.org/wiki/Gradient" target="_blank" rel="noopener">gradient</a> of the function, i.e. the vector of directional derivatives, and $\Sigma_n$ is the empirical variance-covariance matrix of $X$. In our case, they correspond to</p>
+<p>$$
+\nabla \hat{\rho} =
+\begin{bmatrix}
+\frac{1}{\mathbb E_n [\Delta C]} \newline - \frac{\mathbb E_n [\Delta R]}{\mathbb E_n [\Delta C]^2}
+\end{bmatrix}
+$$</p>
+<p>and</p>
+<p>$$
+\Sigma_n =
+\begin{bmatrix}
+\text{Var}_n (\Delta R) &amp; \text{Cov}_n (\Delta R, \Delta C) \newline
+\text{Cov}_n (\Delta R, \Delta C) &amp; \text{Var}_n (\Delta C) \newline
+\end{bmatrix}
+$$</p>
+<p>, where the subscripts $n$ indicate the empirical counterparts, as for the expected value.</p>
+<p>Combining the previous three equations together with a little matrix algebra, we get the formula of the asymptotic variance of the return on investment estimator.</p>
+<p>$$
+\begin{align*}
+\text{AVar} \big( \hat{\rho} \big) &amp;= \frac{1}{\mathbb E_n[\Delta C]^2} \text{Var}_n(\Delta R) - 2 \frac{\mathbb E_n[\Delta R]}{\mathbb E_n[\Delta C]^3} \text{Cov}_n(\Delta R, \Delta C) + \frac{\mathbb E_n[\Delta R]^2}{\mathbb E_n[\Delta C]^4} \text{Var}_n(\Delta C)
+\end{align*}
+$$</p>
+<p>Since the estimator is given by $\hat{\rho} = \frac{\mathbb E_n[\Delta R]}{\mathbb E_n[\Delta C]}$, we can rewrite the asymptotic variance as</p>
+<p>$$
+\begin{align*}
+\text{AVar} \big( \hat{\rho} \big) = \frac{1}{\mathbb E_n[\Delta C]^2} \text{Var}_n \Big( \Delta R - \hat{\rho} \Delta C \Big)
+\end{align*}
+$$</p>
+<p>The last expression is very interesting because it suggests that we can rewrite the asymptotic variance of our estimator as the <strong>variance of a difference-in-means estimator</strong> for a new auxiliary variable. In fact, we can rewrite the above expression as</p>
+<p>$$
+\begin{align*}
+\text{AVar} \big( \hat{\rho} \big) = \text{Var}_n \Big( \Delta \tilde R \Big) \qquad \text{where} \quad \tilde R = \frac{R - \hat{\rho} \ C}{| \mathbb E [\Delta C] |}
+\end{align*}
+$$</p>
+<p>This expression is incredibly useful because it gives us intuition and allows us to estimate the standard deviation of our estimator by <strong>linear regression</strong>.</p>
+<h2 id="inference-with-linear-regression">Inference with Linear Regression</h2>
+<p>Did you skip the previous section? No problem!</p>
+<p>After some algebra, we concluded that we can estimate the variance of a difference-in-means estimator for an <strong>auxiliary variable</strong> defined as</p>
+<p>$$
+\tilde R = \frac{R - \hat{\rho} \ C}{| \mathbb E_n [\Delta C] |}
+$$</p>
+<p>This expression might seem obscure at first, but it is incredibly useful. In fact, it gives us (1) an intuitive <strong>interpretation</strong> of the variance of the estimator and (2) a <strong>practical</strong> way to estimate it.</p>
+<p>Interpretation first! How should we read the above expression? We can estimate the variance of the empirical estimator as the variance of a difference-in-means estimator, for a new variable $\tilde R$ that we can easily compute from the data. We just need to take the revenue $R$, subtract the cost $C$ multiplied by the estimated ROI $\rho$ and scale it down by the expected cost difference $|\mathbb E_n[\Delta C]|$. We can interpret this variable as the <strong>baseline revenue</strong>, i.e. the revenue not affected by the investment. The fact that it is scaled by the expected cost difference tells us that its variance will be <strong>decreasing in the total investment</strong>: the more we spend, the more precisely we can estimate the return on that expenditure.</p>
+<p>Now, let&rsquo;s estimate the variance of the ROI estimator, in <strong>four steps</strong>.</p>
+<ol>
+<li>We need to estimate the return on investment $\hat \rho$.</li>
+</ol>
+<pre><code class="language-python">rho_hat = estimate_roi(df)
+</code></pre>
+<ol start="2">
+<li>The term $| \mathbb E_n[\Delta C] |$ is the absolute difference in average cost between the treatment and control group.</li>
+</ol>
+<pre><code class="language-python">abs_Delta_C = np.abs(df.loc[df.new_machine==1, &quot;cost&quot;].mean() - df.loc[df.new_machine==0, &quot;cost&quot;].mean())
+</code></pre>
+<ol start="3">
+<li>We now have all the ingredients to generate the auxiliary variable $\tilde R$.</li>
+</ol>
+<pre><code class="language-python">df['revenue_tilde'] = (df['revenue'] - rho_hat * df['cost']) / abs_Delta_C
+</code></pre>
+<ol start="4">
+<li>The variance of the treatment-control difference $\Delta \tilde R$ can be directly computed by linear regression, as in randomized controlled trials for difference-in-means estimators (see Agrist and Pischke, 2008).</li>
+</ol>
+<pre><code class="language-python">smf.ols('revenue_tilde ~ new_machine', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+       <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>   <td>   38.4067</td> <td>    0.653</td> <td>   58.771</td> <td> 0.000</td> <td>   37.126</td> <td>   39.688</td>
+</tr>
+<tr>
+  <th>new_machine</th> <td> -2.01e-14</td> <td>    0.917</td> <td>-2.19e-14</td> <td> 1.000</td> <td>   -1.797</td> <td>    1.797</td>
+</tr>
+</table>
+<p>The estimated standard error of the ROI is $0.917$, very close to the bootstrap estimate of $0.979$ and the simulated value of $1.055$. However, with respect to bootstrapping, the delta method allowed us to compute it in a single step, making it sensibly <strong>faster</strong> (around $1000$ times on my local machine).</p>
+<p>Note that this estimated standard deviation implies a 95% confidence interval of $2.0698 +- 1.96 \times 0.917$, equal to $[-0.2735, 3.8671]$. This might seem like good news since the confidence interval does not cover zero. However, note that in this case, a more interesting <strong>null hypothesis</strong> is that the ROI is equal to 1: we are breaking even. A value larger than 1 implies profits, while a value lower than 1 implies losses. In our case, we cannot reject the null hypothesis that the investment in new machines was not profitable.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this article, we have explored a very common causal inference problem: assessing the <strong>return on investment</strong>. Whether it&rsquo;s a physical investment in new hardware, a virtual cost, or advertisement expenditure, we are interested in understanding whether this incremental cost has paid off. The additional complications come from the fact that we are studying not one, but two causal quantities, intertwined.</p>
+<p>We have first explored and compared different outcome metrics to assess whether the investment paid off. Then, we have introduced an incredibly powerful method to do inference with complex random variables: the <strong>delta method</strong>. In the particular case of ratios, the delta method delivers a very insightful and practical functional form for the asymptotic variance of the estimator that can be estimated with a simple linear regression.</p>
+<h3 id="references">References</h3>
+<p>[1] A. Deng, U. Knoblich, J. Lu, <a href="https://arxiv.org/pdf/1803.06336.pdf" target="_blank" rel="noopener">Applying the Delta Method in Metric Analytics: A Practical Guide with Novel Ideas</a> (2018).</p>
+<p>[2] R. Budylin, A. Drutsa, I. Katsev, V. Tsoy, <a href="https://dl.acm.org/doi/abs/10.1145/3159652.3159699" target="_blank" rel="noopener">Consistent Transformation of Ratio Metrics for Efficient Online Controlled Experiments</a> (2018). <em>ACM</em>.</p>
+<p>[3] J. Angrist, J. Pischke, <a href="https://www.mostlyharmlesseconometrics.com/" target="_blank" rel="noopener">Mostly harmless econometrics: An empiricist&rsquo;s companion</a> (2009). <em>Princeton university press</em>.</p>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li>
+<p><a href="https://medium.com/towards-data-science/the-bayesian-bootstrap-6ca4a1d45148" target="_blank" rel="noopener">The Bayesian Bootstrap</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/df3065a0388e" target="_blank" rel="noopener">Outliers, Leverage, Residuals, and Influential Observations</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/b07ab46aa782" target="_blank" rel="noopener">A/B Tests, Privacy, and Online Regression</a></p>
+</li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/delta.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/delta.ipynb</a></p>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/delta_method/&amp;text=Experiments%20on%20Returns%20on%20Investment" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/delta_method/&amp;t=Experiments%20on%20Returns%20on%20Investment" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Experiments%20on%20Returns%20on%20Investment&amp;body=https://matteocourthoud.github.io/post/delta_method/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/delta_method/&amp;title=Experiments%20on%20Returns%20on%20Investment" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Experiments%20on%20Returns%20on%20Investment%20https://matteocourthoud.github.io/post/delta_method/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/delta_method/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+          <i class="fab fa-telegram"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">My research fields are empirical Industrial Organization and Competition Policy. My research interests include the relationship between competition and innovation, big data, artificial intelligence, platform markets, peer to peer services.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.4ea9cc8d09c5c158656ac1a804743b34.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

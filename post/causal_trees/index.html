@@ -341,10 +341,10 @@ In causal inference we are usually interested in estimating the causal effect of
     
       <meta
         property="article:published_time"
-        content="2023-02-01T00:00:00&#43;00:00"
+        content="2023-07-10T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2023-02-01T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2023-07-10T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@ In causal inference we are usually interested in estimating the causal effect of
     "https://matteocourthoud.github.io/post/causal_trees/featured.png"
   ],
   
-  "datePublished": "2023-02-01T00:00:00Z",
-  "dateModified": "2023-02-01T00:00:00Z",
+  "datePublished": "2023-07-10T00:00:00Z",
+  "dateModified": "2023-07-10T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -773,6 +773,8 @@ In causal inference we are usually interested in estimating the causal effect of
     <li><a href="#conditional-average-treatment-effects">Conditional Average Treatment Effects</a></li>
     <li><a href="#causal-trees">Causal Trees</a>
       <ul>
+        <li><a href="#generating-splits">Generating Splits</a></li>
+        <li><a href="#implementation">Implementation</a></li>
         <li><a href="#inference">Inference</a></li>
         <li><a href="#performance">Performance</a></li>
       </ul>
@@ -833,7 +835,7 @@ In causal inference we are usually interested in estimating the causal effect of
     
       
     
-    Feb 1, 2023
+    Jul 10, 2023
   </span>
   
 
@@ -842,7 +844,7 @@ In causal inference we are usually interested in estimating the causal effect of
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    14 min read
+    16 min read
   </span>
   
 
@@ -867,7 +869,7 @@ In causal inference we are usually interested in estimating the causal effect of
 </div>
 
 
-<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 2304px; max-height: 1536px;">
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1540px; max-height: 874px;">
   <div style="position: relative">
     <img src="/post/causal_trees/featured.png" alt="" class="featured-image">
     
@@ -979,16 +981,37 @@ df.head()
       <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>    5.0306</td> <td>    0.046</td> <td>  109.949</td> <td> 0.000</td> <td>    4.941</td> <td>    5.120</td>
+  <th>Intercept</th> <td>    5.0306</td> <td>    0.045</td> <td>  110.772</td> <td> 0.000</td> <td>    4.942</td> <td>    5.120</td>
 </tr>
 <tr>
-  <th>discount</th>  <td>    3.8568</td> <td>    0.065</td> <td>   59.597</td> <td> 0.000</td> <td>    3.730</td> <td>    3.984</td>
+  <th>discount</th>  <td>    1.9492</td> <td>    0.064</td> <td>   30.346</td> <td> 0.000</td> <td>    1.823</td> <td>    2.075</td>
 </tr>
 </table>
 <p>The discount seems to be effective: on average the spend in the treatment group increases by 3.86$. But are all customers equally affected?</p>
 <p>To answer this question, we would like to estimate <strong>heterogeneous treatment effects</strong>, possibly at the individual level.</p>
 <h2 id="conditional-average-treatment-effects">Conditional Average Treatment Effects</h2>
-<p>There are many possible ways to estimate heterogenous treatment effects. The most common is to split the population in groups based on some observable characteristic, which in our case could be the <code>device</code>, the <code>browser</code> or the geographical <code>region</code>. Splitting is easy for categorical variables, but for a continuous variable like <code>time</code> it is not intuitive where to split. Every hour? And which dimension is more informative? It would be temping to try all possible splits, but the more we split the data, the more it is likely that we find spurious results (i.e. we overfit, in machine learning lingo). It would be great if we could <strong>let the data speak</strong> and select the minimum and most informative splits.</p>
+<p>There are many possible ways to estimate heterogenous treatment effects. The most common is to split the population in groups based on some observable characteristic, which in our case could be the <code>device</code>, the <code>browser</code> or the geographical <code>region</code>. Once you have decided which variable to split your data on, you can simply interact the treatment variable (<code>discount</code>) with the dimension of treatment heterogeneity. Let&rsquo;s take <code>device</code> for example.</p>
+<pre><code class="language-python">smf.ols('spend ~ discount * device', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+              <td></td>                 <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>                 <td>    5.0006</td> <td>    0.064</td> <td>   78.076</td> <td> 0.000</td> <td>    4.875</td> <td>    5.126</td>
+</tr>
+<tr>
+  <th>device[T.mobile]</th>          <td>    0.0602</td> <td>    0.091</td> <td>    0.664</td> <td> 0.507</td> <td>   -0.118</td> <td>    0.238</td>
+</tr>
+<tr>
+  <th>discount</th>                  <td>    1.2264</td> <td>    0.091</td> <td>   13.527</td> <td> 0.000</td> <td>    1.049</td> <td>    1.404</td>
+</tr>
+<tr>
+  <th>discount:device[T.mobile]</th> <td>    1.4447</td> <td>    0.128</td> <td>   11.261</td> <td> 0.000</td> <td>    1.193</td> <td>    1.696</td>
+</tr>
+</table>
+<p>How do we interpret the regression results? The effect of the <code>discount</code> on customers&rsquo; <code>spend</code> is $1.22$$ but it increases by a further $1.44$$ if the customer is accessing the website from a mobile <code>device</code>.</p>
+<p>Splitting is easy for categorical variables, but for a continuous variable like <code>time</code> it is not intuitive where to split. Every hour? And which dimension is more informative? It would be temping to try all possible splits, but the more we split the data, the more it is likely that we find spurious results (i.e. we overfit, in machine learning lingo). It would be great if we could <strong>let the data speak</strong> and select the minimum and most informative splits.</p>
 <p>In a <a href="https://medium.com/towards-data-science/understanding-meta-learners-8a9c1e340832" target="_blank" rel="noopener">separate post</a>, I have shown how the so-called <strong>meta-learners</strong> take this approach to causal inference. The idea is to predict the outcome conditional on the treatment status for each observation, and then compare the predicted conditional on treatment, with the predicted outcome conditional on control. The difference is the individual treatment effect.</p>
 <p>The problem with meta-learners is that they use all their <a href="https://en.wikipedia.org/wiki/Degrees_of_freedom_%28statistics%29" target="_blank" rel="noopener">degrees of freedom</a> in predicting the outcome. However, we are interested to predict treatment effect heterogeneity. If most of the variation in the outcome is <em>not</em> in the treatment dimension, we will get very poor estimates of the treatment effects.</p>
 <p>Is it possible to instead directly concentrate on the <strong>prediction of individual treatment effects</strong>? Let&rsquo;s define $Y$ the outcome of interest, <code>spend</code> in our case, $D$ the treatment, the <code>discount</code>, and $X$ other observable characteristics. The <em>ideal</em> objective function is</p>
@@ -1000,7 +1023,11 @@ $$</p>
 <p>$$
 Y_i^* = \frac{Y_i}{D_i \cdot p(X_i) - (1-D_i) \cdot (1-p(X_i))}
 $$</p>
-<p>where $p(X_i)$ is the <a href="https://en.wikipedia.org/wiki/Propensity_score_matching" target="_blank" rel="noopener"><strong>propensity score</strong></a> of observation $i$, i.e. its probability of being treated.</p>
+<p>where $p(X_i)$ is the <a href="https://en.wikipedia.org/wiki/Propensity_score_matching" target="_blank" rel="noopener"><strong>propensity score</strong></a> of observation $i$, i.e. its probability of being treated. A crucial assuption here is <strong>unconfoundedness</strong>, also known as ignorability or selection on observables. In short, we will assume that, conditional on some observables $X$ the treatment assignment is as good as random.</p>
+<p>$$
+\left\lbrace Y_i^{(0)}, Y_i^{(1)} \right \rbrace \ \perp \ D_i | X_i
+$$</p>
+<p>where $Y_i^{(0)}$ and $Y_i^{(1)}$ denote the control and treated potential outcomes, respectively. In our case, we have randomized assignment, therefore we do not have to worry about unconfoundedness, unless the randomization went wrong.</p>
 <p>In randomized experiments, the propensity score is known since randomization is fully under control of the experimenter. For example, in our case, the probability of treatment was 50%. In quasi-experimental studies instead, when the treatment probability is not known, it has to be estimated. Even in randomized experiments, it is always better to estimate rather than inpute the propensity scores, since it guards against sampling variation in the randomization. For more details on the propensity scores and how they are used in causal inference, I have a separate post <a href="https://medium.com/towards-data-science/matching-weighting-or-regression-99bf5cffa0d9" target="_blank" rel="noopener">here</a>.</p>
 <p>Let&rsquo;s first generate dummy variables for our categorical variables, <code>device</code>, <code>browser</code> and <code>region</code>.</p>
 <pre><code class="language-python">df_dummies = pd.get_dummies(df[dgp.X[1:]], drop_first=True)
@@ -1011,9 +1038,10 @@ X = ['time'] + list(df_dummies.columns)
 <pre><code class="language-python">from sklearn.linear_model import LogisticRegression
 
 df['pscore'] = LogisticRegression().fit(df[X], df[dgp.D]).predict_proba(df[X])[:,1]
-sns.histplot(data=df, x='pscore', hue='discount').set(title='Predicted propensity scores');
+sns.histplot(data=df, x='pscore', hue='discount').set(
+    title='Predicted propensity scores', xlim=[0,1], xlabel='Propensity Score');
 </code></pre>
-<p><img src="img/causal_trees_16_0.png" alt="png"></p>
+<p><img src="img/causal_trees_18_0.png" alt="png"></p>
 <p>As expected, most propensity scores are very close to 0.5, the probability of treatment used in randomization.</p>
 <p>We now have all the elements to compute our auxiliary outcome variable $Y^*$.</p>
 <pre><code class="language-python">df['y_star'] = df[dgp.Y[0]] / (df[dgp.D] * df['pscore'] - (1-df[dgp.D]) * (1-df['pscore']))
@@ -1021,7 +1049,7 @@ sns.histplot(data=df, x='pscore', hue='discount').set(title='Predicted propensit
 <p>As we said before, the idea is to use $Y^*$ as the target of a prediction problem, since the expected value is exactly the individual treatment effect. Let&rsquo;s check its average in the data.</p>
 <pre><code class="language-python">df['y_star'].mean()
 </code></pre>
-<pre><code>3.851294369598394
+<pre><code>1.94501174385229
 </code></pre>
 <p>Indeed its average is almost identical to the previously estimated average treatment effect of 3.85.</p>
 <p>How is it possible that, with a single observation and an estimate of the propensity score, we can estimate the individual treatment effect? What are the drawbacks?</p>
@@ -1031,9 +1059,10 @@ Y_i^* = \frac{Y_i D_i}{p(X_i)} - \frac{Y_i (1-D_i)}{1-p(X_i)}
 $$</p>
 <p>The only difference is that we have a single observation.</p>
 <p>This trick comes at a cost: $Y_i^*$ is an unbiased estimator for the individual treatment effect, but has a very <strong>high variance</strong>. This is immediately visible by plotting its distribution.</p>
-<pre><code class="language-python">sns.histplot(df['y_star']).set(title='Distribution of Auxiliary Variable');
+<pre><code class="language-python">fig, ax = plt.subplots()
+sns.histplot(df['y_star'], ax=ax).set(title='Distribution of Auxiliary Variable');
 </code></pre>
-<p><img src="img/causal_trees_22_0.png" alt="png"></p>
+<p><img src="img/causal_trees_24_0.png" alt="png"></p>
 <p>We are now ready to estimate <strong>heterogeneous treatment effects</strong>, by translating the causal inference problem into a prediction problem, predicting the auxiliary outcome $Y^*$, given observable characteristics $X$.</p>
 <img src="fig/causal_trees2.jpg" width="300px"/>
 <h2 id="causal-trees">Causal Trees</h2>
@@ -1055,14 +1084,35 @@ df['y_hat'] = tree.predict(df[X])
 
 plot_tree(tree, filled=True, fontsize=12, feature_names=X, impurity=False, rounded=True);
 </code></pre>
-<p><img src="img/causal_trees_29_0.png" alt="png"></p>
+<p><img src="img/causal_trees_31_0.png" alt="png"></p>
 <p>How should we <strong>interpret</strong> the tree? On the top, we can see the average $Y^*$ in the data, 3.851. Starting from there, the data gets split into different branches, according to the rules highlighted at the top of each node. For example, the first node splits the data into two groups of size 42970 and 57030 depending on whether the <code>time</code> is later than 10.365. At the bottom, we have our final partitions, with the predicted values. For example, the leftmost leaf contains 36846 observation with <code>time</code> earlier than 10.365 and non-Safari <code>browser</code>, for which we predict a spend of 1.078. Darker node colors indicate higher prediction values.</p>
 <p>Should we believe these estimates? Not really, because of a couple of reasons. The <strong>first problem</strong> is that we have an unbiased estimate of the average treatment effect only if, <em>within each leaf</em>, we have the same number of treated and control units. This is not automatically the case with an off-the-shelf <code>DecisionTreeRegressor()</code>.</p>
 <p>Moreover, we have used the <strong>same data</strong> to generate the tree and evaluate it. This generates some bias because of overfitting. We can split the sample in 2 and use different data to generate the tree and compute the predictions. These trees are called <strong>honest trees</strong>.</p>
-<p>Last but not least, how should the tree be generated? The default rule to generate splits with the <code>DecisionTreeRegressor</code> function is the <code>squared_error</code> and there is no restriction on the minimum number of observations per leaf. However, since we are interested in doing inference, we would like to have a sufficient sample size in each leaf to detect a treatment effect.</p>
+<h3 id="generating-splits">Generating Splits</h3>
+<p>Last but not least, how should the tree be generated? The default rule to generate splits with the <code>DecisionTreeRegressor</code> function is the <code>squared_error</code> and there is no restriction on the minimum number of observations per leaf. Other commonly used rules include, mean absolute error, Gini&rsquo;s impurity, and Shannon&rsquo;s information. Which one performs better depends on the specific application, but the general objective is always prediction accuracy, broadly defined.</p>
+<p>In our case instead, the objective is inference: we want to uncover heterogeneous  treatment effects that are statistically different from each other. There is no value in generating different treatment effects if they are statistically indistinguishable. Moreover (but strongly related), when building the tree and generating the data partitions, we have to take into account that, since we use honest trees, we will use different data to estimate the within-leaf treatment effects.</p>
+<p><a href="https://www.pnas.org/doi/abs/10.1073/pnas.1510489113" target="_blank" rel="noopener">Athey and Imbens (2016)</a> use an modified version of the <a href="https://en.wikipedia.org/wiki/Mean_squared_error" target="_blank" rel="noopener">Mean Squared Error (MSE)</a> as splitting criterion, the <strong>Expanded Mean Squared Error (EMSE)</strong>:</p>
+<p>$$
+EMSE = \mathbb{E} \Big[ \big( Y_i - \hat \mu(X_i)\big)^2 - Y_i^2 \Big]
+$$</p>
+<p>where the main difference is given by the additional term $Y_i^2$, the squared outcome variable. In our case, we can rewrite it as</p>
+<p>$$
+EMSE = \mathbb{E} \Big[ \big( Y^<em>_i - \hat \tau(X_i)\big)^2 - {Y^</em>_i}^2 \Big]
+$$</p>
+<p>Why is this a sensible error loss? Because we can rewrite it as the sum of the squared mean μ and the estimator&rsquo;s variance.</p>
+<p>$$
+\begin{aligned}
+EMSE &amp;= \mathbb{E} \Big[ \big( Y^<em>_i - \hat \tau(X_i)\big)^2 - {Y^</em>_i}^2 \Big] = \newline
+&amp;= \mathbb{E} \Big[ \big( Y^<em>_i - \tau(X_i)\big)^2 - {Y^</em>_i}^2 \Big] - \mathbb{E} \Big[ \big( \hat \tau(X_i) - \tau(X_i)\big)^2 \Big] = \newline
+&amp;= \mathbb{E} \Big[ \mathbb{V} \big (\hat \tau(X_i)^2 \big) \Big] - \mathbb{E} \Big[ \tau(X_i)^2 \Big]
+\end{aligned}
+$$</p>
+<h3 id="implementation">Implementation</h3>
 <p>Luckily, there are multiple libraries where the so-called <a href="https://www.pnas.org/doi/abs/10.1073/pnas.1510489113" target="_blank" rel="noopener"><strong>causal trees</strong></a> are implemented. We import <code>CausalForestDML</code> from Microsoft&rsquo;s <a href="https://econml.azurewebsites.net/" target="_blank" rel="noopener">EconML</a> library, one of the best libraries for causal inference.</p>
 <pre><code class="language-python">from econml.dml import CausalForestDML
-tree_model = CausalForestDML(n_estimators=1, subforest_size=1, inference=False, max_depth=4)
+
+np.random.seed(0)
+tree_model = CausalForestDML(n_estimators=1, subforest_size=1, inference=False, max_depth=3)
 tree_model = tree_model.fit(Y=df[dgp.Y], X=df[X], T=df[dgp.D])
 </code></pre>
 <p>We have restricted the number of estimators to 1 to have a single tree instead of multiple ones, the so-called <a href="https://en.wikipedia.org/wiki/Random_forest" target="_blank" rel="noopener"><strong>random forests</strong></a> that we will cover in a separate article.</p>
@@ -1072,7 +1122,7 @@ tree_model = tree_model.fit(Y=df[dgp.Y], X=df[X], T=df[dgp.D])
 intrp = SingleTreeCateInterpreter(max_depth=2).interpret(tree_model, df[X])
 intrp.plot(feature_names=X, fontsize=12)
 </code></pre>
-<p><img src="img/causal_trees_33_0.png" alt="png"></p>
+<p><img src="img/causal_trees_39_0.png" alt="png"></p>
 <p>As we can see, the tree representation looks extremely similar to the one we got before using the <code>DecisionTreeRegressor</code> function. However, now the model not only reports estimates of the conditional average treatment effects, but also the standard errors of the estimates (at the bottom). How were they computed?</p>
 <h3 id="inference">Inference</h3>
 <p>Honest trees, besides improving the out-of-sample prediction accuracy of the model, have another great implication: they allow us to <strong>compute standard errors as if the tree structure was exogenous</strong>. In fact, since the data used to compute the predictions is independent from the data used to build the tree (split the data), we can just treat the tree structure as independent from the estimated treatment effects. As a consequence, we can estimate the standard errors of the the estimates as standard errors of difference between sample averages, as in a standard AB test.</p>
@@ -1100,7 +1150,7 @@ sns.barplot(data=df_effects_tree, x=&quot;Variable&quot;, y=&quot;Value&quot;, h
     xlabel='', ylabel='', title='Heterogeneous Treatment Effects')
 ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha=&quot;right&quot;);
 </code></pre>
-<p><img src="img/causal_trees_42_0.png" alt="png"></p>
+<p><img src="img/causal_trees_48_0.png" alt="png"></p>
 <p>The causal tree is pretty good at detecting the heterogeneous treatment effects for the categorical variables. It only missed the heterogeneity in the third region.</p>
 <p>However, this is also where we expect a tree model to perform particularly well: where the effects are <strong>discrete</strong>. How well does it do on our continuous variable, time? First, let&rsquo;s again isolate the predicted treatment effects on <code>time</code> and ignore the other covariates.</p>
 <pre><code class="language-python">def compute_time_effect(df, hte_model, avg_effect_notime):
@@ -1118,7 +1168,7 @@ sns.scatterplot(x='time', y='predicted', data=df_time_tree, label='Predicted').s
     ylabel='', title='Heterogeneous Treatment Effects')
 plt.legend(title='Effect');
 </code></pre>
-<p><img src="img/causal_trees_47_0.png" alt="png"></p>
+<p><img src="img/causal_trees_53_0.png" alt="png"></p>
 <p>From the plot, we can appreciate the discrete nature of causal trees: the model is only able to split the continuous variable into 5 bins. These bins are close to the true treatment effects, but they fail to capture a big chunk of the treatment effect heterogeneity.</p>
 <p>Can these predictions be improved? The answer is yes, and we will explore how in the next post.</p>
 <h2 id="conclusion">Conclusion</h2>
