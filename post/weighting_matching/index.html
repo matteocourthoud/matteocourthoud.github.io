@@ -1,0 +1,1895 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Understanding and comparing different methods for conditional causal inference analysis
+AB tests or randomized controlled trials are the gold standard in causal inference. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/weighting_matching/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.5c4def4f00a521426f4eb098155f3342.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/weighting_matching/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/weighting_matching/" />
+  <meta property="og:title" content="Weighting, Matching, or Regression? | Matteo Courthoud" />
+  <meta property="og:description" content="Understanding and comparing different methods for conditional causal inference analysis
+AB tests or randomized controlled trials are the gold standard in causal inference. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone." /><meta property="og:image" content="https://matteocourthoud.github.io/post/weighting_matching/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/weighting_matching/featured.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2023-07-10T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2023-07-10T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/weighting_matching/"
+  },
+  "headline": "Weighting, Matching, or Regression?",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/weighting_matching/featured.png"
+  ],
+  
+  "datePublished": "2023-07-10T00:00:00Z",
+  "dateModified": "2023-07-10T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "Understanding and comparing different methods for conditional causal inference analysis\nAB tests or randomized controlled trials are the gold standard in causal inference. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Weighting, Matching, or Regression? | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="ae435059a64a781cf23c8547c70087e0" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#example">Example</a></li>
+    <li><a href="#conditional-analysis">Conditional Analysis</a>
+      <ul>
+        <li><a href="#matching">Matching</a></li>
+        <li><a href="#propensity-score">Propensity Score</a></li>
+        <li><a href="#regression-with-control-variables">Regression with Control Variables</a></li>
+      </ul>
+    </li>
+    <li><a href="#comparison">Comparison</a>
+      <ul>
+        <li><a href="#ipw-and-regression">IPW and Regression</a></li>
+        <li><a href="#ipw-and-matching">IPW and Matching</a></li>
+      </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="article-container pt-3">
+  <h1>Weighting, Matching, or Regression?</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Jul 10, 2023
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    17 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1540px; max-height: 874px;">
+  <div style="position: relative">
+    <img src="/post/weighting_matching/featured.png" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p><em>Understanding and comparing different methods for conditional causal inference analysis</em></p>
+<p>AB tests or randomized controlled trials are the <strong>gold standard</strong> in causal inference. By randomly exposing units to a treatment we make sure that individuals in both groups are comparable, on average, and any difference we observe can be attributed to the treatment effect alone.</p>
+<p>However, often the treatment and control groups are <strong>not perfectly comparable</strong>. This could be due to the fact that randomization was not perfect or available. Not always we can randomize a treatment, for ethical or practical reasons. And even when we can, sometimes we do not have enough individuals or units so that differences between groups are seizable. This happens often, for example, when randomization is not done at the individual level, but at a higher level of aggregation, for example zipcodes, counties or even states.</p>
+<p>In these settings, we can still recover a causal estimate of the treatment effect if we have <strong>enough information</strong> about individuals, by making the treatment and control group comparable, ex-post. In this blog post, we are going to introduce and compare different procedures to estimate causal effects in presence of imbalances between treatment and control groups that are <strong>fully observable</strong>. In particular we are going to analyze weighting, matching and regression procedures.</p>
+<h2 id="example">Example</h2>
+<p>Assume we had blog on statistics and causal inference 😇. To improve user experience, we are considering <strong>releasing a dark mode</strong>, and we would like to understand whether this new feature increases the time users spend on our blog.</p>
+<img src="fig/modes.png" width="600px"/>
+<p>We are not a sophisticated company, therefore we do not run an AB test but we simply release the dark mode and we observe whether users select it or not and the time they spend on the blog. We know that there might be <strong>selection</strong>:  users that prefer the dark mode could have different reading preferences and this might complicate our causal analysis.</p>
+<p>We can represent the data generating process with the following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a>.</p>
+<pre><code class="language-mermaid">flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+X1((gender))
+X2((age))
+X3((hours))
+D((dark mode))
+Y((read time))
+
+D --&gt; Y
+X1 --&gt; Y
+X1 --&gt; D
+X2 --&gt; D
+X3 --&gt; Y
+
+class D,Y included;
+class X1,X2,X3 excluded;
+</code></pre>
+<p>We generate the simulated data using the data generating process <code>dgp_darkmode()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+</code></pre>
+<pre><code class="language-python">from src.utils import *
+from src.dgp import dgp_darkmode
+</code></pre>
+<pre><code class="language-python">df = dgp_darkmode().generate_data()
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>read_time</th>
+      <th>dark_mode</th>
+      <th>male</th>
+      <th>age</th>
+      <th>hours</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>14.4</td>
+      <td>False</td>
+      <td>0</td>
+      <td>43.0</td>
+      <td>65.6</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>15.4</td>
+      <td>False</td>
+      <td>1</td>
+      <td>55.0</td>
+      <td>125.4</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>20.9</td>
+      <td>True</td>
+      <td>0</td>
+      <td>23.0</td>
+      <td>642.6</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>20.0</td>
+      <td>False</td>
+      <td>0</td>
+      <td>41.0</td>
+      <td>129.1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>21.5</td>
+      <td>True</td>
+      <td>0</td>
+      <td>29.0</td>
+      <td>190.2</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We have informations on 300 users for whom we observe whether they select the <code>dark_mode</code> (the treatment), their weekly <code>read_time</code> (the outcome of interest) and some characteristics like <code>gender</code>, <code>age</code> and total <code>hours</code> previously spend on the blog.</p>
+<p>We would like to estimate the effect of the new <code>dark_mode</code> on users&rsquo; <code>read_time</code>. If we were runnig an <a href="https://de.wikipedia.org/wiki/A/B-Test" target="_blank" rel="noopener"><strong>AB test</strong></a> or randomized control trial, we could just compare users with and without the dark mode and we could attribute the difference in average reading time to the <code>dark_mode</code>. Let&rsquo;s check what number we would get.</p>
+<pre><code class="language-python">np.mean(df.loc[df.dark_mode==True, 'read_time']) - np.mean(df.loc[df.dark_mode==False, 'read_time'])
+</code></pre>
+<pre><code>-0.4446330948042103
+</code></pre>
+<p>Individuals that select the <code>dark_mode</code> spend on average 1.37 hours less on the blog, per week. Should we conclude that <code>dark_mode</code> is a <strong>bad idea</strong>? Is this a causal effect?</p>
+<p>We did not randomize the <code>dark_mode</code> so that users that selected it might not be directly <strong>comparable</strong> with users that didn&rsquo;t. Can we verify this concern? Partially. We can only check characteristics that we observe, <code>gender</code>, <code>age</code> and total <code>hours</code> in our setting. We cannot check if users differ along other dimensions that we don&rsquo;t observe.</p>
+<p>Let&rsquo;s use the <code>create_table_one</code> function from Uber&rsquo;s <a href="https://causalml.readthedocs.io/" target="_blank" rel="noopener"><code>causalml</code></a> package to produce a <strong>covariate balance table</strong>, containing the average value of our observable characteristics, across treatment and control groups. As the name suggests, this should always be the first table you present in causal inference analysis.</p>
+<pre><code class="language-python">from causalml.match import create_table_one
+
+X = ['male', 'age', 'hours']
+table1 = create_table_one(df, 'dark_mode', X)
+table1
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Control</th>
+      <th>Treatment</th>
+      <th>SMD</th>
+    </tr>
+    <tr>
+      <th>Variable</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>n</th>
+      <td>151</td>
+      <td>149</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>age</th>
+      <td>46.01 (9.79)</td>
+      <td>39.09 (11.53)</td>
+      <td>-0.6469</td>
+    </tr>
+    <tr>
+      <th>hours</th>
+      <td>337.78 (464.00)</td>
+      <td>328.57 (442.12)</td>
+      <td>-0.0203</td>
+    </tr>
+    <tr>
+      <th>male</th>
+      <td>0.34 (0.47)</td>
+      <td>0.66 (0.48)</td>
+      <td>0.6732</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>There seems to be <strong>some difference</strong> between treatment (<code>dark_mode</code>) and control group. In particular, users that select the <code>dark_mode</code> are older, have spent less hours on the blog and they are more likely to be males.</p>
+<p>Another way to visually observe all the differences at once is with a <strong>paired violinplot</strong>. The advantage of the paired violinplot is that it allows us to observe the full distribution of the variable (approximated via <a href="https://en.wikipedia.org/wiki/Kernel_density_estimation" target="_blank" rel="noopener">kernel density estimation</a>).</p>
+<pre><code class="language-python">def plot_distributions(df, X, d):
+    df_long = df.copy()[X + [d]]
+    df_long[X] =(df_long[X] - df_long[X].mean()) / df_long[X].std()
+    df_long = pd.melt(df_long, id_vars=d, value_name='value')
+    sns.violinplot(y=&quot;variable&quot;, x=&quot;value&quot;, hue=d, data=df_long, split=True).\
+        set(xlabel=&quot;&quot;, ylabel=&quot;&quot;, title=&quot;Normalized Variable Distribution&quot;);
+</code></pre>
+<pre><code class="language-python">plot_distributions(df, X, &quot;dark_mode&quot;)
+</code></pre>
+<p><img src="img/weighting_matching_16_0.png" alt="png"></p>
+<p>The insight of the violinplot is very similar: it seems that users that select the <code>dark_mode</code> are different from users that don&rsquo;t.</p>
+<p><strong>Why do we care?</strong></p>
+<p>If we do not control for the observable characteristics, we are unable to estimate the true treatment effect. In short, we cannot be certain that the difference in outcome, <code>read_time</code>, can be attributed to the treatment, <code>dark_mode</code>, instead of other characteristics. For example, it could be that males read less and also prefer the <code>dark_mode</code>, therefore we observe a negative correlation even though <code>dark_mode</code> has no effect on <code>read_time</code> (or even positive).</p>
+<p>In terms of Dyrected Acyclic Graphs, this means that we have several <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>backdoor paths</strong></a> that we need to <strong>block</strong> in order for our analysis to be <strong>causal</strong>.</p>
+<pre><code class="language-mermaid">flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+X1((gender))
+X2((age))
+X3((hours))
+D((dark mode))
+Y((read time))
+
+D --&gt; Y
+X1 --&gt; Y
+X1 --&gt; D
+X2 --&gt; D
+X3 --&gt; Y
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+linkStyle 1,2 stroke:#ff0000,stroke-width:4px;
+class D,Y included;
+class X1,X2,X3 excluded;
+</code></pre>
+<p>How do we <strong>block backdoor paths</strong>? By conditioning the analysis on those intermediate variables. The conditional analysis allows us to recover the average treatment effect of the <code>dark_mode</code> on <code>read_time</code>.</p>
+<pre><code class="language-mermaid">flowchart TB
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+X1((gender))
+X2((age))
+X3((hours))
+D((dark mode))
+Y((read time))
+
+D --&gt; Y
+X1 -.-&gt; Y
+X1 -.-&gt; D
+X2 --&gt; D
+X3 --&gt; Y
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+class D,Y,X1,X2,X3 included;
+</code></pre>
+<p>How do we <strong>condition the analysis</strong> on <code>gender</code>, <code>age</code> and <code>hours</code>? We have some options:</p>
+<ul>
+<li><strong>Matching</strong></li>
+<li><strong>Propensity score</strong> weighting</li>
+<li><strong>Regression</strong> with control variables</li>
+</ul>
+<p>Let&rsquo;s explore and compare them!</p>
+<h2 id="conditional-analysis">Conditional Analysis</h2>
+<p>We assume that for a set of subjects $i = 1, &hellip;, n$ we observed a tuple $(D_i, Y_i, X_i)$ comprised of</p>
+<ul>
+<li>a treatment assignment $D_i \in \lbrace 0, 1 \rbrace$ (<code>dark_mode</code>)</li>
+<li>a response $Y_i \in \mathbb R$ (<code>read_time</code>)</li>
+<li>a feature vector $X_i \in \mathbb R^n$ (<code>gender</code>, <code>age</code> and <code>hours</code>)</li>
+</ul>
+<p><strong>Assumption 1 : unconfoundedness</strong> (or ignorability, or selection on observables)</p>
+<p>$$
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i
+$$</p>
+<p>i.e. conditional on observable characteristics $X$, the treatment assignment $D$ is as good as random. What we are effectively assuming is that there is no other characteristics that we do not observe that could impact both whether a user selects the <code>dark_mode</code> and their <code>read_time</code>. This is a <strong>strong assumption</strong> that is more likely to be satisfied the more individual characteristics we observe.</p>
+<p><strong>Assumption 2: overlap</strong> (or common support)</p>
+<p>$$
+\exists \eta &gt; 0 \ : \ \eta \leq \mathbb E \left[ T_i = 1 \ \big | \ X_i = x \right] \leq 1-\eta
+$$</p>
+<p>i.e. no observation is deterministically assigned to the treatment or control group. This is a more technical assumption that basically means that for any level of <code>gender</code>, <code>age</code> or <code>hours</code>, there could exist an individual that select the <code>dark_mode</code> and one that doesn&rsquo;t. Differently from the unconfoundedness assumption, the overal assumption is <strong>testable</strong>.</p>
+<h3 id="matching">Matching</h3>
+<p>The first and most intuitive method to perform conditional analysis is <strong>matching</strong>.</p>
+<p>The <strong>idea</strong> of matching is very simple. Since we are not sure whether, for example, male and female users are directly comparable, we do the analysis within gender. Instead of comparing <code>read_time</code> across <code>dark_mode</code> in the whole sample, we do it separately for male and female users.</p>
+<pre><code class="language-python">df_gender = pd.pivot_table(df, values='read_time', index='male', columns='dark_mode', aggfunc=np.mean)
+df_gender['diff'] = df_gender[1] - df_gender[0] 
+df_gender
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>dark_mode</th>
+      <th>False</th>
+      <th>True</th>
+      <th>diff</th>
+    </tr>
+    <tr>
+      <th>male</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>20.318000</td>
+      <td>22.24902</td>
+      <td>1.931020</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>16.933333</td>
+      <td>16.89898</td>
+      <td>-0.034354</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Now the effect of <code>dark_mode</code> seems reversed: it is negative for male users (-0.79) but bigger and positive for female users (+1.38), suggesting a positive aggregate effect, 1.38 - 0.79 = 0.59 (assuming equal proportion of genders)! This sign reversal is a very classical example of the <a href="https://en.wikipedia.org/wiki/Simpson%27s_paradox" target="_blank" rel="noopener">Simpson&rsquo;s Paradox</a>.</p>
+<p>This comparison was easy to perform for <code>gender</code>, since it is a binary variable. With multiple variables, potentially continuous, matching becomes much more difficult. One common strategy is to <strong>match users</strong> in the treatment group with the most similar user in the control group, using some sort of <a href="https://en.wikipedia.org/wiki/Nearest_neighbour_algorithm" target="_blank" rel="noopener">nearest neighbor algorithm</a>. I won&rsquo;t go into the algorithm details here, but we can perform the matching with the <code>NearestNeighborMatch</code> function from the <code>causalml</code> package.</p>
+<p>The <code>NearestNeighborMatch</code> function generates a new dataset where users in the treatment group have been matched 1:1 (option <code>ratio=1</code>) to users in the control group.</p>
+<pre><code class="language-python">from causalml.match import NearestNeighborMatch
+
+psm = NearestNeighborMatch(replace=True, ratio=1, random_state=1)
+df_matched = psm.match(data=df, treatment_col=&quot;dark_mode&quot;, score_cols=X)
+</code></pre>
+<p>Are the two groups more comparable now? We can produce a new version of the <strong>balance table</strong>.</p>
+<pre><code class="language-python">table1_matched = create_table_one(df_matched, &quot;dark_mode&quot;, X)
+table1_matched
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Control</th>
+      <th>Treatment</th>
+      <th>SMD</th>
+    </tr>
+    <tr>
+      <th>Variable</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>n</th>
+      <td>104</td>
+      <td>104</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>age</th>
+      <td>41.93 (10.05)</td>
+      <td>41.85 (10.02)</td>
+      <td>-0.0086</td>
+    </tr>
+    <tr>
+      <th>hours</th>
+      <td>206.92 (309.62)</td>
+      <td>209.48 (321.79)</td>
+      <td>0.0081</td>
+    </tr>
+    <tr>
+      <th>male</th>
+      <td>0.62 (0.49)</td>
+      <td>0.62 (0.49)</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Now the average differences between the two groups have <strong>shrunk</strong> by at least a couple of orders of magnitude. However, note how the sample size has slightly decreased (300 $\to$ 246) since (1) we only match treated users and (2) we are not able to find a good match for all of them.</p>
+<p>We can visually inspect distributional differences with the paired violinplot.</p>
+<pre><code class="language-python">plot_distributions(df_matched, X, &quot;dark_mode&quot;)
+</code></pre>
+<p><img src="img/weighting_matching_28_0.png" alt="png"></p>
+<p>A popular way to visualize pre- and post-matching covariate balance is the <strong>balance plot</strong> that essentially displays the standardized mean differences before and after matching, for each control variable.</p>
+<pre><code class="language-python">def plot_balance(t1, t2, X):
+    df_smd = pd.DataFrame({&quot;Variable&quot;: X + X,
+                           &quot;Sample&quot;: [&quot;Unadjusted&quot; for _ in range(len(X))] + [&quot;Adjusted&quot; for _ in range(len(X))],
+                           &quot;Standardized Mean Difference&quot;: t1[&quot;SMD&quot;][1:].to_list() + 
+                                                           t2[&quot;SMD&quot;][1:].to_list()})
+
+    sns.scatterplot(x=&quot;Standardized Mean Difference&quot;, y=&quot;Variable&quot;, hue=&quot;Sample&quot;, data=df_smd).\
+        set(title=&quot;Balance Plot&quot;)
+    plt.axvline(x=0, color='k', ls='--', zorder=-1, alpha=0.3);
+</code></pre>
+<pre><code class="language-python">plot_balance(table1, table1_matched, X)
+</code></pre>
+<p><img src="img/weighting_matching_31_0.png" alt="png"></p>
+<p>As we can see, now all differences in observable characteristics between the two groups are essentially zero. We could also compare the distributions using other metrics or test statistics, such as the <a href="https://towardsdatascience.com/9b06ee4d30bf" target="_blank" rel="noopener">Kolmogorov-Smirnov test statistic</a>.</p>
+<p>How do we <strong>estimate the average treatment effect</strong>? We can simply do a difference in means. An equivalent way that automatically provides standard errors is to run a linear regression of the outcome, <code>read_time</code>, on the treatment, <code>dark_mode</code>.</p>
+<p><strong>Note</strong> that, since we have performed the matching for each treated user, the treatment effect we are estimating is the <strong>average treatment effect on the treated (ATT)</strong>, which can be different from the average treatment effect if the treated sample differs from the overall population (which is likely to be the case, since we are doing matching in the first place).</p>
+<pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode&quot;, data=df_matched).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+          <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>         <td>   17.0365</td> <td>    0.469</td> <td>   36.363</td> <td> 0.000</td> <td>   16.113</td> <td>   17.960</td>
+</tr>
+<tr>
+  <th>dark_mode[T.True]</th> <td>    1.4490</td> <td>    0.663</td> <td>    2.187</td> <td> 0.030</td> <td>    0.143</td> <td>    2.755</td>
+</tr>
+</table>
+<p>The effect is now positive, but not statistically significant.</p>
+<p><strong>Note</strong> that we might have matched multiple treated users with the same untreated user, violating the independence assumption across observations and, in turn, distorting inference.</p>
+<p>We have two solutions:</p>
+<ol>
+<li>cluster standard errors at the matched individual level</li>
+<li>compute standard errors via bootstrap</li>
+</ol>
+<p>We implement the first and cluster the standard errors by the original individual identifiers (the dataframe index).</p>
+<pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode&quot;, data=df_matched)\
+    .fit(cov_type='cluster', cov_kwds={'groups': df_matched.index})\
+    .summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+          <td></td>             <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>         <td>   17.0365</td> <td>    0.650</td> <td>   26.217</td> <td> 0.000</td> <td>   15.763</td> <td>   18.310</td>
+</tr>
+<tr>
+  <th>dark_mode[T.True]</th> <td>    1.4490</td> <td>    0.821</td> <td>    1.765</td> <td> 0.078</td> <td>   -0.160</td> <td>    3.058</td>
+</tr>
+</table>
+<p>The effect is even less statistically significant.</p>
+<h3 id="propensity-score">Propensity Score</h3>
+<p><a href="https://academic.oup.com/biomet/article/70/1/41/240879" target="_blank" rel="noopener">Rosenbaum and Rubin (1983)</a> proved a very powerful result: if the <strong>strong ignorability assumption</strong> holds, it is sufficient to condition the analysis on the probability ot treatment, the <strong>propensity score</strong>, in order to have conditional independence.</p>
+<p>$$
+\big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ X_i \quad \leftrightarrow \quad \big \lbrace Y_i^{(1)} , Y_i^{(0)} \big \rbrace \ \perp \ D_i \ | \ e(X_i)
+$$</p>
+<p>Where $e(X_i)$ is the probability of treatment of individual $i$, given the observable characteristics $X_i$.</p>
+<p>$$
+e(x) = \Pr \left( D_i = 1 \ \big | \ X_i = x \right)
+$$</p>
+<p><strong>Note</strong> that in an AB test the propensity score is constant across individuals.</p>
+<p>The result from Rosenbaum and Rubin (1983) is incredibly <strong>powerful and practical</strong>, since the propensity score is a <strong>one dimensional</strong> variable, while $X$ might be very high dimensional.</p>
+<p>Under the <strong>unconfoundedness</strong> assumption introduced above, we can rewrite the average treatment effect as</p>
+<p>$$
+\tau(x) = \mathbb E \left[ Y^{(1)} - Y^{(0)} \ \big| \ X = x \right] = \mathbb E \left[ \frac{D_i Y_i}{e(X_i)} - \frac{(1-D_i) Y_i}{1-e(X_i)} \right]
+$$</p>
+<p>Note that this formulation of the average treatment effect does not depend on the potential outcomes $Y_i^{(1)}$ and $Y_i^{(0)}$, but only on the observed outcomes $Y_i$.</p>
+<p>This formulation of the average treatment effect implies the <strong>Inverse Propensity Weighted (IPW)</strong> estimator which is an unbiased estimator for the average treatment effect $\tau$.</p>
+<p>$$
+\hat \tau^{IPW} = \frac{1}{n} \sum _ {i=1}^{n} \left( \frac{D_i Y_i}{e(X_i)} - \frac{(1-D_i) Y_i}{1-e(X_i)} \right)
+$$</p>
+<p>This estimator is <strong>unfeasible</strong> since we do not observe the propensity scores $e(X_i)$. However, we can estimate them. Actually, <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00442" target="_blank" rel="noopener">Imbens, Hirano, Ridder (2003)</a> show that you <strong>should</strong> use the estimated propensity scores even if you knew the true values (for example because you know the sampling procedure). The idea is that if the estimated propensity scores are different from the true ones, this can be informative in the estimation.</p>
+<p>There are several possible ways to estimate a probability, the simplest and most common one being <a href="https://en.wikipedia.org/wiki/Logistic_regression" target="_blank" rel="noopener"><strong>logistic regression</strong></a>.</p>
+<pre><code class="language-python">from sklearn.linear_model import LogisticRegressionCV
+
+df[&quot;pscore&quot;] = LogisticRegressionCV().fit(y=df[&quot;dark_mode&quot;], X=df[X]).predict_proba(df[X])[:,1]
+</code></pre>
+<p>It is best practice, whenever we fit a prediction model, to <strong>fit the model on a different sample</strong> with respect to the one that we use for inference. This practice is usually called <strong>cross-validation</strong> or cross-fitting. One of the best (but computationally expensive) cross-validation procedures is <strong>leave-one-out (LOO)</strong> cross-fitting: when predicting the value of observation $i$ we use all observations except for $i$. We implement the LOO cross-fitting procedure using the <code>cross_val_predict</code> and <code>LeaveOneOut</code> functions from the <a href="https://scikit-learn.org/" target="_blank" rel="noopener"><code>sklearn</code></a> package.</p>
+<pre><code class="language-python">from sklearn.model_selection import cross_val_predict, LeaveOneOut
+
+df['pscore'] = cross_val_predict(estimator=LogisticRegressionCV(), 
+                                 X=df[X], 
+                                 y=df[&quot;dark_mode&quot;],
+                                 cv=LeaveOneOut(),
+                                 method='predict_proba',
+                                 n_jobs=-1)[:,1]
+</code></pre>
+<p>An <strong>important check</strong> to perform after estimating propensity scores is plotting them, across the treatment and control groups. First of all, we can then observe whether the two groups are balanced or not, depending on how close the two distributions are. Moreover, we can also check how likely it is that the <strong>overlap assumption</strong> is satisfied. Ideally both distributions should span the same interval.</p>
+<pre><code class="language-python">sns.histplot(data=df, x='pscore', hue='dark_mode', bins=30, stat='density', common_norm=False).\
+    set(ylabel=&quot;&quot;, title=&quot;Distribution of Propensity Scores&quot;);
+</code></pre>
+<p><img src="img/weighting_matching_43_0.png" alt="png"></p>
+<p>As expected, the distribution of propensity scores between the treatment and control group is <strong>significantly different</strong>, suggesting that the two groups are hardly comparable. However, there is significant overlap in the support of the distributions, suggesting that the overlap assumption is likely to be satisfied.</p>
+<p>How do we estimate the average treatment effect?</p>
+<p>Once we have computed the propensity scores, we just need to re-weight observations by their respective propensity score. We can then either compute a difference between the weighted <code>read_time</code> averages, or run a weighted regression of <code>read_time</code> on <code>dark_mode</code>.</p>
+<pre><code class="language-python">w = 1 / (df[&quot;pscore&quot;] * df[&quot;dark_mode&quot;] + (1-df[&quot;pscore&quot;]) * (1-df[&quot;dark_mode&quot;]))
+smf.wls(&quot;read_time ~ dark_mode&quot;, weights=w, data=df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+          <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>         <td>   18.5859</td> <td>    0.412</td> <td>   45.110</td> <td> 0.000</td> <td>   17.775</td> <td>   19.397</td>
+</tr>
+<tr>
+  <th>dark_mode[T.True]</th> <td>    1.1303</td> <td>    0.582</td> <td>    1.942</td> <td> 0.053</td> <td>   -0.015</td> <td>    2.276</td>
+</tr>
+</table>
+<p>The effect of the <code>dark_mode</code> is now positive and almost statistically significant, at the 5% level.</p>
+<p><strong>Note</strong> that the <code>wls</code> function automatically normalizes weights so that they sum to 1, which greatly improves the stability of the estimator. In fact, the unnormalized IPW estimator can be very <strong>unstable</strong> when the propensity scores approach zero or one.</p>
+<p>Also <strong>note</strong> that the standard errors are not correct, since they do not take into account the extra uncertainty introduced in the estimation of the propensity score. This issue was noted by <a href="https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA11293" target="_blank" rel="noopener">Abadie and Imbens (2016)</a>.</p>
+<h3 id="regression-with-control-variables">Regression with Control Variables</h3>
+<p>The last method we are going to review today is <strong>linear regression with control variables</strong>. This estimator is extremely easy to implement, since we just need to add the user characteristics - <code>gender</code>, <code>age</code> and <code>hours</code> - to the regression of <code>read_time</code> on <code>dark_mode</code>.</p>
+<pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode + male + age + hours&quot;, data=df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+          <td></td>             <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>         <td>   16.8591</td> <td>    1.082</td> <td>   15.577</td> <td> 0.000</td> <td>   14.729</td> <td>   18.989</td>
+</tr>
+<tr>
+  <th>dark_mode[T.True]</th> <td>    1.3858</td> <td>    0.524</td> <td>    2.646</td> <td> 0.009</td> <td>    0.355</td> <td>    2.417</td>
+</tr>
+<tr>
+  <th>male</th>              <td>   -4.4855</td> <td>    0.499</td> <td>   -8.990</td> <td> 0.000</td> <td>   -5.468</td> <td>   -3.504</td>
+</tr>
+<tr>
+  <th>age</th>               <td>    0.0513</td> <td>    0.022</td> <td>    2.311</td> <td> 0.022</td> <td>    0.008</td> <td>    0.095</td>
+</tr>
+<tr>
+  <th>hours</th>             <td>    0.0043</td> <td>    0.001</td> <td>    8.427</td> <td> 0.000</td> <td>    0.003</td> <td>    0.005</td>
+</tr>
+</table>
+<p>The average treatment effect is again positive and statistically significant at the 1% level!</p>
+<h2 id="comparison">Comparison</h2>
+<p>How do the different methods compare to each other?</p>
+<h3 id="ipw-and-regression">IPW and Regression</h3>
+<p>There is a <strong>tight connection</strong> between the IPW estimator and linear regression with covariates. This is particularly evident when we have a one-dimensional, discrete covariate $X$.</p>
+<p>In this case, the estimand of IPW (i.e. the quantity that IPW estimates) is given by</p>
+<p>$$
+\tau^{IPW} = \frac{ \sum_x \color{red}{\tau_x} \color{blue}{\Pr(D_i | X_i = x)} \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)} \Pr(X_i = x)}
+$$</p>
+<p>The IPW estimand is a weighted average of the treatment effects $\tau_x$, where the weights are given by the <strong>treatment probabilities</strong>.</p>
+<p>On the other hand, the estimand of linear regression with control variables is</p>
+<p>$$
+\tau^{OLS} = \frac{ \sum_x \color{red}{\tau_x} \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}{\sum_x \color{blue}{\Pr(D_i | X_i = x)(1 - \Pr(D_i | X_i = x)) } \Pr(X_i = x)}
+$$</p>
+<p>The OLS estimand is a weighted average of the treatment effects $\tau_x$, where the weights are given by the <strong>variances of the treatment probabilities</strong>. This means that linear regression is a weighted estimator, that gives more weight to observations that have characteristics for which we observe more treatment variability. Since a binary random variable has the highest variance when its expected value is 0.5, <strong>OLS gives the most weight to observations that have characteristics for which we observe a 50/50 split between treatment and control group</strong>. On the other hand, if for some characteristics we only observe treated or untreated individuals, those observations are going to receive zero weight. I recommend Chapter 3 of <a href="https://www.mostlyharmlesseconometrics.com/" target="_blank" rel="noopener">Angrist and Pischke (2009)</a> for more details.</p>
+<h3 id="ipw-and-matching">IPW and Matching</h3>
+<p>As we have seen in the IPW section, <a href="https://academic.oup.com/biomet/article/70/1/41/240879" target="_blank" rel="noopener">Rosenbaum and Rubin (1983)</a> result tells us that we do not need to perform the analysis conditional on all the covariates $X$, but it is sufficient to condition on the propensity score $e(X)$.</p>
+<p>We have seed how this result implies a weighted estimator but it also extends to matching: we do not need to match observations on all the covariates $X$, but it is sufficient to <strong>match them on the propensity score</strong> $e(X)$. This method is called propensity score matching.</p>
+<pre><code class="language-python">psm = NearestNeighborMatch(replace=False, random_state=1)
+df_ipwmatched = psm.match(data=df, treatment_col=&quot;dark_mode&quot;, score_cols=['pscore'])
+</code></pre>
+<p>As before, after matching, we can simply compute the estimate as a difference in means, remembering that observations are <strong>not independent</strong> and therefore we need to be cautious when doing inference.</p>
+<pre><code class="language-python">smf.ols(&quot;read_time ~ dark_mode&quot;, data=df_ipwmatched)\
+    .fit(cov_type='cluster', cov_kwds={'groups': df_ipwmatched.index})\
+    .summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+          <td></td>             <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>         <td>   18.4633</td> <td>    0.505</td> <td>   36.576</td> <td> 0.000</td> <td>   17.474</td> <td>   19.453</td>
+</tr>
+<tr>
+  <th>dark_mode[T.True]</th> <td>    1.1888</td> <td>    0.703</td> <td>    1.692</td> <td> 0.091</td> <td>   -0.188</td> <td>    2.566</td>
+</tr>
+</table>
+<p>The estimated effect of <code>dark_mode</code> is positive, significant at the 1% level and very close to the true value of 2!</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this blog post, we have seen how to perform <strong>conditional analysis</strong> using different approached. Matching directly matches most similar units in the treatment and control group. Weighting simply assigns different weight to different observations depending on their probability of receiving the treatment. Regression instead weights observations depending on the conditional treatment variances, giving more weight to observations that have characteristics common to both the treatment and control group.</p>
+<p>These procedures are <strong>extremely helpful</strong> because they can either allow us to estimate causal effects from (very rich) observational data or correct experimental estimates when randomization was not perfect or we have a small sample.</p>
+<p>Last but not least, if you want to know more, I strongly recommend this <strong>video lecture</strong> on propensity scores from <a href="https://paulgp.github.io/" target="_blank" rel="noopener">Paul Goldsmith-Pinkham</a> that is freely available online.</p>
+<br>
+
+<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+  <iframe src="https://www.youtube.com/embed/8gWctYvRzk4" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen title="YouTube Video"></iframe>
+</div>
+
+<br>
+<p>The whole course is a <strong>gem</strong> and it is an incredible privilege to have such high quality material available online for free!</p>
+<h3 id="references">References</h3>
+<p>[1] P. Rosenbaum, D. Rubin, <a href="https://academic.oup.com/biomet/article/70/1/41/240879" target="_blank" rel="noopener">The central role of the propensity score in observational studies for causal effects</a> (1983), <em>Biometrika</em>.</p>
+<p>[2] G. Imbens, K. Hirano, G. Ridder, <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1468-0262.00442" target="_blank" rel="noopener">Efficient Estimation of Average Treatment Effects Using the Estimated Propensity Score</a> (2003), <em>Econometrica</em>.</p>
+<p>[3] J. Angrist, J. S. Pischke, <a href="https://www.mostlyharmlesseconometrics.com/" target="_blank" rel="noopener">Mostly harmless econometrics: An Empiricist&rsquo;s Companion</a> (2009), <em>Princeton University Press</em>.</p>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li><a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Understanding The Frisch-Waugh-Lovell Theorem</a></li>
+<li><a href="https://towardsdatascience.com/9b06ee4d30bf" target="_blank" rel="noopener">How to Compare Two or More Distributions</a></li>
+<li><a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">DAGs and Control Variables</a></li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/ipw.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/ipw.ipynb</a></p>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/weighting_matching/&amp;text=Weighting,%20Matching,%20or%20Regression?" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/weighting_matching/&amp;t=Weighting,%20Matching,%20or%20Regression?" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Weighting,%20Matching,%20or%20Regression?&amp;body=https://matteocourthoud.github.io/post/weighting_matching/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/weighting_matching/&amp;title=Weighting,%20Matching,%20or%20Regression?" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Weighting,%20Matching,%20or%20Regression?%20https://matteocourthoud.github.io/post/weighting_matching/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/weighting_matching/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+          <i class="fab fa-telegram"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">My research fields are empirical Industrial Organization and Competition Policy. My research interests include the relationship between competition and innovation, big data, artificial intelligence, platform markets, peer to peer services.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.4ea9cc8d09c5c158656ac1a804743b34.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>
