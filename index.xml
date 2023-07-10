@@ -29243,6 +29243,376 @@ plt.title(&amp;quot;Sales by firm&#39;s age&amp;quot;);
     </item>
     
     <item>
+      <title>The FWL Theorem, Or How To Make All Regressions Intuitive</title>
+      <link>https://matteocourthoud.github.io/post/fwl_theorem/</link>
+      <pubDate>Mon, 10 Jul 2023 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/fwl_theorem/</guid>
+      <description>&lt;p&gt;&lt;em&gt;An introduction to the Frisch-Waugh-Lowell theorem and how to use it to gain intuition in linear regressions&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;The Frisch-Waugh-Lowell theorem is a &lt;strong&gt;simple&lt;/strong&gt; but yet &lt;strong&gt;powerful&lt;/strong&gt; theorem that allows us to reduce multivariate regressions to &lt;strong&gt;univariate&lt;/strong&gt; ones. This is extremely useful when we are interested in the relationship between two variables, but we still need to control for other factors, as it is often the case in &lt;strong&gt;causal inference&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;In this blog post, I am going to introduce the Frisch-Waugh-Lowell theorem and illustrate some interesting applications.&lt;/p&gt;
+&lt;h2 id=&#34;the-theorem&#34;&gt;The Theorem&lt;/h2&gt;
+&lt;p&gt;The theorem was first published by &lt;a href=&#34;https://www.jstor.org/stable/1907330&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Ragnar Frisch and Frederick Waugh in 1933&lt;/a&gt;. However, since its proof was lengthy and cumbersome, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1080/01621459.1963.10480682&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Michael Lovell in 1963&lt;/a&gt; provided a very simple and intuitive proof and his name was added to the theorem name.&lt;/p&gt;
+&lt;p&gt;The theorem states that, when estimating a model of the form&lt;/p&gt;
+&lt;p&gt;$$
+y_i = \beta_1 x_{i,1} + \beta_2 x_{i,2} + \varepsilon_i
+$$&lt;/p&gt;
+&lt;p&gt;then, the following estimators of $\beta_1$ are equivalent:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the OLS estimator obtained by regressing $y$ on $x_1$ and $x_2$&lt;/li&gt;
+&lt;li&gt;the OLS estimator obtained by regressing $y$ on $\tilde x_1$
+&lt;ul&gt;
+&lt;li&gt;where $\tilde x_1$ is the residual from the regression of $x_1$ on $x_2$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;the OLS estimator obtained by regressing $\tilde y$ on $\tilde x_1$
+&lt;ul&gt;
+&lt;li&gt;where $\tilde y$ is the residual from the regression of $y$ on $x_2$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;interpretation&#34;&gt;Interpretation&lt;/h3&gt;
+&lt;p&gt;What did we actually &lt;strong&gt;learn&lt;/strong&gt;?&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;Frisch-Waugh-Lowell theorem&lt;/strong&gt; is telling us that there are multiple ways to estimate a single regression coefficient. One possibility is to run the full regression of $y$ on $x$, as usual.&lt;/p&gt;
+&lt;p&gt;However, we can also regress $x_1$ on $x_2$, take the residuals, and regress $y$ only those residuals. The first part of this process is sometimes referred to as &lt;strong&gt;partialling-out&lt;/strong&gt; (or &lt;em&gt;orthogonalization&lt;/em&gt;, or &lt;em&gt;residualization&lt;/em&gt;) of $x_1$ with respect to $x_2$. The idea is that we are isolating the variation in $x_1$ that is &lt;em&gt;orthogonal&lt;/em&gt; to $x_2$. Note that $x_2$ can be also be multi-dimensional (i.e. include multiple variables and not just one).&lt;/p&gt;
+&lt;p&gt;Why would one ever do that?&lt;/p&gt;
+&lt;p&gt;This seems like a way more &lt;strong&gt;complicated&lt;/strong&gt; procedure. Instead of simply doing the regression in 1 step, now we need to do 2 or even 3 steps. It&amp;rsquo;s not intuitive at all. The main advantage comes from the fact that we have reduced a multivariate regression to a univariate one, making more tractable and more intuitive.&lt;/p&gt;
+&lt;p&gt;We will later explore more in detail three &lt;strong&gt;applications&lt;/strong&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;data visualization&lt;/li&gt;
+&lt;li&gt;computational speed&lt;/li&gt;
+&lt;li&gt;further applications for inference&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;However, let&amp;rsquo;s first explore the theorem more in detail with an example.&lt;/p&gt;
+&lt;h2 id=&#34;example&#34;&gt;Example&lt;/h2&gt;
+&lt;p&gt;Suppose we were a retail chain, owning many different stores in different locations. We come up with a brilliant &lt;strong&gt;idea to increase sales&lt;/strong&gt;: give away discounts in the form of &lt;strong&gt;coupons&lt;/strong&gt;. We print a lot of coupons and we distribute them around.&lt;/p&gt;
+&lt;p&gt;To understand whether our marketing strategy worked, in each store, we check the average daily &lt;code&gt;sales&lt;/code&gt; and which percentage of shoppers used a &lt;code&gt;coupon&lt;/code&gt;. However, there is one &lt;strong&gt;problem&lt;/strong&gt;: we are worried that higher income people are less likely to use the discount, but usually they spend more. To be safe, we also record the average &lt;code&gt;income&lt;/code&gt; in the neighborhood of each store.&lt;/p&gt;
+&lt;p&gt;We can represent the data generating process with a &lt;strong&gt;Directed Acyclic Graph&lt;/strong&gt; (DAG). If you are not familiar with DAGs, I have written a short introduction to &lt;a href=&#34;https://medium.com/towards-data-science/controls-b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Directed Acyclic Graphs here&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+X1((coupons))
+X2((income))
+X3((weekday))
+Y((sales))
+
+
+X1 --&amp;gt; Y
+X2 --&amp;gt; X1
+X2 --&amp;gt; Y
+X3 --&amp;gt; Y
+
+class X1,X2,X3,Y excluded;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s load and inspect the &lt;strong&gt;data&lt;/strong&gt;. I import the data generating process from &lt;code&gt;src.dgp&lt;/code&gt; and some plotting functions and libraries from &lt;code&gt;src.utils&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp_store_coupons
+
+df = dgp_store_coupons().generate_data(N=50)
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;sales&lt;/th&gt;
+      &lt;th&gt;coupons&lt;/th&gt;
+      &lt;th&gt;income&lt;/th&gt;
+      &lt;th&gt;dayofweek&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;821.7&lt;/td&gt;
+      &lt;td&gt;0.199&lt;/td&gt;
+      &lt;td&gt;66.243&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;602.3&lt;/td&gt;
+      &lt;td&gt;0.245&lt;/td&gt;
+      &lt;td&gt;43.882&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;655.1&lt;/td&gt;
+      &lt;td&gt;0.162&lt;/td&gt;
+      &lt;td&gt;44.718&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;625.8&lt;/td&gt;
+      &lt;td&gt;0.269&lt;/td&gt;
+      &lt;td&gt;39.270&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;696.6&lt;/td&gt;
+      &lt;td&gt;0.186&lt;/td&gt;
+      &lt;td&gt;58.654&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on &lt;strong&gt;50 stores&lt;/strong&gt;, for which we observe the percentage of customers that use &lt;code&gt;coupons&lt;/code&gt;, daily &lt;code&gt;sales&lt;/code&gt; (in thousand $), average &lt;code&gt;income&lt;/code&gt; of the neighborhood (in thousand $), and &lt;code&gt;day of the week&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Suppose we were directly regressing &lt;code&gt;sales&lt;/code&gt; on &lt;code&gt;coupon&lt;/code&gt; usage. What would we get? I represent the &lt;strong&gt;result&lt;/strong&gt; of the regression graphically, using &lt;code&gt;seaborn&lt;/code&gt; &lt;code&gt;regplot&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.regplot(x=&amp;quot;coupons&amp;quot;, y=&amp;quot;sales&amp;quot;, data=df, ci=False, line_kws={&#39;color&#39;:&#39;r&#39;, &#39;label&#39;:&#39;linear fit&#39;})
+plt.legend()
+plt.title(f&amp;quot;Sales and coupon usage&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/fwl_theorem_12_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It looks like coupons were a &lt;strong&gt;bad idea&lt;/strong&gt;: in stores where coupons are used more, we observe lower sales.&lt;/p&gt;
+&lt;p&gt;However, it might just be that people with higher income are using less coupons, while also spending more. If this was true, it could &lt;strong&gt;bias&lt;/strong&gt; our results. In terms of the DAG, it means that we have a &lt;strong&gt;backdoor path&lt;/strong&gt; passing through &lt;code&gt;income&lt;/code&gt;, generating a non-causal relationship.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+X1((coupons))
+X2((income))
+X3((weekday))
+Y((sales))
+
+
+X1 --&amp;gt; Y
+X2 --&amp;gt; X1
+X2 --&amp;gt; Y
+X3 --&amp;gt; Y
+
+class X1,Y included;
+class X2,X3 excluded;
+
+linkStyle 1,2 stroke:#ff0000,stroke-width:4px;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In order to recover the causal effect of &lt;code&gt;coupons&lt;/code&gt; on &lt;code&gt;sales&lt;/code&gt; we need to &lt;strong&gt;condition&lt;/strong&gt; our analysis on &lt;code&gt;income&lt;/code&gt;. This will &lt;strong&gt;block&lt;/strong&gt; the non-causal path passing through &lt;code&gt;income&lt;/code&gt;, leaving only the direct path from &lt;code&gt;coupons&lt;/code&gt; to &lt;code&gt;sales&lt;/code&gt; open, allowing us to estimate the causal effect.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+
+X1((coupons))
+X2((income))
+X3((weekday))
+Y((sales))
+
+
+X1 --&amp;gt; Y
+X2 -.-&amp;gt; X1
+X2 -.-&amp;gt; Y
+X3 --&amp;gt; Y
+
+class X1,X2,Y included;
+class X3 excluded;
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s implement this, by including &lt;code&gt;income&lt;/code&gt; in the regression.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;sales ~ coupons + income&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;  161.4982&lt;/td&gt; &lt;td&gt;   33.253&lt;/td&gt; &lt;td&gt;    4.857&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   94.601&lt;/td&gt; &lt;td&gt;  228.395&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;coupons&lt;/th&gt;   &lt;td&gt;  218.7548&lt;/td&gt; &lt;td&gt;   50.058&lt;/td&gt; &lt;td&gt;    4.370&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;  118.052&lt;/td&gt; &lt;td&gt;  319.458&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;income&lt;/th&gt;    &lt;td&gt;    9.5094&lt;/td&gt; &lt;td&gt;    0.480&lt;/td&gt; &lt;td&gt;   19.818&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    8.544&lt;/td&gt; &lt;td&gt;   10.475&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Now the estimated effect of &lt;code&gt;coupons&lt;/code&gt; on &lt;code&gt;sales&lt;/code&gt; is positive and significant. Coupons were actually a &lt;strong&gt;good idea&lt;/strong&gt; after all.&lt;/p&gt;
+&lt;h3 id=&#34;verifying-the-theorem&#34;&gt;Verifying the Theorem&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s now verify that the Frisch-Waugh-Lowell theorem actually holds. In particular, we want to check whether we get the &lt;strong&gt;same coefficient&lt;/strong&gt; if, instead of regressing &lt;code&gt;sales&lt;/code&gt; on &lt;code&gt;coupons&lt;/code&gt; and &lt;code&gt;income&lt;/code&gt;, we were&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;regressing &lt;code&gt;coupons&lt;/code&gt; on &lt;code&gt;income&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;computing the residuals &lt;code&gt;coupons_tilde&lt;/code&gt;, i.e. the variation in &lt;code&gt;coupons&lt;/code&gt; &lt;strong&gt;not&lt;/strong&gt; explained by &lt;code&gt;income&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;regressing &lt;code&gt;sales&lt;/code&gt; on &lt;code&gt;coupons_tilde&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;coupons_tilde&#39;] = smf.ols(&#39;coupons ~ income&#39;, df).fit().resid
+
+smf.ols(&#39;sales ~ coupons_tilde - 1&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;           &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;coupons_tilde&lt;/th&gt; &lt;td&gt;  218.7548&lt;/td&gt; &lt;td&gt; 1275.236&lt;/td&gt; &lt;td&gt;    0.172&lt;/td&gt; &lt;td&gt; 0.865&lt;/td&gt; &lt;td&gt;-2343.929&lt;/td&gt; &lt;td&gt; 2781.438&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Yes, the coefficient is the same! However, the &lt;strong&gt;standard errors&lt;/strong&gt; now have increased a lot and the estimated coefficient is not significantly different from zero anymore.&lt;/p&gt;
+&lt;p&gt;A better approach is to add a further step and repeat the same procedure also for &lt;code&gt;sales&lt;/code&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;regressing &lt;code&gt;sales&lt;/code&gt; on &lt;code&gt;income&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;computing the residuals &lt;code&gt;sales_tilde&lt;/code&gt;, i.e. the variation in &lt;code&gt;sales&lt;/code&gt; &lt;strong&gt;not&lt;/strong&gt; explained by &lt;code&gt;income&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;and finally regress &lt;code&gt;sales_tilde&lt;/code&gt; on &lt;code&gt;coupons_tilde&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;sales_tilde&#39;] = smf.ols(&#39;sales ~ income&#39;, df).fit().resid
+
+smf.ols(&#39;sales_tilde ~ coupons_tilde - 1&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;           &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;coupons_tilde&lt;/th&gt; &lt;td&gt;  218.7548&lt;/td&gt; &lt;td&gt;   49.025&lt;/td&gt; &lt;td&gt;    4.462&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;  120.235&lt;/td&gt; &lt;td&gt;  317.275&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The coefficient is still exactly the same, but now also the standard errors are almost identical.&lt;/p&gt;
+&lt;h3 id=&#34;projection&#34;&gt;Projection&lt;/h3&gt;
+&lt;p&gt;What is &lt;strong&gt;partialling-out&lt;/strong&gt; (or residualization, or orthogonalization) actually doing? What is happening when we take the residuals of &lt;code&gt;coupons&lt;/code&gt; with respect to &lt;code&gt;income&lt;/code&gt;?&lt;/p&gt;
+&lt;p&gt;We can &lt;strong&gt;visualize&lt;/strong&gt; the procedure in a plot. First, let&amp;rsquo;s actually display the &lt;strong&gt;residuals&lt;/strong&gt; of &lt;code&gt;coupons&lt;/code&gt; with respect to income.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&amp;quot;coupons_hat&amp;quot;] = smf.ols(&#39;coupons ~ income&#39;, df).fit().predict()
+ax = sns.regplot(x=&amp;quot;income&amp;quot;, y=&amp;quot;coupons&amp;quot;, data=df, ci=False, line_kws={&#39;color&#39;:&#39;r&#39;, &#39;label&#39;:&#39;linear fit&#39;})
+ax.vlines(df[&amp;quot;income&amp;quot;], np.minimum(df[&amp;quot;coupons&amp;quot;], df[&amp;quot;coupons_hat&amp;quot;]), np.maximum(df[&amp;quot;coupons&amp;quot;], df[&amp;quot;coupons_hat&amp;quot;]), 
+           linestyle=&#39;--&#39;, color=&#39;k&#39;, alpha=0.5, linewidth=1, label=&amp;quot;residuals&amp;quot;);
+plt.legend()
+plt.title(f&amp;quot;Coupons usage, income and residuals&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/fwl_theorem_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;residuals&lt;/strong&gt; are the vertical dotted lines between the data and the linear fit, i.e. the part of the variation in &lt;code&gt;coupons&lt;/code&gt; unexplained by &lt;code&gt;income&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;By &lt;strong&gt;partialling-out&lt;/strong&gt;, we are removing the linear fit from the data and keeping only the residuals. We can visualize this procedure with a gif. I import the code from the &lt;code&gt;src.figures&lt;/code&gt; file that you can find &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/src/figures.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.figures import gif_projection
+
+gif_projection(x=&#39;income&#39;, y=&#39;coupons&#39;, df=df, gifname=&amp;quot;gifs/fwl.gif&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;gifs/fwl.gif&#34; alt=&#34;fwl&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The original distribution of the data is on the left in &lt;em&gt;blue&lt;/em&gt;, the partialled-out data in on the right in &lt;em&gt;green&lt;/em&gt;. As we can see, partialling-out removes both the level and the trend in &lt;code&gt;coupons&lt;/code&gt; that is explained by &lt;code&gt;income&lt;/code&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;multiple-controls&#34;&gt;Multiple Controls&lt;/h3&gt;
+&lt;p&gt;We can use the Frisch-Waugh-Theorem also when we have &lt;strong&gt;multiple control variables&lt;/strong&gt;. Suppose that we wanted to also include &lt;code&gt;day of the week&lt;/code&gt; in the regression, to increase precision.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;sales ~ coupons + income + dayofweek&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+         &lt;td&gt;&lt;/td&gt;           &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;      &lt;td&gt;  124.2721&lt;/td&gt; &lt;td&gt;   28.764&lt;/td&gt; &lt;td&gt;    4.320&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   66.182&lt;/td&gt; &lt;td&gt;  182.362&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;dayofweek[T.2]&lt;/th&gt; &lt;td&gt;    7.7703&lt;/td&gt; &lt;td&gt;   14.607&lt;/td&gt; &lt;td&gt;    0.532&lt;/td&gt; &lt;td&gt; 0.598&lt;/td&gt; &lt;td&gt;  -21.729&lt;/td&gt; &lt;td&gt;   37.270&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;dayofweek[T.3]&lt;/th&gt; &lt;td&gt;   15.0895&lt;/td&gt; &lt;td&gt;   11.678&lt;/td&gt; &lt;td&gt;    1.292&lt;/td&gt; &lt;td&gt; 0.204&lt;/td&gt; &lt;td&gt;   -8.495&lt;/td&gt; &lt;td&gt;   38.674&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;dayofweek[T.4]&lt;/th&gt; &lt;td&gt;   28.2762&lt;/td&gt; &lt;td&gt;    9.868&lt;/td&gt; &lt;td&gt;    2.866&lt;/td&gt; &lt;td&gt; 0.007&lt;/td&gt; &lt;td&gt;    8.348&lt;/td&gt; &lt;td&gt;   48.204&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;dayofweek[T.5]&lt;/th&gt; &lt;td&gt;   44.0937&lt;/td&gt; &lt;td&gt;   10.214&lt;/td&gt; &lt;td&gt;    4.317&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   23.467&lt;/td&gt; &lt;td&gt;   64.720&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;dayofweek[T.6]&lt;/th&gt; &lt;td&gt;   50.7664&lt;/td&gt; &lt;td&gt;   13.130&lt;/td&gt; &lt;td&gt;    3.866&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   24.249&lt;/td&gt; &lt;td&gt;   77.283&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;dayofweek[T.7]&lt;/th&gt; &lt;td&gt;   57.3142&lt;/td&gt; &lt;td&gt;   12.413&lt;/td&gt; &lt;td&gt;    4.617&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   32.245&lt;/td&gt; &lt;td&gt;   82.383&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;coupons&lt;/th&gt;        &lt;td&gt;  192.0262&lt;/td&gt; &lt;td&gt;   39.140&lt;/td&gt; &lt;td&gt;    4.906&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;  112.981&lt;/td&gt; &lt;td&gt;  271.071&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;income&lt;/th&gt;         &lt;td&gt;    9.8152&lt;/td&gt; &lt;td&gt;    0.404&lt;/td&gt; &lt;td&gt;   24.314&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    9.000&lt;/td&gt; &lt;td&gt;   10.630&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;We can perform the same procedure as before, but instead of &lt;strong&gt;partialling-out&lt;/strong&gt; only &lt;code&gt;income&lt;/code&gt;, now we partial out both &lt;code&gt;income&lt;/code&gt; and &lt;code&gt;day of the week&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;coupons_tilde&#39;] = smf.ols(&#39;coupons ~ income + dayofweek&#39;, df).fit().resid
+df[&#39;sales_tilde&#39;] = smf.ols(&#39;sales ~ income + dayofweek&#39;, df).fit().resid
+smf.ols(&#39;sales_tilde ~ coupons_tilde - 1&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;           &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;coupons_tilde&lt;/th&gt; &lt;td&gt;  192.0262&lt;/td&gt; &lt;td&gt;   35.803&lt;/td&gt; &lt;td&gt;    5.363&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;  120.078&lt;/td&gt; &lt;td&gt;  263.974&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;We still get exactly the same coefficient!&lt;/p&gt;
+&lt;h2 id=&#34;applications&#34;&gt;Applications&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s now inspect some useful applications of the FWL theorem.&lt;/p&gt;
+&lt;h3 id=&#34;data-visualization&#34;&gt;Data Visualization&lt;/h3&gt;
+&lt;p&gt;One of the advantages of the Frisch-Waugh-Theorem is that it allows us to estimate the coefficient of interest from a &lt;strong&gt;univariate&lt;/strong&gt; regression, i.e. with a single explanatory variable (or feature).&lt;/p&gt;
+&lt;p&gt;Therefore, we can now represent the relationship of interest &lt;strong&gt;graphically&lt;/strong&gt;. Let&amp;rsquo;s plot the residual &lt;code&gt;sales&lt;/code&gt; against the residual &lt;code&gt;coupons&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.regplot(x=&amp;quot;coupons_tilde&amp;quot;, y=&amp;quot;sales_tilde&amp;quot;, data=df, ci=False, line_kws={&#39;color&#39;:&#39;r&#39;, &#39;label&#39;:&#39;linear fit&#39;})
+plt.legend()
+plt.title(f&amp;quot;Residual sales and residual coupons&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/fwl_theorem_39_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Now it&amp;rsquo;s evident from the graph that the &lt;strong&gt;conditional relationship&lt;/strong&gt; between &lt;code&gt;sales&lt;/code&gt; and &lt;code&gt;coupons&lt;/code&gt; is positive.&lt;/p&gt;
+&lt;p&gt;One problem with this approach is that the variables are &lt;strong&gt;hard to interpret&lt;/strong&gt;: we now have negative values for both &lt;code&gt;sales&lt;/code&gt; and &lt;code&gt;coupons&lt;/code&gt;. Weird.&lt;/p&gt;
+&lt;p&gt;Why did it happen? It happened because when we partialled-out the variables, we included the &lt;strong&gt;intercept&lt;/strong&gt; in the regression, effectively de-meaning the variables (i.e. normalizing their values so that their mean is zero).&lt;/p&gt;
+&lt;p&gt;We can &lt;strong&gt;solve&lt;/strong&gt; this problem by &lt;strong&gt;scaling&lt;/strong&gt; both variables, adding their mean.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;coupons_tilde_scaled&#39;] = df[&#39;coupons_tilde&#39;] + np.mean(df[&#39;coupons&#39;])
+df[&#39;sales_tilde_scaled&#39;] = df[&#39;sales_tilde&#39;] + np.mean(df[&#39;sales&#39;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now the magnitudes of the two variables are interpretable again.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.regplot(x=&amp;quot;coupons_tilde_scaled&amp;quot;, y=&amp;quot;sales_tilde_scaled&amp;quot;, data=df, ci=False, line_kws={&#39;color&#39;:&#39;r&#39;, &#39;label&#39;:&#39;linear fit&#39;})
+plt.legend()
+plt.title(f&amp;quot;Residual sales scaled and residual coupons scaled&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/fwl_theorem_43_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Is this a &lt;strong&gt;valid&lt;/strong&gt; approach or did it alter our estimates? We can can check it by running the regression with the scaled partialled-out variables.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;sales_tilde_scaled ~ coupons_tilde_scaled&#39;, df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+            &lt;td&gt;&lt;/td&gt;              &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;            &lt;td&gt;  641.6486&lt;/td&gt; &lt;td&gt;   10.017&lt;/td&gt; &lt;td&gt;   64.054&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;  621.507&lt;/td&gt; &lt;td&gt;  661.790&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;coupons_tilde_scaled&lt;/th&gt; &lt;td&gt;  192.0262&lt;/td&gt; &lt;td&gt;   36.174&lt;/td&gt; &lt;td&gt;    5.308&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;  119.294&lt;/td&gt; &lt;td&gt;  264.758&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The coefficient is exactly the same as before!&lt;/p&gt;
+&lt;h3 id=&#34;computational-speed&#34;&gt;Computational Speed&lt;/h3&gt;
+&lt;p&gt;Another application of the Frisch-Waugh-Lovell theorem is to increase the computational speed of linear estimators. For example it is used to compute efficient linear estimators in presence of high-dimensional fixed effects (&lt;code&gt;day of the week&lt;/code&gt; in our example).&lt;/p&gt;
+&lt;p&gt;Some packages that exploit the Frisch-Waugh-Lovell theorem include&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;http://scorreia.com/software/reghdfe/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;reghdfe in Stata&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://pyhdfe.readthedocs.io/en/stable/index.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;pyhdfe in Python&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;However, it&amp;rsquo;s important to also mention the &lt;a href=&#34;https://cran.r-project.org/web/packages/fixest/index.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;fixest&lt;/a&gt; package in R, which is also exceptionally efficient in running regressions with high dimensional fixed effects.&lt;/p&gt;
+&lt;h3 id=&#34;inference-and-machine-learning&#34;&gt;Inference and Machine Learning&lt;/h3&gt;
+&lt;p&gt;Another important application of the FWL theorem sits at the intersection of &lt;strong&gt;machine learning&lt;/strong&gt; and &lt;strong&gt;causal inference&lt;/strong&gt;. I am referring to the work on post-double selection by &lt;a href=&#34;https://academic.oup.com/restud/article-abstract/81/2/608/1523757&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Belloni, Chernozhukov, Hansen (2013)&lt;/a&gt; and the follow up work on &amp;ldquo;double machine learning&amp;rdquo; by &lt;a href=&#34;https://academic.oup.com/ectj/article/21/1/C1/5056401&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Chernozhukov, Chetverikov, Demirer, Duflo, Hansen, Newey, Robins (2018)&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I plan to cover both applications in future posts, but I wanted to start with the basics. Stay tuned!&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;p&gt;[1] R. Frisch and F. V. Waugh, &lt;a href=&#34;https://www.jstor.org/stable/1907330&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Partial Time Regressions as Compared with Individual Trends&lt;/a&gt; (1933), &lt;em&gt;Econometrica&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] M. C. Lowell, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1080/01621459.1963.10480682&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Seasonal Adjustment of Economic Time Series and Multiple Regression Analysis&lt;/a&gt; (1963), &lt;em&gt;Journal of the American Statistical Association&lt;/em&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
       <title>Bayesian AB Testing</title>
       <link>https://matteocourthoud.github.io/post/bayes_ab/</link>
       <pubDate>Wed, 01 Feb 2023 00:00:00 +0000</pubDate>
