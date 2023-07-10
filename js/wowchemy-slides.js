@@ -67,7 +67,16 @@
       var background = mslide.slideBackgroundElement;
       var currentHorizontalIndex = Reveal.getState()["indexh"];
       var diagramSlideIndex = Reveal.getIndices(mslide)["h"];
-      if (!diag.hasAttribute("data-processed") && background.hasAttribute("data-loaded") && background.style.display === "block" && diagramSlideIndex - currentHorizontalIndex <= 1)
+      if (
+        // find slides with non-rendered mermaid tags
+        // these will not have the attribute data-processed
+        !diag.hasAttribute("data-processed") && // check also that reveal slide is already loaded
+        // reveal slides seem to be lazily loaded
+        // things could be easier if reveal had a slide-loaded event
+        background.hasAttribute("data-loaded") && // loaded slides must also have the display attribute set to block
+        background.style.display === "block" && // render diagrams that are 1 slide away
+        diagramSlideIndex - currentHorizontalIndex <= 1
+      )
         return mslide;
     }
     return null;

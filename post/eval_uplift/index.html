@@ -1,0 +1,1933 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="INTRO
+%matplotlib inline %config InlineBackend.figure_format = &#39;retina&#39; from src.utils import * def generate_data(N=5000, seed=1, true_te=False): np.random.seed(seed) # Control 1: subscriber x1 = np.random.binomial(1, 0.4, N) # Control 2: age x2 = np." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/eval_uplift/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.5c4def4f00a521426f4eb098155f3342.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/eval_uplift/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/eval_uplift/" />
+  <meta property="og:title" content="Evaulating Uplift Models | Matteo Courthoud" />
+  <meta property="og:description" content="INTRO
+%matplotlib inline %config InlineBackend.figure_format = &#39;retina&#39; from src.utils import * def generate_data(N=5000, seed=1, true_te=False): np.random.seed(seed) # Control 1: subscriber x1 = np.random.binomial(1, 0.4, N) # Control 2: age x2 = np." /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2023-07-10T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2023-07-10T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/eval_uplift/"
+  },
+  "headline": "Evaulating Uplift Models",
+  
+  "datePublished": "2023-07-10T00:00:00Z",
+  "dateModified": "2023-07-10T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "INTRO\n%matplotlib inline %config InlineBackend.figure_format = 'retina' from src.utils import * def generate_data(N=5000, seed=1, true_te=False): np.random.seed(seed) # Control 1: subscriber x1 = np.random.binomial(1, 0.4, N) # Control 2: age x2 = np."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Evaulating Uplift Models | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="a4753a3112f517a9f1e34e082aeb1ac5" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#oracle-losses">Oracle Losses</a>
+      <ul>
+        <li><a href="#mse-loss">MSE Loss</a></li>
+        <li><a href="#policy-loss">Policy Loss</a></li>
+      </ul>
+    </li>
+    <li><a href="#outcome-loss">Outcome Loss</a></li>
+    <li><a href="#distribution-loss">Distribution Loss</a></li>
+    <li><a href="#uplift-curve">Uplift Curve</a></li>
+    <li><a href="#nearest-neighbor">Nearest Neighbor</a></li>
+    <li><a href="#ipw-loss">IPW Loss</a></li>
+    <li><a href="#r-loss">R Loss</a></li>
+    <li><a href="#dr-loss">DR Loss</a></li>
+    <li><a href="#hm-2018">HM 2018</a></li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>Evaulating Uplift Models</h1>
+
+  
+
+  
+    
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Jul 10, 2023
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    5 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+    
+
+
+
+
+
+  
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p>INTRO</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+</code></pre>
+<pre><code class="language-python">from src.utils import *
+</code></pre>
+<pre><code class="language-python">def generate_data(N=5000, seed=1, true_te=False):
+    np.random.seed(seed)
+
+    # Control 1: subscriber
+    x1 = np.random.binomial(1, 0.4, N)
+    
+    # Control 2: age
+    x2 = np.round(np.random.uniform(20, 60, N), 2)
+    
+    # Control 3: past sales
+    effect_x1 = 0.2
+    x3_ = -1.45 + (100/x2) - np.maximum((x2-60)**2/500, 0) + effect_x1*x1 
+    x3 = np.maximum(np.random.normal(x3_, 0.01), 0)
+    
+    # Treatment: mail
+    w = np.random.binomial(1, 0.2 + 0.6*(1-x1))
+    
+    # Treatment effect
+    tau = -0.05*(x2&lt;30) + 0.08*(x2&gt;45)
+
+    # Null potential outcome: sales
+    y0 = np.maximum(np.random.normal(x3_, 0.05, N), 0)
+    
+    # Generate the dataframe
+    df = pd.DataFrame({'new': x1, 'age': x2, 'sales_old': x3, 'mail': w, 'sales': y0 + w*tau})
+
+    # Add truth
+    if true_te:
+        df['sales1'] = np.maximum(y0 + tau, 0)
+        df['sales0'] = np.maximum(y0, 0)
+        df['effect'] = tau
+        df['mu1'] = np.maximum(x3_ - effect_x1*x1 + tau, 0)
+        df['mu0'] = np.maximum(x3_ - effect_x1*x1, 0)
+
+    return round(df, 3)
+</code></pre>
+<pre><code class="language-mermaid">flowchart TD
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:3px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:3px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:3px,stroke-dasharray: 5 5;
+
+D((education))
+Z((ability))
+Y((wage))
+X1((age))
+X2((gender))
+
+D --&gt; Y
+Z --&gt; D
+Z --&gt; Y
+X1 --&gt; Y
+X2 --&gt; Y
+
+class D,Y included;
+class X1,X2 excluded;
+class Z unobserved;
+
+linkStyle 0 stroke:#2db88b,stroke-width:6px;
+linkStyle 1,2 stroke:#ff6e54,stroke-width:6px;
+linkStyle 3,4 stroke:#003f5c,stroke-width:6px;
+</code></pre>
+<pre><code class="language-python">df = generate_data()
+</code></pre>
+<pre><code class="language-python">Y = 'sales'
+W = 'mail'
+Z = 'new'
+X = ['age', 'sales_old', 'new']
+</code></pre>
+<pre><code class="language-python">from sklearn.base import clone
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LogisticRegressionCV
+
+model_y = RandomForestRegressor(max_depth=2)
+model_e = LogisticRegressionCV()
+model_tau = RandomForestRegressor(max_depth=2)
+</code></pre>
+<pre><code class="language-python">from src.learners_utils import *
+</code></pre>
+<pre><code class="language-python">from econml.metalearners import SLearner
+
+S_learner = SLearner(overall_model=model_y).fit(df[Y], df[W], X=df[X])
+</code></pre>
+<pre><code class="language-python">S_learner.predict_mu = types.MethodType(S_learner_predict_mu, S_learner)
+</code></pre>
+<pre><code class="language-python">from econml.metalearners import TLearner
+
+T_learner = TLearner(models=clone(model_y)).fit(df[Y], df[W], X=df[X])
+</code></pre>
+<pre><code class="language-python">T_learner.predict_mu = types.MethodType(T_learner_predict_mu, T_learner)
+</code></pre>
+<pre><code class="language-python">from econml.metalearners import XLearner
+
+X_learner = XLearner(models=model_y, propensity_model=model_e, cate_models=model_tau).fit(df[Y], df[W], X=df[X])
+</code></pre>
+<pre><code class="language-python">X_learner.predict_mu = types.MethodType(X_learner_predict_mu, X_learner)
+</code></pre>
+<pre><code class="language-python">from econml.dml import NonParamDML
+
+R_learner = NonParamDML(model_y=model_y, model_t=model_e, model_final=model_tau, discrete_treatment=True
+                       ).fit(df[Y], df[W], X=df[X])
+</code></pre>
+<pre><code class="language-python">R_learner.predict_mu = types.MethodType(R_learner_predict_mu, R_learner)
+</code></pre>
+<pre><code class="language-python">from econml.dr import DRLearner
+
+DR_learner = DRLearner(model_regression=model_y, model_propensity=model_e, model_final=model_tau
+                      ).fit(df[Y], df[W], X=df[X])
+</code></pre>
+<pre><code class="language-python">DR_learner.predict_mu = types.MethodType(DR_learner_predict_mu, DR_learner)
+</code></pre>
+<pre><code class="language-python">names = ['SL', 'TL', 'XL', 'RL', 'DRL']
+learners = [S_learner, T_learner, X_learner, R_learner, DR_learner]
+</code></pre>
+<pre><code class="language-python">def compare_methods(learners, names, loss, title=None, subtitle='lower is better'):
+    results = pd.DataFrame({
+        'learner': names,
+        'loss': [loss(learner) for learner in learners]
+    })
+    fig, ax = plt.subplots(1, 1, figsize=(6, 4))
+    sns.barplot(data=results, x=&quot;learner&quot;, y='loss').set(ylabel='')
+    plt.suptitle(title, y=1.02)
+    plt.title(subtitle, fontsize=12, fontweight=None, y=0.94)
+    return results
+</code></pre>
+<h2 id="oracle-losses">Oracle Losses</h2>
+<h3 id="mse-loss">MSE Loss</h3>
+<pre><code class="language-python">def loss_oracle_mse(learner):
+    data = generate_data(N=10_000, seed=123, true_te=True)
+    tau = learner.effect(data[X])
+    return np.mean((tau - data['effect'])**2)
+</code></pre>
+<pre><code class="language-python">compare_methods(learners, names, loss_oracle_mse, title='Oracle MSE Loss')
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>learner</th>
+      <th>loss</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>SL</td>
+      <td>0.003013</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>TL</td>
+      <td>0.006453</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>XL</td>
+      <td>0.000762</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>RL</td>
+      <td>0.000412</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DRL</td>
+      <td>0.000394</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p><img src="img/eval_uplift_25_1.png" alt="png"></p>
+<h3 id="policy-loss">Policy Loss</h3>
+<pre><code class="language-python">def loss_oracle_policy(learner):
+    data = generate_data(N=10_000, seed=123, true_te=True)
+    tau = learner.effect(data[X])
+    return np.sum(data['mu1'] * (tau&gt;0) + data['mu0'] * (tau&lt;=0))
+</code></pre>
+<pre><code class="language-python">compare_methods(learners, names, loss_oracle_policy, title='Oracle Policy Loss', subtitle='higher is better')
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>learner</th>
+      <th>loss</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>SL</td>
+      <td>2297.91</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>TL</td>
+      <td>2401.51</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>XL</td>
+      <td>2594.30</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>RL</td>
+      <td>2596.55</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DRL</td>
+      <td>2596.55</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p><img src="img/eval_uplift_28_1.png" alt="png"></p>
+<h2 id="outcome-loss">Outcome Loss</h2>
+<pre><code class="language-python">def loss_outcome(learner):
+    data = generate_data(N=10_000, seed=123)
+    mu0, mu1 = learner.predict_mu(data, X, W, Y)
+    mu = mu0 * (1-data[W]) + mu1 * data[W]
+    return np.mean((mu - data['sales'])**2)
+</code></pre>
+<pre><code class="language-python">compare_methods(learners, names, loss_outcome, title='Outcome Loss')
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>learner</th>
+      <th>loss</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>SL</td>
+      <td>0.004362</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>TL</td>
+      <td>0.004492</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>XL</td>
+      <td>0.004473</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>RL</td>
+      <td>0.003690</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DRL</td>
+      <td>0.003729</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p><img src="img/eval_uplift_31_1.png" alt="png"></p>
+<h2 id="distribution-loss">Distribution Loss</h2>
+<pre><code class="language-python">def loss_dist(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau = learner.effect(data[X])
+    y0 = data.loc[data.mail==1, 'sales'] - tau[data.mail==1]
+    return sp.stats.energy_distance(df.loc[df.mail==0, 'sales'], y0)
+</code></pre>
+<pre><code class="language-python">compare_methods(learners, names, loss_dist, 'Distribution Loss')
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>learner</th>
+      <th>loss</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>SL</td>
+      <td>0.194061</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>TL</td>
+      <td>0.257276</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>XL</td>
+      <td>0.234633</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>RL</td>
+      <td>0.262204</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DRL</td>
+      <td>0.249281</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p><img src="img/eval_uplift_34_1.png" alt="png"></p>
+<pre><code class="language-python">
+</code></pre>
+<pre><code class="language-python">from statsmodels.formula.api import ols 
+
+def loss_ab(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau = learner.effect(data[X]) + np.random.normal(0, 1e-8, len(data))
+    data['above_median'] = tau &gt;= np.median(tau)
+    param = ols('sales ~ mail * above_median', data=data).fit().params[-1]
+    return param
+</code></pre>
+<pre><code class="language-python">compare_methods(learners, names, loss_ab, title='Above-below Median Difference', subtitle='higher is better')
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>learner</th>
+      <th>loss</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>SL</td>
+      <td>0.013934</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>TL</td>
+      <td>0.151279</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>XL</td>
+      <td>0.106074</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>RL</td>
+      <td>0.088441</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DRL</td>
+      <td>0.088679</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p><img src="img/eval_uplift_37_1.png" alt="png"></p>
+<h2 id="uplift-curve">Uplift Curve</h2>
+<pre><code class="language-python">Q = 20
+df_q = pd.DataFrame()
+
+
+data = generate_data(N=10_000, seed=123)
+ate = np.mean(data[Y][data[W]==1]) - np.mean(data[Y][data[W]==0])
+for learner, name in zip(learners, names):
+    data['tau_hat'] = learner.effect(data[X])
+    data['q'] = pd.qcut(-data.tau_hat + np.random.normal(0, 1e-8, len(data)), q=Q, labels=False)
+    for q in range(Q):
+        temp = data[data.q &lt;= q]
+        uplift = (np.mean(temp[Y][temp[W]==1]) - np.mean(temp[Y][temp[W]==0])) * q / (Q-1)
+        df_q = pd.concat([df_q, pd.DataFrame({'q': [q], 'uplift': [uplift], 'learner': [name]})])
+
+fig, ax = plt.subplots(1, 1, figsize=(8, 5))
+sns.lineplot(x=range(Q), y=ate*range(Q)/(Q-1), color='k', ls='--', lw=3)
+sns.lineplot(x='q', y='uplift', hue='learner', data=df_q);
+plt.suptitle('Uplift Curve', y=1.02, fontsize=28, fontweight='bold')
+plt.title('higher is better', fontsize=14, fontweight=None, y=0.96)
+</code></pre>
+<pre><code>Text(0.5, 0.96, 'higher is better')
+</code></pre>
+<p><img src="img/eval_uplift_39_1.png" alt="png"></p>
+<h2 id="nearest-neighbor">Nearest Neighbor</h2>
+<pre><code class="language-python">from scipy.spatial import KDTree
+
+def loss_nn(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau_hat = learner.effect(data[X])
+    nn = KDTree(data.loc[data[W]==0, X].values)
+    control_index = nn.query(data.loc[data[W]==1, X], k=1)[-1]
+    tau_nn = data.loc[data[W]==1, Y].values - data.iloc[control_index, :][Y].values
+    return np.mean((tau_hat[data[W]==1] - tau_nn)**2)
+</code></pre>
+<pre><code class="language-python">compare_methods(learners, names, loss_nn, title='Nearest Neighbor Loss')
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>learner</th>
+      <th>loss</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>SL</td>
+      <td>0.053964</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>TL</td>
+      <td>0.051922</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>XL</td>
+      <td>0.050030</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>RL</td>
+      <td>0.048385</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DRL</td>
+      <td>0.048803</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p><img src="img/eval_uplift_42_1.png" alt="png"></p>
+<h2 id="ipw-loss">IPW Loss</h2>
+<pre><code class="language-python">def loss_ipw(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau_hat = learner.effect(data[X])
+    e_hat = clone(model_e).fit(data[X], data[W]).predict_proba(data[X])[:,1]
+    tau_gg = data[Y] * (data[W] - e_hat) / (e_hat * (1 - e_hat))
+    return np.mean((tau_hat - tau_gg)**2)
+</code></pre>
+<pre><code class="language-python">compare_methods(learners, names, loss_ipw, title='IPW Loss')
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>learner</th>
+      <th>loss</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>SL</td>
+      <td>0.447180</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>TL</td>
+      <td>0.430504</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>XL</td>
+      <td>0.443729</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>RL</td>
+      <td>0.439256</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DRL</td>
+      <td>0.440603</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p><img src="img/eval_uplift_45_1.png" alt="png"></p>
+<h2 id="r-loss">R Loss</h2>
+<pre><code class="language-python">def loss_r(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau_hat = learner.effect(data[X])
+    y_hat = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]])
+    e_hat = clone(model_e).fit(df[X], df[W]).predict_proba(data[X])[:,1]
+    tau_nw = (data[Y] - y_hat) / (data[W] - e_hat)
+    return np.mean((tau_hat - tau_nw)**2)
+</code></pre>
+<pre><code class="language-python">results = compare_methods(learners, names, loss_r, title='R Loss')
+</code></pre>
+<p><img src="img/eval_uplift_48_0.png" alt="png"></p>
+<h2 id="dr-loss">DR Loss</h2>
+<pre><code class="language-python">def loss_dr(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau_hat = learner.effect(data[X])
+    y_hat = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]])
+    mu1 = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]].assign(mail=1))
+    mu0 = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]].assign(mail=1))
+    e_hat = clone(model_e).fit(df[X], df[W]).predict_proba(data[X])[:,1]
+    tau_nw = mu1 - mu0 + (data[Y] - y_hat) * (data[W] - e_hat) / (e_hat * (1 - e_hat))
+    return np.mean((tau_hat - tau_nw)**2)
+</code></pre>
+<pre><code class="language-python">results = compare_methods(learners, names, loss_dr, title='DR Loss')
+</code></pre>
+<p><img src="img/eval_uplift_51_0.png" alt="png"></p>
+<h2 id="hm-2018">HM 2018</h2>
+<pre><code class="language-python">def loss_hm(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau_hat = learner.effect(data[X])
+    e_hat = clone(model_e).fit(data[X], data[W]).predict_proba(data[X])[:,1]
+    d = tau_hat &gt; 0
+    return np.sum((d * data[W] / e_hat + (1-d) * (1-data[W]) / (1-e_hat)) * data[Y])
+</code></pre>
+<pre><code class="language-python">results = compare_methods(learners, names, loss_hm, title='HM Loss', subtitle='higher is better')
+</code></pre>
+<p><img src="img/eval_uplift_54_0.png" alt="png"></p>
+<h2 id="conclusion">Conclusion</h2>
+<p>TBD</p>
+<h3 id="references">References</h3>
+<ul>
+<li></li>
+</ul>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li>
+<p><a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">Understanding Meta Learners</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/ed4097dab27a" target="_blank" rel="noopener">Understanding AIPW, the Doubly-Robust Estimator</a></p>
+</li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/eval_uplift.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/eval_uplift.ipynb</a></p>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/eval_uplift/&amp;text=Evaulating%20Uplift%20Models" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/eval_uplift/&amp;t=Evaulating%20Uplift%20Models" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Evaulating%20Uplift%20Models&amp;body=https://matteocourthoud.github.io/post/eval_uplift/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/eval_uplift/&amp;title=Evaulating%20Uplift%20Models" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Evaulating%20Uplift%20Models%20https://matteocourthoud.github.io/post/eval_uplift/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/eval_uplift/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+          <i class="fab fa-telegram"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">My research fields are empirical Industrial Organization and Competition Policy. My research interests include the relationship between competition and innovation, big data, artificial intelligence, platform markets, peer to peer services.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.4ea9cc8d09c5c158656ac1a804743b34.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

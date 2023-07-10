@@ -5,12 +5,664 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Wed, 01 Feb 2023 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Mon, 10 Jul 2023 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://matteocourthoud.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>Evaulating Uplift Models</title>
+      <link>https://matteocourthoud.github.io/post/eval_uplift/</link>
+      <pubDate>Mon, 10 Jul 2023 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/eval_uplift/</guid>
+      <description>&lt;p&gt;INTRO&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def generate_data(N=5000, seed=1, true_te=False):
+    np.random.seed(seed)
+
+    # Control 1: subscriber
+    x1 = np.random.binomial(1, 0.4, N)
+    
+    # Control 2: age
+    x2 = np.round(np.random.uniform(20, 60, N), 2)
+    
+    # Control 3: past sales
+    effect_x1 = 0.2
+    x3_ = -1.45 + (100/x2) - np.maximum((x2-60)**2/500, 0) + effect_x1*x1 
+    x3 = np.maximum(np.random.normal(x3_, 0.01), 0)
+    
+    # Treatment: mail
+    w = np.random.binomial(1, 0.2 + 0.6*(1-x1))
+    
+    # Treatment effect
+    tau = -0.05*(x2&amp;lt;30) + 0.08*(x2&amp;gt;45)
+
+    # Null potential outcome: sales
+    y0 = np.maximum(np.random.normal(x3_, 0.05, N), 0)
+    
+    # Generate the dataframe
+    df = pd.DataFrame({&#39;new&#39;: x1, &#39;age&#39;: x2, &#39;sales_old&#39;: x3, &#39;mail&#39;: w, &#39;sales&#39;: y0 + w*tau})
+
+    # Add truth
+    if true_te:
+        df[&#39;sales1&#39;] = np.maximum(y0 + tau, 0)
+        df[&#39;sales0&#39;] = np.maximum(y0, 0)
+        df[&#39;effect&#39;] = tau
+        df[&#39;mu1&#39;] = np.maximum(x3_ - effect_x1*x1 + tau, 0)
+        df[&#39;mu0&#39;] = np.maximum(x3_ - effect_x1*x1, 0)
+
+    return round(df, 3)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TD
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:3px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:3px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:3px,stroke-dasharray: 5 5;
+
+D((education))
+Z((ability))
+Y((wage))
+X1((age))
+X2((gender))
+
+D --&amp;gt; Y
+Z --&amp;gt; D
+Z --&amp;gt; Y
+X1 --&amp;gt; Y
+X2 --&amp;gt; Y
+
+class D,Y included;
+class X1,X2 excluded;
+class Z unobserved;
+
+linkStyle 0 stroke:#2db88b,stroke-width:6px;
+linkStyle 1,2 stroke:#ff6e54,stroke-width:6px;
+linkStyle 3,4 stroke:#003f5c,stroke-width:6px;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = generate_data()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;Y = &#39;sales&#39;
+W = &#39;mail&#39;
+Z = &#39;new&#39;
+X = [&#39;age&#39;, &#39;sales_old&#39;, &#39;new&#39;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.base import clone
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LogisticRegressionCV
+
+model_y = RandomForestRegressor(max_depth=2)
+model_e = LogisticRegressionCV()
+model_tau = RandomForestRegressor(max_depth=2)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.learners_utils import *
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.metalearners import SLearner
+
+S_learner = SLearner(overall_model=model_y).fit(df[Y], df[W], X=df[X])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;S_learner.predict_mu = types.MethodType(S_learner_predict_mu, S_learner)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.metalearners import TLearner
+
+T_learner = TLearner(models=clone(model_y)).fit(df[Y], df[W], X=df[X])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;T_learner.predict_mu = types.MethodType(T_learner_predict_mu, T_learner)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.metalearners import XLearner
+
+X_learner = XLearner(models=model_y, propensity_model=model_e, cate_models=model_tau).fit(df[Y], df[W], X=df[X])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X_learner.predict_mu = types.MethodType(X_learner_predict_mu, X_learner)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.dml import NonParamDML
+
+R_learner = NonParamDML(model_y=model_y, model_t=model_e, model_final=model_tau, discrete_treatment=True
+                       ).fit(df[Y], df[W], X=df[X])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;R_learner.predict_mu = types.MethodType(R_learner_predict_mu, R_learner)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.dr import DRLearner
+
+DR_learner = DRLearner(model_regression=model_y, model_propensity=model_e, model_final=model_tau
+                      ).fit(df[Y], df[W], X=df[X])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;DR_learner.predict_mu = types.MethodType(DR_learner_predict_mu, DR_learner)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;names = [&#39;SL&#39;, &#39;TL&#39;, &#39;XL&#39;, &#39;RL&#39;, &#39;DRL&#39;]
+learners = [S_learner, T_learner, X_learner, R_learner, DR_learner]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def compare_methods(learners, names, loss, title=None, subtitle=&#39;lower is better&#39;):
+    results = pd.DataFrame({
+        &#39;learner&#39;: names,
+        &#39;loss&#39;: [loss(learner) for learner in learners]
+    })
+    fig, ax = plt.subplots(1, 1, figsize=(6, 4))
+    sns.barplot(data=results, x=&amp;quot;learner&amp;quot;, y=&#39;loss&#39;).set(ylabel=&#39;&#39;)
+    plt.suptitle(title, y=1.02)
+    plt.title(subtitle, fontsize=12, fontweight=None, y=0.94)
+    return results
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;oracle-losses&#34;&gt;Oracle Losses&lt;/h2&gt;
+&lt;h3 id=&#34;mse-loss&#34;&gt;MSE Loss&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_oracle_mse(learner):
+    data = generate_data(N=10_000, seed=123, true_te=True)
+    tau = learner.effect(data[X])
+    return np.mean((tau - data[&#39;effect&#39;])**2)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_oracle_mse, title=&#39;Oracle MSE Loss&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;0.003013&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.006453&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;0.000762&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;0.000412&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;0.000394&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_25_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;policy-loss&#34;&gt;Policy Loss&lt;/h3&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_oracle_policy(learner):
+    data = generate_data(N=10_000, seed=123, true_te=True)
+    tau = learner.effect(data[X])
+    return np.sum(data[&#39;mu1&#39;] * (tau&amp;gt;0) + data[&#39;mu0&#39;] * (tau&amp;lt;=0))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_oracle_policy, title=&#39;Oracle Policy Loss&#39;, subtitle=&#39;higher is better&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;2297.91&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;2401.51&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;2594.30&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;2596.55&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;2596.55&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_28_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;outcome-loss&#34;&gt;Outcome Loss&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_outcome(learner):
+    data = generate_data(N=10_000, seed=123)
+    mu0, mu1 = learner.predict_mu(data, X, W, Y)
+    mu = mu0 * (1-data[W]) + mu1 * data[W]
+    return np.mean((mu - data[&#39;sales&#39;])**2)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_outcome, title=&#39;Outcome Loss&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;0.004362&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.004492&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;0.004473&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;0.003690&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;0.003729&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_31_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;distribution-loss&#34;&gt;Distribution Loss&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_dist(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau = learner.effect(data[X])
+    y0 = data.loc[data.mail==1, &#39;sales&#39;] - tau[data.mail==1]
+    return sp.stats.energy_distance(df.loc[df.mail==0, &#39;sales&#39;], y0)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_dist, &#39;Distribution Loss&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;0.194061&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.257276&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;0.234633&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;0.262204&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;0.249281&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_34_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from statsmodels.formula.api import ols 
+
+def loss_ab(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau = learner.effect(data[X]) + np.random.normal(0, 1e-8, len(data))
+    data[&#39;above_median&#39;] = tau &amp;gt;= np.median(tau)
+    param = ols(&#39;sales ~ mail * above_median&#39;, data=data).fit().params[-1]
+    return param
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_ab, title=&#39;Above-below Median Difference&#39;, subtitle=&#39;higher is better&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;0.013934&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.151279&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;0.106074&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;0.088441&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;0.088679&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_37_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;uplift-curve&#34;&gt;Uplift Curve&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;Q = 20
+df_q = pd.DataFrame()
+
+
+data = generate_data(N=10_000, seed=123)
+ate = np.mean(data[Y][data[W]==1]) - np.mean(data[Y][data[W]==0])
+for learner, name in zip(learners, names):
+    data[&#39;tau_hat&#39;] = learner.effect(data[X])
+    data[&#39;q&#39;] = pd.qcut(-data.tau_hat + np.random.normal(0, 1e-8, len(data)), q=Q, labels=False)
+    for q in range(Q):
+        temp = data[data.q &amp;lt;= q]
+        uplift = (np.mean(temp[Y][temp[W]==1]) - np.mean(temp[Y][temp[W]==0])) * q / (Q-1)
+        df_q = pd.concat([df_q, pd.DataFrame({&#39;q&#39;: [q], &#39;uplift&#39;: [uplift], &#39;learner&#39;: [name]})])
+
+fig, ax = plt.subplots(1, 1, figsize=(8, 5))
+sns.lineplot(x=range(Q), y=ate*range(Q)/(Q-1), color=&#39;k&#39;, ls=&#39;--&#39;, lw=3)
+sns.lineplot(x=&#39;q&#39;, y=&#39;uplift&#39;, hue=&#39;learner&#39;, data=df_q);
+plt.suptitle(&#39;Uplift Curve&#39;, y=1.02, fontsize=28, fontweight=&#39;bold&#39;)
+plt.title(&#39;higher is better&#39;, fontsize=14, fontweight=None, y=0.96)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Text(0.5, 0.96, &#39;higher is better&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_39_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;nearest-neighbor&#34;&gt;Nearest Neighbor&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.spatial import KDTree
+
+def loss_nn(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau_hat = learner.effect(data[X])
+    nn = KDTree(data.loc[data[W]==0, X].values)
+    control_index = nn.query(data.loc[data[W]==1, X], k=1)[-1]
+    tau_nn = data.loc[data[W]==1, Y].values - data.iloc[control_index, :][Y].values
+    return np.mean((tau_hat[data[W]==1] - tau_nn)**2)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_nn, title=&#39;Nearest Neighbor Loss&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;0.053964&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.051922&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;0.050030&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;0.048385&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;0.048803&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_42_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;ipw-loss&#34;&gt;IPW Loss&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_ipw(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau_hat = learner.effect(data[X])
+    e_hat = clone(model_e).fit(data[X], data[W]).predict_proba(data[X])[:,1]
+    tau_gg = data[Y] * (data[W] - e_hat) / (e_hat * (1 - e_hat))
+    return np.mean((tau_hat - tau_gg)**2)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_ipw, title=&#39;IPW Loss&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;0.447180&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.430504&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;0.443729&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;0.439256&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;0.440603&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_45_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;r-loss&#34;&gt;R Loss&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_r(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau_hat = learner.effect(data[X])
+    y_hat = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]])
+    e_hat = clone(model_e).fit(df[X], df[W]).predict_proba(data[X])[:,1]
+    tau_nw = (data[Y] - y_hat) / (data[W] - e_hat)
+    return np.mean((tau_hat - tau_nw)**2)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results = compare_methods(learners, names, loss_r, title=&#39;R Loss&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_48_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;dr-loss&#34;&gt;DR Loss&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_dr(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau_hat = learner.effect(data[X])
+    y_hat = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]])
+    mu1 = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]].assign(mail=1))
+    mu0 = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]].assign(mail=1))
+    e_hat = clone(model_e).fit(df[X], df[W]).predict_proba(data[X])[:,1]
+    tau_nw = mu1 - mu0 + (data[Y] - y_hat) * (data[W] - e_hat) / (e_hat * (1 - e_hat))
+    return np.mean((tau_hat - tau_nw)**2)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results = compare_methods(learners, names, loss_dr, title=&#39;DR Loss&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_51_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;hm-2018&#34;&gt;HM 2018&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_hm(learner):
+    data = generate_data(N=10_000, seed=123)
+    tau_hat = learner.effect(data[X])
+    e_hat = clone(model_e).fit(data[X], data[W]).predict_proba(data[X])[:,1]
+    d = tau_hat &amp;gt; 0
+    return np.sum((d * data[W] / e_hat + (1-d) * (1-data[W]) / (1-e_hat)) * data[Y])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results = compare_methods(learners, names, loss_hm, title=&#39;HM Loss&#39;, subtitle=&#39;higher is better&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/eval_uplift_54_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;TBD&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Meta Learners&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/ed4097dab27a&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding AIPW, the Doubly-Robust Estimator&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/eval_uplift.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/eval_uplift.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Bayesian AB Testing</title>
@@ -677,7 +1329,7 @@ $$&lt;/p&gt;
 &lt;p&gt;We can in principle use any machine learning algorithm at this point to estimate individual treatment effects. However, &lt;a href=&#34;https://en.wikipedia.org/wiki/Decision_tree_learning&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;regression trees&lt;/strong&gt;&lt;/a&gt; have particularly convenient characteristics.&lt;/p&gt;
 &lt;p&gt;First of all, how do regression trees work? Without going too much in detail, they are an algorithm that recursively &lt;strong&gt;partitions the data in bins&lt;/strong&gt; such that the outcome $Y$ &lt;em&gt;within&lt;/em&gt; each bin is as homogeneous as possible and the outcome &lt;em&gt;across&lt;/em&gt; bins is as heterogeneous as possible. The predicted values are simply the averages within each bin.&lt;/p&gt;
 &lt;p&gt;The &lt;strong&gt;averaging&lt;/strong&gt; part is one of the big advantages of regression trees for inference since we know very well how to do inference with averages, with the &lt;a href=&#34;https://en.wikipedia.org/wiki/Central_limit_theorem&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Central Limit Theorem&lt;/strong&gt;&lt;/a&gt;. The second advantage is that trees are very &lt;strong&gt;interpretable&lt;/strong&gt;, since we can directly plot the data partition as a tree structure. We will see more of this later. Last but not least, regression trees are still at the core the &lt;a href=&#34;https://arxiv.org/abs/2207.08815&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;best performing predictive algorithms&lt;/a&gt; with tabular data, as of 2022.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s use the &lt;a href=&#34;https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;DecisionTreeRegressor&lt;/code&gt;&lt;/a&gt; function from &lt;code&gt;sklearn&lt;/code&gt; to fit our regression tree and estimate heterogeneous treatment effects of &lt;code&gt;discounts&lt;/code&gt; on customers&#39; &lt;code&gt;spend&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s use the &lt;a href=&#34;https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;DecisionTreeRegressor&lt;/code&gt;&lt;/a&gt; function from &lt;code&gt;sklearn&lt;/code&gt; to fit our regression tree and estimate heterogeneous treatment effects of &lt;code&gt;discounts&lt;/code&gt; on customers&amp;rsquo; &lt;code&gt;spend&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.tree import DecisionTreeRegressor
 
 tree = DecisionTreeRegressor(max_depth=2).fit(df[X], df[&#39;y_star&#39;])
@@ -1479,19 +2131,19 @@ $$&lt;/p&gt;
 &lt;p&gt;What does the equation mean? It reads &amp;ldquo;the normalized sample average, scaled by a factor $\sqrt{n}$, converges in distribution to a standard normal distribution, i.e. it is approximately Gaussian for a sufficiently large sample.&lt;/p&gt;
 &lt;p&gt;Now, suppose we were interested in a &lt;strong&gt;function&lt;/strong&gt; of the sample average $f\big(\mathbb E_n[X]\big)$. Note that this is different from the sample average of the function $\mathbb E_n\big[f(X)\big]$. The delta method tells us what the function of the sample average converges to.&lt;/p&gt;
 &lt;p&gt;$$
-\sqrt{n} \ \frac{ f\big(\mathbb E_n[X]\big) - f(\mu)}{\sigma} \ \overset{D}{\to} \ N \big(0, f&#39;(\mu)^2 \big)
+\sqrt{n} \ \frac{ f\big(\mathbb E_n[X]\big) - f(\mu)}{\sigma} \ \overset{D}{\to} \ N \big(0, f&amp;rsquo;(\mu)^2 \big)
 $$&lt;/p&gt;
-&lt;p&gt;, where $f&#39;(\mu)^2$ is the derivative of the function $f$, evaluated at $\mu$.&lt;/p&gt;
-&lt;p&gt;What is the &lt;strong&gt;intuition&lt;/strong&gt; behind this formula? We now have a new term inside the expression of the variance, the squared first derivative $f&#39;(\mu)^2$ ($\neq$ second derivative). If the derivative of the function is low, the variance decreases since different inputs translate into similar outputs. On the contrary, if the derivative of the function is high, the variance of the distribution is amplified, since different inputs translate into even more different outputs.&lt;/p&gt;
+&lt;p&gt;, where $f&amp;rsquo;(\mu)^2$ is the derivative of the function $f$, evaluated at $\mu$.&lt;/p&gt;
+&lt;p&gt;What is the &lt;strong&gt;intuition&lt;/strong&gt; behind this formula? We now have a new term inside the expression of the variance, the squared first derivative $f&amp;rsquo;(\mu)^2$ ($\neq$ second derivative). If the derivative of the function is low, the variance decreases since different inputs translate into similar outputs. On the contrary, if the derivative of the function is high, the variance of the distribution is amplified, since different inputs translate into even more different outputs.&lt;/p&gt;
 &lt;img src=&#34;fig/delta_intuition.png&#34; width=&#34;700px&#34;/&gt;
 &lt;p&gt;The result directly follows from the Taylor approximation of $f \big(\mathbb E_n[X]\big)$&lt;/p&gt;
 &lt;p&gt;$$
-f\big(\mathbb E_n[X]\big) = f(\mu) + f&#39;(\mu) (\mathbb E_n[X] - \mu) + \text{residual}
+f\big(\mathbb E_n[X]\big) = f(\mu) + f&amp;rsquo;(\mu) (\mathbb E_n[X] - \mu) + \text{residual}
 $$&lt;/p&gt;
 &lt;p&gt;Importantly, asymptotically, the last term disappears and the linear approximation holds exactly!&lt;/p&gt;
 &lt;p&gt;How is this connected to the ratio estimator? We need a bit more math and to switch from a single dimension to two dimensions in order to understand that. In our case, we have a bivariate function of two random variables, $\Delta R$ and $\Delta C$, which returns their ratio. In the case of a multivariate function $f$, the asymptotic variance of the estimator is given by&lt;/p&gt;
 &lt;p&gt;$$
-\text{AVar} \big( \hat{\rho} \big) = \nabla \hat{\rho}&#39; \Sigma_n \nabla \hat{\rho}
+\text{AVar} \big( \hat{\rho} \big) = \nabla \hat{\rho}&amp;rsquo; \Sigma_n \nabla \hat{\rho}
 $$&lt;/p&gt;
 &lt;p&gt;where, $\nabla$ indicates the &lt;a href=&#34;https://en.wikipedia.org/wiki/Gradient&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;gradient&lt;/a&gt; of the function, i.e. the vector of directional derivatives, and $\Sigma_n$ is the empirical variance-covariance matrix of $X$. In our case, they correspond to&lt;/p&gt;
 &lt;p&gt;$$
@@ -2033,19 +2685,19 @@ inv(X.T @ X) @ X.T @ Y
 &lt;p&gt;The answer is yes! Assume we had $n$ observations and we just received the $n+1$th observation: the pair $(x_{n+1}, y_{n+1})$. In order to compute $\hat{\beta}_{n+1}$ we need to have stored only two objects in memory&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;$\hat{\beta}_{n}$, the previous estimate of $\beta$&lt;/li&gt;
-&lt;li&gt;$(X_n&#39; X_n)^{-1}$, the previous value of $(X&#39; X)^{-1}$&lt;/li&gt;
+&lt;li&gt;$(X_n&amp;rsquo; X_n)^{-1}$, the previous value of $(X&amp;rsquo; X)^{-1}$&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;First of all, how do we update $(X&#39; X)^{-1}$?
+&lt;p&gt;First of all, how do we update $(X&amp;rsquo; X)^{-1}$?
 $$
 \begin{align*}
-(X_{n+1}&#39; X_{n+1})^{-1} = (X_n&#39; X_n)^{-1} - \frac{(X_n&#39; X_n)^{-1} x_{n+1} x_{n+1}&#39; (X_n&#39; X_n)^{-1}}{1 + x_{n+1}&#39; (X_n&#39; X_n)^{-1} x_{n+1}}
+(X_{n+1}&amp;rsquo; X_{n+1})^{-1} = (X_n&amp;rsquo; X_n)^{-1} - \frac{(X_n&amp;rsquo; X_n)^{-1} x_{n+1} x_{n+1}&amp;rsquo; (X_n&amp;rsquo; X_n)^{-1}}{1 + x_{n+1}&amp;rsquo; (X_n&amp;rsquo; X_n)^{-1} x_{n+1}}
 \end{align*}
 $$&lt;/p&gt;
-&lt;p&gt;After having updated $(X&#39; X)^{-1}$, we can update $\hat{\beta}$.
+&lt;p&gt;After having updated $(X&amp;rsquo; X)^{-1}$, we can update $\hat{\beta}$.
 $$
-\hat{\beta}&lt;em&gt;{n+1} = \hat{\beta}&lt;/em&gt;{n} + (X_n&#39; X_n)^{-1} x_{n} (y_n - x_n&#39; \hat{\beta}_{n})
+\hat{\beta}&lt;em&gt;{n+1} = \hat{\beta}&lt;/em&gt;{n} + (X_n&amp;rsquo; X_n)^{-1} x_{n} (y_n - x_n&amp;rsquo; \hat{\beta}_{n})
 $$&lt;/p&gt;
-&lt;p&gt;Note that this procedure is not only privacy friendly but also &lt;strong&gt;memory-friendly&lt;/strong&gt;. Our dataset is a $100 \times 4$ matrix while $(X&#39; X)^{-1}$ is $3 \times 3$ matrix and $\beta$ is a $3 \times 1$ matrix. We are storing only 12 numbers instead of up to 400!&lt;/p&gt;
+&lt;p&gt;Note that this procedure is not only privacy friendly but also &lt;strong&gt;memory-friendly&lt;/strong&gt;. Our dataset is a $100 \times 4$ matrix while $(X&amp;rsquo; X)^{-1}$ is $3 \times 3$ matrix and $\beta$ is a $3 \times 1$ matrix. We are storing only 12 numbers instead of up to 400!&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def update_xb(XiX, beta, x, y):
     XiX -= (XiX @ x.T @ x @ XiX) / (1 + x @ XiX @ x.T )
     beta += XiX @ x.T @ (y - x @ beta)
@@ -2083,7 +2735,7 @@ online_regression(df, &amp;quot;fig/online_reg1.gif&amp;quot;)
 $$
 \text{Var}(\hat{\beta}_{OLS}) = (X&amp;rsquo;X)^{-1} \hat{\sigma}^2
 $$&lt;/p&gt;
-&lt;p&gt;where $\hat{\sigma}^2$ is the variance of the residuals $e = (y - X&#39;\hat{\beta})$.&lt;/p&gt;
+&lt;p&gt;where $\hat{\sigma}^2$ is the variance of the residuals $e = (y - X&amp;rsquo;\hat{\beta})$.&lt;/p&gt;
 &lt;p&gt;The regression table reports the standard errors of the coefficients, which are the squared elements on the diagonal of $\text{Var}(\hat{\beta})$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model.summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
@@ -2110,7 +2762,7 @@ np.sqrt(np.diag(inv(X.T @ X) * np.var(Y - X @ beta)))
 &lt;p&gt;Indeed, we get exactly the same numbers!&lt;/p&gt;
 &lt;p&gt;We already have a method to part of $\text{Var}(\hat{\beta}&lt;em&gt;{OLS})$ online: $(X&amp;rsquo;X)^{-1}$ update the matrix $(X&amp;rsquo;X)^{-1}$ online. How do we update $\hat{\sigma}^2$? This is the formula to update the sum of squared residuals $S$.
 $$
-S&lt;/em&gt;{n+1} = S_{n} + \frac{(y_{n+1} - x_{n+1}\hat{\beta}&lt;em&gt;n)}{1 + x&lt;/em&gt;{n+1}&#39; (X_n&#39; X_n)^{-1} x_{n+1}}
+S&lt;/em&gt;{n+1} = S_{n} + \frac{(y_{n+1} - x_{n+1}\hat{\beta}&lt;em&gt;n)}{1 + x&lt;/em&gt;{n+1}&amp;rsquo; (X_n&amp;rsquo; X_n)^{-1} x_{n+1}}
 $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def update_xbs(XiX, beta, S, x, y):
     S += (y - x @ beta)**2 / (1 + x @ XiX @ x.T )
@@ -2152,12 +2804,12 @@ print(np.sqrt(np.diag(XiX * S / (N - 3))))
 &lt;p&gt;The updating rules for $(X&amp;rsquo;X)^{-1}$ and $\hat{beta}$ become the following.
 $$
 \begin{align*}
-(X_{n+1}&#39; X_{n+1})^{-1} = (X_n&#39; X_n)^{-1} - \frac{w (X_n&#39; X_n)^{-1} x_{n+1} x_{n+1}&#39; (X_n&#39; X_n)^{-1}}{1 + w x_{n+1}&#39; (X_n&#39; X_n)^{-1} x_{n+1}}
+(X_{n+1}&amp;rsquo; X_{n+1})^{-1} = (X_n&amp;rsquo; X_n)^{-1} - \frac{w (X_n&amp;rsquo; X_n)^{-1} x_{n+1} x_{n+1}&amp;rsquo; (X_n&amp;rsquo; X_n)^{-1}}{1 + w x_{n+1}&amp;rsquo; (X_n&amp;rsquo; X_n)^{-1} x_{n+1}}
 \end{align*}
 $$&lt;/p&gt;
 &lt;p&gt;and
 $$
-\hat{\beta}&lt;em&gt;{n+1} = \hat{\beta}&lt;/em&gt;{n} + w (X_n&#39; X_n)^{-1} x_{n} (y_n - x_n&#39; \hat{\beta}_{n})
+\hat{\beta}&lt;em&gt;{n+1} = \hat{\beta}&lt;/em&gt;{n} + w (X_n&amp;rsquo; X_n)^{-1} x_{n} (y_n - x_n&amp;rsquo; \hat{\beta}_{n})
 $$&lt;/p&gt;
 &lt;p&gt;where $w$ are Poisson weights. First, let&amp;rsquo;s update the updating function for $(X&amp;rsquo;X)^{-1}$ and $\hat{beta}$.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def update_xbw(XiX, beta, w, x, y):
@@ -2297,14 +2949,14 @@ df.head()
 &lt;p&gt;The first metric that we are going to use to evaluate &amp;ldquo;unusual&amp;rdquo; observations is the &lt;strong&gt;leverage&lt;/strong&gt;, which was first introduced by &lt;a href=&#34;https://www.jstor.org/stable/1268249&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Cook (1980)&lt;/a&gt;. The objective of the leverage is to capture how much a single point is different with respect to other data points. These data points are often called &lt;strong&gt;outliers&lt;/strong&gt; and there exist a nearly amount of algorithms and rules of thumb to flag them.However the idea is the same: flagging observations that are unusual in terms of features.&lt;/p&gt;
 &lt;p&gt;The leverage of an observation $i$ is defined as&lt;/p&gt;
 &lt;p&gt;$$
-h_{ii} := x_i&#39; (X&amp;rsquo;X)^{-1} x_i
+h_{ii} := x_i&amp;rsquo; (X&amp;rsquo;X)^{-1} x_i
 $$&lt;/p&gt;
 &lt;p&gt;One interpretation of the leverage is as a &lt;strong&gt;measure of distance&lt;/strong&gt; where individual observations are compared against the average of all observations.&lt;/p&gt;
 &lt;p&gt;Another interpretation of the leverage is as the influence of the outcome of observation $i$, $y_i$, on the corresponding fitted value $\hat{y_i}$.&lt;/p&gt;
 &lt;p&gt;$$
 h_{ii} = \frac{\partial \hat{y}_i}{\partial y_i}
 $$&lt;/p&gt;
-&lt;p&gt;Algebraically, the leverage of observation $i$ is the $i^{th}$ element of the &lt;strong&gt;design matrix&lt;/strong&gt; $X&#39; (X&amp;rsquo;X)^{-1} X$. Among the many properties of the leverages, is the fact that they are non-negative and their values sum to 1.&lt;/p&gt;
+&lt;p&gt;Algebraically, the leverage of observation $i$ is the $i^{th}$ element of the &lt;strong&gt;design matrix&lt;/strong&gt; $X&amp;rsquo; (X&amp;rsquo;X)^{-1} X$. Among the many properties of the leverages, is the fact that they are non-negative and their values sum to 1.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s compute the leverage of the observations in our dataset. We also flag observations that have unusual leverages (which we arbitrarily define as more than two standard deviations away from the average leverage).&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X = np.reshape(df[&#39;hours&#39;].values, (-1, 1))
 Y = np.reshape(df[&#39;transactions&#39;].values, (-1, 1))
@@ -3252,7 +3904,7 @@ ax.add_artist(AnnotationBbox(OffsetImage(plt.imread(&#39;fig/miami.png&#39;), zo
       <guid>https://matteocourthoud.github.io/post/optimal_stopping/</guid>
       <description>&lt;p&gt;In the decade preceding the Second World War, there was a massive increase in industrial production of war materials, so there was a need to ensure that products, especially munitions, were reliable. The &lt;strong&gt;testing&lt;/strong&gt; of war materials is not only &lt;strong&gt;expensive&lt;/strong&gt; but also &lt;strong&gt;destructive&lt;/strong&gt; since, for example, bullets need to be fired in order to be tested.&lt;/p&gt;
 &lt;p&gt;Therefore, the U.S. government was presented with the following &lt;strong&gt;dilemma&lt;/strong&gt;: how many bullets should one fire out of a batch before declaring the batch reliable? Clearly, if we were to fire all the bullets, we would know the exact amount of functioning bullets in a crate. However, there would be no bullets left to use.&lt;/p&gt;
-&lt;p&gt;Because of the growing relevance of these statistical problems, in 1939, a group of prominent statisticians and economists joined forces at Columbia University&amp;rsquo;s &lt;a href=&#34;https://en.wikipedia.org/wiki/The_Statistical_Research_Group_of_World_War_II&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Statistical Research Group (SGR)&lt;/strong&gt;&lt;/a&gt;. The group included, among others, &lt;a href=&#34;https://en.wikipedia.org/wiki/W._Allen_Wallis&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;W. Allen Wallis&lt;/a&gt;, &lt;a href=&#34;https://en.wikipedia.org/wiki/Jacob_Wolfowitz&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Jacob Wolfowitz&lt;/a&gt; and &lt;a href=&#34;https://en.wikipedia.org/wiki/Abraham_Wald&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Abraham Wald&lt;/a&gt;. According to Wallis himself the SGR group was &amp;ldquo;&lt;em&gt;composed of what surely must be the most extraordinary group of statisticians ever organized, taking into account both number and quality&lt;/em&gt;&amp;quot;[&lt;a href=&#34;#References&#34;&gt;2&lt;/a&gt;].&lt;/p&gt;
+&lt;p&gt;Because of the growing relevance of these statistical problems, in 1939, a group of prominent statisticians and economists joined forces at Columbia University&amp;rsquo;s &lt;a href=&#34;https://en.wikipedia.org/wiki/The_Statistical_Research_Group_of_World_War_II&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;Statistical Research Group (SGR)&lt;/strong&gt;&lt;/a&gt;. The group included, among others, &lt;a href=&#34;https://en.wikipedia.org/wiki/W._Allen_Wallis&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;W. Allen Wallis&lt;/a&gt;, &lt;a href=&#34;https://en.wikipedia.org/wiki/Jacob_Wolfowitz&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Jacob Wolfowitz&lt;/a&gt; and &lt;a href=&#34;https://en.wikipedia.org/wiki/Abraham_Wald&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Abraham Wald&lt;/a&gt;. According to Wallis himself the SGR group was &amp;ldquo;&lt;em&gt;composed of what surely must be the most extraordinary group of statisticians ever organized, taking into account both number and quality&lt;/em&gt;&amp;rdquo;[&lt;a href=&#34;#References&#34;&gt;2&lt;/a&gt;].&lt;/p&gt;
 &lt;p&gt;Their work was of first order importance and &lt;strong&gt;classified&lt;/strong&gt;, to the point that Wallis reports:&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;em&gt;It is said that as Wald worked on sequential analysis his pages were snatched away and given a security classification. Being still an &amp;ldquo;enemy alien&amp;rdquo;, he did not have a security clearance so, the story has it, he was not allowed to know of his results.&lt;/em&gt; [&lt;a href=&#34;https://www.jstor.org/stable/2287451&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Wallis (1980)&lt;/a&gt;]&lt;/p&gt;
@@ -3826,7 +4478,7 @@ df.head()
 &lt;/table&gt;
 &lt;/div&gt;
 &lt;p&gt;We have informations on 300 users for whom we observe whether they select the &lt;code&gt;dark_mode&lt;/code&gt; (the treatment), their weekly &lt;code&gt;read_time&lt;/code&gt; (the outcome of interest) and some characteristics like &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; previously spend on the blog.&lt;/p&gt;
-&lt;p&gt;We would like to estimate the effect of the new &lt;code&gt;dark_mode&lt;/code&gt; on users&#39; &lt;code&gt;read_time&lt;/code&gt;. As a first approach, we might naively compute the effect as a difference in means, assuming that the treatment and control sample are comparable. We can estimate the difference in means by regressing &lt;code&gt;read_time&lt;/code&gt; on &lt;code&gt;dark_mode&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;We would like to estimate the effect of the new &lt;code&gt;dark_mode&lt;/code&gt; on users&amp;rsquo; &lt;code&gt;read_time&lt;/code&gt;. As a first approach, we might naively compute the effect as a difference in means, assuming that the treatment and control sample are comparable. We can estimate the difference in means by regressing &lt;code&gt;read_time&lt;/code&gt; on &lt;code&gt;dark_mode&lt;/code&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;read_time ~ dark_mode&amp;quot;, data=df).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -4153,7 +4805,7 @@ def simulate_estimators(X_e, X_mu, D, y):
 &lt;p&gt;In this case, the S-learner is unbiased, while IPW isn&amp;rsquo;t, since we have misspecified $e(X)$. Again, AIPW picks the &lt;strong&gt;best of both worlds&lt;/strong&gt; and is unbiased.&lt;/p&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;In this article we have seen a method to estimate conditional average treatment effects (CATE), that is &lt;strong&gt;robust to model misspecification&lt;/strong&gt;: the Augmented Inverse Propensity Weighted (AIPW) estimator. The AIPW estimator takes the best out of two existing estimators: the &lt;a href=&#34;&#34;&gt;IPW estimator&lt;/a&gt; and the &lt;a href=&#34;&#34;&gt;S-learner&lt;/a&gt;. It requires the estimation of both the propensity score function $\mathbb{E} [ D | X ]$ and the response function $\mathbb{E} [ Y | D, X ]$ and it is &lt;strong&gt;unbiased&lt;/strong&gt; even if one of the two functions is misspecified.&lt;/p&gt;
-&lt;p&gt;This estimator is now a standard and it is included all the most important causal inference packages such as Microsoft&amp;rsquo;s &lt;a href=&#34;https://econml.azurewebsites.net/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;EconML&lt;/a&gt;, Uber&amp;rsquo;s &lt;a href=&#34;https://causalml.readthedocs.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;causalml&lt;/a&gt; and Stanford researchers&#39; R package &lt;a href=&#34;https://grf-labs.github.io/grf/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;grf&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This estimator is now a standard and it is included all the most important causal inference packages such as Microsoft&amp;rsquo;s &lt;a href=&#34;https://econml.azurewebsites.net/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;EconML&lt;/a&gt;, Uber&amp;rsquo;s &lt;a href=&#34;https://causalml.readthedocs.io/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;causalml&lt;/a&gt; and Stanford researchers&amp;rsquo; R package &lt;a href=&#34;https://grf-labs.github.io/grf/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;grf&lt;/a&gt;.&lt;/p&gt;
 &lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
 &lt;p&gt;[1] J. Robins, A. Rotzniski, J. P. Zhao, &lt;a href=&#34;https://www.tandfonline.com/doi/abs/10.1080/01621459.1994.10476818&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Estimation of regression coefficients when some regressors are not always observed&lt;/a&gt; (1994), &lt;em&gt;Journal of the American Statistical Associations&lt;/em&gt;.&lt;/p&gt;
 &lt;p&gt;[2] A. Glyn, K. Quinn, &lt;a href=&#34;https://www.cambridge.org/core/journals/political-analysis/article/abs/an-introduction-to-the-augmented-inverse-propensity-weighted-estimator/4B1B8301E46F4432C4DCC91FE20780DB&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;An Introduction to the Augmented Inverse Propensity Weighted Estimator&lt;/a&gt; (2010), &lt;em&gt;Political Analysis&lt;/em&gt;.&lt;/p&gt;
@@ -4284,7 +4936,7 @@ df.head()
 &lt;/table&gt;
 &lt;/div&gt;
 &lt;p&gt;We have informations on 300 users for whom we observe whether they select the &lt;code&gt;dark_mode&lt;/code&gt; (the treatment), their weekly &lt;code&gt;read_time&lt;/code&gt; (the outcome of interest) and some characteristics like &lt;code&gt;gender&lt;/code&gt;, &lt;code&gt;age&lt;/code&gt; and total &lt;code&gt;hours&lt;/code&gt; previously spend on the blog.&lt;/p&gt;
-&lt;p&gt;We would like to estimate the effect of the new &lt;code&gt;dark_mode&lt;/code&gt; on users&#39; &lt;code&gt;read_time&lt;/code&gt;. If we were runnig an &lt;a href=&#34;https://de.wikipedia.org/wiki/A/B-Test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;AB test&lt;/strong&gt;&lt;/a&gt; or randomized control trial, we could just compare users with and without the dark mode and we could attribute the difference in average reading time to the &lt;code&gt;dark_mode&lt;/code&gt;. Let&amp;rsquo;s check what number we would get.&lt;/p&gt;
+&lt;p&gt;We would like to estimate the effect of the new &lt;code&gt;dark_mode&lt;/code&gt; on users&amp;rsquo; &lt;code&gt;read_time&lt;/code&gt;. If we were runnig an &lt;a href=&#34;https://de.wikipedia.org/wiki/A/B-Test&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;AB test&lt;/strong&gt;&lt;/a&gt; or randomized control trial, we could just compare users with and without the dark mode and we could attribute the difference in average reading time to the &lt;code&gt;dark_mode&lt;/code&gt;. Let&amp;rsquo;s check what number we would get.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.mean(df.loc[df.dark_mode==True, &#39;read_time&#39;]) - np.mean(df.loc[df.dark_mode==False, &#39;read_time&#39;])
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;-0.4446330948042103
@@ -5286,7 +5938,7 @@ $$&lt;/p&gt;
 $$&lt;/p&gt;
 &lt;p&gt;Note that $\mathbb E[X]$ cancels out when taking the difference. Therefore, it is sufficient to compute&lt;/p&gt;
 &lt;p&gt;$$
-\hat Y_{cuped,1}&#39; = \bar Y_1 - \theta \bar X
+\hat Y_{cuped,1}&amp;rsquo; = \bar Y_1 - \theta \bar X
 $$&lt;/p&gt;
 &lt;p&gt;This is not an unbiased estimator of $\mathbb E[Y]$ but still delivers an unbiased estimator of the average treatment effect.&lt;/p&gt;
 &lt;h3 id=&#34;optimal-x&#34;&gt;Optimal X&lt;/h3&gt;
@@ -7583,7 +8235,7 @@ $$&lt;/p&gt;
 &lt;li&gt;Use the main sample to estimate the residualized OLS estimator from regressing $\hat u$ on $D$&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;$$
-\hat \alpha = \left( D&#39; D \right) ^{-1} D&#39; \hat u
+\hat \alpha = \left( D&amp;rsquo; D \right) ^{-1} D&amp;rsquo; \hat u
 $$&lt;/p&gt;
 &lt;p&gt;This estimator is going to have &lt;strong&gt;two problems&lt;/strong&gt;:&lt;/p&gt;
 &lt;ol&gt;
@@ -7619,7 +8271,7 @@ $$&lt;/p&gt;
 &lt;li&gt;
 &lt;p&gt;Use the main sample to estimate the double-residualized OLS estimator as&lt;/p&gt;
 &lt;p&gt;$$
-\hat \alpha = \left( \hat{v}&#39; D \right) ^{-1} \hat{v}&#39; \left( Y - \hat g(X) \right)
+\hat \alpha = \left( \hat{v}&amp;rsquo; D \right) ^{-1} \hat{v}&amp;rsquo; \left( Y - \hat g(X) \right)
 $$&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
@@ -9941,7 +10593,7 @@ plt.title(f&amp;quot;Residual sales scaled and residual coupons scaled&amp;quot;
       <link>https://matteocourthoud.github.io/post/controls/</link>
       <pubDate>Mon, 25 Apr 2022 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/controls/</guid>
-      <description>&lt;p&gt;When analyzing causal relationships, it is very hard to understand which variables to &lt;strong&gt;condition the analysis on&lt;/strong&gt;, i.e. how to &amp;ldquo;split&amp;rdquo; the data so that we are &lt;strong&gt;comparing apples to apples&lt;/strong&gt;. For example, if you want to understand the effect of having a tablet in class on studenta&#39; performance, it makes sense to compare schools where students have similar socio-economic backgrounds. Otherwise, the risk is that only wealthier students can afford a tablet and, without controlling for it, we might attribute the effect to tablets instead of the socio-economic background.&lt;/p&gt;
+      <description>&lt;p&gt;When analyzing causal relationships, it is very hard to understand which variables to &lt;strong&gt;condition the analysis on&lt;/strong&gt;, i.e. how to &amp;ldquo;split&amp;rdquo; the data so that we are &lt;strong&gt;comparing apples to apples&lt;/strong&gt;. For example, if you want to understand the effect of having a tablet in class on studenta&amp;rsquo; performance, it makes sense to compare schools where students have similar socio-economic backgrounds. Otherwise, the risk is that only wealthier students can afford a tablet and, without controlling for it, we might attribute the effect to tablets instead of the socio-economic background.&lt;/p&gt;
 &lt;p&gt;When the treatment of interest comes from a proper &lt;strong&gt;randomized experiment&lt;/strong&gt;, we do not need to worry about conditioning on other variables. If tablets are distributed randomly across schools, and we have enough schools in the experiment, we do not have to worry about the socio-economic background of students. The only advantage of conditioning the analysis on some so-called &amp;ldquo;control variable&amp;rdquo; could be an increase in power. However, this is a different story.&lt;/p&gt;
 &lt;p&gt;In this post, we are going to have a brief introduction to Directed Acyclic Graphs and how they can be useful to select variables to condition a causal analysis on. Not only DAGs provide visual intuition on which variables we need to &lt;em&gt;include&lt;/em&gt; in the analysis, but also on which variables we should &lt;em&gt;not include&lt;/em&gt;, and why.&lt;/p&gt;
 &lt;h2 id=&#34;directed-acyclic-graphs&#34;&gt;Directed Acyclic Graphs&lt;/h2&gt;
@@ -10115,7 +10767,7 @@ linkStyle 5,6 stroke:#ff0000,stroke-width:4px;
 class X,Y,Z1,Z2,Z3 included;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&#34;example-class-size-and-math-scores&#34;&gt;Example: Class Size and Math Scores&lt;/h2&gt;
-&lt;p&gt;Suppose you are interested in the &lt;strong&gt;effect of class size on math scores&lt;/strong&gt;. Are bigger classes better or worse for students&#39; performance?&lt;/p&gt;
+&lt;p&gt;Suppose you are interested in the &lt;strong&gt;effect of class size on math scores&lt;/strong&gt;. Are bigger classes better or worse for students&amp;rsquo; performance?&lt;/p&gt;
 &lt;p&gt;Assume that the data generating process can be represented with the following &lt;strong&gt;DAG&lt;/strong&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TB
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
@@ -10285,7 +10937,7 @@ class X,Y included;
 class Z1,Z2,Z3,Z4 excluded;
 class U unobserved;
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;There is a &lt;strong&gt;spurious&lt;/strong&gt; path passing through &lt;code&gt;good school&lt;/code&gt; that &lt;strong&gt;biases&lt;/strong&gt; our estimated coefficient. Intuitively, being enrolled in a better school improves the students&#39; math scores and better schools might have smaller class sizes. We need to control for the quality of the school.&lt;/p&gt;
+&lt;p&gt;There is a &lt;strong&gt;spurious&lt;/strong&gt; path passing through &lt;code&gt;good school&lt;/code&gt; that &lt;strong&gt;biases&lt;/strong&gt; our estimated coefficient. Intuitively, being enrolled in a better school improves the students&amp;rsquo; math scores and better schools might have smaller class sizes. We need to control for the quality of the school.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;math_score ~ class_size + good_school&#39;, df).fit().summary().tables[1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;table class=&#34;simpletable&#34;&gt;
@@ -13774,7 +14426,7 @@ plt.axvline(x=0.5, ls=&amp;quot;:&amp;quot;, color=&#39;C2&#39;);
 &lt;td&gt;30/04/21&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://yem2020.econ.muni.cz/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Young Economists&#39; Meeting&lt;/a&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;a href=&#34;https://yem2020.econ.muni.cz/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Young Economists&amp;rsquo; Meeting&lt;/a&gt;&lt;/td&gt;
 &lt;td&gt;University fo Munich&lt;/td&gt;
 &lt;td style=&#34;text-align:left&#34;&gt;All&lt;/td&gt;
 &lt;td style=&#34;text-align:center&#34;&gt;&lt;a href=&#34;https://yem2020.econ.muni.cz/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;March 08&lt;/a&gt;&lt;/td&gt;

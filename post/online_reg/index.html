@@ -447,7 +447,7 @@ AB tests, a.k.a. randomized controlled trials, are widely recognized as the gold
   
   
   
-  <script src="/js/wowchemy-init.min.6edaf3b475ce43de30d98828aea698be.js"></script>
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
 
   
 
@@ -1014,19 +1014,19 @@ inv(X.T @ X) @ X.T @ Y
 <p>The answer is yes! Assume we had $n$ observations and we just received the $n+1$th observation: the pair $(x_{n+1}, y_{n+1})$. In order to compute $\hat{\beta}_{n+1}$ we need to have stored only two objects in memory</p>
 <ul>
 <li>$\hat{\beta}_{n}$, the previous estimate of $\beta$</li>
-<li>$(X_n' X_n)^{-1}$, the previous value of $(X' X)^{-1}$</li>
+<li>$(X_n&rsquo; X_n)^{-1}$, the previous value of $(X&rsquo; X)^{-1}$</li>
 </ul>
-<p>First of all, how do we update $(X' X)^{-1}$?
+<p>First of all, how do we update $(X&rsquo; X)^{-1}$?
 $$
 \begin{align*}
-(X_{n+1}' X_{n+1})^{-1} = (X_n' X_n)^{-1} - \frac{(X_n' X_n)^{-1} x_{n+1} x_{n+1}' (X_n' X_n)^{-1}}{1 + x_{n+1}' (X_n' X_n)^{-1} x_{n+1}}
+(X_{n+1}&rsquo; X_{n+1})^{-1} = (X_n&rsquo; X_n)^{-1} - \frac{(X_n&rsquo; X_n)^{-1} x_{n+1} x_{n+1}&rsquo; (X_n&rsquo; X_n)^{-1}}{1 + x_{n+1}&rsquo; (X_n&rsquo; X_n)^{-1} x_{n+1}}
 \end{align*}
 $$</p>
-<p>After having updated $(X' X)^{-1}$, we can update $\hat{\beta}$.
+<p>After having updated $(X&rsquo; X)^{-1}$, we can update $\hat{\beta}$.
 $$
-\hat{\beta}<em>{n+1} = \hat{\beta}</em>{n} + (X_n' X_n)^{-1} x_{n} (y_n - x_n' \hat{\beta}_{n})
+\hat{\beta}<em>{n+1} = \hat{\beta}</em>{n} + (X_n&rsquo; X_n)^{-1} x_{n} (y_n - x_n&rsquo; \hat{\beta}_{n})
 $$</p>
-<p>Note that this procedure is not only privacy friendly but also <strong>memory-friendly</strong>. Our dataset is a $100 \times 4$ matrix while $(X' X)^{-1}$ is $3 \times 3$ matrix and $\beta$ is a $3 \times 1$ matrix. We are storing only 12 numbers instead of up to 400!</p>
+<p>Note that this procedure is not only privacy friendly but also <strong>memory-friendly</strong>. Our dataset is a $100 \times 4$ matrix while $(X&rsquo; X)^{-1}$ is $3 \times 3$ matrix and $\beta$ is a $3 \times 1$ matrix. We are storing only 12 numbers instead of up to 400!</p>
 <pre><code class="language-python">def update_xb(XiX, beta, x, y):
     XiX -= (XiX @ x.T @ x @ XiX) / (1 + x @ XiX @ x.T )
     beta += XiX @ x.T @ (y - x @ beta)
@@ -1064,7 +1064,7 @@ online_regression(df, &quot;fig/online_reg1.gif&quot;)
 $$
 \text{Var}(\hat{\beta}_{OLS}) = (X&rsquo;X)^{-1} \hat{\sigma}^2
 $$</p>
-<p>where $\hat{\sigma}^2$ is the variance of the residuals $e = (y - X'\hat{\beta})$.</p>
+<p>where $\hat{\sigma}^2$ is the variance of the residuals $e = (y - X&rsquo;\hat{\beta})$.</p>
 <p>The regression table reports the standard errors of the coefficients, which are the squared elements on the diagonal of $\text{Var}(\hat{\beta})$.</p>
 <pre><code class="language-python">model.summary().tables[1]
 </code></pre>
@@ -1091,7 +1091,7 @@ np.sqrt(np.diag(inv(X.T @ X) * np.var(Y - X @ beta)))
 <p>Indeed, we get exactly the same numbers!</p>
 <p>We already have a method to part of $\text{Var}(\hat{\beta}<em>{OLS})$ online: $(X&rsquo;X)^{-1}$ update the matrix $(X&rsquo;X)^{-1}$ online. How do we update $\hat{\sigma}^2$? This is the formula to update the sum of squared residuals $S$.
 $$
-S</em>{n+1} = S_{n} + \frac{(y_{n+1} - x_{n+1}\hat{\beta}<em>n)}{1 + x</em>{n+1}' (X_n' X_n)^{-1} x_{n+1}}
+S</em>{n+1} = S_{n} + \frac{(y_{n+1} - x_{n+1}\hat{\beta}<em>n)}{1 + x</em>{n+1}&rsquo; (X_n&rsquo; X_n)^{-1} x_{n+1}}
 $$</p>
 <pre><code class="language-python">def update_xbs(XiX, beta, S, x, y):
     S += (y - x @ beta)**2 / (1 + x @ XiX @ x.T )
@@ -1133,12 +1133,12 @@ print(np.sqrt(np.diag(XiX * S / (N - 3))))
 <p>The updating rules for $(X&rsquo;X)^{-1}$ and $\hat{beta}$ become the following.
 $$
 \begin{align*}
-(X_{n+1}' X_{n+1})^{-1} = (X_n' X_n)^{-1} - \frac{w (X_n' X_n)^{-1} x_{n+1} x_{n+1}' (X_n' X_n)^{-1}}{1 + w x_{n+1}' (X_n' X_n)^{-1} x_{n+1}}
+(X_{n+1}&rsquo; X_{n+1})^{-1} = (X_n&rsquo; X_n)^{-1} - \frac{w (X_n&rsquo; X_n)^{-1} x_{n+1} x_{n+1}&rsquo; (X_n&rsquo; X_n)^{-1}}{1 + w x_{n+1}&rsquo; (X_n&rsquo; X_n)^{-1} x_{n+1}}
 \end{align*}
 $$</p>
 <p>and
 $$
-\hat{\beta}<em>{n+1} = \hat{\beta}</em>{n} + w (X_n' X_n)^{-1} x_{n} (y_n - x_n' \hat{\beta}_{n})
+\hat{\beta}<em>{n+1} = \hat{\beta}</em>{n} + w (X_n&rsquo; X_n)^{-1} x_{n} (y_n - x_n&rsquo; \hat{\beta}_{n})
 $$</p>
 <p>where $w$ are Poisson weights. First, let&rsquo;s update the updating function for $(X&rsquo;X)^{-1}$ and $\hat{beta}$.</p>
 <pre><code class="language-python">def update_xbw(XiX, beta, w, x, y):
@@ -1589,7 +1589,7 @@ for n in range(10, N):
       
     
     
-    <script src="/en/js/wowchemy.min.cf8ca859a9b74f8b1cd804621b13e5f1.js"></script>
+    <script src="/en/js/wowchemy.min.4ea9cc8d09c5c158656ac1a804743b34.js"></script>
 
     
   <script async defer src="https://buttons.github.io/buttons.js"></script>
