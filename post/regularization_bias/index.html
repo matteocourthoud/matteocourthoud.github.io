@@ -30,7 +30,8 @@
   
     
   
-  <meta name="description" content="In the previous part of this blog post, we have seen how pre-testing can distort inference, i.e., how selecting control variables depending on their statistical significance results in wrong confidence intervals for the variable of interest." />
+  <meta name="description" content="Causal inference, machine learning and regularization bias
+In causal inference, we often estimate causal effects by conditioning the analysis on other variables. We usually refer to these variables as control variables or confounders." />
 
   
   <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/regularization_bias/" />
@@ -332,8 +333,9 @@
   
   <meta property="og:site_name" content="Matteo Courthoud" />
   <meta property="og:url" content="https://matteocourthoud.github.io/post/regularization_bias/" />
-  <meta property="og:title" content="Double Debiased Machine Learning (part 2) | Matteo Courthoud" />
-  <meta property="og:description" content="In the previous part of this blog post, we have seen how pre-testing can distort inference, i.e., how selecting control variables depending on their statistical significance results in wrong confidence intervals for the variable of interest." /><meta property="og:image" content="https://matteocourthoud.github.io/post/regularization_bias/featured.png" />
+  <meta property="og:title" content="Double Debiased Machine Learning (part 1) | Matteo Courthoud" />
+  <meta property="og:description" content="Causal inference, machine learning and regularization bias
+In causal inference, we often estimate causal effects by conditioning the analysis on other variables. We usually refer to these variables as control variables or confounders." /><meta property="og:image" content="https://matteocourthoud.github.io/post/regularization_bias/featured.png" />
     <meta property="twitter:image" content="https://matteocourthoud.github.io/post/regularization_bias/featured.png" /><meta property="og:locale" content="en-us" />
   
     
@@ -368,7 +370,7 @@
     "@type": "WebPage",
     "@id": "https://matteocourthoud.github.io/post/regularization_bias/"
   },
-  "headline": "Double Debiased Machine Learning (part 2)",
+  "headline": "Double Debiased Machine Learning (part 1)",
   
   "image": [
     "https://matteocourthoud.github.io/post/regularization_bias/featured.png"
@@ -385,7 +387,7 @@
       "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
     }
   },
-  "description": "In the previous part of this blog post, we have seen how pre-testing can distort inference, i.e., how selecting control variables depending on their statistical significance results in wrong confidence intervals for the variable of interest."
+  "description": "Causal inference, machine learning and regularization bias\nIn causal inference, we often estimate causal effects by conditioning the analysis on other variables. We usually refer to these variables as control variables or confounders."
 }
 </script>
 
@@ -431,7 +433,7 @@
 
 
 
-  <title>Double Debiased Machine Learning (part 2) | Matteo Courthoud</title>
+  <title>Double Debiased Machine Learning (part 1) | Matteo Courthoud</title>
 </head>
 
 
@@ -767,21 +769,10 @@
       </ul>
       <nav id="TableOfContents">
   <ul>
-    <li><a href="#recap">Recap</a></li>
-    <li><a href="#post-double-selection">Post-Double Selection</a>
-      <ul>
-        <li><a href="#intuition">Intuition</a></li>
-        <li><a href="#application">Application</a></li>
-        <li><a href="#double-checks">Double-checks</a></li>
-      </ul>
-    </li>
-    <li><a href="#double-debiased-machine-learning">Double Debiased Machine Learning</a>
-      <ul>
-        <li><a href="#naive-approach">Naive approach</a></li>
-        <li><a href="#orthogonalization">Orthogonalization</a></li>
-        <li><a href="#a-cautionary-tale">A Cautionary Tale</a></li>
-      </ul>
-    </li>
+    <li><a href="#pre-testing">Pre-Testing</a></li>
+    <li><a href="#the-bias">The Bias</a></li>
+    <li><a href="#when-is-pre-testing-a-problem">When is pre-testing a problem?</a></li>
+    <li><a href="#pre-testing-and-machine-learning">Pre-Testing and Machine Learning</a></li>
     <li><a href="#conclusion">Conclusion</a>
       <ul>
         <li><a href="#references">References</a></li>
@@ -820,7 +811,7 @@
 
 
 <div class="article-container pt-3">
-  <h1>Double Debiased Machine Learning (part 2)</h1>
+  <h1>Double Debiased Machine Learning (part 1)</h1>
 
   
 
@@ -847,7 +838,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    14 min read
+    11 min read
   </span>
   
 
@@ -882,11 +873,13 @@
 
         <div class="article-container">
           <div class="article-style" align="justify">
-            <p>In the <a href="https://towardsdatascience.com/eb767a59975b" target="_blank" rel="noopener">previous part of this blog post</a>, we have seen how pre-testing can distort inference, i.e., how selecting control variables depending on their statistical significance results in wrong confidence intervals for the variable of interest. This bias is generally called <strong>regularization bias</strong> and also emerges in machine learning algorithms.</p>
-<p>In blog post, we are going to explore a solution to the simple selection example, <strong>post-double selection</strong>, and a more general approach when we have many control variables and we do not want to assume linearity, <strong>double-debiased machine learning</strong>.</p>
-<h2 id="recap">Recap</h2>
-<p>To better understand the source of the bias, in the first part of this post, we have explored the example of a firm that is interested in testing the effectiveness of an a campaign. The firm has information on its current ad spending and on the level of sales. The problem arises because the firm is uncertain on whether it should condition its analysis on the level of past sales.</p>
-<p>The following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a> summarizes the data generating process.</p>
+            <p><em>Causal inference, machine learning and regularization bias</em></p>
+<p>In causal inference, we often estimate causal effects by conditioning the analysis on other variables. We usually refer to these variables as <strong>control variables</strong> or <strong>confounders</strong>. In randomized control trials or AB tests, conditioning can increase the power of the analysis, by reducing imbalances that have emerged despite randomization. However, conditioning is even more important in observational studies, where, absent randomization, it might be <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">essential to recover causal effects</a>.</p>
+<p>When we have many control variables, we might want to <strong>select the most relevant ones</strong>, ppossibly capturing nonlinearities and interactions. Machine learning algorithms are perfect for this task. However, in these cases, we are introducing a bias that is called <strong>regularization or pre-test, or feature selection bias</strong>. In this and the next blog post, I try to explain the source of the bias and a very poweful solution called <strong>double debiased machine learning</strong>, which has been probably one of the most relevant advancement at the intersection of machine learning and causal inference of the last decade.</p>
+<h2 id="pre-testing">Pre-Testing</h2>
+<p>Since this is a complex topic, let&rsquo;s start with a simple example.</p>
+<p>Suppose we were a firm and we are interested in the <strong>effect of advertisement spending on revenue</strong>: is advertisement worth the money? There are also a lot of other things that might influence sales, therefore, we are thinking of controlling for past sales in the analysis, in order to increase the power of our analysis.</p>
+<p>Assume the data generating process can be represented with the following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a>. If you are not familiar with DAGs, I have written a short <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">introduction here</a>.</p>
 <pre><code class="language-mermaid">flowchart LR
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
@@ -981,65 +974,39 @@ $$</p>
 <p>$$
 \text{sales} = \alpha \cdot \text{ads} + \beta \cdot \text{past sales} + \varepsilon
 $$</p>
-<p>One naive approach would be to <strong>let the data decide</strong>: we could run the second regression and, if the effect of <code>past sales</code>, $\beta$, is statistically significant, we are good with the long model, otherwise we run the short model. This procedure is called <strong>pre-testing</strong>.</p>
-<p>The problem with this procedure is that it introduces a bias that is called <strong>regularization or pre-test bias</strong>. Pre-testing ensures that this bias is small enough not to distort the estimated coefficient. However, it does not ensure that it is small enough not to distort the confidence intervals around the estimated coefficient.</p>
-<p>Is there a solution? Yes!</p>
-<h2 id="post-double-selection">Post-Double Selection</h2>
-<p>The solution is called <strong>post-double selection</strong>. The method was first introduced in <a href="https://academic.oup.com/restud/article-abstract/81/2/608/1523757" target="_blank" rel="noopener">Belloni, Chernozhukov, Hansen (2014)</a> and later expanded in a variety of papers.</p>
-<p>The authors assume the following <strong>data generating process</strong>:</p>
-<p>$$
-y = \alpha D + \beta X + u
-\newline
-D = \delta X + v
-$$</p>
-<p>In our example, $Y$ corresponds to <code>sales</code>, $D$ corresponds to <code>ads</code>, $X$ corresponds to <code>past_sales</code> and the effect of interest is $\alpha$. In our example, $X$ is 1-dimensional for simplicity, but generally we are interested in cases where X is high-dimensional, potentially even having more dimensions than the number of observations. In that case, variable selection is <strong>essential</strong> in linear regression since we cannot have more features than variables (the OLS coefficients are not uniquely determined anymore).</p>
-<p>Post-double selection consists in the following procedure.</p>
+<p>Since we are not sure whether to condition the analysis on <code>past sales</code>, we could <strong>let the data decide</strong>: we could run the second regression and, if the effect of <code>past sales</code>, $\beta$, is statistically significant, we are good with the long model, otherwise we run the short model.</p>
+<pre><code class="language-python">smf.ols('sales ~ ads + past_sales', df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+       <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>  <td>    0.1405</td> <td>    0.185</td> <td>    0.758</td> <td> 0.448</td> <td>   -0.223</td> <td>    0.504</td>
+</tr>
+<tr>
+  <th>ads</th>        <td>    0.9708</td> <td>    0.030</td> <td>   32.545</td> <td> 0.000</td> <td>    0.912</td> <td>    1.029</td>
+</tr>
+<tr>
+  <th>past_sales</th> <td>    0.3381</td> <td>    0.095</td> <td>    3.543</td> <td> 0.000</td> <td>    0.151</td> <td>    0.525</td>
+</tr>
+</table>
+<p>It seems that the effect of <code>past sales</code> on current <code>sales</code> is positive and significant. Therefore, we are happy with our specification and we conclude that the effect of <code>ads</code> on <code>sales</code> is positive and significant with a 95% confidence interval of $[0.912, 1.029]$.</p>
+<h2 id="the-bias">The Bias</h2>
+<p>There is an <strong>issue</strong> with this procedure: we are not taking into account the fact that we have run a test to decide whether to include <code>past_sales</code> in the regression. The fact that we have decided to include <code>past_sales</code> because its coefficient is significant <em>does</em> have an effect on the inference on the effect of <code>ads</code> on <code>sales</code>, $\alpha$.</p>
+<p>The best way to understand the problem is through <strong>simulations</strong>. Since we have access to the data generating process <code>dgp_pretest()</code> (unlike in real life), we can just test what would happen if we were repeating this procedure multiple times:</p>
 <ol>
-<li><strong>Reduced Form</strong> selection: lasso $Y$ on $X$. Select the statistically significant variables in the set $S_{RF} \subseteq X$</li>
-<li><strong>First Stage</strong> selection: regress $D$ on $X$. Select the statistically significant variables in the set $S_{FS} \subseteq X$</li>
-<li>Regress $Y$ on $D$ and the <strong>union</strong> of the selected variables in the first two steps, $S_{FS} \cup S_{RF}$</li>
+<li>We draw a new sample from the data generating process.</li>
+<li>We regress <code>sales</code> on <code>ads</code> and <code>past_sales</code>.</li>
+<li>If the coefficient of <code>past_sales</code> is significant at the 95% level, we keep $\hat \alpha_{long}$ from (2).</li>
+<li>Otherwise, we regress <code>sales</code> on <code>ads</code> only, and we keep that coefficient $\hat \alpha_{short}$.</li>
 </ol>
-<p>The authors show that this procedure produces confidence intervals for the coefficient of interest $\alpha$ that have the correct coverage, i.e. the correct probability of type 1 error.</p>
-<p><strong>Note (1)</strong>: this procedure is always less parsimonious, in terms of variable selection, than pre-testing. In fact, we still select all the variables we would have selected with pre-testing but, in the first stage, we might select additional variables.</p>
-<p><strong>Note (2)</strong>: the terms <em>first stage</em> and <em>reduced form</em> come from the <a href="https://en.wikipedia.org/wiki/Instrumental_variables_estimation" target="_blank" rel="noopener">intrumental variables</a> literature in econometrics. Indeed, the first application of post-double selection was to select instrumental variables in <a href="https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA9626" target="_blank" rel="noopener">Belloni, Chen, Chernozhukov, Hansen (2012)</a>.</p>
-<p><strong>Note (3)</strong>: the name post-double selection comes from the fact that now we are not performing variable selection once but <em>twice</em>.</p>
-<h3 id="intuition">Intuition</h3>
-<p>The idea behind post-double selection is: bound the <a href="https://towardsdatascience.com/344ac1477699" target="_blank" rel="noopener">omitted variables bias</a>. In case you are not familiar with it, I wrote a separate <a href="https://towardsdatascience.com/344ac1477699" target="_blank" rel="noopener">blog post on omitted variable bias</a>.</p>
-<p>In our setting, we can express the omitted variable bias as</p>
-<p>$$
-\text{OVB} = \beta \delta \qquad \text{ where } \qquad \beta := \frac{Cov(X, Y)}{Var(X)}, \quad \delta := \frac{Cov(D, X)}{Var(D)}
-$$</p>
-<p>As we can see, the omitted variable bias comes from the product of two quantities related to the omitted variable $X$:</p>
-<ol>
-<li>Its partial correlation with the outcome $Y$, $\beta$</li>
-<li>Its partial correlation with the variable of interest $D$, $\delta$</li>
-</ol>
-<p>With pre-testing, we ensure that the partial correlation between $X$ the outcome $Y$, $\beta$, is <strong>small</strong>. In fact, we omit $Z$ when we shouldn&rsquo;t (i.e. we commit a type 2 error) rarely. What do <em>small</em> and <em>rarely</em> mean?</p>
-<p>When we are selecting a variable because of its significance, we ensure that it dimension is smaller than $\frac{c}{\sqrt{n}}$ for some number $c$, where $n$ is the sample size.</p>
-<p>Therefore, with pre-testing, we ensure that, no matter what the value of $\delta$ is, the dimension of the bias is smaller than $\frac{c}{\sqrt{n}}$ which means that it converges to zero for sufficiently large $n$. This is why the pre-testing estimator is still <strong>consistent</strong>.</p>
-<p>However, in order for our confidence intervals to have the right coverage, this is <strong>not enough</strong>. In practice, we need the bias to converge to zero <strong>faster</strong> than $\frac{1}{\sqrt{n}}$. Why?</p>
-<p>To get an <strong>intuition</strong> for this result, we need to turn to the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem" target="_blank" rel="noopener">Central Limit Theorem</a>. The CLT tells us that for large $n$ the distribution of the sample average of a random variable $X$ converges to a normal distribution with mean $\mu$ and standard deviation $\frac{\sigma}{\sqrt{n}}$, where $\mu$ and $\sigma$ are the mean and standard deviation of $X$. To do inference, we usually apply the Central Limit Theorem to our estimator to get its asymptotic distribution, which in turn allows us to build confidence intervals (using the mean and the standard deviation). Therefore, if the bias is not sensibly smaller than the standard deviation of the estimator, the confidence intervals are going to be wrong. Therefore, we need the bias to converge to zero <strong>faster</strong> than the standard deviation, i.e. faster than $\frac{1}{\sqrt{n}}$.</p>
-<p>In our setting, the omitted variable bias is $\beta \gamma$ and we want it to converge to zero faster than $\frac{1}{\sqrt{n}}$.  Post-double selection guarantees that</p>
-<ul>
-<li><em>Reduced form</em> selection (pre-testing): any &ldquo;missing&rdquo; variable $j$ has $|\beta_j| \leq \frac{c}{\sqrt{n}}$</li>
-<li><em>First stage</em> selection (additional): any &ldquo;missing&rdquo; variable $j$ has $|\delta_j| \leq \frac{c}{\sqrt{n}}$</li>
-</ul>
-<p>As a consequence, as long as the number of omitted variables is finite, the omitted variable bias is going to converge to zero at a rate $\frac{1}{n}$, which is faster than $\frac{1}{\sqrt{n}}$. <strong>Problem solved</strong>!</p>
-<h3 id="application">Application</h3>
-<p>Let&rsquo;s now go back to our example and test the post-double selection procedure. In practice, we want to do the following:</p>
-<ol>
-<li><strong>First Stage</strong> selection: regress <code>ads</code> on <code>past_sales</code>. Check if <code>past_sales</code> is statistically significant</li>
-<li><strong>Reduced Form</strong> selection: regress <code>sales</code> on <code>past_sales</code>. Check if <code>past_sales</code> is statistically significant</li>
-<li>Regress <code>sales</code> on <code>ads</code> and include <code>past_sales</code> <strong>only if</strong> it was significant in <em>either</em> one of the two previous regressions</li>
-</ol>
-<p>I update the <code>pre_test</code> function from the first part of the post to compute also the post-double selection estimator.</p>
-<pre><code class="language-python">def pre_test(d='ads', y='sales', x='past_sales', K=1000, **kwargs):
+<p>I write a <code>pre_test</code> function to implement the procedure above. I also save the coefficients from both regressions, long and short, and the chosen one, called the <strong>pre-test coefficient</strong>.</p>
+<p><strong>Reminder</strong>: we are pre-testing the effect of <code>past_sales</code> on <code>sales</code> but the coefficient of interest is the one of <code>ads</code> on <code>sales</code>.</p>
+<pre><code class="language-python">def pre_testing(d='ads', y='sales', x='past_sales', K=1000, **kwargs):
     
     # Init
-    alphas = pd.DataFrame({'Long': np.zeros(K), 
-             'Short': np.zeros(K), 
-             'Pre-test': np.zeros(K),
-             'Post-double': np.zeros(K)})
+    alpha = {'Long': np.zeros(K), 'Short': np.zeros(K), 'Pre-test': np.zeros(K)}
 
     # Loop over simulations
     for k in range(K):
@@ -1048,184 +1015,116 @@ $$</p>
         df = dgp_pretest().generate_data(seed=k, **kwargs)
         
         # Compute coefficients
-        alphas['Long'][k] = smf.ols(f'{y} ~ {d} + {x}', df).fit().params[1]
-        alphas['Short'][k] = smf.ols(f'{y} ~ {d}', df).fit().params[1]
+        alpha['Long'][k] = smf.ols(f'{y} ~ {d} + {x}', df).fit().params[1]
+        alpha['Short'][k] = smf.ols(f'{y} ~ {d}', df).fit().params[1]
     
-        # Compute significance of beta and gamma
-        p_value_ydx = smf.ols(f'{y} ~ {d} + {x}', df).fit().pvalues[2]
-        p_value_yx = smf.ols(f'{y} ~ {x}', df).fit().pvalues[1]
-        p_value_dx = smf.ols(f'{d} ~ {x}', df).fit().pvalues[1]
+        # Compute significance of beta
+        p_value = smf.ols(f'{y} ~ {d} + {x}', df).fit().pvalues[2]
         
-        # Select pre-test specification based on regression of y on d and x
-        if p_value_ydx&lt;0.05:
-            alphas['Pre-test'][k] = alphas['Long'][k]
+        # Select specification based on p-value
+        if p_value&lt;0.05:
+            alpha['Pre-test'][k] = alpha['Long'][k]
         else:
-            alphas['Pre-test'][k] = alphas['Short'][k]
-            
-        # Select post-double specification based on regression of y on d and x
-        if p_value_yx&lt;0.05 or p_value_dx&lt;0.05:
-            alphas['Post-double'][k] = alphas['Long'][k]
-        else:
-            alphas['Post-double'][k] = alphas['Short'][k]
+            alpha['Pre-test'][k] = alpha['Short'][k]
     
-    return alphas
+    return alpha
 </code></pre>
-<pre><code class="language-python">alphas = pre_test()
+<pre><code class="language-python">alphas = pre_testing()
 </code></pre>
 <p>We can now plot the distributions (over simulations) of the estimated coefficients.</p>
 <pre><code class="language-python">def plot_alphas(alphas, true_alpha):
-    
-    # Init plot
-    K = len(alphas.columns)
-    fig, axes = plt.subplots(1, K, figsize=(4*K, 5), sharey=True, sharex=True)
-
-    # Make one plot for each set of coefficients
-    for i, key in enumerate(alphas.columns):
-        axes[i].hist(alphas[key].values, bins=30, lw=.1, color=f'C{int(i==3)*2}')
-        axes[i].set_title(key)
-        axes[i].axvline(true_alpha, c='r', ls='--')
-        legend_text = [rf'$\alpha=${true_alpha}', rf'$\hat \alpha=${np.mean(alphas[key]):.4f}']
-        axes[i].legend(legend_text, prop={'size': 10}, loc='upper right')
-</code></pre>
-<pre><code class="language-python">plot_alphas(alphas, true_alpha=1)
-</code></pre>
-<p><img src="img/regularization_bias_17_0.png" alt="png"></p>
-<p>As we can see, the post-double selection estimator always correctly selects the long regression and therefore has the correct distribution.</p>
-<h3 id="double-checks">Double-checks</h3>
-<p>In the last post, we ran some simulations in order to investigate when pre-testing bias emerges. We saw that pre-testing is a problem for</p>
-<ul>
-<li>Small sample sizes $n$</li>
-<li>Intermediate values of $\beta$</li>
-<li>When the value of $\beta$ depends on the sample size</li>
-</ul>
-<p>Let&rsquo;s check that post-double selection removes regularization bias in <strong>all</strong> the previous cases.</p>
-<p>First, let&rsquo;s simulate the distribution of the post-double selection estimator $\hat \alpha_{postdouble}$ for different sample sizes.</p>
-<pre><code class="language-python">Ns = [100,300,1000,3000]
-alphas = {f'N = {n:.0f}':  pre_test(N=n) for n in Ns}
-</code></pre>
-<pre><code class="language-python">def compare_alphas(alphas, true_alpha):
     
     # Init plot
     fig, axes = plt.subplots(1, len(alphas), figsize=(4*len(alphas), 5), sharey=True, sharex=True)
 
     # Make one plot for each set of coefficients
     for i, key in enumerate(alphas.keys()):
-        axes[i].hist(alphas[key]['Pre-test'], bins=30, lw=.1, alpha=0.5)
-        axes[i].hist(alphas[key]['Post-double'], bins=30, lw=.1, alpha=0.5, color='C2')
+        axes[i].hist(alphas[key], bins=30, lw=.1)
         axes[i].set_title(key)
         axes[i].axvline(true_alpha, c='r', ls='--')
-        axes[i].legend([rf'$\alpha=${true_alpha}', 'Pre-test', 'Post-double'], 
-                       prop={'size': 10}, loc='upper right')
+        legend_text = [r'$\alpha=%.0f$' % true_alpha, r'$\hat \alpha=%.4f$' % np.mean(alphas[key])]
+        axes[i].legend(legend_text, prop={'size': 10}, loc='upper right')
 </code></pre>
-<pre><code class="language-python">compare_alphas(alphas, true_alpha=1)
+<pre><code class="language-python">plot_alphas(alphas, true_alpha=1)
 </code></pre>
-<p><img src="img/regularization_bias_23_0.png" alt="png"></p>
-<p>For small samples, the distribution of the pre-testing estimator is not normal but rather bimodal. From the plots we can see that the post-double estimator is gaussian also in small sample sizes.</p>
-<p>Now we repeat the same exercise, but for different values of $\beta$, the coefficient of <code>past_sales</code> on <code>sales</code>.</p>
+<p><img src="img/regularization_bias_16_0.png" alt="png"></p>
+<p>In the plot above, I have depicted the estimated coefficients, across simulations, for the different regression specifications.</p>
+<p>As we can see from the first plot, if we were always running the <strong>long regression</strong>, our estimator $\hat \alpha_{long}$ would be unbiased and normally distributed. However, if we were always running the <strong>short regression</strong> (second plot), our estimator $\hat \alpha_{short}$ would be <strong>biased</strong>.</p>
+<p>The <strong>pre-testing</strong> procedure generates an estimator $\hat \alpha_{pretest}$ that is a mix of the two: most of the times we select the correct specification, the long regression, but sometimes the pre-test fails to reject the null hypothesis of no effect of <code>past sales</code> on <code>sales</code>, $H_0 : \beta = 0$, and we select the incorrect specification, running the short regression.</p>
+<p>Importantly, the pre-testing procedure <strong>does not generate a biased estimator</strong>. As we can see in the last plot, the estimated coefficient is very close to the true value, 1. The reason is that most of the time, the number of times we select the <em>short</em> regression is sufficiently small not to introduce bias, but not small enough to have valid inference.</p>
+<p>Indeed, <strong>pre-testing distorts inference</strong>: the distribution of the estimator $\hat \alpha_{pretest}$ is not normal anymore, but bimodal. The <strong>consequence</strong> is that our confidence intervals for $\alpha$ are going to have the wrong coverage (contain the true effect with a different probability than the claimed one).</p>
+<h2 id="when-is-pre-testing-a-problem">When is pre-testing a problem?</h2>
+<p>The problem of pre-testing arises because of the bias generated by running the short regression: <a href="https://towardsdatascience.com/344ac1477699" target="_blank" rel="noopener"><strong>omitted variable bias (OVB)</strong></a>. In you are not familiar with OVB, I have written a <a href="https://towardsdatascience.com/344ac1477699" target="_blank" rel="noopener">short introduction here</a>. In general however, we can express the omitted variable bias introduced by regressing $Y$ on $D$ ignoring $X$ as</p>
+<p>$$
+\text{OVB} = \beta \delta \qquad \text{ where } \qquad \beta := \frac{Cov(X, Y)}{Var(X)}, \quad \delta := \frac{Cov(D, X)}{Var(D)}
+$$</p>
+<p>Where $\beta$ is the effect of $X$ (<code>past sales</code> in our example) on $Y$ (<code>sales</code>) and $\delta$ is the effect of $D$ (<code>ads</code>) on $X$.</p>
+<p>Pre-testing is a <strong>problem</strong> if</p>
+<ol>
+<li>We run the short regression instead of the long one <em>and</em></li>
+<li>The effect of the bias is sensible</li>
+</ol>
+<p>What can help improving (1), i.e. the probability of correctly rejecting the null hypothesis of zero effect of <code>past sales</code>, $H_0 : \beta = 0$? The answer is simple: a <strong>bigger sample size</strong>. If we have more observations, we can more precisely estimate $\beta$ and it is going to be less likely that we commit a <a href="https://en.wikipedia.org/wiki/Type_I_and_type_II_errors" target="_blank" rel="noopener">type 2 error</a> and run the short regression instead of the long one.</p>
+<p>Let&rsquo;s simulate the estimated coefficient $\hat \alpha$ under different sample sizes. Remember that the sample size used until now is $N=1000$.</p>
+<pre><code class="language-python">Ns = [100,300,1000,3000]
+alphas = {f'N = {n:.0f}':  pre_testing(N=n)['Pre-test'] for n in Ns}
+plot_alphas(alphas, true_alpha=1)
+</code></pre>
+<p><img src="img/regularization_bias_20_0.png" alt="png"></p>
+<p>As we can see from the plots, as the sample size increases (left to right), the bias decreases and the distribution of the estimator $\hat \alpha_{pretest}$ converges to a normal distribution.</p>
+<p>What happens instead if the value of $\beta$ was different? It is probably going to affect point (2) in the previous paragraph, but how?</p>
+<ul>
+<li>
+<p>If $\beta$ is <strong>very small</strong>, it is going to be hard to detect it, and we will often end up running the <em>short</em> regression, introducing a bias. However, if $\beta$ is very small, it also implies that the <strong>magnitude of the bias</strong> is small and therefore it is not going to affect our estimate of $\alpha$ much</p>
+</li>
+<li>
+<p>If $\beta$ is <strong>very big</strong>, it is going to be easy to detect and we will often end up running the <em>long</em> regression, avoiding the bias (which would have been very big though).</p>
+</li>
+</ul>
+<p>Let&rsquo;s simulate the estimated coefficient $\hat \alpha$ under different values of $\beta$. The true value used until now was $\beta = 0.3$.</p>
 <pre><code class="language-python">betas = 0.3 * np.array([0.1,0.3,1,3])
-alphas = {f'beta = {b:.2f}': pre_test(b=b) for b in betas}
-compare_alphas(alphas, true_alpha=1)
+alphas = {f'beta = {b:.2f}':  pre_testing(b=b)['Pre-test'] for b in betas}
+plot_alphas(alphas, true_alpha=1)
 </code></pre>
-<p><img src="img/regularization_bias_25_0.png" alt="png"></p>
-<p>Again, the post-double selection estimator has a gaussian distribution irrespectively of the value of $\beta$, while he pre-testing estimator suffers from regularization bias.</p>
-<p>For the last simulation, we change both the coefficient and the sample size at the same time.</p>
+<p><img src="img/regularization_bias_22_0.png" alt="png"></p>
+<p>As we can see from the plots, as the value of $\beta$ increases, the bias first appears and then disappears. When $\beta$ is small (left plot), we often choose the short regression, but the bias is small and the average estimate is very close to the true value. For intermediate values of $\beta$, the bias is sensible and it has a clear effect on inference. Lastly, for large values of $\beta$ instead (right plot), we always run the long regression and the bias disappears.</p>
+<p>But <strong>when is a coefficient big or small</strong>? And big or small with respect to what? The answer is simple: with respect to the <strong>sample size</strong>, or more accurately, with respect to the inverse of the square root of the sample size, $1 / \sqrt{n}$. The reason is deeply rooted in the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem" target="_blank" rel="noopener">Central Limit Theorem</a>, but I won&rsquo;t cover it here.</p>
+<p>The idea is easier to show than to explain, so let&rsquo;s repeat the same simulation as above, but now we will increase both the coefficient and the sample size at the same time.</p>
 <pre><code class="language-python">betas = 0.3 * 30 / np.sqrt(Ns)
-alphas = {f'N = {n:.0f}':  pre_test(b=b, N=n) for n,b in zip(Ns,betas)}
-compare_alphas(alphas, true_alpha=1)
+alphas = {f'N = {n:.0f}':  pre_testing(b=b, N=n)['Pre-test'] for n,b in zip(Ns,betas)}
+plot_alphas(alphas, true_alpha=1)
 </code></pre>
-<p><img src="img/regularization_bias_27_0.png" alt="png"></p>
-<p>Also in this last case, the post-double selection estimator performs well and inference is not distorted.</p>
-<h2 id="double-debiased-machine-learning">Double Debiased Machine Learning</h2>
-<p>So far, we only have analyzed a linear, univariate example. What happens if the dimension of $X$ increases and we do not know the functional form through which $X$ affects $Y$ and $D$? In these cases, we can use machine learning algorithms to uncover these high-dimensional non-linear relationships.</p>
-<p><a href="https://academic.oup.com/ectj/article/21/1/C1/5056401" target="_blank" rel="noopener">Chernozhukov, Chetverikov, Demirer, Duflo, Hansen, Newey, and Robins (2018)</a> investigate this setting. In particular, the authors consider the following partially linear model.</p>
+<p><img src="img/regularization_bias_24_0.png" alt="png"></p>
+<p>As we can see, now that $\beta$ is proportional to $1 / \sqrt{n}$, the distortion is not going away, not matter the sample size. Therefore, inference will always be wrong.</p>
+<p>While a coefficient that depends on the sample size might sound <strong>not intuitive</strong>, it captures well the idea of <strong>magnitude</strong> in a world where we do inference relying on asymptotic results, first among all the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem" target="_blank" rel="noopener">Central Limit Theorem</a>. In fact, the Central Limit Theorem relieas on an infinitely large sample size. However, with an infinite amount of data, no coefficient is small and any non-zero effect is detected with certainty.</p>
+<h2 id="pre-testing-and-machine-learning">Pre-Testing and Machine Learning</h2>
+<p>So far we talked about a linear regression with only 2 variables. Where is the <strong>machine learning</strong> we were promised?</p>
+<p>Usually we do not have just one control variable (or confounder), but many. Moreover, we might want to be flexible with respect to the functional form through which these control variables enter the model. In general, we will assume the following model:</p>
 <p>$$
-Y = \alpha D + g(X) + u \
-D = m(X) + v
+Y = \alpha D + g_0(X) + u
+\newline
+D = m_0(X) + v
 $$</p>
-<p>where $Y$ is the outcome variable, $D$ is the treatment to interest and $X$ is a potentially high-dimensional set of control variables.</p>
-<h3 id="naive-approach">Naive approach</h3>
-<p>A naive approach to estimation of $\alpha$ using machine learning methods would be, for example, to construct a sophisticated machine learning estimator for learning the regression function $\alpha D$ + $g(X)$.</p>
-<ol>
-<li>Split the sample in two: main sample and auxiliary sample [why? see note below]</li>
-<li>Use the auxiliary sample to estimate $\hat g(X)$</li>
-<li>Use the main sample to compute the orthogonalized component of $Y$ on $X$: $\ \hat u = Y - \hat{g} (X)$</li>
-<li>Use the main sample to estimate the residualized OLS estimator from regressing $\hat u$ on $D$</li>
-</ol>
-<p>$$
-\hat \alpha = \left( D&rsquo; D \right) ^{-1} D&rsquo; \hat u
-$$</p>
-<p>This estimator is going to have <strong>two problems</strong>:</p>
-<ol>
-<li>Slow rate of convergence, i.e. slower than $\sqrt(n)$</li>
-<li>It will be biased because we are employing high dimensional regularized estimators (e.g. we are doing variable selection)</li>
-</ol>
-<p><strong>Note (1)</strong>: so far we have not talked about it, but variable selection procedure also introduce another type of bias: <strong>overfitting bias</strong>. This bias emerges because of the fact that the sample used to select the variables is the same that is used to estimate the coefficient of interest. This bias is <strong>easily accounted for</strong> with sample splitting: using different sub-samples for the selection and the estimation procedures.</p>
-<p><strong>Note (2)</strong>: why can we use the residuals from step 3 to estimate $\alpha$ in step 4? Because of the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Frisch-Waugh-Lovell theorem</a>. If you are not familiar with it, I have written a <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">blog post on the Frisch-Waugh-Lovell theorem here</a>.</p>
-<h3 id="orthogonalization">Orthogonalization</h3>
-<p>Now consider a second construction that employs an orthogonalized formulation obtained by directly partialling out the effect of $X$ from $D$ to obtain the orthogonalized regressor $v = D − m(X)$.</p>
-<ol>
-<li>
-<p>Split the sample in two: main sample and auxiliary sample</p>
-</li>
-<li>
-<p>Use the auxiliary sample to estimate $\hat g(X)$ from</p>
-<p>$$
-Y = \alpha D + g(X) + u \
-$$</p>
-</li>
-<li>
-<p>Use the auxiliary sample to estimate $\hat m(X)$ from</p>
-<p>$$
-D = m(X) + v
-$$</p>
-</li>
-<li>
-<p>Use the main sample to compute the orthogonalized component of $D$ on $X$ as</p>
-<p>$$
-\hat v = D - \hat m(X)
-$$</p>
-</li>
-<li>
-<p>Use the main sample to estimate the double-residualized OLS estimator as</p>
-<p>$$
-\hat \alpha = \left( \hat{v}&rsquo; D \right) ^{-1} \hat{v}&rsquo; \left( Y - \hat g(X) \right)
-$$</p>
-</li>
-</ol>
-<p>The estimator is <strong>root-N consistent</strong>! This means that not only the estimator converges to the true value as the sample sizes increases (i.e. it&rsquo;s consistent), but also its standard deviation does (i.e. it&rsquo;s root-N consistent).</p>
-<p>However, the estimator still has a lower rate of convergence because of sample splitting. The problem is solved by inverting the split sample, re-estimating the coefficient and averaging the two estimates. Note that this procedure is valid since the two estimates are independent by the sample splitting procedure.</p>
-<h3 id="a-cautionary-tale">A Cautionary Tale</h3>
-<p>Before we conclude, I have to mention a recent research paper by <a href="https://arxiv.org/abs/2108.11294" target="_blank" rel="noopener">Hünermund, Louw, and Caspi (2022)</a>, in which the authors show that double-debiased machine learning can easily <strong>backfire</strong>, if we apply blindly.</p>
-<p>The problem is related to <strong>bad control variables</strong>. If you have never heard this term, I have written an introductory <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">blog post on good and bad control variables here</a>. In short, conditioning the analysis on additional features is not always good for causal inference. Depending on the setting, there might exist variables that we want to leave out of our analysis since their <strong>inclusion</strong> can bias the coefficient of interest, preventing a causal interpretation. The simplest example is variables that are common outcomes, of both the treatment $D$ and outcome variable $Y$.</p>
-<p>The double-debiased machine learning model implicitly assumes that the control variables $X$ are (weakly) <strong>common causes</strong> to both the outcome $Y$ and the treatment $D$. If this is the case, and no further mediated/indirect relationship exists between $X$ and $Y$, there is no problem. However, if, for example, some variable among the controls $X$ is a common effect instead of a common cause, its inclusion will bias the coefficient of interest. Moreover, this variable is likely to be highly correlated either with the outcome $Y$ or with the treatment $D$. In the latter case, this implies that post-double selection might include it in cases in which simple selection would have not. Therefore, in presence of bad control variables, doule-debiased machine learning might be <strong>even worse</strong> than simple pre-testing.</p>
-<p>In short, as for any method, it is <strong>crucial</strong> to have a clear understanding of the method&rsquo;s assumptions and to always check for potential violations.</p>
+<p>Where the effect of interest is still $\alpha$, $X$ is potentially high dimensional and we do not take a stand on the functional form through which $X$ influences $D$ or $Y$.</p>
+<p>In this setting, it is natural to use a machine learning algorithm to estimate $g_0$ and $m_0$. However, machine learning algorithms usually introduce a <strong>regularization bias</strong> that is comparable to pre-testing.</p>
+<p>Possibly, the &ldquo;simplest&rdquo; way to think about it is <a href="https://en.wikipedia.org/wiki/Lasso_%28statistics%29" target="_blank" rel="noopener">Lasso</a>. Lasso is linear in $X$, with a penalization term that effectively just performs the variable selection we discussed above. Therefore, if we were to use Lasso of $X$ and $D$ on $Y$ we would be introducing regularization bias and inference would be distorted. The same goes for more complex algorithms.</p>
+<p>Lastly, you might still wonder &ldquo;why is the model linear in the treatment variable $D$?&rdquo;. Doing inference is much easier in linear model, not only for computational reasons but also for interpretation. Moreover, if the treatment $D$ is binary, the linear functional form is without loss of generality. A stronger assumption is the additive separability of $D$ and $g(X)$.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>In this post, we have seen how to use post-double selection and, more generally, double debiased machine learning to get rid of an important source of bias: regularization bias.</p>
-<p>This contribution by Victor Chernozhukov and co-authors has been undoubtedly one of the most relevant advances in causal inferences in the last decade. It is now widely employed in the industry and included in the most used causal inference packages, such as <a href="https://econml.azurewebsites.net/" target="_blank" rel="noopener">EconML</a> (Microsoft) and <a href="https://causalml.readthedocs.io/en/latest/" target="_blank" rel="noopener">causalml</a> (Uber).</p>
-<p>If you (understandably) feel the need for more material on double-debiased machine learning, but you do not feel like reading academic papers (also very understandable), here is a good compromise.</p>
-<br>
-
-<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
-  <iframe src="https://www.youtube.com/embed/eHOjmyoPCFU" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen title="YouTube Video"></iframe>
-</div>
-
-<br>
-<p>In this video lecture, Victor Chernozhukov himself presents the idea. The video lecture is relatively heavy on math and statistics, but you cannot get a more qualified and direct source than this!</p>
+<p>In this post, I have tried to explain how does regularization bias emerges and why it can the an issue in causal inference. This problem is inherently related to settings with many control variables or where we would like to have a model-free (i.e. non-parametric) when controlling for confounders. These are exactly the settings in which machine learning algorithms can be useful.</p>
+<p>In the next post, I will cover a simple and yet incredibly powerful solution to this problem: double-debiased machine learning.</p>
 <h3 id="references">References</h3>
 <p>[1] A. Belloni, D. Chen, V. Chernozhukov, C. Hansen, <a href="https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA9626" target="_blank" rel="noopener">Sparse Models and Methods for Optimal Instruments With an Application to Eminent Domain</a> (2012), <em>Econometrica</em>.</p>
 <p>[2] A. Belloni, V. Chernozhukov, C. Hansen, <a href="https://academic.oup.com/restud/article-abstract/81/2/608/1523757" target="_blank" rel="noopener">Inference on treatment effects after selection among high-dimensional controls</a> (2014), <em>The Review of Economic Studies</em>.</p>
 <p>[3] V. Chernozhukov, D. Chetverikov, M. Demirer, E. Duflo, C. Hansen, W. Newey, J. Robins, <a href="https://academic.oup.com/ectj/article/21/1/C1/5056401" target="_blank" rel="noopener">Double/debiased machine learning for treatment and structural parameters</a> (2018), <em>The Econometrics Journal</em>.</p>
-<p>[4] P. Hünermund, B. Louw, I. Caspi, <a href="https://arxiv.org/abs/2108.11294" target="_blank" rel="noopener">Double Machine Learning and Automated Confounder Selection - A Cautionary Tale</a> (2022), <em>working paper</em>.</p>
 <h3 id="related-articles">Related Articles</h3>
 <ul>
-<li><a href="https://towardsdatascience.com/eb767a59975b" target="_blank" rel="noopener">Double Debiased Machine Learning (part 1)</a></li>
 <li><a href="https://towardsdatascience.com/344ac1477699" target="_blank" rel="noopener">Understanding Omitted Variable Bias</a></li>
 <li><a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Understanding The Frisch-Waugh-Lovell Theorem</a></li>
 <li><a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">DAGs and Control Variables</a></li>
 </ul>
 <h3 id="code">Code</h3>
 <p>You can find the original Jupyter Notebook here:</p>
-<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/pds.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/pds.ipynb</a></p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/pretest.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/pretest.ipynb</a></p>
 
           </div>
           
@@ -1248,7 +1147,7 @@ $$</p>
       
       
       <li>
-        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/regularization_bias/&amp;text=Double%20Debiased%20Machine%20Learning%20%28part%202%29" target="_blank" rel="noopener" class="share-btn-twitter">
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/regularization_bias/&amp;text=Double%20Debiased%20Machine%20Learning%20%28part%201%29" target="_blank" rel="noopener" class="share-btn-twitter">
           <i class="fab fa-twitter"></i>
         </a>
       </li>
@@ -1261,7 +1160,7 @@ $$</p>
       
       
       <li>
-        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/regularization_bias/&amp;t=Double%20Debiased%20Machine%20Learning%20%28part%202%29" target="_blank" rel="noopener" class="share-btn-facebook">
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/regularization_bias/&amp;t=Double%20Debiased%20Machine%20Learning%20%28part%201%29" target="_blank" rel="noopener" class="share-btn-facebook">
           <i class="fab fa-facebook"></i>
         </a>
       </li>
@@ -1274,7 +1173,7 @@ $$</p>
       
       
       <li>
-        <a href="mailto:?subject=Double%20Debiased%20Machine%20Learning%20%28part%202%29&amp;body=https://matteocourthoud.github.io/post/regularization_bias/" target="_blank" rel="noopener" class="share-btn-email">
+        <a href="mailto:?subject=Double%20Debiased%20Machine%20Learning%20%28part%201%29&amp;body=https://matteocourthoud.github.io/post/regularization_bias/" target="_blank" rel="noopener" class="share-btn-email">
           <i class="fas fa-envelope"></i>
         </a>
       </li>
@@ -1287,7 +1186,7 @@ $$</p>
       
       
       <li>
-        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/regularization_bias/&amp;title=Double%20Debiased%20Machine%20Learning%20%28part%202%29" target="_blank" rel="noopener" class="share-btn-linkedin">
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/regularization_bias/&amp;title=Double%20Debiased%20Machine%20Learning%20%28part%201%29" target="_blank" rel="noopener" class="share-btn-linkedin">
           <i class="fab fa-linkedin-in"></i>
         </a>
       </li>
@@ -1300,7 +1199,7 @@ $$</p>
       
       
       <li>
-        <a href="https://web.whatsapp.com/send?text=Double%20Debiased%20Machine%20Learning%20%28part%202%29%20https://matteocourthoud.github.io/post/regularization_bias/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+        <a href="https://web.whatsapp.com/send?text=Double%20Debiased%20Machine%20Learning%20%28part%201%29%20https://matteocourthoud.github.io/post/regularization_bias/" target="_blank" rel="noopener" class="share-btn-whatsapp">
           <i class="fab fa-whatsapp"></i>
         </a>
       </li>
