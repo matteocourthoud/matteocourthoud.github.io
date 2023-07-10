@@ -1,0 +1,1595 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="In causal inference, bias is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver the estimate of the true effect, on average." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/omitted_variable_bias/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.5c4def4f00a521426f4eb098155f3342.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/omitted_variable_bias/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/omitted_variable_bias/" />
+  <meta property="og:title" content="Omitted Variable Bias And How To Deal With It | Matteo Courthoud" />
+  <meta property="og:description" content="In causal inference, bias is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver the estimate of the true effect, on average." /><meta property="og:image" content="https://matteocourthoud.github.io/post/omitted_variable_bias/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/omitted_variable_bias/featured.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2023-07-10T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2023-07-10T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/omitted_variable_bias/"
+  },
+  "headline": "Omitted Variable Bias And How To Deal With It",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/omitted_variable_bias/featured.png"
+  ],
+  
+  "datePublished": "2023-07-10T00:00:00Z",
+  "dateModified": "2023-07-10T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "In causal inference, bias is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver the estimate of the true effect, on average."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Omitted Variable Bias And How To Deal With It | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="b43ca6c4e05c675a1512ae55609b750d" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#theory">Theory</a>
+      <ul>
+        <li><a href="#additional-controls">Additional Controls</a></li>
+      </ul>
+    </li>
+    <li><a href="#example">Example</a></li>
+    <li><a href="#direction-of-the-bias">Direction of the Bias</a></li>
+    <li><a href="#further-sensitivity-analysis">Further Sensitivity Analysis</a></li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="article-container pt-3">
+  <h1>Omitted Variable Bias And How To Deal With It</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Jul 10, 2023
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    11 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1540px; max-height: 874px;">
+  <div style="position: relative">
+    <img src="/post/omitted_variable_bias/featured.png" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p>In causal inference, <strong>bias</strong> is extremely problematic because it makes inference not valid. Bias generally means that an estimator will not deliver the estimate of the true effect, on average.</p>
+<p>This is why, in general, we prefer estimators that are <strong>unbiased</strong>, at the cost of a higher variance, i.e. more noise. Does it mean that every biased estimator is useless? Actually no. Sometimes, with domain knowledge, we can still draw causal conclusions even with a biased estimator.</p>
+<p>In this post, we are going to review a specific but frequent source of bias, <strong>omitted variable bias (OVB)</strong>. We are going to explore the causes of the bias and leverage these insights to make causal statements, despite the bias.</p>
+<h2 id="theory">Theory</h2>
+<p>Suppose we are interested in the effect of a variable $D$ on a variable $y$. However, there is a third variable $Z$ that we do not observe and that is correlated with both $D$ and $Y$. Assume the data generating process can be represented with the following <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>Directed Acyclic Graph (DAG)</strong></a>. If you are not familiar with DAGs, I have written a short <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">introduction here</a>.</p>
+<pre><code class="language-mermaid">flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+D((D))
+Z((Z))
+Y((Y))
+
+D --&gt; Y
+Z --&gt; D
+Z --&gt; Y
+
+class D,Y excluded;
+class Z unobserved;
+</code></pre>
+<p>Since there is a <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener"><strong>backdoor path</strong></a> from $D$ to $y$ passing through $Z$, we need to condition our analysis on $Z$ in order to recover the causal effect of $D$ on $y$. If we could observe $Z$, we would run a linear regression of $y$ on $D$ and $Z$ to estimate the following model:</p>
+<p>$$
+y = \alpha D + \gamma Z + \varepsilon
+$$</p>
+<p>where $\alpha$ is the effect of interest. This regression is usually referred to as the <strong>long regression</strong> since it includes all variables of the model.</p>
+<p>However, since we do not observe $Z$, we have to estimate the following model:</p>
+<p>$$
+y = \alpha D + u
+$$</p>
+<p>The corresponding regression is usually referred to as the <strong>short regression</strong> since it does not include all the variables of the model</p>
+<p>What is the <strong>consequence</strong> of estimating the short regression when the true model is the long one?</p>
+<p>In that case, the OLS estimator of $\alpha$ is</p>
+<p>$$
+\begin{align}
+\hat \alpha &amp;= \frac{Cov(D, y)}{Var(D)} =
+\newline
+&amp;= \frac{Cov(D, \alpha D + \gamma Z + \varepsilon)}{Var(D)} =
+\newline
+&amp;= \frac{Cov(D, \alpha D)}{Var(D)} + \frac{Cov(D, \gamma Z)}{Var(D)} + \frac{Cov(D, \varepsilon)}{Var(D)} =
+\newline
+&amp;= \alpha + \underbrace{ \gamma \frac{Cov(D, Z)}{Var(D)} }_{\text{omitted variable bias}}
+\end{align}
+$$</p>
+<p>Therefore, we can write the <strong>omitted variable bias</strong> as</p>
+<p>$$
+\text{OVB} = \gamma \delta \qquad \text{ where } \qquad \delta := \frac{Cov(D, Z)}{Var(D)}
+$$</p>
+<p>The beauty of this formula is its <strong>interpretability</strong>: the omitted variable bias consists in just <strong>two components</strong>, both extremely easy to interpret.</p>
+<ul>
+<li>$\gamma$: the effect of $Z$ on $y$</li>
+<li>$\delta$: the effect of $D$ on $Z$</li>
+</ul>
+<h3 id="additional-controls">Additional Controls</h3>
+<p>What happens if we had <strong>additional control variables</strong> in the regression? For example, assume that besides the variable of interest $D$, we also observe a vector of other variables $X$ so that the <strong>long regression</strong> is</p>
+<p>$$
+y = \alpha D + \beta X + \gamma Z + \varepsilon
+$$</p>
+<p>Thanks to the <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener"><strong>Frisch-Waugh-Lowell theorem</strong></a>, we can simply <strong>partial-out</strong> $X$ and express the omitted variable bias in terms of $D$ and $Z$.</p>
+<p>$$
+\text{OVB} = \gamma \times \frac{Cov(D^{\perp X}, Z^{\perp X})}{Var(D^{\perp X})}
+$$</p>
+<p>where $D^{\perp X}$ are the residuals from regressing $D$ on $X$ and $Z^{\perp X}$ are the residuals from regressing $Z$ on $X$. If you are not familiar with Frisch-Waugh-Lowell theorem, I have written a short <a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">note here</a>.</p>
+<p><a href="https://arxiv.org/abs/2112.13398" target="_blank" rel="noopener">Chernozhukov, Cinelli, Newey, Sharma, Syrgkanis (2022)</a> further generalize to analysis the the setting in which the control variables $X$ and the unobserved variables $Z$ enter the long model with a general functional form $f$</p>
+<p>$$
+y = \alpha D + f(Z, X) + \varepsilon
+$$</p>
+<p>You can find more details in their paper, but the underlying idea remains the same.</p>
+<h2 id="example">Example</h2>
+<p>Suppose we were a researcher interested in the relationship between <strong>education</strong> and <strong>wages</strong>. Does investing in education pay off in terms of future wages? Suppose we had data on wages for people with different years of education. Why not looking at the correlation between years of education and wages?</p>
+<p>The problem is that there might be many <strong>unobserved variables</strong> that are correlated with both education and wages. For simplicity, let&rsquo;s concentrate on <strong>ability</strong>. People of higher ability might decide to invest more in education just because they are better in school and they get more opportunities. On the other hand, they might also get higher wages afterwards, purely because of their innate ability.</p>
+<p>We can represent the data generating process with the following <strong>Directed Acyclic Graph</strong> (DAG).</p>
+<pre><code class="language-mermaid">flowchart TD
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+D((education))
+Z((ability))
+Y((wage))
+X1((age))
+X2((gender))
+
+D --&gt; Y
+Z --&gt; D
+Z --&gt; Y
+X1 --&gt; Y
+X2 --&gt; Y
+
+class D,Y included;
+class X1,X2 excluded;
+class Z unobserved;
+</code></pre>
+<p>Let&rsquo;s load and inspect the <strong>data</strong>. I import the data generating process from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a> and some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+</code></pre>
+<pre><code class="language-python">from src.utils import *
+from src.dgp import dgp_educ_wages
+
+df = dgp_educ_wages().generate_data(N=50)
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>age</th>
+      <th>gender</th>
+      <th>education</th>
+      <th>wage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>62</td>
+      <td>male</td>
+      <td>6.0</td>
+      <td>3800.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>44</td>
+      <td>male</td>
+      <td>8.0</td>
+      <td>4500.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>63</td>
+      <td>male</td>
+      <td>8.0</td>
+      <td>4700.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>33</td>
+      <td>male</td>
+      <td>7.0</td>
+      <td>3500.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>57</td>
+      <td>female</td>
+      <td>6.0</td>
+      <td>4000.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We have information on <strong>300 individuals</strong>, for which we observe their <code>age</code>, their <code>gender</code>, the years of <code>education</code>, and the current monthly <code>wage</code>.</p>
+<p>Suppose we were directly regressing <code>wage</code> on <code>education</code>.</p>
+<pre><code class="language-python">short_model = smf.ols('wage ~ education + gender + age', df).fit()
+short_model.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+         <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>      <td> 2657.8864</td> <td>  444.996</td> <td>    5.973</td> <td> 0.000</td> <td> 1762.155</td> <td> 3553.618</td>
+</tr>
+<tr>
+  <th>gender[T.male]</th> <td>  335.1075</td> <td>  132.685</td> <td>    2.526</td> <td> 0.015</td> <td>   68.027</td> <td>  602.188</td>
+</tr>
+<tr>
+  <th>education</th>      <td>   95.9437</td> <td>   38.752</td> <td>    2.476</td> <td> 0.017</td> <td>   17.940</td> <td>  173.948</td>
+</tr>
+<tr>
+  <th>age</th>            <td>   12.3120</td> <td>    6.110</td> <td>    2.015</td> <td> 0.050</td> <td>    0.013</td> <td>   24.611</td>
+</tr>
+</table>
+<p>The coefficient of <code>education</code> is positive and significant. However, we know there might be an <strong>omitted variable bias</strong>, because we do not observe <code>ability</code>. In terms of DAGs, there is a <strong>backdoor path</strong> from <code>education</code> to <code>wage</code> passing through <code>ability</code> that is not blocked and therefore biases our estimate.</p>
+<pre><code class="language-mermaid">flowchart TD
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+D((education))
+Z((ability))
+Y((wage))
+X1((age))
+X2((gender))
+
+D --&gt; Y
+Z --&gt; D
+Z --&gt; Y
+X1 --&gt; Y
+X2 --&gt; Y
+
+class D,Y included;
+class X1,X2 excluded;
+class Z unobserved;
+
+linkStyle 0 stroke:#00ff00,stroke-width:4px;
+linkStyle 1,2 stroke:#ff0000,stroke-width:4px;
+</code></pre>
+<p>Does it mean that all our analysis is <strong>garbage</strong>? Can we still draw some causal conclusion from the regression results?</p>
+<h2 id="direction-of-the-bias">Direction of the Bias</h2>
+<p>If we knew the signs of $\gamma$ and $\delta$, we could infer the sign of the bias, since it&rsquo;s the product of the two signs.</p>
+<p>$$
+\text{OVB} = \gamma \delta \qquad \text{ where } \qquad \gamma := \frac{Cov(Z, y)}{Var(Z)}, \quad \delta := \frac{Cov(D, Z)}{Var(D)}
+$$</p>
+<p>which in our example is</p>
+<p>$$
+\text{OVB} = \gamma \delta \qquad \text{ where } \qquad \gamma := \frac{Cov(\text{ability}, \text{wage})}{Var(\text{ability})}, \quad \delta := \frac{Cov(\text{education}, \text{ability})}{Var(\text{education})}
+$$</p>
+<p>Let&rsquo;s analyze the two correlations separately:</p>
+<ul>
+<li>The correlation between <code>ability</code> and <code>wage</code> is most likely positive</li>
+<li>The correlation between <code>ability</code> and <code>education</code> is most likely positive</li>
+</ul>
+<p>Therefore, the bias is most likely <strong>positive</strong>. From this, we can conclude that our estimate from the regression on <code>wage</code> on <code>education</code> is most likely an <strong>overestimate</strong> of the true effect, which is most likely smaller.</p>
+<p>This might seem like a small insight, but it&rsquo;s actually huge. Now we can say with confidence that one year of <code>education</code> increases <code>wages</code> by <strong>at most</strong> 95 dollars per month, which is a much more informative statement than just saying that the estimate is biased.</p>
+<p>In general, we can summarize the different possible effects of the bias in a 2-by-2 <strong>table</strong>.</p>
+<img src="other/ovb.png" width=80% />
+<h2 id="further-sensitivity-analysis">Further Sensitivity Analysis</h2>
+<p>Can we say <strong>more</strong> about the omitted variable bias without making strong assumptions?</p>
+<p>The answer is yes! In particular, we can ask ourselves: how strong should the partial correlations $\gamma$ and $\delta$ be in order to <strong>overturn</strong> our conclusion?</p>
+<p>In our example, we found a positive correlation between <code>education</code> and <code>wages</code> in the data. However, we know that we are omitting <code>ability</code> in the regression. The question is: how strong should the correlation between <code>ability</code> and <code>wage</code>, $\gamma$, and between <code>ability</code> and <code>education</code>, $\delta$, be in order to make the effect not significant or even negative?</p>
+<p><a href="https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12348" target="_blank" rel="noopener">Cinelli and Hazlett (2020)</a> show that we can transform this question in terms of residual variation explained, i.e. the <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination" target="_blank" rel="noopener">coefficient of determination, $R^2$</a>. The advantage of this approach is <strong>interpretability</strong>. It is much easier to make a guess about the percentage of variance explained than to make a guess about the magnitude of a conditional correlation.</p>
+<p>The authors wrote a companion package <a href="https://github.com/carloscinelli/sensemakr" target="_blank" rel="noopener"><code>sensemakr</code></a> to conduct the sensitivity analysis. You can find a detailed description of the package <a href="https://cran.r-project.org/web/packages/sensemakr/vignettes/sensemakr.html" target="_blank" rel="noopener">here</a>.</p>
+<p>We will now use the <code>Sensemakr</code> function. The main <strong>arguments</strong> of the <code>Sensemakr</code> function are:</p>
+<ul>
+<li><code>model</code>: the regression model we want to analyze</li>
+<li><code>treatment</code>: the feature/covariate of interest, in our case <code>education</code></li>
+</ul>
+<p>The question we will try to answer is the following:</p>
+<blockquote>
+<p><em>How much of the residual variation in <code>education</code> (x axis) and <code>wage</code> (y axis) does <code>ability</code> need to explain in order for the effect of <code>education</code> on <code>wages</code> to <strong>change sign</strong>?</em></p>
+</blockquote>
+<pre><code class="language-python">import sensemakr
+
+sensitivity = sensemakr.Sensemakr(model = short_model, treatment = &quot;education&quot;)
+sensitivity.plot()
+plt.xlabel(&quot;Partial $R^2$ of ability with education&quot;);
+plt.ylabel(&quot;Partial $R^2$ of ability with wage&quot;);
+</code></pre>
+<p><img src="img/omitted_variable_bias_17_0.png" alt="png"></p>
+<p>In the <strong>plot</strong>, we see how the partial (because conditional on <code>age</code> and <code>gender</code>) $R^2$ of <code>ability</code> with <code>education</code> and <code>wage</code> affects the estimated coefficient of <code>education</code> on <code>wage</code>. The $(0,0)$ coordinate, marked with a <strong>triangle</strong>, corresponds to the current estimate and reflects what would happen if <code>ability</code> had no explanatory power for both <code>wage</code> with <code>education</code>: nothing. As the explanatory power of <code>ability</code> grows (moving upwards and rightwards from the triangle), the estimated coefficient decreases, as marked by the <strong>level curves</strong>, until it becomes zero at the <strong>dotted red line</strong>.</p>
+<p>How should we <strong>interpret</strong> the plot? We can see that we need <code>ability</code> to explain around 30% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wages</code> to disappear, corresponding to the red line.</p>
+<p>One question that you might (legitimately) have now is: what is 30%? Is it big or is it small? We can get a sense of the <strong>magnitude</strong> of the partial $R^2$ by <strong>benchmarking</strong> the results with the residual variance explained by another <em>observed</em> variable. Let&rsquo;s use <code>age</code> for example.</p>
+<p>The <code>Sensemakr</code> function accepts the following optional arguments:</p>
+<ul>
+<li><code>benchmark_covariates</code>: the covariate to use as a benchmark</li>
+<li><code>kd</code> and <code>ky</code>: these arguments parameterize how many times stronger the unobserved variable (<code>ability</code>) is related to the treatment (<code>kd</code>) and to the outcome (<code>ky</code>) in comparison to the observed benchmark covariate (<code>age</code>). In our example, setting <code>kd</code> and <code>ky</code> equal to $[0.5, 1, 2]$ means we want to investigate the maximum strength of a variable half, same, or twice as strong as <code>age</code> (in explaining <code>education</code> and <code>wage</code> variation).</li>
+</ul>
+<pre><code class="language-python">sensitivity = sensemakr.Sensemakr(model = short_model, 
+                                  treatment = &quot;education&quot;,
+                                  benchmark_covariates = &quot;age&quot;,
+                                  kd = [0.5, 1, 2],
+                                  ky = [0.5, 1, 2])
+sensitivity.plot()
+plt.xlabel(&quot;Partial $R^2$ of ability with education&quot;);
+plt.ylabel(&quot;Partial $R^2$ of ability with wage&quot;);
+</code></pre>
+<p><img src="img/omitted_variable_bias_19_0.png" alt="png"></p>
+<p>It looks like even if <code>ability</code> had twice as much explanatory power as <code>age</code>, the effect of <code>education</code> on <code>wage</code> would still be positive. But would it be <strong>statistically significant</strong>?</p>
+<p>We can repeat the same exercise, looking at the t-statistic instead of the magnitude of the coefficient. We just need to set the <code>sensitivity_of</code> option in the plotting function equal to <code>t-value</code>.</p>
+<p>The question that we are trying to answer in this case is:</p>
+<blockquote>
+<p><em>How much of the residual variation in <code>education</code> (x axis) and <code>wage</code> (y axis) does <code>ability</code> need to explain in order for the effect of <code>education</code> on <code>wages</code> to <strong>become not significant</strong>?</em></p>
+</blockquote>
+<pre><code class="language-python">sensitivity.plot(sensitivity_of = 't-value')
+plt.xlabel(&quot;Partial $R^2$ of ability with education&quot;);
+plt.ylabel(&quot;Partial $R^2$ of ability with wage&quot;);
+</code></pre>
+<p><img src="img/omitted_variable_bias_21_0.png" alt="png"></p>
+<p>From the plot, we can see, we need <code>ability</code> to explain around 5% to 10% of the residual variation in both <code>education</code> and <code>wage</code> in order for the effect of <code>education</code> on <code>wage</code> not to be significant. In particular, the red line plots the level curve for the t-statistic equal to 2.01, corresponding to a 5% significance level. From the comparison with <code>age</code>, we see that a slightly stronger explanatory power (bigger than <code>1.0x age</code>) would be sufficient to make the coefficient of <code>education</code> on <code>wage</code> not statistically significant.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this post, I have introduced the concept of <strong>omitted variable bias</strong>. We have seen how it&rsquo;s computed in a simple linear model and how we can exploit qualitative information about the variables to make inference in presence of omitted variable bias.</p>
+<p>These tools are extremely useful since omitted variable bias is essentially <strong>everywhere</strong>. First of all, there are always factors that we do not observe, such as ability in our toy example. However, even if we could observe everything, omitted variable bias can also emerge in the form of <strong>model misspecification</strong>. Suppose that <code>wages</code> depended on <code>age</code> in a quadratic way. Then, omitting the quadratic term from the regression introduces bias, which can be analyzed with the same tools we have used for <code>ability</code>.</p>
+<h3 id="references">References</h3>
+<p>[1] C. Cinelli, C. Hazlett, <a href="https://rss.onlinelibrary.wiley.com/doi/full/10.1111/rssb.12348" target="_blank" rel="noopener">Making Sense of Sensitivity: Extending Omitted Variable Bias</a> (2019), <em>Journal of the Royal Statistical Society</em>.</p>
+<p>[2] V. Chernozhukov, C. Cinelli, W. Newey, A. Sharma, V. Syrgkanis, <a href="https://arxiv.org/abs/2112.13398" target="_blank" rel="noopener">Long Story Short: Omitted Variable Bias in Causal Machine Learning</a> (2022), working paper.</p>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li><a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">The FWL Theorem, Or How To Make Regressions Intuitive</a></li>
+<li><a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">DAGs and Control Variables</a></li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/ovb.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/ovb.ipynb</a></p>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/omitted_variable_bias/&amp;text=Omitted%20Variable%20Bias%20And%20How%20To%20Deal%20With%20It" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/omitted_variable_bias/&amp;t=Omitted%20Variable%20Bias%20And%20How%20To%20Deal%20With%20It" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Omitted%20Variable%20Bias%20And%20How%20To%20Deal%20With%20It&amp;body=https://matteocourthoud.github.io/post/omitted_variable_bias/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/omitted_variable_bias/&amp;title=Omitted%20Variable%20Bias%20And%20How%20To%20Deal%20With%20It" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Omitted%20Variable%20Bias%20And%20How%20To%20Deal%20With%20It%20https://matteocourthoud.github.io/post/omitted_variable_bias/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/omitted_variable_bias/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+          <i class="fab fa-telegram"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">My research fields are empirical Industrial Organization and Competition Policy. My research interests include the relationship between competition and innovation, big data, artificial intelligence, platform markets, peer to peer services.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.4ea9cc8d09c5c158656ac1a804743b34.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>
