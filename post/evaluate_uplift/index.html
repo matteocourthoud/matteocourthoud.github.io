@@ -769,6 +769,7 @@
       </ul>
       <nav id="TableOfContents">
   <ul>
+    <li><a href="#uplift-models">Uplift Models</a></li>
     <li><a href="#oracle-losses">Oracle Losses</a>
       <ul>
         <li><a href="#oracle-mse-loss">Oracle MSE Loss</a></li>
@@ -930,37 +931,108 @@
 
     return round(df, 3)
 </code></pre>
+<pre><code class="language-python">df = generate_data()
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>new</th>
+      <th>age</th>
+      <th>sales_old</th>
+      <th>mail</th>
+      <th>sales</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>47.15</td>
+      <td>0.333</td>
+      <td>1</td>
+      <td>0.407</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>50.57</td>
+      <td>0.560</td>
+      <td>0</td>
+      <td>0.473</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>21.29</td>
+      <td>0.258</td>
+      <td>1</td>
+      <td>0.212</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>59.29</td>
+      <td>0.242</td>
+      <td>1</td>
+      <td>0.420</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>23.65</td>
+      <td>0.141</td>
+      <td>0</td>
+      <td>0.208</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We have information on 500 customers, for whom we observe whether they are <code>new</code> customers, their <code>age</code>, the sales they generated before the email campaign (<code>sales_old</code>), whether they were sent the <code>mail</code>, and the <code>sales</code> after the email campaign.</p>
+<p>The <strong>outcome</strong> of interest is <code>sales</code>, which we denote with the letter <em>Y</em>. The <strong>treatment</strong> or policy that we would like to improve is the <code>mail</code> campaign, which we denote with the letter <em>W</em>. We call all the remaining variables <strong>confounders</strong> or control variables and we denote them with <em>X</em>.</p>
+<pre><code class="language-python">Y = 'sales'
+W = 'mail'
+X = ['age', 'sales_old', 'new']
+</code></pre>
+<p>The Dyrected Acyclic Graph (DAG) behind the data generate process can be represented as follows.</p>
 <pre><code class="language-mermaid">flowchart TD
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:3px;
 classDef excluded fill:#ffffff,stroke:#000000,stroke-width:3px;
 classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:3px,stroke-dasharray: 5 5;
 
-D((education))
-Z((ability))
-Y((wage))
-X1((age))
-X2((gender))
 
-D --&gt; Y
+W((mail))
+Y((sales))
+X1((new))
+X2((age))
+X3((sales old))
+
+W --&gt; Y
 Z --&gt; D
-Z --&gt; Y
+X1 --&gt; W
 X1 --&gt; Y
 X2 --&gt; Y
+X3 --&gt; Y
 
-class D,Y included;
-class X1,X2 excluded;
-class Z unobserved;
+class W,Y,X1,X2,X3 included;
 
 linkStyle 0 stroke:#2db88b,stroke-width:6px;
-linkStyle 1,2 stroke:#ff6e54,stroke-width:6px;
-linkStyle 3,4 stroke:#003f5c,stroke-width:6px;
-</code></pre>
-<pre><code class="language-python">df = generate_data()
-</code></pre>
-<pre><code class="language-python">Y = 'sales'
-W = 'mail'
-Z = 'new'
-X = ['age', 'sales_old', 'new']
+linkStyle 1,2,3,4,5 stroke:#ff6e54,stroke-width:6px;
 </code></pre>
 <pre><code class="language-python">from sklearn.base import clone
 from sklearn.ensemble import RandomForestRegressor
@@ -970,40 +1042,36 @@ model_y = RandomForestRegressor(max_depth=2)
 model_e = LogisticRegressionCV()
 model_tau = RandomForestRegressor(max_depth=2)
 </code></pre>
+<h2 id="uplift-models">Uplift Models</h2>
+<p>There exist <strong>many methods</strong> to model uplift or, in other words, to estimate Conditional Average Treatment Effects. Since the objective of this article is not to compare uplift models but methods to evaluate uplift models, we will not explain the models in detail. For a gentle introduction, you can check <a href="https://medium.com/towards-data-science/understanding-meta-learners-8a9c1e340832" target="_blank" rel="noopener">my article on meta learners</a>.</p>
+<p>The first meta-</p>
 <pre><code class="language-python">from src.learners_utils import *
 </code></pre>
 <pre><code class="language-python">from econml.metalearners import SLearner
 
 S_learner = SLearner(overall_model=model_y).fit(df[Y], df[W], X=df[X])
 </code></pre>
-<pre><code class="language-python">S_learner.predict_mu = types.MethodType(S_learner_predict_mu, S_learner)
-</code></pre>
 <pre><code class="language-python">from econml.metalearners import TLearner
 
 T_learner = TLearner(models=clone(model_y)).fit(df[Y], df[W], X=df[X])
 </code></pre>
-<pre><code class="language-python">T_learner.predict_mu = types.MethodType(T_learner_predict_mu, T_learner)
-</code></pre>
 <pre><code class="language-python">from econml.metalearners import XLearner
 
 X_learner = XLearner(models=model_y, propensity_model=model_e, cate_models=model_tau).fit(df[Y], df[W], X=df[X])
-</code></pre>
-<pre><code class="language-python">X_learner.predict_mu = types.MethodType(X_learner_predict_mu, X_learner)
 </code></pre>
 <pre><code class="language-python">from econml.dml import NonParamDML
 
 R_learner = NonParamDML(model_y=model_y, model_t=model_e, model_final=model_tau, discrete_treatment=True
                        ).fit(df[Y], df[W], X=df[X])
 </code></pre>
-<pre><code class="language-python">R_learner.predict_mu = types.MethodType(R_learner_predict_mu, R_learner)
-</code></pre>
 <pre><code class="language-python">from econml.dr import DRLearner
 
 DR_learner = DRLearner(model_regression=model_y, model_propensity=model_e, model_final=model_tau
                       ).fit(df[Y], df[W], X=df[X])
 </code></pre>
-<pre><code class="language-python">DR_learner.predict_mu = types.MethodType(DR_learner_predict_mu, DR_learner)
-</code></pre>
+<h2 id="oracle-losses">Oracle Losses</h2>
+<p>The main problem of evaluating uplift models is that, even when running an experiment and even when setting aside a validation dataset, we do <strong>not observe</strong> our metric of interest: the Individual Treatment Effects. Can we still do something to evaluate our estimators?</p>
+<p>The answer is yes, but before giving more details, let&rsquo;s first understand what we would do if we <strong>could observe</strong> the Individual Treatment Effects $\tau_i$.</p>
 <pre><code class="language-python">names = ['SL', 'TL', 'XL', 'RL', 'DRL']
 learners = [S_learner, T_learner, X_learner, R_learner, DR_learner]
 </code></pre>
@@ -1018,9 +1086,6 @@ learners = [S_learner, T_learner, X_learner, R_learner, DR_learner]
     plt.title(subtitle, fontsize=12, fontweight=None, y=0.94)
     return results
 </code></pre>
-<h2 id="oracle-losses">Oracle Losses</h2>
-<p>The main problem of evaluating uplift models is that, even when running an experiment and even when setting aside a validation dataset, we do <strong>not observe</strong> our metric of interest: the Individual Treatment Effects. Can we still do something to evaluate our estimators?</p>
-<p>The answer is yes, but before giving more details, let&rsquo;s first understand what we would do if we <strong>could observe</strong> the Individual Treatment Effects $\tau_i$.</p>
 <h3 id="oracle-mse-loss">Oracle MSE Loss</h3>
 <p>If we could observe the individual treatment effects (but we don&rsquo;t), we could try to measure how far our estimates $\hat{\tau}(X_i)$ are with respect to the true value $\tau_i$. This is what we normally do in machine learning when we want to evaluate a prediction method. There exist plenty of loss functions, so let&rsquo;s concentrate on the most popular one: the <strong>Mean Squared Error (MSE) loss</strong>.</p>
 <p>$$
@@ -1168,7 +1233,7 @@ $$</p>
     mu = mu0 * (1-data[W]) + mu1 * data[W]
     return np.mean((mu - data['sales'])**2)
 </code></pre>
-<pre><code class="language-python">compare_methods(learners, names, loss_outcome, title='Outcome Loss')
+<pre><code class="language-python">compare_methods(learners, names, loss_outcome, title='Outcome MSE Loss')
 </code></pre>
 <div>
 <style scoped>
@@ -1282,7 +1347,7 @@ $$</p>
   </tbody>
 </table>
 </div>
-<p><img src="img/evaluate_uplift_42_1.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_43_1.png" alt="png"></p>
 <pre><code class="language-python">
 </code></pre>
 <pre><code class="language-python">from statsmodels.formula.api import ols 
@@ -1347,7 +1412,7 @@ def loss_ab(learner):
   </tbody>
 </table>
 </div>
-<p><img src="img/evaluate_uplift_45_1.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_46_1.png" alt="png"></p>
 <h3 id="uplift-curve">Uplift Curve</h3>
 <pre><code class="language-python">Q = 20
 df_q = pd.DataFrame()
@@ -1371,7 +1436,7 @@ plt.title('higher is better', fontsize=14, fontweight=None, y=0.96)
 </code></pre>
 <pre><code>Text(0.5, 0.96, 'higher is better')
 </code></pre>
-<p><img src="img/evaluate_uplift_47_1.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_48_1.png" alt="png"></p>
 <h3 id="nearest-neighbor">Nearest Neighbor</h3>
 <pre><code class="language-python">from scipy.spatial import KDTree
 
@@ -1436,7 +1501,7 @@ def loss_nn(learner):
   </tbody>
 </table>
 </div>
-<p><img src="img/evaluate_uplift_50_1.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_51_1.png" alt="png"></p>
 <h3 id="ipw-loss">IPW Loss</h3>
 <pre><code class="language-python">def loss_ipw(learner):
     data = generate_data(N=10_000, seed=123)
@@ -1498,7 +1563,7 @@ def loss_nn(learner):
   </tbody>
 </table>
 </div>
-<p><img src="img/evaluate_uplift_53_1.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_54_1.png" alt="png"></p>
 <h3 id="r-loss">R Loss</h3>
 <pre><code class="language-python">def loss_r(learner):
     data = generate_data(N=10_000, seed=123)
@@ -1510,7 +1575,7 @@ def loss_nn(learner):
 </code></pre>
 <pre><code class="language-python">results = compare_methods(learners, names, loss_r, title='R Loss')
 </code></pre>
-<p><img src="img/evaluate_uplift_56_0.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_57_0.png" alt="png"></p>
 <h3 id="dr-loss">DR Loss</h3>
 <pre><code class="language-python">def loss_dr(learner):
     data = generate_data(N=10_000, seed=123)
@@ -1524,7 +1589,7 @@ def loss_nn(learner):
 </code></pre>
 <pre><code class="language-python">results = compare_methods(learners, names, loss_dr, title='DR Loss')
 </code></pre>
-<p><img src="img/evaluate_uplift_59_0.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_60_0.png" alt="png"></p>
 <h3 id="hm-2018">HM 2018</h3>
 <pre><code class="language-python">def loss_hm(learner):
     data = generate_data(N=10_000, seed=123)
@@ -1535,7 +1600,7 @@ def loss_nn(learner):
 </code></pre>
 <pre><code class="language-python">results = compare_methods(learners, names, loss_hm, title='HM Loss', subtitle='higher is better')
 </code></pre>
-<p><img src="img/evaluate_uplift_62_0.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_63_0.png" alt="png"></p>
 <h2 id="meta-studies">Meta Studies</h2>
 <p>In this article we have introduced a wide variety of methods to evaluate uplift models, a.k.a. Conditional Average Treatment Effect estimators. We have also tested in our simulated dataset, which is a very special and limited example. How do these metrics <strong>perform</strong> in general?</p>
 <p><a href="https://arxiv.org/abs/1804.05146" target="_blank" rel="noopener">Schuler, Baiocchi, Tibshirani, Shah (2018)</a> compares the S-loss, T-loss, R-loss, on simulated data, for the corresponding estimators. They find that the R-loss &ldquo;<em>is the validation set metric that, when optimized, most consistently leads to the selection of a high-performing model</em>&rdquo;.</p>
