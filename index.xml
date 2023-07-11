@@ -27318,6 +27318,7 @@ Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (
 &lt;p&gt;What can we do then? In this article, I try to cover the most popular methods used to &lt;strong&gt;evaluate uplift models&lt;/strong&gt;. If you are not familiar with uplift models, I suggest reading &lt;a href=&#34;https://towardsdatascience.com/8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;my introductory article&lt;/a&gt; first.&lt;/p&gt;
 &lt;p&gt;Enjoy!&lt;/p&gt;
 &lt;h2 id=&#34;uplift-and-promotional-emails&#34;&gt;Uplift and Promotional Emails&lt;/h2&gt;
+&lt;p&gt;Imagine we were a product company interested in improving our &lt;strong&gt;email marketing campaing&lt;/strong&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
 &lt;/code&gt;&lt;/pre&gt;
@@ -27489,24 +27490,29 @@ model_e = LogisticRegressionCV()
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.metalearners import SLearner
 
 S_learner = SLearner(overall_model=model_y).fit(df[Y], df[W], X=df[X])
+S_learner.predict_mu = types.MethodType(S_learner_predict_mu, S_learner)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.metalearners import TLearner
 
 T_learner = TLearner(models=clone(model_y)).fit(df[Y], df[W], X=df[X])
+T_learner.predict_mu = types.MethodType(T_learner_predict_mu, T_learner)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.metalearners import XLearner
 
 X_learner = XLearner(models=model_y, propensity_model=model_e, cate_models=model_tau).fit(df[Y], df[W], X=df[X])
+X_learner.predict_mu = types.MethodType(X_learner_predict_mu, X_learner)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.dml import NonParamDML
 
 R_learner = NonParamDML(model_y=model_y, model_t=model_e, model_final=model_tau, discrete_treatment=True
                        ).fit(df[Y], df[W], X=df[X])
+R_learner.predict_mu = types.MethodType(R_learner_predict_mu, R_learner)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.dr import DRLearner
 
 DR_learner = DRLearner(model_regression=model_y, model_propensity=model_e, model_final=model_tau
                       ).fit(df[Y], df[W], X=df[X])
+DR_learner.predict_mu = types.MethodType(DR_learner_predict_mu, DR_learner)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&#34;oracle-losses&#34;&gt;Oracle Losses&lt;/h2&gt;
 &lt;p&gt;The main problem of evaluating uplift models is that, even when running an experiment and even when setting aside a validation dataset, we do &lt;strong&gt;not observe&lt;/strong&gt; our metric of interest: the Individual Treatment Effects. Can we still do something to evaluate our estimators?&lt;/p&gt;
@@ -27569,33 +27575,33 @@ $$&lt;/p&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;TL&lt;/td&gt;
-      &lt;td&gt;0.006453&lt;/td&gt;
+      &lt;td&gt;0.006591&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;XL&lt;/td&gt;
-      &lt;td&gt;0.000762&lt;/td&gt;
+      &lt;td&gt;0.000698&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;RL&lt;/td&gt;
-      &lt;td&gt;0.000412&lt;/td&gt;
+      &lt;td&gt;0.000389&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;DRL&lt;/td&gt;
-      &lt;td&gt;0.000394&lt;/td&gt;
+      &lt;td&gt;0.000391&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_29_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_30_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;In this case, we see that the T-learner clearly performs worst, while X-, D- and DR-learners perform best, with the R-learner slightly winning the race.&lt;/p&gt;
 &lt;p&gt;However, this might not be the best loss function. In fact, uplift modeling is just an intermediate step towards our ultimate goal: improving revenue.&lt;/p&gt;
 &lt;h3 id=&#34;oracle-policy-loss&#34;&gt;Oracle Policy Loss&lt;/h3&gt;
 &lt;p&gt;Since our ultimate goal is to improve revenue, we could evaluate estimators by how much they increase revenue, given a certain policy function. Suppose, for example, that we had a $0.01$$ cost of sending an email. Then, our policy would be to treat each costumer that has a predicted Conditional Average Treatment Effect above $0.01$$. How much would our revenue actually increase?&lt;/p&gt;
 &lt;p&gt;$$
-\mathcal{L}&lt;em&gt;{oracle-POLICY}(\hat{\tau}) = \frac{1}{n} \sum&lt;/em&gt;{i=1}^{n} \left( \hat{\tau}(X_i) - \tau(X_i) \right)^2
+\mathcal{L} _ {oracle-POLICY}(\hat{\tau}) = \frac{1}{n} \sum _ {i=1}^{n} \Big( \hat{\tau}(X_i) - \tau(X_i) \Big)^2
 $$&lt;/p&gt;
 &lt;p&gt;Again, this is an &amp;ldquo;oracle&amp;rdquo; loss function that &lt;strong&gt;cannot be computed&lt;/strong&gt; in reality since we do not observe the individual treatment effects.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_oracle_policy(learner):
@@ -27636,12 +27642,12 @@ $$&lt;/p&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;TL&lt;/td&gt;
-      &lt;td&gt;4.03&lt;/td&gt;
+      &lt;td&gt;4.17&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;XL&lt;/td&gt;
-      &lt;td&gt;196.39&lt;/td&gt;
+      &lt;td&gt;196.44&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
@@ -27656,15 +27662,15 @@ $$&lt;/p&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_34_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_35_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;In this case, the S-learner is clearly the worst performer, leading to an aggregate loss (i.e. we would have been better off not sending any email). On the other hand, X-, R- and DR- learners all lead to aggregate gains, with no clear winner&lt;/p&gt;
 &lt;h2 id=&#34;practical-losses&#34;&gt;Practical Losses&lt;/h2&gt;
 &lt;p&gt;In the previous section, we have seen two examples of loss functions that we would like to compute if we could observe the Individual Treatment Effects $\tau_i$. However, in practice, even with a randomized experiment and even with a validation set, we do not observe the ITE,our object of interest. We will now cover some measures that try to evaluate uplift models, given this practical constraint.&lt;/p&gt;
 &lt;h3 id=&#34;outcome-loss&#34;&gt;Outcome Loss&lt;/h3&gt;
 &lt;p&gt;The first and simplest approach is to switch to a different loss variable. While we cannot observe the Individual Treatment Effects, $\tau_i$, we can still observe our outcome $y_i$. This is not exactly our object of interest, but we might expect an uplift model that performs well in terms of predicting $y$ to also produce good estimates of $\tau$.&lt;/p&gt;
-&lt;p&gt;One such loss function could be the &lt;strong&gt;Outcome MSE loss&lt;/strong&gt;, which is the usual MSE loss function for prediction methods.&lt;/p&gt;
-&lt;p&gt;$$
-\mathcal{L}&lt;em&gt;{Y}(\hat{\mu}) = \frac{1}{n} \sum&lt;/em&gt;{i=1}^{n} \left( \hat{\mu}(X_i, W_i) - Y_i \right)^2
+&lt;p&gt;One such loss function could be the &lt;strong&gt;Outcome MSE loss&lt;/strong&gt;, which is the usual MSE loss function for prediction methods.
+$$
+\mathcal{L}_{Y}(\hat{\mu}) = \frac{1}{n} \sum _ {i=1}^{n} \Big( \hat{\mu}(X_i, W_i) - Y_i \Big)^2
 $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_outcome(learner):
     data = generate_data(N=10_000, seed=123)
@@ -27700,33 +27706,41 @@ $$&lt;/p&gt;
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
       &lt;td&gt;SL&lt;/td&gt;
-      &lt;td&gt;0.004362&lt;/td&gt;
+      &lt;td&gt;0.004302&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;TL&lt;/td&gt;
-      &lt;td&gt;0.004492&lt;/td&gt;
+      &lt;td&gt;0.004513&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;XL&lt;/td&gt;
-      &lt;td&gt;0.004473&lt;/td&gt;
+      &lt;td&gt;0.004479&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;RL&lt;/td&gt;
-      &lt;td&gt;0.003690&lt;/td&gt;
+      &lt;td&gt;0.003741&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;DRL&lt;/td&gt;
-      &lt;td&gt;0.003729&lt;/td&gt;
+      &lt;td&gt;0.003676&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_41_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_42_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;distribution-loss&#34;&gt;Distribution Loss&lt;/h3&gt;
+&lt;p&gt;A different approach is to ask: how well are we able to match the distribution of potential outcomes?&lt;/p&gt;
+&lt;p&gt;$$
+dist \ \Big( \ {Y_i | W_i=0 } \ , \ {Y_i - \hat{\tau}(X_i)| W_i=1 } \ \Big)
+$$&lt;/p&gt;
+&lt;p&gt;or&lt;/p&gt;
+&lt;p&gt;$$
+dist \ \Big( \ {Y_i + \hat{\tau}(X_i)| W_i=0 } \ , \ {Y_i | W_i=1 } \ \Big)
+$$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_dist(learner):
     data = generate_data(N=10_000, seed=123)
     tau = learner.effect(data[X])
@@ -27766,29 +27780,29 @@ $$&lt;/p&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;TL&lt;/td&gt;
-      &lt;td&gt;0.257276&lt;/td&gt;
+      &lt;td&gt;0.258790&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;XL&lt;/td&gt;
-      &lt;td&gt;0.234633&lt;/td&gt;
+      &lt;td&gt;0.234555&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;RL&lt;/td&gt;
-      &lt;td&gt;0.262204&lt;/td&gt;
+      &lt;td&gt;0.261206&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;DRL&lt;/td&gt;
-      &lt;td&gt;0.249281&lt;/td&gt;
+      &lt;td&gt;0.247853&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_45_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_47_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;above-below-median-loss&#34;&gt;Above-below Median Loss&lt;/h3&gt;
+&lt;p&gt;The above-below median loss tries to answer the question: is our uplift model detecting &lt;em&gt;any&lt;/em&gt; heterogeneity? In particular, if we take the validation set and we split the sample into above-median and below median predicted uplift $\hat{\tau}(x)$, how big is the actual difference in average effect, estimated with a difference-in-means estimator? We would expect better estimators to better split the sample into high-effects and low-effects.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from statsmodels.formula.api import ols 
 
 def loss_ab(learner):
@@ -27831,59 +27845,67 @@ def loss_ab(learner):
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;TL&lt;/td&gt;
-      &lt;td&gt;0.151279&lt;/td&gt;
+      &lt;td&gt;0.156272&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;XL&lt;/td&gt;
-      &lt;td&gt;0.106074&lt;/td&gt;
+      &lt;td&gt;0.110428&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;RL&lt;/td&gt;
-      &lt;td&gt;0.088441&lt;/td&gt;
+      &lt;td&gt;0.084128&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;DRL&lt;/td&gt;
-      &lt;td&gt;0.088679&lt;/td&gt;
+      &lt;td&gt;0.087079&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_48_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_51_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s important to note that the difference-in-means estimators in the two groups (above- and below- median $\hat{\tau}(x)$) are &lt;strong&gt;not guaranteed to be unbiased&lt;/strong&gt;, even if the data came from a randomized experiment. In fact, we have split the two groups on a variable, $\hat{\tau}(x)$, that is highly endogenous. Therefore, the method should be used with a grain of salt.&lt;/p&gt;
 &lt;h3 id=&#34;uplift-curve&#34;&gt;Uplift Curve&lt;/h3&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;Q = 20
-df_q = pd.DataFrame()
-
-
-data = generate_data(N=10_000, seed=123)
-ate = np.mean(data[Y][data[W]==1]) - np.mean(data[Y][data[W]==0])
-for learner, name in zip(learners, names):
-    data[&#39;tau_hat&#39;] = learner.effect(data[X])
-    data[&#39;q&#39;] = pd.qcut(-data.tau_hat + np.random.normal(0, 1e-8, len(data)), q=Q, labels=False)
-    for q in range(Q):
-        temp = data[data.q &amp;lt;= q]
-        uplift = (np.mean(temp[Y][temp[W]==1]) - np.mean(temp[Y][temp[W]==0])) * q / (Q-1)
-        df_q = pd.concat([df_q, pd.DataFrame({&#39;q&#39;: [q], &#39;uplift&#39;: [uplift], &#39;learner&#39;: [name]})])
-
-fig, ax = plt.subplots(1, 1, figsize=(8, 5))
-sns.lineplot(x=range(Q), y=ate*range(Q)/(Q-1), color=&#39;k&#39;, ls=&#39;--&#39;, lw=3)
-sns.lineplot(x=&#39;q&#39;, y=&#39;uplift&#39;, hue=&#39;learner&#39;, data=df_q);
-plt.suptitle(&#39;Uplift Curve&#39;, y=1.02, fontsize=28, fontweight=&#39;bold&#39;)
-plt.title(&#39;higher is better&#39;, fontsize=14, fontweight=None, y=0.96)
+&lt;p&gt;An extension of the above-below median test is the &lt;strong&gt;uplift curve&lt;/strong&gt;. The idea is simple: instead of splitting the sample into two goups based on the median (0.5 quantile), why not splitting the data into more groups (more quantiles)?&lt;/p&gt;
+&lt;p&gt;For each group, we compute the difference-in-means estimate and we plot its cumulative sum agains the corresponding quantile. The result is called &lt;strong&gt;uplift curve&lt;/strong&gt;. The interpretation is simple: the higher the curve, the better we are able to separate high- from low-effect observations. However, also the same &lt;strong&gt;disclaimer&lt;/strong&gt; applies: the difference-in-means estimates are not unbiased, therefore have to be used with a grain of salt.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def generate_uplift_curve(df):
+    Q = 20
+    df_q = pd.DataFrame()
+    data = generate_data(N=10_000, seed=123)
+    ate = np.mean(data[Y][data[W]==1]) - np.mean(data[Y][data[W]==0])
+    for learner, name in zip(learners, names):
+        data[&#39;tau_hat&#39;] = learner.effect(data[X])
+        data[&#39;q&#39;] = pd.qcut(-data.tau_hat + np.random.normal(0, 1e-8, len(data)), q=Q, labels=False)
+        for q in range(Q):
+            temp = data[data.q &amp;lt;= q]
+            uplift = (np.mean(temp[Y][temp[W]==1]) - np.mean(temp[Y][temp[W]==0])) * q / (Q-1)
+            df_q = pd.concat([df_q, pd.DataFrame({&#39;q&#39;: [q], &#39;uplift&#39;: [uplift], &#39;learner&#39;: [name]})])
+    
+    fig, ax = plt.subplots(1, 1, figsize=(8, 5))
+    sns.lineplot(x=range(Q), y=ate*range(Q)/(Q-1), color=&#39;k&#39;, ls=&#39;--&#39;, lw=3)
+    sns.lineplot(x=&#39;q&#39;, y=&#39;uplift&#39;, hue=&#39;learner&#39;, data=df_q);
+    plt.suptitle(&#39;Uplift Curve&#39;, y=1.02, fontsize=28, fontweight=&#39;bold&#39;)
+    plt.title(&#39;higher is better&#39;, fontsize=14, fontweight=None, y=0.96)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;Text(0.5, 0.96, &#39;higher is better&#39;)
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;generate_uplift_curve(df)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_50_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
-&lt;h3 id=&#34;nearest-neighbor&#34;&gt;Nearest Neighbor&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_56_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;While probably not the best method to &lt;em&gt;evaluate&lt;/em&gt; uplift models, the uplift curve is very important in &lt;em&gt;understanding&lt;/em&gt; and &lt;em&gt;implementing&lt;/em&gt; them. In fact, for each models, it tells us that is the expected average treatment effect (y-axis) as we increase the share of treated population (x-axis).&lt;/p&gt;
+&lt;h3 id=&#34;nearest-neighbor-match&#34;&gt;Nearest Neighbor Match&lt;/h3&gt;
+&lt;p&gt;The last methods we analyzed aggregated data in order to understand whether the methods work on larger groups. The nearest neighbor match tries instead to understand how well an uplift model predicts individual treatment effects. However, since the ITEs are not observable, it tries to build a proxy by matching treated and control observations on observable characteristics $x$.&lt;/p&gt;
+&lt;p&gt;For example, if we take all treated observations ($i: W_i=1$), and we find the nearest neighbor in the control group ($NN_0(X_i)$), the corresponding MSE loss function is
+$$
+\mathcal{L} _ {NN}(\hat{\tau}) = \frac{1}{n} \sum _ {i: W_i=1} \Big( \hat{\tau}(X_i) - (Y_i - NN_0(X_i)) \Big)^2
+$$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.spatial import KDTree
 
 def loss_nn(learner):
     data = generate_data(N=10_000, seed=123)
     tau_hat = learner.effect(data[X])
-    nn = KDTree(data.loc[data[W]==0, X].values)
-    control_index = nn.query(data.loc[data[W]==1, X], k=1)[-1]
+    nn0 = KDTree(data.loc[data[W]==0, X].values)
+    control_index = nn0.query(data.loc[data[W]==1, X], k=1)[-1]
     tau_nn = data.loc[data[W]==1, Y].values - data.iloc[control_index, :][Y].values
     return np.mean((tau_hat[data[W]==1] - tau_nn)**2)
 &lt;/code&gt;&lt;/pre&gt;
@@ -27920,27 +27942,27 @@ def loss_nn(learner):
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;TL&lt;/td&gt;
-      &lt;td&gt;0.051922&lt;/td&gt;
+      &lt;td&gt;0.052112&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;XL&lt;/td&gt;
-      &lt;td&gt;0.050030&lt;/td&gt;
+      &lt;td&gt;0.049408&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;RL&lt;/td&gt;
-      &lt;td&gt;0.048385&lt;/td&gt;
+      &lt;td&gt;0.048211&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;DRL&lt;/td&gt;
-      &lt;td&gt;0.048803&lt;/td&gt;
+      &lt;td&gt;0.048679&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_53_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_61_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;ipw-loss&#34;&gt;IPW Loss&lt;/h3&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_ipw(learner):
     data = generate_data(N=10_000, seed=123)
@@ -27982,27 +28004,27 @@ def loss_nn(learner):
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;TL&lt;/td&gt;
-      &lt;td&gt;0.430504&lt;/td&gt;
+      &lt;td&gt;0.430163&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;XL&lt;/td&gt;
-      &lt;td&gt;0.443729&lt;/td&gt;
+      &lt;td&gt;0.443860&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;RL&lt;/td&gt;
-      &lt;td&gt;0.439256&lt;/td&gt;
+      &lt;td&gt;0.439154&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;DRL&lt;/td&gt;
-      &lt;td&gt;0.440603&lt;/td&gt;
+      &lt;td&gt;0.440344&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;/div&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_56_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_64_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;r-loss&#34;&gt;R Loss&lt;/h3&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_r(learner):
     data = generate_data(N=10_000, seed=123)
@@ -28014,7 +28036,7 @@ def loss_nn(learner):
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results = compare_methods(learners, names, loss_r, title=&#39;R Loss&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_59_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_67_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;dr-loss&#34;&gt;DR Loss&lt;/h3&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_dr(learner):
     data = generate_data(N=10_000, seed=123)
@@ -28028,7 +28050,7 @@ def loss_nn(learner):
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results = compare_methods(learners, names, loss_dr, title=&#39;DR Loss&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_62_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_70_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;hm-2018&#34;&gt;HM 2018&lt;/h3&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_hm(learner):
     data = generate_data(N=10_000, seed=123)
@@ -28039,7 +28061,7 @@ def loss_nn(learner):
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results = compare_methods(learners, names, loss_hm, title=&#39;HM Loss&#39;, subtitle=&#39;higher is better&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_65_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_73_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;meta-studies&#34;&gt;Meta Studies&lt;/h2&gt;
 &lt;p&gt;In this article we have introduced a wide variety of methods to evaluate uplift models, a.k.a. Conditional Average Treatment Effect estimators. We have also tested in our simulated dataset, which is a very special and limited example. How do these metrics &lt;strong&gt;perform&lt;/strong&gt; in general?&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/1804.05146&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Schuler, Baiocchi, Tibshirani, Shah (2018)&lt;/a&gt; compares the S-loss, T-loss, R-loss, on simulated data, for the corresponding estimators. They find that the R-loss &amp;ldquo;&lt;em&gt;is the validation set metric that, when optimized, most consistently leads to the selection of a high-performing model&lt;/em&gt;&amp;rdquo;.&lt;/p&gt;
@@ -28071,6 +28093,208 @@ def loss_nn(learner):
 &lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
 &lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/eval_uplift.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/eval_uplift.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Outliers, Leverage, and Influential Observations</title>
+      <link>https://matteocourthoud.github.io/post/outliers_leverage/</link>
+      <pubDate>Tue, 11 Jul 2023 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/outliers_leverage/</guid>
+      <description>&lt;p&gt;&lt;em&gt;What makes an observation &amp;ldquo;unusual&amp;rdquo;?&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;In data science, one common task is outlier detection. This is a broad term that is often misused or misunderstood. More broadly, we are often interested in understanding any observation is &lt;strong&gt;&amp;ldquo;unusual&amp;rdquo;&lt;/strong&gt;. First of all, what does it mean to be unusual? In this article we are going to inspect three different ways in which an observation can be unusual: it can be unusual characteristics, it might not fit the model or it might be particularly influential in fitting the model. We will see that in linear regression the latter characteristics is a byproduct of the first two.&lt;/p&gt;
+&lt;p&gt;Importantly, being unusual is &lt;strong&gt;not necessarily bad&lt;/strong&gt;. Observations that have different characteristics from all others usually carry more information. We also expect some observations not to fit the model well, otherwise the model is likely biased (overfitting). However, &amp;ldquo;unusual&amp;rdquo; observations are also more likely to be generated by a different process. Extreme cases include measurement error or fraud, but differences can be more nuanced. Domain knowledge is always kind and dropping observations only for for statistical reasons is never wise.&lt;/p&gt;
+&lt;p&gt;That said, let&amp;rsquo;s have a look at some different ways in which observations can be &amp;ldquo;unusual&amp;rdquo;.&lt;/p&gt;
+&lt;h1 id=&#34;example&#34;&gt;Example&lt;/h1&gt;
+&lt;p&gt;Suppose we are an &lt;strong&gt;peer-to-peer online platform&lt;/strong&gt; and we are interested in understanding if there is anything suspicious going on with our business. We have information about how much time our customers spend on the platform and the total value of their transactions.&lt;/p&gt;
+&lt;p&gt;First, let&amp;rsquo;s have a look at the data. I import the data generating process &lt;code&gt;dgp_p2p()&lt;/code&gt; from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.dgp&lt;/code&gt;&lt;/a&gt; and some plotting functions and libraries from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;src.utils&lt;/code&gt;&lt;/a&gt;. I include code snippets from &lt;a href=&#34;https://deepnote.com&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Deepnote&lt;/a&gt;, a Jupyter-like web-based collaborative notebook environment. For our purpose, Deepnote is very handy because it allows me not only to include code but also output, like data and tables.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp_p2p
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df = dgp_p2p().generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;hours&lt;/th&gt;
+      &lt;th&gt;transactions&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;2.6&lt;/td&gt;
+      &lt;td&gt;8.30&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;8.00&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;7.0&lt;/td&gt;
+      &lt;td&gt;21.00&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;6.7&lt;/td&gt;
+      &lt;td&gt;18.00&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1.2&lt;/td&gt;
+      &lt;td&gt;3.82&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on 50 clients for which we observe &lt;code&gt;hours&lt;/code&gt; spent on the website and total &lt;code&gt;transactions&lt;/code&gt; amount. Since we only have two variables we can easily inspect them using a scatterplot.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;sns.scatterplot(data=df, x=&#39;hours&#39;, y=&#39;transactions&#39;).set(title=&#39;Data Scatterplot&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/outliers_leverage_9_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The relationship between &lt;code&gt;hours&lt;/code&gt; and &lt;code&gt;transactions&lt;/code&gt; seems to follow a clear linear relationship. If we fit a linear model, we observe a particularly tight fit.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&#39;hours ~ transactions&#39;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;          &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;    &lt;td&gt;   -0.0975&lt;/td&gt; &lt;td&gt;    0.084&lt;/td&gt; &lt;td&gt;   -1.157&lt;/td&gt; &lt;td&gt; 0.253&lt;/td&gt; &lt;td&gt;   -0.267&lt;/td&gt; &lt;td&gt;    0.072&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;transactions&lt;/th&gt; &lt;td&gt;    0.3452&lt;/td&gt; &lt;td&gt;    0.009&lt;/td&gt; &lt;td&gt;   39.660&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.328&lt;/td&gt; &lt;td&gt;    0.363&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Does any data point look suspiciously different from the others? How?&lt;/p&gt;
+&lt;h2 id=&#34;leverage&#34;&gt;Leverage&lt;/h2&gt;
+&lt;p&gt;The first metric that we are going to use to evaluate &amp;ldquo;unusual&amp;rdquo; observations is the &lt;strong&gt;leverage&lt;/strong&gt;, which was first introduced by &lt;a href=&#34;https://www.jstor.org/stable/1268249&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Cook (1980)&lt;/a&gt;. The objective of the leverage is to capture how much a single point is different with respect to other data points. These data points are often called &lt;strong&gt;outliers&lt;/strong&gt; and there exist a nearly amount of algorithms and rules of thumb to flag them.However the idea is the same: flagging observations that are unusual in terms of features.&lt;/p&gt;
+&lt;p&gt;The leverage of an observation $i$ is defined as&lt;/p&gt;
+&lt;p&gt;$$
+h_{ii} := x_i&amp;rsquo; (X&amp;rsquo;X)^{-1} x_i
+$$&lt;/p&gt;
+&lt;p&gt;One interpretation of the leverage is as a &lt;strong&gt;measure of distance&lt;/strong&gt; where individual observations are compared against the average of all observations.&lt;/p&gt;
+&lt;p&gt;Another interpretation of the leverage is as the influence of the outcome of observation $i$, $y_i$, on the corresponding fitted value $\hat{y_i}$.&lt;/p&gt;
+&lt;p&gt;$$
+h_{ii} = \frac{\partial \hat{y}_i}{\partial y_i}
+$$&lt;/p&gt;
+&lt;p&gt;Algebraically, the leverage of observation $i$ is the $i^{th}$ element of the &lt;strong&gt;design matrix&lt;/strong&gt; $X&amp;rsquo; (X&amp;rsquo;X)^{-1} X$. Among the many properties of the leverages, is the fact that they are non-negative and their values sum to 1.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s compute the leverage of the observations in our dataset. We also flag observations that have unusual leverages (which we arbitrarily define as more than two standard deviations away from the average leverage).&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X = np.reshape(df[&#39;hours&#39;].values, (-1, 1))
+Y = np.reshape(df[&#39;transactions&#39;].values, (-1, 1))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;leverage&#39;] = np.diagonal(X @ np.linalg.inv(X.T @ X) @ X.T)
+df[&#39;high_leverage&#39;] = df[&#39;leverage&#39;] &amp;gt; (np.mean(df[&#39;leverage&#39;]) + 2*np.std(df[&#39;leverage&#39;]))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s plot the distribution of leverage values in our data.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fix, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+sns.histplot(data=df, x=&#39;leverage&#39;, hue=&#39;high_leverage&#39;, alpha=1, bins=30, ax=ax1).set(title=&#39;Distribution of Leverages&#39;);
+sns.scatterplot(data=df, x=&#39;hours&#39;, y=&#39;transactions&#39;, hue=&#39;high_leverage&#39;, ax=ax2).set(title=&#39;Data Scatterplot&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/outliers_leverage_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the distribution is skewed with two observations having a unusually high leverage. Indeed, in the scatterplot these two observations are slightly separated from the rest of the distribution.&lt;/p&gt;
+&lt;p&gt;Is this bad news? It depends. Outliers are &lt;strong&gt;not a problem per se&lt;/strong&gt;. Actually, if they are genuine observations, they might carry much more information than other observations. On the other hand, they are also more likely &lt;em&gt;not&lt;/em&gt; to be genuine observations (e.g. fraud, measurement error, &amp;hellip;) or to be inherently different from the other ones (e.g. professional users vs amateurs). In any case, we might want to investigate further and use as much context-specific information as we can.&lt;/p&gt;
+&lt;p&gt;Importantly, the fact that an observation has a high leverage tells us information about the features of the model but nothing about the model itself. Are these users just different observations or they also behave differently?&lt;/p&gt;
+&lt;h2 id=&#34;residuals&#34;&gt;Residuals&lt;/h2&gt;
+&lt;p&gt;So far we have only talked about unusual features, but what about &lt;strong&gt;unusual behavior&lt;/strong&gt;? This is what regression residuals measure.&lt;/p&gt;
+&lt;p&gt;Regression residuals are the difference between the predicted outcome values and the observed outcome values. In a sense, they capture what the model cannot explain: the higher the residual of one observation the more it is unusual in the sense that the model cannot explain it.&lt;/p&gt;
+&lt;p&gt;In the case of linear regression, residuals can be written as&lt;/p&gt;
+&lt;p&gt;$$
+\hat{e} = y - \hat{y} = y - \hat \beta X
+$$&lt;/p&gt;
+&lt;p&gt;In our case, since $X$ is one dimensional (&lt;code&gt;hours&lt;/code&gt;), we can easily visualize them.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;Y_hat = X @ np.linalg.inv(X.T @ X) @ X.T @ Y
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plt.scatter(X, Y, s=50, label=&#39;data&#39;)
+plt.plot(X, Y_hat, c=&#39;k&#39;, lw=2, label=&#39;prediction&#39;)
+plt.vlines(X, np.minimum(Y, Y_hat), np.maximum(Y, Y_hat), color=&#39;r&#39;, lw=3, label=&amp;quot;residuals&amp;quot;);
+plt.legend()
+plt.title(f&amp;quot;Regression prediction and residuals&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/outliers_leverage_23_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Do some observations have unusually high residuals? Let&amp;rsquo;s plot their distribution.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;residual&#39;] = np.abs(Y - X @ np.linalg.inv(X.T @ X) @ X.T @ Y)
+df[&#39;high_residual&#39;] = df[&#39;residual&#39;] &amp;gt; (np.mean(df[&#39;residual&#39;]) + 2*np.std(df[&#39;residual&#39;]))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fix, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+sns.histplot(data=df, x=&#39;residual&#39;, hue=&#39;high_residual&#39;, alpha=1, bins=30, ax=ax1).set(title=&#39;Distribution of Residuals&#39;);
+sns.scatterplot(data=df, x=&#39;hours&#39;, y=&#39;transactions&#39;, hue=&#39;high_residual&#39;, ax=ax2).set(title=&#39;Data Scatterplot&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/outliers_leverage_26_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Two observations have particularly high residuals. This means that for these observations, the model is not good at predicting the observed outcomes.&lt;/p&gt;
+&lt;p&gt;Is this bad news? Not necessarily. A model that fits the observations too well is likely to be &lt;a href=&#34;https://en.wikipedia.org/wiki/Bias_%28statistics%29&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;biased&lt;/strong&gt;&lt;/a&gt;. However, it might still be important to understand why some users have a different relationship between hours spent and total transactions. As usual, information on the specific context is key.&lt;/p&gt;
+&lt;p&gt;So far we have looked at observations with &amp;ldquo;unusual&amp;rdquo; characteristics and &amp;ldquo;unusual&amp;rdquo; model fit, but what is the observation itself is distorting the model? How much our model is driven by a handful of observations?&lt;/p&gt;
+&lt;h2 id=&#34;influence&#34;&gt;Influence&lt;/h2&gt;
+&lt;p&gt;The concept of &lt;strong&gt;influence and influence functions&lt;/strong&gt; was developed precisely to answer this question: what are influential observations? This questions were very popular in the 80&amp;rsquo;s and lost appeal for a long time until the recent need of explaining complex machine learning and AI models.&lt;/p&gt;
+&lt;p&gt;The general idea is to define an observation as &lt;strong&gt;influential&lt;/strong&gt; if removing it significantly changes the estimated model. In linear regression, we define the influence of observation $i$ as:&lt;/p&gt;
+&lt;p&gt;$$
+\hat{\beta} - \hat{\beta}_{-i} = (X&amp;rsquo;X)^{-1} x_i e_i
+$$&lt;/p&gt;
+&lt;p&gt;Where $\hat{\beta}_{-i}$ is the OLS coefficient estimated omitting observation $i$.&lt;/p&gt;
+&lt;p&gt;As you can see, there is a tight connection to both leverage $h_{ii}$ and residuals $e_i$: influence is almost the product of the two. Indeed, in linear regression, observations with high leverage are observations that are both outliers and have high residuals. None of the two conditions alone is sufficient for an observation to have an influence on the model.&lt;/p&gt;
+&lt;p&gt;We can see it best in the data.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df[&#39;influence&#39;] = (np.linalg.inv(X.T @ X) @ X.T).T * np.abs(Y - Y_hat)
+df[&#39;high_influence&#39;] = df[&#39;influence&#39;] &amp;gt; (np.mean(df[&#39;influence&#39;]) + 2*np.std(df[&#39;influence&#39;]))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fix, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+sns.histplot(data=df, x=&#39;influence&#39;, hue=&#39;high_influence&#39;, alpha=1, bins=30, ax=ax1).set(title=&#39;Distribution of Influences&#39;);
+sns.scatterplot(data=df, x=&#39;hours&#39;, y=&#39;transactions&#39;, hue=&#39;high_influence&#39;, ax=ax2).set(title=&#39;Data Scatterplot&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/outliers_leverage_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;In our dataset, there is only one observation with high influence, and it is disproportionally larger than the influence of all other observations.&lt;/p&gt;
+&lt;p&gt;We can now plot all &amp;ldquo;unusual&amp;rdquo; points in the same plot. I also report residuals and leverage of each point in a separate plot.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_leverage_residuals(df):
+
+    # Hue
+    df[&#39;type&#39;] = &#39;Normal&#39;
+    df.loc[df[&#39;high_residual&#39;], &#39;type&#39;] = &#39;High Residual&#39;
+    df.loc[df[&#39;high_leverage&#39;], &#39;type&#39;] = &#39;High Leverage&#39;
+    df.loc[df[&#39;high_influence&#39;], &#39;type&#39;] = &#39;High Influence&#39;
+
+    # Init figure
+    fig, (ax1,ax2) = plt.subplots(1,2, figsize=(12,5)) 
+    ax1.plot(X, Y_hat, lw=1, c=&#39;grey&#39;, zorder=0.5)
+    sns.scatterplot(data=df, x=&#39;hours&#39;, y=&#39;transactions&#39;, ax=ax1, hue=&#39;type&#39;).set(title=&#39;Data&#39;)
+    sns.scatterplot(data=df, x=&#39;residual&#39;, y=&#39;leverage&#39;, hue=&#39;type&#39;, ax=ax2).set(title=&#39;Metrics&#39;)
+    ax1.get_legend().remove()
+    sns.move_legend(ax2, &amp;quot;upper left&amp;quot;, bbox_to_anchor=(1.05, 0.8));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_leverage_residuals(df)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/outliers_leverage_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, we have one point with high residual and low leverage, one with high leverage and low residual and only one point with both high leverage and high residual: the only influential point.&lt;/p&gt;
+&lt;p&gt;From the plot it is also clear why none of the two conditions alone is sufficient for an observation to rive the model. The orange point has high residual but it lies right in the middle of the distribution and therefore cannot tilt the line of best fit. The green point instead has high leverage and lies far from the center of the distribution but its perfectly aligned with the line of fit. Removing it would not change anything. The red dot instead is different from the others in terms of &lt;strong&gt;both characteristics and behavior&lt;/strong&gt; and therefore tilts the fit line towards itself.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this post, we have seen some different ways in which observations can be &amp;ldquo;unusual&amp;rdquo;: they can have either unusual characteristics or unusual behavior. In linear regression, when an observation has both it is also influential: it tilts the model towards itself.&lt;/p&gt;
+&lt;p&gt;In the example of the article, we concentrated on a univariate linear regression. However, research on influence functions has recently become a hot topic because of the need to make black-box machine learning algorithms understandable. With models with millions of parameters, billions of observations and wild non-linearities, it can be very hard to establish whether a single observation is influential and how.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;p&gt;[1] D. Cook, &lt;a href=&#34;https://www.jstor.org/stable/1268249&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Detection of Influential Observation in Linear Regression&lt;/a&gt; (1980), &lt;em&gt;Technometrics&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] D. Cook, S. Weisberg, &lt;a href=&#34;https://www.jstor.org/stable/1268187&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Characterizations of an Empirical Influence Function for Detecting Influential Cases in
+Regression&lt;/a&gt; (1980), &lt;em&gt;Technometrics&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;[2] P. W. Koh, P. Liang, &lt;a href=&#34;http://proceedings.mlr.press/v70/koh17a&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Black-box Predictions via Influence Functions&lt;/a&gt; (2017), &lt;em&gt;ICML Proceedings&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/outliers.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/outliers.ipynb&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
