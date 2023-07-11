@@ -505,7 +505,7 @@ ax.set_ylabel(&#39;Posterior&#39;);
     </item>
     
     <item>
-      <title>Evaulating Uplift Models</title>
+      <title>Evaluating Uplift Models</title>
       <link>https://matteocourthoud.github.io/post/evaluate_uplift/</link>
       <pubDate>Tue, 11 Jul 2023 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/evaluate_uplift/</guid>
@@ -516,7 +516,7 @@ ax.set_ylabel(&#39;Posterior&#39;);
 &lt;p&gt;What can we do then? In this article, I try to cover the most popular methods used to &lt;strong&gt;evaluate uplift models&lt;/strong&gt;. If you are not familiar with uplift models, I suggest reading &lt;a href=&#34;https://towardsdatascience.com/8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;my introductory article&lt;/a&gt; first.&lt;/p&gt;
 &lt;p&gt;Enjoy!&lt;/p&gt;
 &lt;h2 id=&#34;uplift-and-promotional-emails&#34;&gt;Uplift and Promotional Emails&lt;/h2&gt;
-&lt;p&gt;Imagine we were a product company interested in improving our &lt;strong&gt;email marketing campaing&lt;/strong&gt;. Historically, we mostly sent emails to new customers. However, now we would like to adopt a data-drive approach and terget customers for whom the email has the highest positive impact on revenue. This impact is also called &lt;strong&gt;uplift&lt;/strong&gt; or &lt;strong&gt;incrementality&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Imagine we were a product company interested in improving our &lt;strong&gt;email marketing campaing&lt;/strong&gt;. Historically, we mostly sent emails to new customers. However, now we would like to adopt a data-driven approach and terget customers for whom the email has the highest positive impact on revenue. This impact is also called &lt;strong&gt;uplift&lt;/strong&gt; or &lt;strong&gt;incrementality&lt;/strong&gt;.&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s have a look at the data we have at our disposal.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
 %config InlineBackend.figure_format = &#39;retina&#39;
@@ -524,7 +524,7 @@ ax.set_ylabel(&#39;Posterior&#39;);
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
 from src.dgp import dgp_promotional_email
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_promotional_email(n=300)
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_promotional_email(n=500)
 df = dgp.generate_data()
 df.head()
 &lt;/code&gt;&lt;/pre&gt;
@@ -557,42 +557,42 @@ df.head()
     &lt;tr&gt;
       &lt;th&gt;0&lt;/th&gt;
       &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;56.26&lt;/td&gt;
-      &lt;td&gt;0.29&lt;/td&gt;
+      &lt;td&gt;32.42&lt;/td&gt;
+      &lt;td&gt;0.11&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;0.36&lt;/td&gt;
+      &lt;td&gt;0.03&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;1&lt;/th&gt;
       &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;50.96&lt;/td&gt;
-      &lt;td&gt;0.54&lt;/td&gt;
+      &lt;td&gt;34.92&lt;/td&gt;
+      &lt;td&gt;0.36&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;0.56&lt;/td&gt;
+      &lt;td&gt;0.47&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;2&lt;/th&gt;
       &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;33.33&lt;/td&gt;
-      &lt;td&gt;0.32&lt;/td&gt;
+      &lt;td&gt;41.00&lt;/td&gt;
+      &lt;td&gt;0.49&lt;/td&gt;
       &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;0.36&lt;/td&gt;
+      &lt;td&gt;0.40&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;3&lt;/th&gt;
       &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;23.24&lt;/td&gt;
-      &lt;td&gt;0.15&lt;/td&gt;
+      &lt;td&gt;50.02&lt;/td&gt;
+      &lt;td&gt;0.35&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;0.10&lt;/td&gt;
+      &lt;td&gt;0.53&lt;/td&gt;
     &lt;/tr&gt;
     &lt;tr&gt;
       &lt;th&gt;4&lt;/th&gt;
       &lt;td&gt;0&lt;/td&gt;
-      &lt;td&gt;36.29&lt;/td&gt;
-      &lt;td&gt;0.18&lt;/td&gt;
+      &lt;td&gt;33.34&lt;/td&gt;
+      &lt;td&gt;0.12&lt;/td&gt;
       &lt;td&gt;1&lt;/td&gt;
-      &lt;td&gt;0.22&lt;/td&gt;
+      &lt;td&gt;0.02&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -682,6 +682,8 @@ model_e = LogisticRegressionCV()
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;We import all the model from Microsoft&amp;rsquo;s &lt;a href=&#34;https://econml.azurewebsites.net/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;econml&lt;/a&gt; library.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.learners_utils import *
+&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.metalearners import SLearner, TLearner, XLearner
 from econml.dml import NonParamDML
 from econml.dr import DRLearner
@@ -718,49 +720,64 @@ learners = [S_learner, T_learner, X_learner, R_learner, DR_learner]
 $$&lt;/p&gt;
 &lt;p&gt;Let&amp;rsquo;s compute it across our uplift models. We compute it on a validation dataset with 10.000 observations.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_oracle_mse(learner):
-    data = generate_data(N=10_000, seed=123, true_te=True)
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     tau = learner.effect(data[X])
-    return np.mean((tau - data[&#39;effect&#39;])**2)
+    return np.mean((tau - data[&#39;effect_on_sales&#39;])**2)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_oracle_mse, title=&#39;Oracle MSE Loss&#39;)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;---------------------------------------------------------------------------
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
 
-NameError                                 Traceback (most recent call last)
-
-Cell In[15], line 1
-----&amp;gt; 1 compare_methods(learners, names, loss_oracle_mse, title=&#39;Oracle MSE Loss&#39;)
-
-
-Cell In[13], line 4, in compare_methods(learners, names, loss, title, subtitle)
-      1 def compare_methods(learners, names, loss, title=None, subtitle=&#39;lower is better&#39;):
-      2     results = pd.DataFrame({
-      3         &#39;learner&#39;: names,
-----&amp;gt; 4         &#39;loss&#39;: [loss(learner) for learner in learners]
-      5     })
-      6     fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-      7     sns.barplot(data=results, x=&amp;quot;learner&amp;quot;, y=&#39;loss&#39;).set(ylabel=&#39;&#39;)
-
-
-Cell In[13], line 4, in &amp;lt;listcomp&amp;gt;(.0)
-      1 def compare_methods(learners, names, loss, title=None, subtitle=&#39;lower is better&#39;):
-      2     results = pd.DataFrame({
-      3         &#39;learner&#39;: names,
-----&amp;gt; 4         &#39;loss&#39;: [loss(learner) for learner in learners]
-      5     })
-      6     fig, ax = plt.subplots(1, 1, figsize=(6, 4))
-      7     sns.barplot(data=results, x=&amp;quot;learner&amp;quot;, y=&#39;loss&#39;).set(ylabel=&#39;&#39;)
-
-
-Cell In[14], line 2, in loss_oracle_mse(learner)
-      1 def loss_oracle_mse(learner):
-----&amp;gt; 2     data = generate_data(N=10_000, seed=123, true_te=True)
-      3     tau = learner.effect(data[X])
-      4     return np.mean((tau - data[&#39;effect&#39;])**2)
-
-
-NameError: name &#39;generate_data&#39; is not defined
+.dataframe thead th {
+    text-align: right;
+}
 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;0.002932&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.004637&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;0.000936&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;0.000990&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;0.000577&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_25_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;In this case, we see that the T-learner clearly performs worst, while X-, D- and DR-learners perform best, with the R-learner slightly winning the race.&lt;/p&gt;
 &lt;p&gt;However, this might not be the best loss function. In fact, uplift modeling is just an intermediate step towards our ultimate goal: improving revenue.&lt;/p&gt;
 &lt;h3 id=&#34;oracle-policy-loss&#34;&gt;Oracle Policy Loss&lt;/h3&gt;
@@ -773,15 +790,79 @@ NameError: name &#39;generate_data&#39; is not defined
 $$&lt;/p&gt;
 &lt;p&gt;Again, this is an &amp;ldquo;oracle&amp;rdquo; loss function that &lt;strong&gt;cannot be computed&lt;/strong&gt; in reality since we do not observe the individual treatment effects.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_oracle_policy(learner):
-    data = generate_data(N=10_000, seed=123, true_te=True)
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     tau_hat = learner.effect(data[X])
-    return np.sum(data[&#39;effect&#39;] * (tau_hat&amp;gt;c) - c)
+    return np.sum(data[&#39;effect_on_sales&#39;] * (tau_hat&amp;gt;c) - c)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_oracle_policy, title=&#39;Oracle Policy Loss&#39;, subtitle=&#39;higher is better&#39;)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;-5.00&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.76&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;8.61&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;7.66&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;9.48&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_32_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;In this case, the S-learner is clearly the worst performer, leading to an aggregate loss (i.e. we would have been better off not sending any email). On the other hand, X-, R- and DR- learners all lead to aggregate gains, with no clear winner&lt;/p&gt;
 &lt;h2 id=&#34;practical-losses&#34;&gt;Practical Losses&lt;/h2&gt;
 &lt;p&gt;In the previous section, we have seen two examples of loss functions that we would like to compute if we could observe the Individual Treatment Effects $\tau_i$. However, in practice, even with a randomized experiment and even with a validation set, we do not observe the ITE,our object of interest. We will now cover some measures that try to evaluate uplift models, given this practical constraint.&lt;/p&gt;
+&lt;h3 id=&#34;outcome-loss&#34;&gt;Outcome Loss&lt;/h3&gt;
+&lt;p&gt;The first and simplest approach is to switch to a different loss variable. While we cannot observe the Individual Treatment Effects, $\tau_i$, we can still observe our outcome $y_i$. This is not exactly our object of interest, but we might expect an uplift model that performs well in terms of predicting $y$ to also produce good estimates of $\tau$.&lt;/p&gt;
+&lt;p&gt;One such loss function could be the &lt;strong&gt;Outcome MSE loss&lt;/strong&gt;, which is the usual MSE loss function for prediction methods.
+$$
+\mathcal{L}_{Y}(\hat{\mu}) = \frac{1}{n} \sum _ {i=1}^{n} \Big( \hat{\mu}(X_i, W_i) - Y_i \Big)^2
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_outcome(learner):
+    data = generate_data(N=10_000, seed=123)
+    mu0, mu1 = learner.predict_mu(data, X, W, Y)
+    mu = mu0 * (1-data[W]) + mu1 * data[W]
+    return np.mean((mu - data[&#39;sales&#39;])**2)
+&lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&#34;distribution-loss&#34;&gt;Distribution Loss&lt;/h3&gt;
 &lt;p&gt;A different approach is to ask: how well are we able to match the distribution of potential outcomes?&lt;/p&gt;
 &lt;p&gt;$$
@@ -792,19 +873,71 @@ $$&lt;/p&gt;
 dist \ \Big( \ {Y_i + \hat{\tau}(X_i)| W_i=0 } \ , \ {Y_i | W_i=1 } \ \Big)
 $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_dist(learner):
-    data = generate_data(N=10_000, seed=123)
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     tau = learner.effect(data[X])
     y0 = data.loc[data.mail==1, &#39;sales&#39;] - tau[data.mail==1]
     return sp.stats.energy_distance(df.loc[df.mail==0, &#39;sales&#39;], y0)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_dist, &#39;Distribution Loss&#39;)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;0.113851&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.169005&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;0.137942&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;0.150188&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;0.141040&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_42_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;above-below-median-loss&#34;&gt;Above-below Median Loss&lt;/h3&gt;
 &lt;p&gt;The above-below median loss tries to answer the question: is our uplift model detecting &lt;em&gt;any&lt;/em&gt; heterogeneity? In particular, if we take the validation set and we split the sample into above-median and below median predicted uplift $\hat{\tau}(x)$, how big is the actual difference in average effect, estimated with a difference-in-means estimator? We would expect better estimators to better split the sample into high-effects and low-effects.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from statsmodels.formula.api import ols 
 
 def loss_ab(learner):
-    data = generate_data(N=10_000, seed=123)
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     tau = learner.effect(data[X]) + np.random.normal(0, 1e-8, len(data))
     data[&#39;above_median&#39;] = tau &amp;gt;= np.median(tau)
     param = ols(&#39;sales ~ mail * above_median&#39;, data=data).fit().params[-1]
@@ -812,6 +945,58 @@ def loss_ab(learner):
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_ab, title=&#39;Above-below Median Difference&#39;, subtitle=&#39;higher is better&#39;)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;-0.008835&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.222017&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;0.093177&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;0.134629&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;0.076508&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_46_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;It&amp;rsquo;s important to note that the difference-in-means estimators in the two groups (above- and below- median $\hat{\tau}(x)$) are &lt;strong&gt;not guaranteed to be unbiased&lt;/strong&gt;, even if the data came from a randomized experiment. In fact, we have split the two groups on a variable, $\hat{\tau}(x)$, that is highly endogenous. Therefore, the method should be used with a grain of salt.&lt;/p&gt;
 &lt;h3 id=&#34;uplift-curve&#34;&gt;Uplift Curve&lt;/h3&gt;
 &lt;p&gt;An extension of the above-below median test is the &lt;strong&gt;uplift curve&lt;/strong&gt;. The idea is simple: instead of splitting the sample into two goups based on the median (0.5 quantile), why not splitting the data into more groups (more quantiles)?&lt;/p&gt;
@@ -819,7 +1004,7 @@ def loss_ab(learner):
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def generate_uplift_curve(df):
     Q = 20
     df_q = pd.DataFrame()
-    data = generate_data(N=10_000, seed=123)
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     ate = np.mean(data[Y][data[W]==1]) - np.mean(data[Y][data[W]==0])
     for learner, name in zip(learners, names):
         data[&#39;tau_hat&#39;] = learner.effect(data[X])
@@ -827,7 +1012,7 @@ def loss_ab(learner):
         for q in range(Q):
             temp = data[data.q &amp;lt;= q]
             uplift = (np.mean(temp[Y][temp[W]==1]) - np.mean(temp[Y][temp[W]==0])) * q / (Q-1)
-            df_q = pd.concat([df_q, pd.DataFrame({&#39;q&#39;: [q], &#39;uplift&#39;: [uplift], &#39;learner&#39;: [name]})])
+            df_q = pd.concat([df_q, pd.DataFrame({&#39;q&#39;: [q], &#39;uplift&#39;: [uplift], &#39;learner&#39;: [name]})], ignore_index=True)
     
     fig, ax = plt.subplots(1, 1, figsize=(8, 5))
     sns.lineplot(x=range(Q), y=ate*range(Q)/(Q-1), color=&#39;k&#39;, ls=&#39;--&#39;, lw=3)
@@ -837,6 +1022,7 @@ def loss_ab(learner):
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;generate_uplift_curve(df)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_51_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;While probably not the best method to &lt;em&gt;evaluate&lt;/em&gt; uplift models, the uplift curve is very important in &lt;em&gt;understanding&lt;/em&gt; and &lt;em&gt;implementing&lt;/em&gt; them. In fact, for each models, it tells us that is the expected average treatment effect (y-axis) as we increase the share of treated population (x-axis).&lt;/p&gt;
 &lt;h3 id=&#34;nearest-neighbor-match&#34;&gt;Nearest Neighbor Match&lt;/h3&gt;
 &lt;p&gt;The last methods we analyzed aggregated data in order to understand whether the methods work on larger groups. The nearest neighbor match tries instead to understand how well an uplift model predicts individual treatment effects. However, since the ITEs are not observable, it tries to build a proxy by matching treated and control observations on observable characteristics $x$.&lt;/p&gt;
@@ -847,7 +1033,7 @@ $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from scipy.spatial import KDTree
 
 def loss_nn(learner):
-    data = generate_data(N=10_000, seed=123)
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     tau_hat = learner.effect(data[X])
     nn0 = KDTree(data.loc[data[W]==0, X].values)
     control_index = nn0.query(data.loc[data[W]==1, X], k=1)[-1]
@@ -856,13 +1042,65 @@ def loss_nn(learner):
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_nn, title=&#39;Nearest Neighbor Loss&#39;)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;0.050478&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;0.051301&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;0.047102&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;0.046684&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;0.046652&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_56_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;ipw-loss&#34;&gt;IPW Loss&lt;/h3&gt;
 &lt;p&gt;The Inverse Probability Weighting (IPW) loss function was first proposed by &lt;a href=&#34;https://proceedings.mlr.press/v67/gutierrez17a/gutierrez17a.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Gutierrez, Gerardy (2017)&lt;/a&gt; and the first of three metrics that we are going to see that uses a &lt;strong&gt;pseudo-outcome&lt;/strong&gt; $Y^*$ to evaluate the estimator. As we have seen in the brief introduction to the R- and DR- learner, pseudo-outcomes are variables whose expected value is the Conditional Average Treatment Effect. The pseudo-outcome corresponding to the IPW loss is&lt;/p&gt;
 &lt;p&gt;$$
 \mathcal{L} _ {IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \hat{\tau}(X_i) - Y_i \ \frac{W_i - \hat{e}(X_i)}{\hat{e}(X_i)(1 - \hat{e}(X_i))} \right)^2
 $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_ipw(learner):
-    data = generate_data(N=10_000, seed=123)
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     tau_hat = learner.effect(data[X])
     e_hat = clone(model_e).fit(data[X], data[W]).predict_proba(data[X])[:,1]
     tau_gg = data[Y] * (data[W] - e_hat) / (e_hat * (1 - e_hat))
@@ -870,13 +1108,65 @@ $$&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;compare_methods(learners, names, loss_ipw, title=&#39;IPW Loss&#39;)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;learner&lt;/th&gt;
+      &lt;th&gt;loss&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;SL&lt;/td&gt;
+      &lt;td&gt;1.170917&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;TL&lt;/td&gt;
+      &lt;td&gt;1.153752&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;XL&lt;/td&gt;
+      &lt;td&gt;1.172517&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;RL&lt;/td&gt;
+      &lt;td&gt;1.172934&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;DRL&lt;/td&gt;
+      &lt;td&gt;1.171769&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_60_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;r-loss&#34;&gt;R Loss&lt;/h3&gt;
 &lt;p&gt;The R-loss was introduced together with the R-learner by &lt;a href=&#34;https://arxiv.org/abs/1712.04912&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Nie, Wager (2017)&lt;/a&gt;, and it is essentially the &lt;strong&gt;objective function&lt;/strong&gt; of the R-learner.&lt;/p&gt;
 &lt;p&gt;$$
 \mathcal{L}_{R} = \frac{1}{n} \sum _ {i=1}^{n} \left( \hat{\tau}(X_i) -  \frac{Y_i - \hat{\mu}_W(X_i)}{W_i - \hat{e}(X_i)} \right)^2
 $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_r(learner):
-    data = generate_data(N=10_000, seed=123)
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     tau_hat = learner.effect(data[X])
     y_hat = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]])
     e_hat = clone(model_e).fit(df[X], df[W]).predict_proba(data[X])[:,1]
@@ -885,6 +1175,7 @@ $$&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results = compare_methods(learners, names, loss_r, title=&#39;R Loss&#39;)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_64_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;Unsurprisingly, the R-loss tends to favor its corresponding learner, the R-learner.&lt;/p&gt;
 &lt;h3 id=&#34;dr-loss&#34;&gt;DR Loss&lt;/h3&gt;
 &lt;p&gt;Similarly to the R-loss, the DR-loss is the &lt;strong&gt;objective function&lt;/strong&gt; of the DR-learner and it was first introduced by &lt;a href=&#34;https://arxiv.org/abs/1909.05299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Saito, Yasui (2020)&lt;/a&gt;.&lt;/p&gt;
@@ -892,7 +1183,7 @@ $$&lt;/p&gt;
 \mathcal{L} _ {DR} = \frac{1}{n} \sum _ {i=1}^{n} \left( \hat{\tau}(X_i) - \hat{\mu}_1(X_i) + \hat{\mu}_0(X_i) - (Y_i - \hat{\mu}_W(X_i)) \ \frac{W_i - \hat{e}(X_i)}{\hat{e}(X_i)(1 - \hat{e}(X_i))} \right)^2
 $$&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_dr(learner):
-    data = generate_data(N=10_000, seed=123)
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     tau_hat = learner.effect(data[X])
     y_hat = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]])
     mu1 = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]].assign(mail=1))
@@ -903,6 +1194,7 @@ $$&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results = compare_methods(learners, names, loss_dr, title=&#39;DR Loss&#39;)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_69_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;As for the R-loss, the DR-loss tends to favor its corresponding learner, the DR-learner.&lt;/p&gt;
 &lt;h3 id=&#34;empirical-policy-loss&#34;&gt;Empirical Policy Loss&lt;/h3&gt;
 &lt;p&gt;The last loss function that we are going to analyze is different from all the others we have seen so far since it focuses not on how well we are able to estimate the treatment effects, but rather on how well would the corresponding &lt;strong&gt;optimal treatment policy&lt;/strong&gt; performs. In particular, &lt;a href=&#34;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3111957&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Hitsch, Misra, Zhang (2023)&lt;/a&gt; propose the following loss function:&lt;/p&gt;
@@ -912,7 +1204,7 @@ $$&lt;/p&gt;
 &lt;p&gt;where $c$ is the treatment cost and $d_i$ is the optimal treatment policy given the estimated CATE $\hat{\tau}(X_i)$. In our case, we assume an individual treatment cost of $c=0.01$$, so that the optimal policy is to treat every customer with an estimated CATE larger than 0.01, $d(X_i) = (\hat{\tau}(X_i) &amp;gt; 0.01)$.&lt;/p&gt;
 &lt;p&gt;The terms $W_i \cdot d(X_i)$ and $(1-W_i) \cdot (1-d(X_i))$ imply that we use for the calculation only individuals for whom the actual treatment &lt;em&gt;W&lt;/em&gt; corresponds with the optimal one, &lt;em&gt;d(X)&lt;/em&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def loss_policy(learner):
-    data = generate_data(N=10_000, seed=123)
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     tau_hat = learner.effect(data[X])
     e_hat = clone(model_e).fit(data[X], data[W]).predict_proba(data[X])[:,1]
     d = tau_hat &amp;gt; c
@@ -920,6 +1212,7 @@ $$&lt;/p&gt;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;results = compare_methods(learners, names, loss_policy, title=&#39;Empirical Policy Loss&#39;, subtitle=&#39;higher is better&#39;)
 &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/evaluate_uplift_74_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h2 id=&#34;meta-studies&#34;&gt;Meta Studies&lt;/h2&gt;
 &lt;p&gt;In this article we have introduced a wide variety of methods to evaluate uplift models, a.k.a. Conditional Average Treatment Effect estimators. We have also tested in our simulated dataset, which is a very special and limited example. How do these metrics &lt;strong&gt;perform&lt;/strong&gt; in general?&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/1804.05146&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Schuler, Baiocchi, Tibshirani, Shah (2018)&lt;/a&gt; compares the S-loss, T-loss, R-loss, on simulated data, for the corresponding estimators. They find that the R-loss &amp;ldquo;&lt;em&gt;is the validation set metric that, when optimized, most consistently leads to the selection of a high-performing model&lt;/em&gt;&amp;rdquo;.&lt;/p&gt;
@@ -932,16 +1225,22 @@ $$&lt;/p&gt;
 &lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
 &lt;ul&gt;
 &lt;li&gt;
-&lt;p&gt;Schuler, Baiocchi, Tibshirani, Shah (2018), &lt;a href=&#34;https://arxiv.org/abs/1804.05146&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;A comparison of methods for model selection when estimating individual treatment effects&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
 &lt;p&gt;Curth, van der Schaar (2023), &lt;a href=&#34;https://arxiv.org/abs/2302.02923&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;In Search of Insights, Not Magic Bullets: Towards Demystification of the Model Selection Dilemma in Heterogeneous Treatment Effect Estimation&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Mahajan, Mitliagkas, Neal, Syrgkanis (2023), &lt;a href=&#34;https://arxiv.org/abs/2211.01939&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Empirical Analysis of Model Selection for Heterogeneous Causal Effect Estimation&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Gutierrez, Gerardy (2017), &lt;a href=&#34;https://proceedings.mlr.press/v67/gutierrez17a/gutierrez17a.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Causal Inference and Uplift Modeling: A review of the literature&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Gutierrez, Gerardy (2017), &lt;a href=&#34;https://proceedings.mlr.press/v67/gutierrez17a/gutierrez17a.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Causal Inference and Uplift Modeling: A review of the literature&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Hitsch, Misra, Zhang (2023), &lt;a href=&#34;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3111957&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Heterogeneous Treatment Effects and Optimal Targeting Policy Evaluation&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Kennedy (2022), &lt;a href=&#34;https://arxiv.org/abs/2004.14497&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Towards optimal doubly robust estimation of heterogeneous causal effects&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Kunzel, Sekhon, Bickel, Yu (2017), &lt;a href=&#34;https://arxiv.org/abs/1706.03461&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Meta-learners for Estimating Heterogeneous Treatment Effects using Machine Learning&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Mahajan, Mitliagkas, Neal, Syrgkanis (2023), &lt;a href=&#34;https://arxiv.org/abs/2211.01939&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Empirical Analysis of Model Selection for Heterogeneous Causal Effect Estimation&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;Nie, Wager (2017), &lt;a href=&#34;https://arxiv.org/abs/1712.04912&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Quasi-Oracle Estimation of Heterogeneous Treatment Effects&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
@@ -950,13 +1249,7 @@ $$&lt;/p&gt;
 &lt;p&gt;Saito, Yasui (2020), &lt;a href=&#34;https://arxiv.org/abs/1909.05299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Counterfactual Cross-Validation: Stable Model Selection Procedure for Causal Inference Models&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;Hitsch, Misra, Zhang (2023), &lt;a href=&#34;https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3111957&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Heterogeneous Treatment Effects and Optimal Targeting Policy Evaluation&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Kunzel, Sekhon, Bickel, Yu (2017), &lt;a href=&#34;https://arxiv.org/abs/1706.03461&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Meta-learners for Estimating Heterogeneous Treatment Effects using Machine Learning&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;Kennedy (2022), &lt;a href=&#34;https://arxiv.org/abs/2004.14497&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Towards optimal doubly robust estimation of heterogeneous causal effects&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Schuler, Baiocchi, Tibshirani, Shah (2018), &lt;a href=&#34;https://arxiv.org/abs/1804.05146&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;A comparison of methods for model selection when estimating individual treatment effects&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
@@ -966,6 +1259,12 @@ $$&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/ed4097dab27a&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding AIPW, the Doubly-Robust Estimator&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/920177462149&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Causal Trees&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/43c4536f1481&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;From Causal Trees to Forests&lt;/a&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
