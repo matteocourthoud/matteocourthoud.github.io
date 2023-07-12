@@ -341,10 +341,10 @@ When estimating the causal effect of a treatment (a drug, ad, product, &hellip;)
     
       <meta
         property="article:published_time"
-        content="2023-07-11T00:00:00&#43;00:00"
+        content="2023-07-12T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2023-07-11T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2023-07-12T00:00:00&#43;00:00">
   
 
   
@@ -376,8 +376,8 @@ When estimating the causal effect of a treatment (a drug, ad, product, &hellip;)
     "https://matteocourthoud.github.io/post/evaluate_uplift/featured.png"
   ],
   
-  "datePublished": "2023-07-11T00:00:00Z",
-  "dateModified": "2023-07-11T00:00:00Z",
+  "datePublished": "2023-07-12T00:00:00Z",
+  "dateModified": "2023-07-12T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -771,23 +771,24 @@ When estimating the causal effect of a treatment (a drug, ad, product, &hellip;)
   <ul>
     <li><a href="#uplift-and-promotional-emails">Uplift and Promotional Emails</a></li>
     <li><a href="#uplift-models">Uplift Models</a></li>
-    <li><a href="#oracle-losses">Oracle Losses</a>
+    <li><a href="#oracle-loss-functions">Oracle Loss Functions</a>
       <ul>
         <li><a href="#oracle-mse-loss">Oracle MSE Loss</a></li>
-        <li><a href="#oracle-policy-loss">Oracle Policy Loss</a></li>
+        <li><a href="#oracle-policy-gain">Oracle Policy Gain</a></li>
       </ul>
     </li>
-    <li><a href="#practical-losses">Practical Losses</a>
+    <li><a href="#practical-loss-functions">Practical Loss Functions</a>
       <ul>
         <li><a href="#outcome-loss">Outcome Loss</a></li>
+        <li><a href="#prediction-to-prediction-loss">Prediction to Prediction Loss</a></li>
         <li><a href="#distribution-loss">Distribution Loss</a></li>
-        <li><a href="#above-below-median-loss">Above-below Median Loss</a></li>
+        <li><a href="#above-below-median-difference">Above-below Median Difference</a></li>
         <li><a href="#uplift-curve">Uplift Curve</a></li>
         <li><a href="#nearest-neighbor-match">Nearest Neighbor Match</a></li>
         <li><a href="#ipw-loss">IPW Loss</a></li>
         <li><a href="#r-loss">R Loss</a></li>
         <li><a href="#dr-loss">DR Loss</a></li>
-        <li><a href="#empirical-policy-loss">Empirical Policy Loss</a></li>
+        <li><a href="#empirical-policy-gain">Empirical Policy Gain</a></li>
       </ul>
     </li>
     <li><a href="#meta-studies">Meta Studies</a></li>
@@ -847,7 +848,7 @@ When estimating the causal effect of a treatment (a drug, ad, product, &hellip;)
     
       
     
-    Jul 11, 2023
+    Jul 12, 2023
   </span>
   
 
@@ -856,7 +857,7 @@ When estimating the causal effect of a treatment (a drug, ad, product, &hellip;)
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    17 min read
+    20 min read
   </span>
   
 
@@ -893,13 +894,13 @@ When estimating the causal effect of a treatment (a drug, ad, product, &hellip;)
           <div class="article-style" align="justify">
             <p>One of the most widespread applications of causal inference in the industry is <strong>uplift modeling</strong>, a.k.a. the estimation of Conditional Average Treatment Effects.</p>
 <p>When estimating the causal effect of a <strong>treatment</strong> (a drug, ad, product, &hellip;) on an <strong>outcome</strong> of interest (a disease, firm revenue, customer satisfaction, &hellip;), we are often not only interested in understanding whether the treatment works on average, but we would like to know for which <strong>subjects</strong> (patients, users, customers, &hellip;) it works better or worse.</p>
-<p>The estimation of heterogenous incremental effects, or uplift, is an essential intermediate step in order to improve <strong>targeting</strong> of the policy of interest. For example, we might want to warn certain people that they are more likely to experience side effects from a drug or show an advertisement only to a specific set of customers.</p>
-<p>While there exist many methods to model uplift, it is not always clear which one to use in a specific application. Crucially, because of the <strong>fundamental problem of causal inference</strong>, the objective of interest, the uplift, is never observed, and therefore we cannot validate our estimators as we would do with a machine learning prediction algorithm. We cannot set aside a validation set and pick the best-performing model since we have <strong>no ground truth</strong>, not even in the validation set and not even if we ran a randomized experiment.</p>
-<p>What can we do then? In this article, I try to cover the most popular methods used to <strong>evaluate uplift models</strong>. If you are not familiar with uplift models, I suggest reading <a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">my introductory article</a> first.</p>
-<p>Enjoy!</p>
+<p>Estimating heterogenous incremental effects, or uplift, is an essential intermediate step to improve <strong>targeting</strong> of the policy of interest. For example, we might want to warn certain people that they are more likely to experience side effects from a drug or show an advertisement only to a specific set of customers.</p>
+<p>While there exist many methods to model uplift, it is not always clear which one to use in a specific application. Crucially, because of the <strong>fundamental problem of causal inference</strong>, the objective of interest, the uplift, is never observed, and therefore we cannot validate our estimators as we would do with a machine learning prediction algorithm. We cannot set aside a validation set and pick the best-performing model since we have <strong>no ground truth</strong>, not even in the validation set, and not even if we ran a randomized experiment.</p>
+<p>What can we do then? In this article, I try to cover the most popular methods used to <strong>evaluate uplift models</strong>. If you are unfamiliar with uplift models, I suggest first reading my introductory article.</p>
+<p><a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">https://towardsdatascience.com/8a9c1e340832</a></p>
 <h2 id="uplift-and-promotional-emails">Uplift and Promotional Emails</h2>
-<p>Imagine we were a product company interested in improving our <strong>email marketing campaing</strong>. Historically, we mostly sent emails to new customers. However, now we would like to adopt a data-driven approach and terget customers for whom the email has the highest positive impact on revenue. This impact is also called <strong>uplift</strong> or <strong>incrementality</strong>.</p>
-<p>Let&rsquo;s have a look at the data we have at our disposal.</p>
+<p>Imagine we were working in the marketing department of a product company interested in improving our <strong>email marketing campaign</strong>. Historically, we mostly sent emails to new customers. However, now we would like to adopt a data-driven approach and target customers for whom the email has the highest positive impact on revenue. This impact is also called <strong>uplift</strong> or <strong>incrementality</strong>.</p>
+<p>Let&rsquo;s have a look at the data we have at our disposal. I import the data-generating process <code>dgp_promotional_email()</code> from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener"><code>src.dgp</code></a>. I also import some plotting functions and libraries from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener"><code>src.utils</code></a>.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
 </code></pre>
@@ -985,7 +986,7 @@ df.head()
 W = 'mail'
 X = ['age', 'sales_old', 'new']
 </code></pre>
-<p>The Dyrected Acyclic Graph (DAG) behind the data generate process can be represented as follows.</p>
+<p>The Dyrected Acyclic Graph (DAG) representing the causal relationships between the variables is the following. The causal relationship of interest is depicted in green.</p>
 <pre><code class="language-mermaid">flowchart TD
 classDef included fill:#DCDCDC,stroke:#000000,stroke-width:3px;
 
@@ -1006,11 +1007,13 @@ class W,Y,X1,X2,X3 included;
 linkStyle 0 stroke:#2db88b,stroke-width:6px;
 linkStyle 1,2,3,4 stroke:#003f5c,stroke-width:6px;
 </code></pre>
+<p>From the DAG we see that the <code>new</code> customer indicator is a confounder and needs to be controlled for in order to identify the effect of <code>mail</code> on <code>sales.</code> <code>age</code> and <code>sales_old</code> instead are not essential for estimation but could be helpful for identification. For more information on DAGs and control variables, you can check my introductory article.</p>
+<p><a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">https://towardsdatascience.com/b63dc69e3d8c</a></p>
 <p>The objective of uplift modeling is to recover the <strong>Individual Treatment Effects (ITE)</strong> $\tau_i$, i.e. the incremental effect on <code>sales</code> of sending the promotional <code>mail</code>. We can express the ITE as the difference between two hypothetical quantities: the potential outcome of the customer if they had received the email, $Y_i^{(1)}$, minus the potential outcome of the customer if they had <em>not</em> received the email, $Y_i^{(0)}$.
 $$
 \tau_i = Y_i^{(1)} - Y_i^{(0)}
 $$</p>
-<p>Note that for each customer, we only observe one of the two realized outcomes, depending on whether they actually received the <code>mail</code> or not. Therefore, the ITE are inherently unobservable. What can be estimated instead is the <strong>Conditional Average Treatment Effect (CATE)</strong> i.e., the expected individual treatment effect $\tau_i$, conditional on covariates <em>X</em>.
+<p>Note that for each customer, we only observe one of the two realized outcomes, depending on whether they actually received the <code>mail</code> or not. Therefore, the ITE are inherently unobservable. What can be estimated instead is the <strong>Conditional Average Treatment Effect (CATE)</strong> i.e., the expected individual treatment effect $\tau_i$, conditional on covariates <em>X</em>. For example, the average effect of the <code>mail</code> on <code>sales</code> for older customers (<code>age</code> &gt; 50).
 $$
 \tau(x) = \mathbb{E} \Big[ \ \tau_i \ \Big| \ X_i = x \Big]
 $$</p>
@@ -1023,16 +1026,16 @@ $$</p>
 <p><strong>Overlap</strong>: $0 &lt; e(X) &lt; 1$</p>
 </li>
 <li>
-<p><strong>Consistency</strong>: $Y = W * Y^{(1)} + (1-W) * Y^{(0)}$</p>
+<p><strong>Consistency</strong>: $Y = W \cdot Y^{(1)} + (1-W) \cdot Y^{(0)}$</p>
 </li>
 </ol>
 <p>Where $e(X)$ is the <strong>propensity score</strong> i.e., the expected probability of being treated, conditional on covariates <em>X</em>.
 $$
 e(x) = \mathbb{E} \Big[ \ W_i \ \Big| \ X_i = x \Big]
 $$</p>
-<p>In what follows, we will use machine learning methods to estimate the CATE $\tau(x)$, the propensity scores $e(x)$, and the conditional expectation function of the outcome, $\mu(x)$
+<p>In what follows, we will use machine learning methods to estimate the CATE $\tau(x)$, the propensity scores $e(x)$, and the conditional expectation function (CEF) of the outcome, $\mu(x)$
 $$
-\mu(x) = \mathbb{E} \Big[ \ y_i \ \Big| \ X_i = x \Big]
+\mu(x) = \mathbb{E} \Big[ \ Y_i \ \Big| \ X_i = x \Big]
 $$</p>
 <p>We use <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html" target="_blank" rel="noopener">Random Forest Regression</a> algorithms to model the CATE and the outcome CEF, while we use <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html" target="_blank" rel="noopener">Logistic Regression</a> to model the propensity score.</p>
 <pre><code class="language-python">from sklearn.ensemble import RandomForestRegressor
@@ -1042,9 +1045,9 @@ model_tau = RandomForestRegressor(max_depth=2)
 model_y = RandomForestRegressor(max_depth=2)
 model_e = LogisticRegressionCV()
 </code></pre>
-<p>In this article, we do not fine tune the different regression functions, but it is strongly recommended to improve the accuracy of uplift models.</p>
+<p>In this article, we do not fine-tune the underlying machine learning models, but fine-tuning is strongly recommended to improve the accuracy of uplift models (for example, with auto-ml libraries like <a href="https://microsoft.github.io/FLAML/" target="_blank" rel="noopener">FLAML</a>).</p>
 <h2 id="uplift-models">Uplift Models</h2>
-<p>There exist <strong>many methods</strong> to model uplift or, in other words, to estimate Conditional Average Treatment Effects. Since the objective of this article is not to compare uplift models but methods to evaluate uplift models, we will not explain the models in detail. For a gentle introduction, you can check <a href="https://medium.com/towards-data-science/understanding-meta-learners-8a9c1e340832" target="_blank" rel="noopener">my article on meta learners</a>.</p>
+<p>There exist <strong>many methods</strong> to model uplift or, in other words, to estimate Conditional Average Treatment Effects (CATE). Since the objective of this article is to compare methods to <em>evaluate</em> uplift models, we will not explain the methods in detail. For a gentle introduction, you can check <a href="https://medium.com/towards-data-science/understanding-meta-learners-8a9c1e340832" target="_blank" rel="noopener">my introductory article on meta learners</a>.</p>
 <p>The learners that we will consider are the following:</p>
 <ul>
 <li>
@@ -1057,7 +1060,7 @@ model_e = LogisticRegressionCV()
 <p>X-learner or cross-learner, introduced by <a href="https://arxiv.org/abs/1706.03461" target="_blank" rel="noopener">Kunzel, Sekhon, Bickel, Yu (2017)</a></p>
 </li>
 <li>
-<p>R-learner (from <a href="https://www.jstor.org/stable/1912705" target="_blank" rel="noopener">Robinson (1988)</a>) introduced by <a href="https://arxiv.org/abs/1712.04912" target="_blank" rel="noopener">Nie, Wager (2017)</a></p>
+<p>R-learner or <a href="https://www.jstor.org/stable/1912705" target="_blank" rel="noopener">Robinson</a>-learner introduced by <a href="https://arxiv.org/abs/1712.04912" target="_blank" rel="noopener">Nie, Wager (2017)</a></p>
 </li>
 <li>
 <p>DR-learner or doubly-robust-learner, introduced by <a href="https://arxiv.org/abs/2004.14497" target="_blank" rel="noopener">Kennedy (2022)</a></p>
@@ -1070,41 +1073,44 @@ model_e = LogisticRegressionCV()
 from econml.dml import NonParamDML
 from econml.dr import DRLearner
 
-S_learner = SLearner(overall_model=model_y).fit(df[Y], df[W], X=df[X])
-T_learner = TLearner(models=clone(model_y)).fit(df[Y], df[W], X=df[X])
-X_learner = XLearner(models=model_y, propensity_model=model_e, cate_models=model_tau).fit(df[Y], df[W], X=df[X])
-R_learner = NonParamDML(model_y=model_y, model_t=model_e, model_final=model_tau, discrete_treatment=True
-                       ).fit(df[Y], df[W], X=df[X])
-DR_learner = DRLearner(model_regression=model_y, model_propensity=model_e, model_final=model_tau
-                      ).fit(df[Y], df[W], X=df[X])
+S_learner = SLearner(overall_model=model_y)
+T_learner = TLearner(models=clone(model_y))
+X_learner = XLearner(models=model_y, propensity_model=model_e, cate_models=model_tau)
+R_learner = NonParamDML(model_y=model_y, model_t=model_e, model_final=model_tau, discrete_treatment=True)
+DR_learner = DRLearner(model_regression=model_y, model_propensity=model_e, model_final=model_tau)
 </code></pre>
-<h2 id="oracle-losses">Oracle Losses</h2>
-<p>The main problem of evaluating uplift models is that, even when running an experiment and even when setting aside a validation dataset, we do <strong>not observe</strong> our metric of interest: the Individual Treatment Effects. Can we still do something to evaluate our estimators?</p>
-<p>The answer is yes, but before giving more details, let&rsquo;s first understand what we would do if we <strong>could observe</strong> the Individual Treatment Effects $\tau_i$.</p>
+<p>We <code>fit()</code> the models on the data, specifying the outcome variable <em>Y</em>, the treatment variable <em>W</em> and covariates <em>X</em>.</p>
 <pre><code class="language-python">names = ['SL', 'TL', 'XL', 'RL', 'DRL']
 learners = [S_learner, T_learner, X_learner, R_learner, DR_learner]
+for learner in learners:
+    learner.fit(df[Y], df[W], X=df[X])
 </code></pre>
+<p>We are now ready to evaluate the models! Which model should we choose?</p>
+<h2 id="oracle-loss-functions">Oracle Loss Functions</h2>
+<p>The main problem of evaluating uplift models is that, even with a validation set and even with a randomized experiment or AB test, we do <strong>not observe</strong> our metric of interest: the Individual Treatment Effects. In fact, we only observe the realized outcomes, $Y_i^{(0)}$ for untreated customers and $Y_i^{(1)}$ for treated customers. Therefore, for no customer we can compute the individual treatment effect in the validation data, $\tau_i = Y_i^{(1)} - Y_i^{(0)}$.</p>
+<p>Can we still do something to <strong>evaluate</strong> our estimators?</p>
+<p>The answer is yes, but before giving more details, let&rsquo;s first understand what we would do if we <strong>could observe</strong> the Individual Treatment Effects $\tau_i$.</p>
+<h3 id="oracle-mse-loss">Oracle MSE Loss</h3>
+<p>If we could observe the individual treatment effects (but we don&rsquo;t, hence the &ldquo;oracle&rdquo; attribute), we could try to measure how far our estimates $\hat{\tau}(X_i)$ are from the true values $\tau_i$. This is what we normally do in machine learning when we want to evaluate a prediction method: we set aside a validation dataset and we compare predicted and true values on that data. There exist plenty of loss functions to evaluate prediction accurary, so let&rsquo;s concentrate on the most popular one: the <strong>Mean Squared Error (MSE) loss</strong>.</p>
+<p>$$
+\mathcal{L} _ {oracle-MSE}(\hat{\tau}) = \frac{1}{n} \sum _ {i=1}^{n} \left( \hat{\tau}(X_i) - \tau(X_i) \right)^2
+$$</p>
+<pre><code class="language-python">def loss_oracle_mse(data, learner):
+    tau = learner.effect(data[X])
+    return np.mean((tau - data['effect_on_sales'])**2)
+</code></pre>
+<p>The function <code>compare_methods</code> prints and plots evaluation metrics computed on a separate validation dataset.</p>
 <pre><code class="language-python">def compare_methods(learners, names, loss, title=None, subtitle='lower is better'):
+    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
     results = pd.DataFrame({
         'learner': names,
-        'loss': [loss(learner) for learner in learners]
+        'loss': [loss(data.copy(), learner) for learner in learners]
     })
     fig, ax = plt.subplots(1, 1, figsize=(6, 4))
     sns.barplot(data=results, x=&quot;learner&quot;, y='loss').set(ylabel='')
     plt.suptitle(title, y=1.02)
     plt.title(subtitle, fontsize=12, fontweight=None, y=0.94)
     return results
-</code></pre>
-<h3 id="oracle-mse-loss">Oracle MSE Loss</h3>
-<p>If we could observe the individual treatment effects (but we don&rsquo;t), we could try to measure how far our estimates $\hat{\tau}(X_i)$ are with respect to the true value $\tau_i$. This is what we normally do in machine learning when we want to evaluate a prediction method. There exist plenty of loss functions, so let&rsquo;s concentrate on the most popular one: the <strong>Mean Squared Error (MSE) loss</strong>.</p>
-<p>$$
-\mathcal{L} _ {oracle-MSE}(\hat{\tau}) = \frac{1}{n} \sum _ {i=1}^{n} \left( \hat{\tau}(X_i) - \tau(X_i) \right)^2
-$$</p>
-<p>Let&rsquo;s compute it across our uplift models. We compute it on a validation dataset with 10.000 observations.</p>
-<pre><code class="language-python">def loss_oracle_mse(learner):
-    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
-    tau = learner.effect(data[X])
-    return np.mean((tau - data['effect_on_sales'])**2)
 </code></pre>
 <pre><code class="language-python">compare_methods(learners, names, loss_oracle_mse, title='Oracle MSE Loss')
 </code></pre>
@@ -1159,24 +1165,23 @@ $$</p>
   </tbody>
 </table>
 </div>
-<p><img src="img/evaluate_uplift_25_1.png" alt="png"></p>
-<p>In this case, we see that the T-learner clearly performs worst, while X-, D- and DR-learners perform best, with the R-learner slightly winning the race.</p>
-<p>However, this might not be the best loss function. In fact, uplift modeling is just an intermediate step towards our ultimate goal: improving revenue.</p>
-<h3 id="oracle-policy-loss">Oracle Policy Loss</h3>
-<p>Since our ultimate goal is to improve revenue, we could evaluate estimators by how much they increase revenue, given a certain policy function. Suppose, for example, that we had a $0.01$\$ cost of sending an email. Then, our policy would be to treat each costumer that has a predicted Conditional Average Treatment Effect above $0.01$\$.</p>
-<pre><code class="language-python">c = 0.01
+<p><img src="img/evaluate_uplift_31_1.png" alt="png"></p>
+<p>In this case, we see that the T-learner clearly performs worst, with the S-learner just behind. On the other hand, the X-, R- and DR-learners perform significantly better, with the <strong>DR-learner winning</strong> the race.</p>
+<p>However, this might <em>not</em> be the best loss function to evaluate our uplift model. In fact, uplift modeling is just an intermediate step towards our ultimate goal: improving revenue.</p>
+<h3 id="oracle-policy-gain">Oracle Policy Gain</h3>
+<p>Since our ultimate goal is to <strong>improve revenue</strong>, we could evaluate estimators by how much they increase revenue, given a certain policy function. Suppose, for example, that we had a $0.01$\$ cost of sending an email. Then, our policy would be to treat each costumer that has a predicted Conditional Average Treatment Effect above $0.01$\$.</p>
+<pre><code class="language-python">cost = 0.01
 </code></pre>
-<p>How much would our revenue actually increase?</p>
-<p>$$
-\mathcal{L} _ {oracle-POLICY}(\hat{\tau}) = \frac{1}{n} \sum _ {i=1}^{n} \Big( \hat{\tau}(X_i) - \tau(X_i) \Big)^2
+<p>How much would our revenue actually increase? Let&rsquo;s define with $d(\hat{\tau})$ our policy function, such that $d=1$ if $\tau &gt;= 0.1$ and $d=0$ otherwise. Then our <em>gain</em> (higher is better) function is:
+$$
+\mathcal{G} _ {oracle-POLICY}(\hat{\tau}) = \frac{1}{n} \sum _ {i=1}^{n} d(\hat{\tau}) (\tau_i - c)
 $$</p>
 <p>Again, this is an &ldquo;oracle&rdquo; loss function that <strong>cannot be computed</strong> in reality since we do not observe the individual treatment effects.</p>
-<pre><code class="language-python">def loss_oracle_policy(learner):
-    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
+<pre><code class="language-python">def gain_oracle_policy(data, learner):
     tau_hat = learner.effect(data[X])
-    return np.sum(data['effect_on_sales'] * (tau_hat&gt;c) - c)
+    return np.sum((data['effect_on_sales'] - cost) * (tau_hat &gt; cost))
 </code></pre>
-<pre><code class="language-python">compare_methods(learners, names, loss_oracle_policy, title='Oracle Policy Loss', subtitle='higher is better')
+<pre><code class="language-python">compare_methods(learners, names, gain_oracle_policy, title='Oracle Policy Gain', subtitle='higher is better')
 </code></pre>
 <div>
 <style scoped>
@@ -1204,34 +1209,34 @@ $$</p>
     <tr>
       <th>0</th>
       <td>SL</td>
-      <td>-5.00</td>
+      <td>0.00</td>
     </tr>
     <tr>
       <th>1</th>
       <td>TL</td>
-      <td>0.76</td>
+      <td>4.23</td>
     </tr>
     <tr>
       <th>2</th>
       <td>XL</td>
-      <td>8.61</td>
+      <td>10.98</td>
     </tr>
     <tr>
       <th>3</th>
       <td>RL</td>
-      <td>7.66</td>
+      <td>10.43</td>
     </tr>
     <tr>
       <th>4</th>
       <td>DRL</td>
-      <td>9.48</td>
+      <td>12.33</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p><img src="img/evaluate_uplift_32_1.png" alt="png"></p>
-<p>In this case, the S-learner is clearly the worst performer, leading to an aggregate loss (i.e. we would have been better off not sending any email). On the other hand, X-, R- and DR- learners all lead to aggregate gains, with no clear winner</p>
-<h2 id="practical-losses">Practical Losses</h2>
+<p><img src="img/evaluate_uplift_38_1.png" alt="png"></p>
+<p>In this case, the S-learner is clearly the worst performer, leading to no effect on revenues. The T-learner leads to modest gains while the X-, R- and DR- learners all lead to aggregate gains, with the <strong>X-learner slightly ahead</strong>.</p>
+<h2 id="practical-loss-functions">Practical Loss Functions</h2>
 <p>In the previous section, we have seen two examples of loss functions that we would like to compute if we could observe the Individual Treatment Effects $\tau_i$. However, in practice, even with a randomized experiment and even with a validation set, we do not observe the ITE,our object of interest. We will now cover some measures that try to evaluate uplift models, given this practical constraint.</p>
 <h3 id="outcome-loss">Outcome Loss</h3>
 <p>The first and simplest approach is to switch to a different loss variable. While we cannot observe the Individual Treatment Effects, $\tau_i$, we can still observe our outcome $y_i$. This is not exactly our object of interest, but we might expect an uplift model that performs well in terms of predicting $y$ to also produce good estimates of $\tau$.</p>
@@ -1239,26 +1244,86 @@ $$</p>
 $$
 \mathcal{L}_{Y}(\hat{\mu}) = \frac{1}{n} \sum _ {i=1}^{n} \Big( \hat{\mu}(X_i, W_i) - Y_i \Big)^2
 $$</p>
-<pre><code class="language-python">def loss_outcome(learner):
-    data = generate_data(N=10_000, seed=123)
-    mu0, mu1 = learner.predict_mu(data, X, W, Y)
-    mu = mu0 * (1-data[W]) + mu1 * data[W]
-    return np.mean((mu - data['sales'])**2)
-</code></pre>
-<h3 id="distribution-loss">Distribution Loss</h3>
-<p>A different approach is to ask: how well are we able to match the distribution of potential outcomes?</p>
-<p>$$
-dist \ \Big( \ {Y_i | W_i=0 } \ , \ {Y_i - \hat{\tau}(X_i)| W_i=1 } \ \Big)
-$$</p>
-<p>or</p>
-<p>$$
-dist \ \Big( \ {Y_i + \hat{\tau}(X_i)| W_i=0 } \ , \ {Y_i | W_i=1 } \ \Big)
-$$</p>
-<pre><code class="language-python">def loss_dist(learner):
-    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
+<p>The problem here is that not all models directly produce an estimate of $\mu(x)$ and, even when they do, it is not the object of interest.</p>
+<h3 id="prediction-to-prediction-loss">Prediction to Prediction Loss</h3>
+<p>Another very simple approach could be to compare the predictions of the model trained on the training set with the predictions of another model trained on the validation set. While intuitive, this appraoch could be <strong>extremely misleading</strong>.</p>
+<pre><code class="language-python">def loss_pred(data, learner):
     tau = learner.effect(data[X])
-    y0 = data.loc[data.mail==1, 'sales'] - tau[data.mail==1]
-    return sp.stats.energy_distance(df.loc[df.mail==0, 'sales'], y0)
+    learner2 = copy.deepcopy(learner).fit(data[Y], data[W], X=data[X])
+    tau2 = learner2.effect(data[X])
+    return np.mean((tau - tau2)**2)
+</code></pre>
+<pre><code class="language-python">compare_methods(learners, names, loss_pred, 'Prediction to Prediction Loss')
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>learner</th>
+      <th>loss</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>SL</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>TL</td>
+      <td>0.007342</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>XL</td>
+      <td>0.000366</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>RL</td>
+      <td>0.134137</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>DRL</td>
+      <td>0.000933</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p><img src="img/evaluate_uplift_47_1.png" alt="png"></p>
+<p>Unsurprisingly, this metric performs extremely bad, and you should <strong>never use it</strong>, since it rewards models that are consistent, irrespectively of their quality. A model that always predicts a random constant CATE for each observations would obtain a perfect score.</p>
+<h3 id="distribution-loss">Distribution Loss</h3>
+<p>A different approach is to ask: how well can we match the distribution of potential outcomes? We can do this exarcise for either the <em>treated</em> or <em>untreated</em> potential outcomes. Let&rsquo;s take the last case. Suppose we take the observed <code>sales</code> for customers that did <em>not</em> receive the <code>mail</code> and the observed <code>sales</code> <em>minus</em> the estimated CATE $\hat{\tau}(x)$ for customers that did receive the <code>mail</code>. By the <strong>unconfoundedness</strong> assumption, these two distributions of the untreated potential outcome should be similar, conditional on covariates $X$.</p>
+<p>Therefore, we expect the distance between the two distributions to be close if we correctly estimated the treatment effects.
+$$
+dist \ \Big( \ {Y_i, X_i | W_i=0 } \ , \ {Y_i - \hat{\tau}(X_i), X_i | W_i=1 } \ \Big)
+$$</p>
+<p>We can also do the same exercise for the <em>treated</em> potential outcome.</p>
+<p>$$
+dist \ \Big( \ {Y_i + \hat{\tau}(X_i), X_i | W_i=0 } \ , \ {Y_i, X_i | W_i=1 } \ \Big)
+$$</p>
+<pre><code class="language-python">from dcor import energy_distance
+
+def loss_dist(data, learner):
+    tau = learner.effect(data[X])
+    data.loc[data.mail==1, 'sales'] -= tau[data.mail==1]
+    return energy_distance(data.loc[data.mail==0, [Y] + X], data.loc[data.mail==1, [Y] + X], exponent=2)
 </code></pre>
 <pre><code class="language-python">compare_methods(learners, names, loss_dist, 'Distribution Loss')
 </code></pre>
@@ -1288,38 +1353,38 @@ $$</p>
     <tr>
       <th>0</th>
       <td>SL</td>
-      <td>0.113851</td>
+      <td>1.728523</td>
     </tr>
     <tr>
       <th>1</th>
       <td>TL</td>
-      <td>0.169005</td>
+      <td>1.733941</td>
     </tr>
     <tr>
       <th>2</th>
       <td>XL</td>
-      <td>0.137942</td>
+      <td>1.733993</td>
     </tr>
     <tr>
       <th>3</th>
       <td>RL</td>
-      <td>0.150188</td>
+      <td>1.736704</td>
     </tr>
     <tr>
       <th>4</th>
       <td>DRL</td>
-      <td>0.141040</td>
+      <td>1.735105</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p><img src="img/evaluate_uplift_42_1.png" alt="png"></p>
-<h3 id="above-below-median-loss">Above-below Median Loss</h3>
-<p>The above-below median loss tries to answer the question: is our uplift model detecting <em>any</em> heterogeneity? In particular, if we take the validation set and we split the sample into above-median and below median predicted uplift $\hat{\tau}(x)$, how big is the actual difference in average effect, estimated with a difference-in-means estimator? We would expect better estimators to better split the sample into high-effects and low-effects.</p>
+<p><img src="img/evaluate_uplift_52_1.png" alt="png"></p>
+<p>This measure is extremely noisy and rewards the S-learner followed by the T-learner which are actually the two worst performing models.</p>
+<h3 id="above-below-median-difference">Above-below Median Difference</h3>
+<p>The above-below median loss tries to answer the question: is our uplift model detecting <strong>any heterogeneity</strong>? In particular, if we take the validation set and we split the sample into above-median and below median predicted uplift $\hat{\tau}(x)$, how big is the actual difference in average effect, estimated with a difference-in-means estimator? We would expect better estimators to better split the sample into high-effects and low-effects.</p>
 <pre><code class="language-python">from statsmodels.formula.api import ols 
 
-def loss_ab(learner):
-    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
+def loss_ab(data, learner):
     tau = learner.effect(data[X]) + np.random.normal(0, 1e-8, len(data))
     data['above_median'] = tau &gt;= np.median(tau)
     param = ols('sales ~ mail * above_median', data=data).fit().params[-1]
@@ -1358,7 +1423,7 @@ def loss_ab(learner):
     <tr>
       <th>1</th>
       <td>TL</td>
-      <td>0.222017</td>
+      <td>0.221423</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1373,16 +1438,17 @@ def loss_ab(learner):
     <tr>
       <th>4</th>
       <td>DRL</td>
-      <td>0.076508</td>
+      <td>0.075319</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p><img src="img/evaluate_uplift_46_1.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_57_1.png" alt="png"></p>
+<p>Unfortunately, the above-below median difference rewards the T-learner, which is among the worst performing models.</p>
 <p>It&rsquo;s important to note that the difference-in-means estimators in the two groups (above- and below- median $\hat{\tau}(x)$) are <strong>not guaranteed to be unbiased</strong>, even if the data came from a randomized experiment. In fact, we have split the two groups on a variable, $\hat{\tau}(x)$, that is highly endogenous. Therefore, the method should be used with a grain of salt.</p>
 <h3 id="uplift-curve">Uplift Curve</h3>
-<p>An extension of the above-below median test is the <strong>uplift curve</strong>. The idea is simple: instead of splitting the sample into two goups based on the median (0.5 quantile), why not splitting the data into more groups (more quantiles)?</p>
-<p>For each group, we compute the difference-in-means estimate and we plot its cumulative sum agains the corresponding quantile. The result is called <strong>uplift curve</strong>. The interpretation is simple: the higher the curve, the better we are able to separate high- from low-effect observations. However, also the same <strong>disclaimer</strong> applies: the difference-in-means estimates are not unbiased, therefore have to be used with a grain of salt.</p>
+<p>An extension of the above-below median test is the <strong>uplift curve</strong>. The idea is simple: instead of splitting the sample into two groups based on the median (0.5 quantile), why not split the data into more groups (more quantiles)?</p>
+<p>For each group, we compute the difference-in-means estimate, and we plot its cumulative sum against the corresponding quantile. The result is called <strong>uplift curve</strong>. The interpretation is simple: the higher the curve, the better we are able to separate high- from low-effect observations. However, also the same <strong>disclaimer</strong> applies: the difference-in-means estimates are not unbiased. Therefore, they should be used with a grain of salt.</p>
 <pre><code class="language-python">def generate_uplift_curve(df):
     Q = 20
     df_q = pd.DataFrame()
@@ -1404,18 +1470,17 @@ def loss_ab(learner):
 </code></pre>
 <pre><code class="language-python">generate_uplift_curve(df)
 </code></pre>
-<p><img src="img/evaluate_uplift_51_0.png" alt="png"></p>
-<p>While probably not the best method to <em>evaluate</em> uplift models, the uplift curve is very important in <em>understanding</em> and <em>implementing</em> them. In fact, for each models, it tells us that is the expected average treatment effect (y-axis) as we increase the share of treated population (x-axis).</p>
+<p><img src="img/evaluate_uplift_62_0.png" alt="png"></p>
+<p>While probably not the best method to <em>evaluate</em> uplift models, the uplift curve is very important in <strong>understanding</strong> and <strong>implementing</strong> them. In fact, for each model, it tells us that is the expected average treatment effect (y-axis) as we increase the share of the treated population (x-axis).</p>
 <h3 id="nearest-neighbor-match">Nearest Neighbor Match</h3>
-<p>The last methods we analyzed aggregated data in order to understand whether the methods work on larger groups. The nearest neighbor match tries instead to understand how well an uplift model predicts individual treatment effects. However, since the ITEs are not observable, it tries to build a proxy by matching treated and control observations on observable characteristics $x$.</p>
+<p>The last couple of methods we analyzed, aggregated data in order to understand whether the methods work on larger groups. The nearest neighbor match tries instead to understand how well an uplift model predicts individual treatment effects. However, since the ITEs are not observable, it tries to build a <strong>proxy by matching</strong> treated and control observations on observable characteristics $X$.</p>
 <p>For example, if we take all treated observations ($i: W_i=1$), and we find the nearest neighbor in the control group ($NN_0(X_i)$), the corresponding MSE loss function is
 $$
 \mathcal{L} _ {NN}(\hat{\tau}) = \frac{1}{n} \sum _ {i: W_i=1} \Big( \hat{\tau}(X_i) - (Y_i - NN_0(X_i)) \Big)^2
 $$</p>
 <pre><code class="language-python">from scipy.spatial import KDTree
 
-def loss_nn(learner):
-    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
+def loss_nn(data, learner):
     tau_hat = learner.effect(data[X])
     nn0 = KDTree(data.loc[data[W]==0, X].values)
     control_index = nn0.query(data.loc[data[W]==1, X], k=1)[-1]
@@ -1475,14 +1540,18 @@ def loss_nn(learner):
   </tbody>
 </table>
 </div>
-<p><img src="img/evaluate_uplift_56_1.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_67_1.png" alt="png"></p>
+<p>In this case, the nearest neighbor loss performs quite well, identifying the two worse performing methods, the S- and T-learner.</p>
 <h3 id="ipw-loss">IPW Loss</h3>
-<p>The Inverse Probability Weighting (IPW) loss function was first proposed by <a href="https://proceedings.mlr.press/v67/gutierrez17a/gutierrez17a.pdf" target="_blank" rel="noopener">Gutierrez, Gerardy (2017)</a> and the first of three metrics that we are going to see that uses a <strong>pseudo-outcome</strong> $Y^*$ to evaluate the estimator. As we have seen in the brief introduction to the R- and DR- learner, pseudo-outcomes are variables whose expected value is the Conditional Average Treatment Effect. The pseudo-outcome corresponding to the IPW loss is</p>
-<p>$$
+<p>The Inverse Probability Weighting (IPW) loss function was first proposed by <a href="https://proceedings.mlr.press/v67/gutierrez17a/gutierrez17a.pdf" target="_blank" rel="noopener">Gutierrez, Gerardy (2017)</a>, and it is the first of three metrics that we are going to see that uses a <strong>pseudo-outcome</strong> $Y^<em>$ to evaluate the estimator. Pseudo-outcomes are variables whose expected value is the Conditional Average Treatment Effect, but that are too volatile to be directly used as estimates. For a more detailed explanation of pseudo-outcomes, I suggest <a href="https://towardsdatascience.com/920177462149" target="_blank" rel="noopener">my article on causal regression trees</a>. The pseudo-outcome corresponding to the IPW loss is
+$$
+Y^</em> _ {IPW} = Y_i \ \frac{W_i - \hat{e}(X_i)}{\hat{e}(X_i)(1 - \hat{e}(X_i))}
+$$</p>
+<p>so that the corresponding loss function is
+$$
 \mathcal{L} _ {IPW} = \frac{1}{n} \sum_{i=1}^{n} \left( \hat{\tau}(X_i) - Y_i \ \frac{W_i - \hat{e}(X_i)}{\hat{e}(X_i)(1 - \hat{e}(X_i))} \right)^2
 $$</p>
-<pre><code class="language-python">def loss_ipw(learner):
-    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
+<pre><code class="language-python">def loss_ipw(data, learner):
     tau_hat = learner.effect(data[X])
     e_hat = clone(model_e).fit(data[X], data[W]).predict_proba(data[X])[:,1]
     tau_gg = data[Y] * (data[W] - e_hat) / (e_hat * (1 - e_hat))
@@ -1541,14 +1610,18 @@ $$</p>
   </tbody>
 </table>
 </div>
-<p><img src="img/evaluate_uplift_60_1.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_72_1.png" alt="png"></p>
+<p>The IPW loss is extremely noisy. A solution is to use its more robust variations, the R-loss or the DR-loss which we present next.</p>
 <h3 id="r-loss">R Loss</h3>
-<p>The R-loss was introduced together with the R-learner by <a href="https://arxiv.org/abs/1712.04912" target="_blank" rel="noopener">Nie, Wager (2017)</a>, and it is essentially the <strong>objective function</strong> of the R-learner.</p>
-<p>$$
+<p>The R-loss was introduced together with the R-learner by <a href="https://arxiv.org/abs/1712.04912" target="_blank" rel="noopener">Nie, Wager (2017)</a>, and it is essentially the <strong>objective function</strong> of the R-learner. As for the IPW-loss, the idea is to try to match a pseudo outcome whose expected value is the Conditional Average Treatment Effect.
+$$
+Y^* _ {R} = \frac{Y_i - \hat{\mu}_W(X_i)}{W_i - \hat{e}(X_i)}
+$$</p>
+<p>The corresponding loss function is
+$$
 \mathcal{L}_{R} = \frac{1}{n} \sum _ {i=1}^{n} \left( \hat{\tau}(X_i) -  \frac{Y_i - \hat{\mu}_W(X_i)}{W_i - \hat{e}(X_i)} \right)^2
 $$</p>
-<pre><code class="language-python">def loss_r(learner):
-    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
+<pre><code class="language-python">def loss_r(data, learner):
     tau_hat = learner.effect(data[X])
     y_hat = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]])
     e_hat = clone(model_e).fit(df[X], df[W]).predict_proba(data[X])[:,1]
@@ -1557,53 +1630,55 @@ $$</p>
 </code></pre>
 <pre><code class="language-python">results = compare_methods(learners, names, loss_r, title='R Loss')
 </code></pre>
-<p><img src="img/evaluate_uplift_64_0.png" alt="png"></p>
-<p>Unsurprisingly, the R-loss tends to favor its corresponding learner, the R-learner.</p>
+<p><img src="img/evaluate_uplift_77_0.png" alt="png"></p>
+<p>The R-loss is sensibly less noisy than the IPW loss and it clearly isolates the S-learner. However, it tends to favor its corresponding learner, the R-learner.</p>
 <h3 id="dr-loss">DR Loss</h3>
-<p>Similarly to the R-loss, the DR-loss is the <strong>objective function</strong> of the DR-learner and it was first introduced by <a href="https://arxiv.org/abs/1909.05299" target="_blank" rel="noopener">Saito, Yasui (2020)</a>.</p>
-<p>$$
+<p>The DR-loss is the <strong>objective function</strong> of the DR-learner, and it was first introduced by <a href="https://arxiv.org/abs/1909.05299" target="_blank" rel="noopener">Saito, Yasui (2020)</a>. As for the IPW- and the R-loss, the idea is to try to match a pseudo outcome, whose expected value is the Conditional Average Treatment Effect. The DR pseudo-outcome is strongly related to the <a href="https://towardsdatascience.com/ed4097dab27a" target="_blank" rel="noopener">AIPW estimator</a>, also known as doubly-robust estimator, hence the DR name.
+$$
+Y^* _ {DR} = \hat{\mu}_1(X_i) - \hat{\mu}_0(X_i) + (Y_i - \hat{\mu}_W(X_i)) \ \frac{W_i - \hat{e}(X_i)}{\hat{e}(X_i)(1 - \hat{e}(X_i))}
+$$</p>
+<p>The corresponding loss function is
+$$
 \mathcal{L} _ {DR} = \frac{1}{n} \sum _ {i=1}^{n} \left( \hat{\tau}(X_i) - \hat{\mu}_1(X_i) + \hat{\mu}_0(X_i) - (Y_i - \hat{\mu}_W(X_i)) \ \frac{W_i - \hat{e}(X_i)}{\hat{e}(X_i)(1 - \hat{e}(X_i))} \right)^2
 $$</p>
-<pre><code class="language-python">def loss_dr(learner):
-    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
+<pre><code class="language-python">def loss_dr(data, learner):
     tau_hat = learner.effect(data[X])
     y_hat = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]])
     mu1 = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]].assign(mail=1))
-    mu0 = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]].assign(mail=1))
+    mu0 = clone(model_y).fit(df[X + [W]], df[Y]).predict(data[X + [W]].assign(mail=0))
     e_hat = clone(model_e).fit(df[X], df[W]).predict_proba(data[X])[:,1]
     tau_nw = mu1 - mu0 + (data[Y] - y_hat) * (data[W] - e_hat) / (e_hat * (1 - e_hat))
     return np.mean((tau_hat - tau_nw)**2)
 </code></pre>
 <pre><code class="language-python">results = compare_methods(learners, names, loss_dr, title='DR Loss')
 </code></pre>
-<p><img src="img/evaluate_uplift_69_0.png" alt="png"></p>
-<p>As for the R-loss, the DR-loss tends to favor its corresponding learner, the DR-learner.</p>
-<h3 id="empirical-policy-loss">Empirical Policy Loss</h3>
-<p>The last loss function that we are going to analyze is different from all the others we have seen so far since it focuses not on how well we are able to estimate the treatment effects, but rather on how well would the corresponding <strong>optimal treatment policy</strong> performs. In particular, <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3111957" target="_blank" rel="noopener">Hitsch, Misra, Zhang (2023)</a> propose the following loss function:</p>
+<p><img src="img/evaluate_uplift_82_0.png" alt="png"></p>
+<p>As for the R-loss, the DR-loss tends to favor its corresponding learner, the DR-learner. However, it provides a more accurate ranking in terms of algorithms&rsquo; accuracy.</p>
+<h3 id="empirical-policy-gain">Empirical Policy Gain</h3>
+<p>The last loss function that we are going to analyze is different from all the others we have seen so far since it does <em>not</em> focus on how well we are able to estimate the treatment effects but rather on how well would the corresponding <strong>optimal treatment policy</strong> performs. In particular, <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3111957" target="_blank" rel="noopener">Hitsch, Misra, Zhang (2023)</a> propose the following gain function:</p>
 <p>$$
-\mathcal{L} _ {TEP} = \frac{1}{n} \sum _ {i=1}^{n} \left( W_i \cdot d(X_i) \cdot \frac{Y_i - c}{\hat{e}(X_i)} + (1-W_i) \cdot (1-d(X_i)) \cdot \frac{Y_i}{1-\hat{e}(X_i)} \right)
+\mathcal{G} _ {HMZ} = \sum _ {i=1}^{n} \left( W_i \cdot d(\hat{\tau}) \cdot \frac{Y_i - c}{\hat{e}(X_i)} + (1-W_i) \cdot (1-d(\hat{\tau})) \cdot \frac{Y_i}{1-\hat{e}(X_i)} \right)
 $$</p>
-<p>where $c$ is the treatment cost and $d_i$ is the optimal treatment policy given the estimated CATE $\hat{\tau}(X_i)$. In our case, we assume an individual treatment cost of $c=0.01$\$, so that the optimal policy is to treat every customer with an estimated CATE larger than 0.01, $d(X_i) = (\hat{\tau}(X_i) &gt; 0.01)$.</p>
-<p>The terms $W_i \cdot d(X_i)$ and $(1-W_i) \cdot (1-d(X_i))$ imply that we use for the calculation only individuals for whom the actual treatment <em>W</em> corresponds with the optimal one, <em>d(X)</em>.</p>
-<pre><code class="language-python">def loss_policy(learner):
-    data = dgp.generate_data(seed_data=1, seed_assignment=1, keep_po=True)
+<p>where $c$ is the treatment cost and $d$ is the optimal treatment policy given the estimated CATE $\hat{\tau}(X_i)$. In our case, we assume an individual treatment cost of $c=0.01$\$, so that the optimal policy is to treat every customer with an estimated CATE larger than 0.01.</p>
+<p>The terms $W_i \cdot d(X_i)$ and $(1-W_i) \cdot (1-d(X_i))$ imply that we use for the calculation only individuals for whom the actual treatment <em>W</em> corresponds with the optimal one, <em>d</em>.</p>
+<pre><code class="language-python">def gain_policy(data, learner):
     tau_hat = learner.effect(data[X])
     e_hat = clone(model_e).fit(data[X], data[W]).predict_proba(data[X])[:,1]
-    d = tau_hat &gt; c
-    return np.sum((d * data[W] * (data[Y]-c)/ e_hat + (1-d) * (1-data[W]) * data[Y] / (1-e_hat)))
+    d = tau_hat &gt; cost
+    return np.sum((d * data[W] * (data[Y] - cost)/ e_hat + (1-d) * (1-data[W]) * data[Y] / (1-e_hat)))
 </code></pre>
-<pre><code class="language-python">results = compare_methods(learners, names, loss_policy, title='Empirical Policy Loss', subtitle='higher is better')
+<pre><code class="language-python">results = compare_methods(learners, names, gain_policy, title='Empirical Policy Gain', subtitle='higher is better')
 </code></pre>
-<p><img src="img/evaluate_uplift_74_0.png" alt="png"></p>
+<p><img src="img/evaluate_uplift_87_0.png" alt="png"></p>
+<p>The empirical policy gain performs very well, isolating the two worst performing methods, the S- and T-learners.</p>
 <h2 id="meta-studies">Meta Studies</h2>
 <p>In this article we have introduced a wide variety of methods to evaluate uplift models, a.k.a. Conditional Average Treatment Effect estimators. We have also tested in our simulated dataset, which is a very special and limited example. How do these metrics <strong>perform</strong> in general?</p>
-<p><a href="https://arxiv.org/abs/1804.05146" target="_blank" rel="noopener">Schuler, Baiocchi, Tibshirani, Shah (2018)</a> compares the S-loss, T-loss, R-loss, on simulated data, for the corresponding estimators. They find that the R-loss &ldquo;<em>is the validation set metric that, when optimized, most consistently leads to the selection of a high-performing model</em>&rdquo;.</p>
-<p><a href="https://arxiv.org/abs/2302.02923" target="_blank" rel="noopener">Curth, van der Schaar (2023)</a> studies a broader array of learners from a <strong>theoretical perspective</strong>. They find that &ldquo;<em>no existing selection criterion is globally best across all experimental conditions we consider</em>&rdquo;. However, they notice that S- and T-learners tend to perform better when the conditional expectation functions $\mu(X)$ are easier to predict than the CATE $\tau(X)$, while the R- and DR-learners perform better in the opposite scenario. The X-learner performs best when both functions are equally complex. The <strong>intuition</strong> is that the S- and T- learner focus of modeling $y$, while the R- and DR- learner focus on modeling $\tau$.</p>
+<p><a href="https://arxiv.org/abs/1804.05146" target="_blank" rel="noopener">Schuler, Baiocchi, Tibshirani, Shah (2018)</a> compares the S-loss, T-loss, R-loss, on <strong>simulated data</strong>, for the corresponding estimators. They find that the R-loss &ldquo;<em>is the validation set metric that, when optimized, most consistently leads to the selection of a high-performing model</em>&rdquo;. The authors also detect the so-called <strong>congeniality bias</strong>: metrics such as the R- or DR-loss tend to be biased towards the corresponding learner.</p>
+<p><a href="https://arxiv.org/abs/2302.02923" target="_blank" rel="noopener">Curth, van der Schaar (2023)</a> studies a broader array of learners from a <strong>theoretical perspective</strong>. They find that &ldquo;<em>no existing selection criterion is globally best across all experimental conditions we consider</em>&rdquo;.</p>
 <p><a href="https://arxiv.org/abs/2211.01939" target="_blank" rel="noopener">Mahajan, Mitliagkas, Neal, Syrgkanis (2023)</a> is the <strong>most comprehensive</strong> study in terms of scope. The authors compare many metrics on 144 datasets and 415 estimators. They find that “<em>no metric significantly dominates the rest</em>” but “<em>metrics that use DR elements seem to always be among the candidate winners</em>”.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>In this article, we have explore multiple methods to evaluate uplift models. The <strong>main challenge</strong> is the unobservability of the variable of interest, the Individual Treatment Effects. Therefore, different methods try to evaluate uplift models either using other variables, using proxy outcomes, or approximating the effect of implied optimal policies.</p>
-<p>It is hard to recommend using a single method since there is <strong>no consensus</strong> on which one performs best, neither from a theoretical nor from an empirical perspective. Loss functions that use R-learner and DR-learner tend to perform <strong>consistently better</strong>, but are also biased towards the corresponding learners. Understanding how these metrics work however, can help understanding their biases and limitation, in order to take the most appropriate decisions depending on the specific scenario.</p>
-<p>It is also important to underline that metrics such as the uplift curve can be very useful in <em>understanding</em> and <em>explaining</em> estimators, but might not be best to <em>evaluate</em> or <em>compare</em> them.</p>
+<p>In this article, we have explored multiple methods to evaluate uplift models. The <strong>main challenge</strong> is the unobservability of the variable of interest, the Individual Treatment Effects. Therefore, different methods try to evaluate uplift models either using other variables, using proxy outcomes, or approximating the effect of implied optimal policies.</p>
+<p>It is hard to recommend using a single method since there is <strong>no consensus</strong> on which one performs best, neither from a theoretical nor from an empirical perspective. Loss functions that use R- and DR- elements tend to perform <strong>consistently better</strong>, but are also biased towards the corresponding learners. Understanding how these metrics work, however, can help in understanding their biases and limitations in order to make the most appropriate decisions depending on the specific scenario.</p>
 <h3 id="references">References</h3>
 <ul>
 <li>
