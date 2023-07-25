@@ -5,12 +5,445 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Wed, 12 Jul 2023 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 25 Jul 2023 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://matteocourthoud.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>Beyond Churn Prediction and Churn Uplift</title>
+      <link>https://matteocourthoud.github.io/post/beyond_churn/</link>
+      <pubDate>Tue, 25 Jul 2023 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/beyond_churn/</guid>
+      <description>&lt;p&gt;A very common task in data science is &lt;em&gt;churn prediction&lt;/em&gt;. However, predicting churn is often just an intermediate step and rarely the final objective. Usually, what we actually care about is &lt;strong&gt;reducing churn&lt;/strong&gt;, which is a separate objective, not necessarily related. In fact, for example, knowing that long-term customers are less likely to churn than new customers is not an actionable insight since we cannot increase customers&amp;rsquo; tenure. What we would like to know instead is how one (or more) treatment impacts churn. This is often referred to as &lt;strong&gt;churn uplift&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;In this article, we will be going &lt;strong&gt;beyond&lt;/strong&gt; both churn prediction and churn uplift and consider instead the ultimate goal of churn-prevention campaigns: &lt;strong&gt;increasing revenue&lt;/strong&gt;. First of all, a policy that reduces churn might also have an impact on revenue, which should be taken into account. However, and more importantly, increasing revenue is relevant only if the customer does not churn. Vice-versa, decreasing churn is more relevant for high-revenue customers. This &lt;strong&gt;interaction&lt;/strong&gt; between churn and revenue is critical in understanding the profitability of any treatment campaign and should not be overlooked.&lt;/p&gt;
+&lt;h2 id=&#34;gifts-and-subscriptions&#34;&gt;Gifts and Subscriptions&lt;/h2&gt;
+&lt;p&gt;For the rest of the article, we are going to use a &lt;strong&gt;toy example&lt;/strong&gt; to illustrate the main idea. Suppose we were a company interested in reducing our customer&amp;rsquo;s churn and ultimately increasing our revenue. Suppose we have decided to test a new idea: sending a &lt;strong&gt;gift&lt;/strong&gt; of &lt;em&gt;1\$&lt;/em&gt; to our users. In order to test whether the treatment works, we have randomly sent it only to a subsample of our customer base.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;cost = 1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let’s have a look at the data we have at our disposal. I import the data-generating process &lt;code&gt;dgp_gift()&lt;/code&gt; from &lt;code&gt;src.dgp&lt;/code&gt;. I also import some plotting functions and libraries from &lt;code&gt;src.utils&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import DGP
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;class dgp_gift(DGP):
+    &amp;quot;&amp;quot;&amp;quot;DGP: gift&amp;quot;&amp;quot;&amp;quot;
+    X: list[str] = [&#39;age&#39;, &#39;rev_old&#39;, &#39;rev_change&#39;]
+    D: str = &#39;gift&#39;
+    Y: list[str] = [&#39;churn&#39;, &#39;revenue&#39;]
+
+    def generate_baseline(self, seed:int = 0):
+        np.random.seed(seed)
+        months = np.random.exponential(5, self.n)
+        rev_old = np.maximum(0, np.random.exponential(7, self.n) - 2)
+        rev_change = np.random.normal(0, 2, self.n)
+        churn_c = np.random.beta(1 - rev_change*(rev_change&amp;lt;0), 2 + rev_old) &amp;gt; 0.4
+        rev_c = 0.8*rev_old + 0.2*np.maximum(0, np.random.exponential(7, self.n) - 2)
+        df = pd.DataFrame({&#39;months&#39;: months, &#39;rev_old&#39;: rev_old, &#39;rev_change&#39;: rev_change,
+                           &#39;churn_c&#39;: churn_c, &#39;revenue_c&#39;: rev_c})
+        return df
+
+    def add_treatment_effect(self, df, seed:int = 1):
+        np.random.seed(seed)
+        effect_c = - np.random.binomial(1, 0.3, self.n) * (df.months&amp;lt;7)
+        df[&#39;effect_on_churn&#39;] = effect_c * (df.churn_c==1)
+        effect_r = np.random.normal(0.9, 0.5, self.n)* (df.months&amp;gt;3)
+        df[&#39;effect_on_revenue&#39;] = np.maximum(-df.revenue_c, effect_r)
+        return df
+
+    def add_assignment(self, df: pd.DataFrame, seed: int = 2) -&amp;gt; pd.DataFrame:
+        np.random.seed(seed)
+        df[self.D] = np.random.binomial(1, 0.5, self.n)
+        return df
+
+    def add_post_treatment_variables(self, df : pd.DataFrame, seed: int = 0) -&amp;gt; pd.DataFrame:
+        df.revenue *= (1-df.churn)
+        return df
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_gift(n=100_000)
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;months&lt;/th&gt;
+      &lt;th&gt;rev_old&lt;/th&gt;
+      &lt;th&gt;rev_change&lt;/th&gt;
+      &lt;th&gt;gift&lt;/th&gt;
+      &lt;th&gt;churn&lt;/th&gt;
+      &lt;th&gt;revenue&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;3.98&lt;/td&gt;
+      &lt;td&gt;3.36&lt;/td&gt;
+      &lt;td&gt;0.86&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;7.28&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;6.28&lt;/td&gt;
+      &lt;td&gt;14.41&lt;/td&gt;
+      &lt;td&gt;-2.77&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;11.60&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;4.62&lt;/td&gt;
+      &lt;td&gt;2.89&lt;/td&gt;
+      &lt;td&gt;-2.21&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3.59&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;3.94&lt;/td&gt;
+      &lt;td&gt;0.00&lt;/td&gt;
+      &lt;td&gt;-3.26&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0.00&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;2.76&lt;/td&gt;
+      &lt;td&gt;3.25&lt;/td&gt;
+      &lt;td&gt;-3.43&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5.33&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on &lt;code&gt;100_000&lt;/code&gt; customers for which we observe the number of &lt;code&gt;months&lt;/code&gt; they have been active customers, the revenue they generated in the last month (&lt;code&gt;rev_old&lt;/code&gt;), the change in revenue between the last month and the previous one (&lt;code&gt;rev_change&lt;/code&gt;), whether they were randomly sent a &lt;code&gt;gift&lt;/code&gt; and the two outcomes of interest: &lt;code&gt;churn&lt;/code&gt;, i.e. whether they are not active customers anymore and the &lt;code&gt;revenue&lt;/code&gt; they have generated in the current month. We denote the outcomes with the letter &lt;em&gt;Y&lt;/em&gt;, the treatment with the letter &lt;em&gt;W&lt;/em&gt; and the other variables with the letter &lt;em&gt;X&lt;/em&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;Y = [&#39;churn&#39;, &#39;revenue&#39;]
+W = &#39;gift&#39;
+X = [&#39;months&#39;, &#39;rev_old&#39;, &#39;rev_change&#39;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;Note&lt;/strong&gt; that, for simplicity, we are considering a single-period snapshot of the data and summarizing the panel structure of the data in just a couple of variables. Usually we would have a longer time series but also a longer time horizon for what concerns the outcome (e.g. &lt;a href=&#34;https://en.wikipedia.org/wiki/Customer_lifetime_value&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;customer lifetime value&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;We can represent the underlying data generating process with the following &lt;strong&gt;Directed Acyclic Graph (DAG)&lt;/strong&gt;. Nodes represent variables and arrows represent potential causal relationships. I have highlighted in green the two relationships of interest: the effect of the &lt;code&gt;gift&lt;/code&gt; on &lt;code&gt;churn&lt;/code&gt; and &lt;code&gt;revenue&lt;/code&gt;. Note that &lt;code&gt;churn&lt;/code&gt; is related to revenue since churned customers by definition generate zero revenue.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart TD
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:3px;
+classDef empty width:-10px,height:-10px,fill:#000000,stroke-width:0px;
+
+W((1$ gift))
+D1(( ))
+D2(( ))
+Y1((churn))
+Y2((revenue))
+X1((months))
+X2((revenue change))
+X3((revenue old))
+
+W --- D1
+X1 --- D1
+D1 --&amp;gt; Y1
+W --- D2
+X1 --- D2
+D2 --&amp;gt; Y2
+Y1 --&amp;gt; Y2
+X2 --&amp;gt; Y1
+X3 --&amp;gt; Y1
+X3 --&amp;gt; Y2
+
+class W,Y1,Y2,X1,X2,X3 included;
+class D1,D2 empty;
+
+linkStyle 0,2,3,5 stroke:#2db88b,stroke-width:6px;
+linkStyle 1,4,6,7,8,9 stroke:#003f5c,stroke-width:6px;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Importantly, past revenue and the revenue change are predictors of &lt;code&gt;churn&lt;/code&gt; and &lt;code&gt;revenue&lt;/code&gt; but are not related to our intervention. On the contrary, the intervention affects &lt;code&gt;churn&lt;/code&gt; and &lt;code&gt;revenue&lt;/code&gt; differentially depending on the customers total active &lt;code&gt;months&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;While simplistic, this data generating process aims at captiring an important &lt;strong&gt;insight&lt;/strong&gt;: variables that are good predictors of &lt;code&gt;churn&lt;/code&gt; or &lt;code&gt;revenue&lt;/code&gt;, are not necessarily variables that predict &lt;code&gt;churn&lt;/code&gt; or &lt;code&gt;revenue&lt;/code&gt; &lt;strong&gt;lift&lt;/strong&gt;. We will see later how this impacts our analysis.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s start first by exploring the data.&lt;/p&gt;
+&lt;h2 id=&#34;exploratory-data-analysis&#34;&gt;Exploratory Data Analysis&lt;/h2&gt;
+&lt;p&gt;Let&amp;rsquo;s start with &lt;code&gt;churn&lt;/code&gt;. How many customers did the company lose last month?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.churn.mean()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.19767
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The company lost almost &lt;em&gt;20%&lt;/em&gt; of customers last month! Did the &lt;code&gt;gift&lt;/code&gt; help in preventing churn?&lt;/p&gt;
+&lt;p&gt;We want to compare the churn frequency of customers that received the gift with the churn frequency of customers that did not receive the gift. Since the gift was randomized, the difference-in-means estimator is an unbiased estimator for the &lt;a href=&#34;https://en.wikipedia.org/wiki/Average_treatment_effect&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;average treatment effect (ATE)&lt;/a&gt; of the &lt;code&gt;gift&lt;/code&gt; on &lt;code&gt;churn&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+ATE = \mathbb{E} \Big[ Y \ \Big| \ W = 1 \Big] - \mathbb{E} \Big[ Y \ \Big| \ W = 0 \Big]
+$$&lt;/p&gt;
+&lt;p&gt;We compute the difference-in-means estimate by linear regression. We also include other covariates to improve the efficiency of the estimator.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;churn ~ &amp;quot; + W + &amp;quot; + &amp;quot; + &amp;quot; + &amp;quot;.join(X), data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;  &lt;td&gt;    0.3271&lt;/td&gt; &lt;td&gt;    0.002&lt;/td&gt; &lt;td&gt;  151.440&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.323&lt;/td&gt; &lt;td&gt;    0.331&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;gift&lt;/th&gt;       &lt;td&gt;   -0.1173&lt;/td&gt; &lt;td&gt;    0.002&lt;/td&gt; &lt;td&gt;  -51.521&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -0.122&lt;/td&gt; &lt;td&gt;   -0.113&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;months&lt;/th&gt;     &lt;td&gt;    0.0050&lt;/td&gt; &lt;td&gt;    0.000&lt;/td&gt; &lt;td&gt;   21.832&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.005&lt;/td&gt; &lt;td&gt;    0.005&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;rev_old&lt;/th&gt;    &lt;td&gt;   -0.0181&lt;/td&gt; &lt;td&gt;    0.000&lt;/td&gt; &lt;td&gt; -108.061&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -0.018&lt;/td&gt; &lt;td&gt;   -0.018&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;rev_change&lt;/th&gt; &lt;td&gt;   -0.0497&lt;/td&gt; &lt;td&gt;    0.001&lt;/td&gt; &lt;td&gt;  -87.412&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -0.051&lt;/td&gt; &lt;td&gt;   -0.049&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;It looks like the &lt;code&gt;gift&lt;/code&gt; decreased churn by around &lt;em&gt;11&lt;/em&gt; percentage points, i.e. almost one-third of the baseline level of &lt;em&gt;32%&lt;/em&gt;! Did it also have an impact on &lt;code&gt;revenue&lt;/code&gt;?&lt;/p&gt;
+&lt;p&gt;As for churn, we regress &lt;code&gt;revenue&lt;/code&gt; on &lt;code&gt;gift&lt;/code&gt;, our treatment variable, to estimate the average treatment effect.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;revenue ~ &amp;quot; + W + &amp;quot; + &amp;quot; + &amp;quot; + &amp;quot;.join(X), data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;  &lt;td&gt;    0.3691&lt;/td&gt; &lt;td&gt;    0.010&lt;/td&gt; &lt;td&gt;   37.910&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.350&lt;/td&gt; &lt;td&gt;    0.388&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;gift&lt;/th&gt;       &lt;td&gt;    0.6317&lt;/td&gt; &lt;td&gt;    0.010&lt;/td&gt; &lt;td&gt;   61.560&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.612&lt;/td&gt; &lt;td&gt;    0.652&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;months&lt;/th&gt;     &lt;td&gt;    0.0120&lt;/td&gt; &lt;td&gt;    0.001&lt;/td&gt; &lt;td&gt;   11.768&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.010&lt;/td&gt; &lt;td&gt;    0.014&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;rev_old&lt;/th&gt;    &lt;td&gt;    0.8251&lt;/td&gt; &lt;td&gt;    0.001&lt;/td&gt; &lt;td&gt; 1092.846&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.824&lt;/td&gt; &lt;td&gt;    0.827&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;rev_change&lt;/th&gt; &lt;td&gt;    0.1457&lt;/td&gt; &lt;td&gt;    0.003&lt;/td&gt; &lt;td&gt;   56.777&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.141&lt;/td&gt; &lt;td&gt;    0.151&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;It looks like the &lt;code&gt;gift&lt;/code&gt; on average increased revenue by &lt;em&gt;0.63\$&lt;/em&gt;, which means that it was &lt;strong&gt;not profitable&lt;/strong&gt;. Does it mean that we should stop sending gifts to our customers? It depends. In fact, the gift might be effective for certain customer segments. We just need to identify them.&lt;/p&gt;
+&lt;h2 id=&#34;targeting-policies&#34;&gt;Targeting Policies&lt;/h2&gt;
+&lt;p&gt;In this section, we will try to understand if there is a data-informed way to send the &lt;code&gt;gift&lt;/code&gt; to customers that is profitable. In particular, we will c&lt;strong&gt;compare&lt;/strong&gt; different data-informed targeting &lt;strong&gt;policies&lt;/strong&gt; with the objective of increasing revenue.&lt;/p&gt;
+&lt;p&gt;Throughout this section, we will need some algorithms to either predict &lt;code&gt;revenue&lt;/code&gt;, or &lt;code&gt;churn&lt;/code&gt;, or the probability of receiving the &lt;code&gt;gift&lt;/code&gt;. We use gradient-boosted tree models from the &lt;a href=&#34;https://lightgbm.readthedocs.io/en/latest/index.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;lightgbm&lt;/code&gt;&lt;/a&gt; library  We use the same models for all policies, so that we cannot attribute differences in performance to prediction accuracy.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from lightgbm import LGBMClassifier, LGBMRegressor
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To &lt;strong&gt;evaluate&lt;/strong&gt; each policy denoted with &lt;em&gt;τ&lt;/em&gt;, we compare its profits with the policy &lt;em&gt;Π⁽¹⁾&lt;/em&gt;, with its profits without the policy &lt;em&gt;Π⁽⁰⁾&lt;/em&gt;, over every single individual, in a separate validation dataset. Note that this is usually not possible, since, for each customer, we only observe one of the two &lt;strong&gt;potential outcomes&lt;/strong&gt;, with or without the &lt;code&gt;gift&lt;/code&gt;. However, this is synthetic data, so we can do oracle evaluation. If you want to know more about how to evaluate uplift models with real data, I wrote an article about it.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/8a078996a113&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://towardsdatascience.com/8a078996a113&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;First of all, let&amp;rsquo;s define profits &lt;em&gt;Π&lt;/em&gt; as the net revenue &lt;em&gt;R&lt;/em&gt; when the customer does not churn &lt;em&gt;C&lt;/em&gt;.
+$$
+\Pi = R (1-C)
+$$&lt;/p&gt;
+&lt;p&gt;Therefore, the overall effect on profits for treated individuals is given by the difference between the profits when treated &lt;em&gt;Π⁽¹⁾&lt;/em&gt; minus the profits when not treated &lt;em&gt;Π⁽⁰⁾&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+\tau_{\pi} = R_1 (1 - C_1) - R_0 (1 - C_0)
+$$&lt;/p&gt;
+&lt;p&gt;The effect for untreated individuals is zero.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def evaluate_policy(policy):
+    data = dgp.generate_data(seed_data=4, seed_assignment=5, keep_po=True)
+    data[&#39;profits&#39;] = (1 - data.churn) * data.revenue
+    baseline = (1-data.churn_c) * data.revenue_c
+    effect = policy(data) * (1-data.churn_t) * (data.revenue_t-cost) + (1-policy(data)) * (1-data.churn_c) * data.revenue_c
+    return np.sum(effect - baseline)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;1-target-churning-customers&#34;&gt;1. Target Churning Customers&lt;/h3&gt;
+&lt;p&gt;A first policy could be to just target &lt;strong&gt;churning customers&lt;/strong&gt;. Let&amp;rsquo;s say, we send the &lt;code&gt;gift&lt;/code&gt; only to customers with above-average redicted churn.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model_churn = LGBMClassifier().fit(X=df[X], y=df[&#39;churn&#39;])
+
+policy_churn = lambda df : (model_churn.predict_proba(df[X])[:,1] &amp;gt; df.churn.mean())
+evaluate_policy(policy_churn)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;-5497.46
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The policy is not profitable and would lead to an aggregate &lt;strong&gt;loss&lt;/strong&gt; of more than &lt;em&gt;5000\$&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;You might think that the problem is the &lt;strong&gt;arbitrary threshold&lt;/strong&gt;, but this is not the case. Below I plot the aggregate effect for all possible policy thresholds.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;x = np.linspace(0, 1, 100)
+y = [evaluate_policy(lambda df : (model_churn.predict_proba(df[X])[:,1] &amp;gt; k)) for k in x]
+
+fig, ax = plt.subplots(figsize=(10, 3))
+sns.lineplot(x=x, y=y).set(xlabel=&#39;Churn Policy Threshold&#39;, title=&#39;Aggregate Effect&#39;);
+ax.axhline(y=0, c=&#39;k&#39;, lw=3, ls=&#39;--&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/beyond_churn_34_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, at best we can make zero losses when we decide not to give the gift to any customer.&lt;/p&gt;
+&lt;p&gt;The problem is that the fact that a customer is likely to churn does not imply that the &lt;code&gt;gift&lt;/code&gt; will have any impact on their churn probability. The two measures are not completely unrelated (e.g. we cannot decrease the churning probability of customers that have 0% probability of churning), but they are not the same thing.&lt;/p&gt;
+&lt;h3 id=&#34;2-target-revenue-customers&#34;&gt;2. Target revenue customers&lt;/h3&gt;
+&lt;p&gt;Let&amp;rsquo;s now try a different policy: we send the gift only to &lt;strong&gt;high-revenue customers&lt;/strong&gt;. For example, we might send the gift only to the top-10% of customers by revenue. The idea is that, if the policy indeed decreases churn, these are the customers for whom decreasing churn is more profitable.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model_revenue = LGBMRegressor().fit(X=df[X], y=df[&#39;revenue&#39;])
+
+policy_revenue = lambda df : (model_revenue.predict(df[X]) &amp;gt; np.quantile(df.revenue, 0.9))
+evaluate_policy(policy_revenue)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;-4730.8200000000015
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The policy is again unprofitable, leading to substantial &lt;strong&gt;losses&lt;/strong&gt;. As before, this is not a problem of selecting the threshold as we can see in the plot below. The best we can do is set a threshold so high that we do not treat anyone and we make zero profits.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;x = np.linspace(0, 100, 100)
+y = [evaluate_policy(lambda df : (model_revenue.predict(df[X]) &amp;gt; k*cost)) for k in x]
+
+fig, ax = plt.subplots(figsize=(10, 3))
+sns.lineplot(x=x, y=y).set(xlabel=&#39;Revenue Policy Threshold&#39;, title=&#39;Aggregate Effect&#39;);
+ax.axhline(y=0, c=&#39;k&#39;, lw=3, ls=&#39;--&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/beyond_churn_40_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The problem is that, in our setting, the churn probability of high-revenue customers does not decrease enough to make the &lt;code&gt;gift&lt;/code&gt; profitable. This is also partially due to the fact, often observed in reality, that high-revenue customers are also the least likely to churn, to begin with.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s now consider a more relevant set of policies: policies based on &lt;strong&gt;uplift&lt;/strong&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;3-target-churn-uplift-customers&#34;&gt;3. Target churn uplift customers&lt;/h3&gt;
+&lt;p&gt;A more sensible approach would be to target customers whose &lt;code&gt;churn&lt;/code&gt; probability decreases the most when receiving the &lt;em&gt;1\$&lt;/em&gt; &lt;code&gt;gift&lt;/code&gt;. We estimate churn uplift using the &lt;a href=&#34;https://arxiv.org/abs/2004.14497&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;double-robust estimator&lt;/a&gt;, one of the best performing uplift models. If you are unfamiliar with meta-learners, I recommend starting from my introductory article.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://towardsdatascience.com/8a9c1e340832&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;We import the doubly-robust learner from &lt;a href=&#34;https://econml.azurewebsites.net/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;econml&lt;/a&gt;, a Microsoft library.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from econml.dr import DRLearner
+
+DR_learner_churn = DRLearner(model_regression=LGBMRegressor(), model_propensity=LGBMClassifier(), model_final=LGBMRegressor())
+DR_learner_churn.fit(df[&#39;churn&#39;], df[W], X=df[X]);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now that we have estimated churn uplift, we might be tempted to just target customers with a high negative uplift (negative, since we want to &lt;em&gt;decrease&lt;/em&gt; churn). For example, we might send the &lt;code&gt;gift&lt;/code&gt; to all customers with an estimated uplift larger than the average churn.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;policy_churn_lift = lambda df : DR_learner_churn.effect(df[X]) &amp;lt; - np.mean(df.churn)
+evaluate_policy(policy_churn_lift)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;-3925.2400000000002
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The policy is still unprofitable, leading to almost &lt;em&gt;4000\$&lt;/em&gt; in losses.&lt;/p&gt;
+&lt;p&gt;The problem is that we haven&amp;rsquo;t considered the cost of the policy. In fact, decreasing the churn probability is &lt;strong&gt;only profitable for high-revenue customers&lt;/strong&gt;. Take the extreme case: avoiding churn of a customer that does not generate any revenue is not worth any intervention.&lt;/p&gt;
+&lt;p&gt;Therefore, let&amp;rsquo;s only send the &lt;code&gt;gift&lt;/code&gt; to customers whose churn probability weighted by revenue decreases more than the cost of the gift.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model_revenue_1 = LGBMRegressor().fit(X=df.loc[df[W] == 1, X], y=df.loc[df[W] == 1, &#39;revenue&#39;])
+
+policy_churn_lift = lambda df : - DR_learner_churn.effect(df[X]) * model_revenue_1.predict(df[X]) &amp;gt; cost
+evaluate_policy(policy_churn_lift)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;318.03000000000003
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This policy is finally profitable!&lt;/p&gt;
+&lt;p&gt;However, we still have not considered one channel: the intervention might also affect the revenue of existing customers.&lt;/p&gt;
+&lt;h3 id=&#34;4-target-revenue-uplift-customers&#34;&gt;4. Target revenue uplift customers&lt;/h3&gt;
+&lt;p&gt;A symmetric approach to the previous one would be to consider only the impact on &lt;code&gt;revenue&lt;/code&gt;, ignoring the impact on churn. We could estimate the &lt;code&gt;revenue&lt;/code&gt; uplift for non-churning customers and treat only customers whose incremental effect on revenue, net of churn, is greater than the cost of the &lt;code&gt;gift&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;DR_learner_netrevenue = DRLearner(model_regression=LGBMRegressor(), model_propensity=LGBMClassifier(), model_final=LGBMRegressor())
+DR_learner_netrevenue.fit(df.loc[df.churn==0, &#39;revenue&#39;], df.loc[df.churn==0, W], X=df.loc[df.churn==0, X]);
+model_churn_1 = LGBMClassifier().fit(X=df.loc[df[W] == 1, X], y=df.loc[df[W] == 1, &#39;churn&#39;])
+
+policy_netrevenue_lift = lambda df : DR_learner_netrevenue.effect(df[X]) * (1-model_churn_1.predict(df[X])) &amp;gt; cost
+evaluate_policy(policy_netrevenue_lift)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;50.800000000000004
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This policy is profitable as well, but ignores the effect on churn. How do we combine this poilcy with the previous one?&lt;/p&gt;
+&lt;h3 id=&#34;5-target-revenue-uplift-customers&#34;&gt;5. Target revenue uplift customers&lt;/h3&gt;
+&lt;p&gt;The best way to efficiently &lt;strong&gt;combine&lt;/strong&gt; both the effect on churn and the effect on net revenue, is simply to estimate &lt;strong&gt;total revenue uplift&lt;/strong&gt;. The implied optimal policy is to treat customers whose total revenue uplift is greater than the cost of the &lt;code&gt;gift&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;DR_learner_revenue = DRLearner(model_regression=LGBMRegressor(), model_propensity=LGBMClassifier(), model_final=LGBMRegressor())
+DR_learner_revenue.fit(df[&#39;revenue&#39;], df[W], X=df[X]);
+
+policy_revenue_lift = lambda df : (DR_learner_revenue.effect(df[X]) &amp;gt; cost)
+evaluate_policy(policy_revenue_lift)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;2028.2100000000003
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It looks like this is by far the best policy, generating an aggregate profit of more than &lt;em&gt;2000\$&lt;/em&gt;!&lt;/p&gt;
+&lt;p&gt;The result is starking if we compare all the different policies.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;policies = [policy_churn, policy_revenue, policy_churn_lift, policy_netrevenue_lift, policy_revenue_lift] 
+df_results = pd.DataFrame()
+df_results[&#39;policy&#39;] = [&#39;churn&#39;, &#39;revenue&#39;, &#39;churn_L&#39;, &#39;netrevenue_L&#39;, &#39;revenue_L&#39;]
+df_results[&#39;value&#39;] = [evaluate_policy(policy) for policy in policies]
+
+fig, ax = plt.subplots()
+sns.barplot(df_results, x=&#39;policy&#39;, y=&#39;value&#39;)
+plt.axhline(0, c=&#39;k&#39;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/beyond_churn_60_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;intuition-and-decomposition&#34;&gt;Intuition and Decomposition&lt;/h2&gt;
+&lt;p&gt;If we compare the different policies, it is clear that targeting high-revenue or high-churn probability customers directly were the &lt;strong&gt;worst choices&lt;/strong&gt;. This is not necessarily always the case, but it happened in our simulated data because of two facts that are also common in many real scenarios:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Revenue and churn probability are negatively correlated&lt;/li&gt;
+&lt;li&gt;The effect of the &lt;code&gt;gift&lt;/code&gt; on &lt;code&gt;churn&lt;/code&gt; (or &lt;code&gt;revenue&lt;/code&gt;) was not strongly negatively (or positively for &lt;code&gt;revenue&lt;/code&gt;) correlated with the baseline values&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Either one of these two facts can be enough to make targeting revenue or churn a bad strategy. What one should target instead is customers with a high &lt;strong&gt;incremental&lt;/strong&gt; effect. And it&amp;rsquo;s best to directly use as outcome the variable of interest, &lt;code&gt;revenue&lt;/code&gt; in this case, whenever available.&lt;/p&gt;
+&lt;p&gt;To better understand the mechanism, we can &lt;strong&gt;decompose&lt;/strong&gt; the aggregate effect of a policy on profits into three parts.&lt;/p&gt;
+&lt;p&gt;$$
+\begin{aligned}
+\tau_{\pi} &amp;amp;= R_1 * (1 - C_1) - R_0 * (1 - C_0) = \newline
+&amp;amp;= R_1 * (1 - C_1) - \underbrace{\hat{r}&lt;em&gt;1 * (1 - \hat{c}&lt;em&gt;0) + R_1 * (1 - C_0)}&lt;/em&gt;{\text{add and subtract}} - R_0 * (1 - C_0) = \newline
+&amp;amp;= - R_1 * \tau_c + R_1 * (1 - C_0) - R_0 * (1 - C_0) = \newline
+&amp;amp;= - R_1 * \tau_c + \tau_r * (1 - C_0) = \newline
+&amp;amp;= \underbrace{- R_0 * \tau_c}&lt;/em&gt;{\text{incremental effect on churn}} + \underbrace{\tau_r * (1 - C_0)}&lt;em&gt;{\text{incremental effect on revenue}} + \underbrace{\tau_r * \tau_c}&lt;/em&gt;{\text{interaction effect}}
+\end{aligned}
+$$&lt;/p&gt;
+&lt;p&gt;This implies that there are &lt;strong&gt;three channels&lt;/strong&gt; that make treating a customer profitable.&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;If it&amp;rsquo;s a &lt;em&gt;high-revenue&lt;/em&gt; customer and the treatment &lt;em&gt;decreases&lt;/em&gt; its churn probability&lt;/li&gt;
+&lt;li&gt;If it&amp;rsquo;s a &lt;em&gt;non-churning&lt;/em&gt; customer and the treatment &lt;em&gt;increases&lt;/em&gt; its revenue&lt;/li&gt;
+&lt;li&gt;It the treatment has a strong impact on &lt;em&gt;both&lt;/em&gt; its revenue and churn probability&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Targeting by churn uplift exploits only the first channel, targeting by net revenue uplift exploits only the second channel, and targeting by total revenue uplift exploits all three channels, making it the &lt;strong&gt;most effective&lt;/strong&gt; method.&lt;/p&gt;
+&lt;h3 id=&#34;bonus-weighting&#34;&gt;Bonus: weighting&lt;/h3&gt;
+&lt;p&gt;As highlighted by &lt;a href=&#34;https://www.hbs.edu/ris/Publication%20Files/14-020_2d6c9da0-94d3-4dd5-9952-d81feb432f61.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Lemmens, Gupta (2020)&lt;/a&gt;, sometimes it might be worth &lt;strong&gt;weighting&lt;/strong&gt; observations when estimating model uplift. In particular, it might be worth giving more weight to observations close to the treatment policy threshold.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;idea&lt;/strong&gt; is that weighting generally decreases the efficiency of the estimator. However, we are not interested in having correct estimates for all the observations, but rather we are interested in estimating the &lt;strong&gt;policy threshold&lt;/strong&gt; correctly. In fact, whether you estimate a net profit of &lt;em&gt;1\$&lt;/em&gt; or &lt;em&gt;1000\$&lt;/em&gt; it does not matter: the implied policy is the same: send the &lt;code&gt;gift&lt;/code&gt;. However, estimating a net profit of &lt;em&gt;1\$&lt;/em&gt; rather than &lt;em&gt;-1\$&lt;/em&gt; reverses the policy implications. Therefore, a large loss in accuracy away from the threshold sometimes is worth a small gain in accuracy at the threshold.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s try using negative exponential weights, decreasing in distance from the threshold.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;DR_learner_revenue_w = DRLearner(model_regression=model_y, model_propensity=model_w, model_final=model_y)
+w = np.exp(1 + np.abs(DR_learner_revenue.effect(df[X]) - cost))
+DR_learner_revenue_w.fit(df[&#39;revenue&#39;], df[W], X=df[X], sample_weight=w);
+
+policy_revenue_lift_w = lambda df : (DR_learner_revenue_w.effect(df[X]) &amp;gt; cost)
+evaluate_policy(policy_revenue_lift_w)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;---------------------------------------------------------------------------
+
+NameError                                 Traceback (most recent call last)
+
+Cell In[22], line 1
+----&amp;gt; 1 DR_learner_revenue_w = DRLearner(model_regression=model_y, model_propensity=model_w, model_final=model_y)
+      2 w = np.exp(1 + np.abs(DR_learner_revenue.effect(df[X]) - cost))
+      3 DR_learner_revenue_w.fit(df[&#39;revenue&#39;], df[W], X=df[X], sample_weight=w);
+
+
+NameError: name &#39;model_y&#39; is not defined
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In our case, weighting is not worth: the implied policy is still profitable, but less than the one obtained with the unweighted model, &lt;em&gt;2028\$&lt;/em&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this article, we have why and how one should go &lt;strong&gt;beyond&lt;/strong&gt; churn prediction and churn uplift modeling. In particular, one should concentrate on the final business objective of increasing profitability. This implies shifting the focus from &lt;em&gt;prediction&lt;/em&gt; to &lt;em&gt;uplift&lt;/em&gt; but also combining churn and revenue into a single outcome.&lt;/p&gt;
+&lt;p&gt;An important caveat concerns the dimension of the data available. We have used a toy dataset that highly simplifies the problem in at least &lt;strong&gt;two dimensions&lt;/strong&gt;. First of all, backwards, we normally have longer time series that can (and should) be used for both prediction and modeling purposes. Second, forward, one should combine churn with a longer-run estimate of customer profitability, usually referred to as &lt;em&gt;customer lifetime value&lt;/em&gt;.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Lemmens, Gupta (2020), &lt;a href=&#34;https://www.hbs.edu/ris/Publication%20Files/14-020_2d6c9da0-94d3-4dd5-9952-d81feb432f61.pdf&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Managing Churn to Maximize Profits&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Bonvini, Kennedy, Keele (2021), &lt;a href=&#34;https://arxiv.org/abs/2306.17464&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&amp;ldquo;Minimax Optimal Subgroup Identification&amp;rdquo;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/8a078996a113&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Evaluating Uplift Models&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/8a9c1e340832&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Meta Learners&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/ed4097dab27a&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding AIPW, the Doubly-Robust Estimator&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/beyond_churn.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/beyond_churn.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Evaluating Uplift Models</title>

@@ -1,0 +1,1729 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="A very common task in data science is churn prediction. However, predicting churn is often just an intermediate step and rarely the final objective. Usually, what we actually care about is reducing churn, which is a separate objective, not necessarily related." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/beyond_churn/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.5c4def4f00a521426f4eb098155f3342.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/beyond_churn/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/beyond_churn/" />
+  <meta property="og:title" content="Beyond Churn Prediction and Churn Uplift | Matteo Courthoud" />
+  <meta property="og:description" content="A very common task in data science is churn prediction. However, predicting churn is often just an intermediate step and rarely the final objective. Usually, what we actually care about is reducing churn, which is a separate objective, not necessarily related." /><meta property="og:image" content="https://matteocourthoud.github.io/post/beyond_churn/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/beyond_churn/featured.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2023-07-25T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2023-07-25T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/beyond_churn/"
+  },
+  "headline": "Beyond Churn Prediction and Churn Uplift",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/beyond_churn/featured.png"
+  ],
+  
+  "datePublished": "2023-07-25T00:00:00Z",
+  "dateModified": "2023-07-25T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "A very common task in data science is churn prediction. However, predicting churn is often just an intermediate step and rarely the final objective. Usually, what we actually care about is reducing churn, which is a separate objective, not necessarily related."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Beyond Churn Prediction and Churn Uplift | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="ee5afb79fae2bde88d75cb4b2fa8e019" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/post/"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#gifts-and-subscriptions">Gifts and Subscriptions</a></li>
+    <li><a href="#exploratory-data-analysis">Exploratory Data Analysis</a></li>
+    <li><a href="#targeting-policies">Targeting Policies</a>
+      <ul>
+        <li><a href="#1-target-churning-customers">1. Target Churning Customers</a></li>
+        <li><a href="#2-target-revenue-customers">2. Target revenue customers</a></li>
+        <li><a href="#3-target-churn-uplift-customers">3. Target churn uplift customers</a></li>
+        <li><a href="#4-target-revenue-uplift-customers">4. Target revenue uplift customers</a></li>
+        <li><a href="#5-target-revenue-uplift-customers">5. Target revenue uplift customers</a></li>
+      </ul>
+    </li>
+    <li><a href="#intuition-and-decomposition">Intuition and Decomposition</a>
+      <ul>
+        <li><a href="#bonus-weighting">Bonus: weighting</a></li>
+      </ul>
+    </li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="article-container pt-3">
+  <h1>Beyond Churn Prediction and Churn Uplift</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Jul 25, 2023
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    15 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1540px; max-height: 874px;">
+  <div style="position: relative">
+    <img src="/post/beyond_churn/featured.png" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p>A very common task in data science is <em>churn prediction</em>. However, predicting churn is often just an intermediate step and rarely the final objective. Usually, what we actually care about is <strong>reducing churn</strong>, which is a separate objective, not necessarily related. In fact, for example, knowing that long-term customers are less likely to churn than new customers is not an actionable insight since we cannot increase customers&rsquo; tenure. What we would like to know instead is how one (or more) treatment impacts churn. This is often referred to as <strong>churn uplift</strong>.</p>
+<p>In this article, we will be going <strong>beyond</strong> both churn prediction and churn uplift and consider instead the ultimate goal of churn-prevention campaigns: <strong>increasing revenue</strong>. First of all, a policy that reduces churn might also have an impact on revenue, which should be taken into account. However, and more importantly, increasing revenue is relevant only if the customer does not churn. Vice-versa, decreasing churn is more relevant for high-revenue customers. This <strong>interaction</strong> between churn and revenue is critical in understanding the profitability of any treatment campaign and should not be overlooked.</p>
+<h2 id="gifts-and-subscriptions">Gifts and Subscriptions</h2>
+<p>For the rest of the article, we are going to use a <strong>toy example</strong> to illustrate the main idea. Suppose we were a company interested in reducing our customer&rsquo;s churn and ultimately increasing our revenue. Suppose we have decided to test a new idea: sending a <strong>gift</strong> of <em>1\$</em> to our users. In order to test whether the treatment works, we have randomly sent it only to a subsample of our customer base.</p>
+<pre><code class="language-python">cost = 1
+</code></pre>
+<p>Let’s have a look at the data we have at our disposal. I import the data-generating process <code>dgp_gift()</code> from <code>src.dgp</code>. I also import some plotting functions and libraries from <code>src.utils</code>.</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+</code></pre>
+<pre><code class="language-python">from src.utils import *
+from src.dgp import DGP
+</code></pre>
+<pre><code class="language-python">class dgp_gift(DGP):
+    &quot;&quot;&quot;DGP: gift&quot;&quot;&quot;
+    X: list[str] = ['age', 'rev_old', 'rev_change']
+    D: str = 'gift'
+    Y: list[str] = ['churn', 'revenue']
+
+    def generate_baseline(self, seed:int = 0):
+        np.random.seed(seed)
+        months = np.random.exponential(5, self.n)
+        rev_old = np.maximum(0, np.random.exponential(7, self.n) - 2)
+        rev_change = np.random.normal(0, 2, self.n)
+        churn_c = np.random.beta(1 - rev_change*(rev_change&lt;0), 2 + rev_old) &gt; 0.4
+        rev_c = 0.8*rev_old + 0.2*np.maximum(0, np.random.exponential(7, self.n) - 2)
+        df = pd.DataFrame({'months': months, 'rev_old': rev_old, 'rev_change': rev_change,
+                           'churn_c': churn_c, 'revenue_c': rev_c})
+        return df
+
+    def add_treatment_effect(self, df, seed:int = 1):
+        np.random.seed(seed)
+        effect_c = - np.random.binomial(1, 0.3, self.n) * (df.months&lt;7)
+        df['effect_on_churn'] = effect_c * (df.churn_c==1)
+        effect_r = np.random.normal(0.9, 0.5, self.n)* (df.months&gt;3)
+        df['effect_on_revenue'] = np.maximum(-df.revenue_c, effect_r)
+        return df
+
+    def add_assignment(self, df: pd.DataFrame, seed: int = 2) -&gt; pd.DataFrame:
+        np.random.seed(seed)
+        df[self.D] = np.random.binomial(1, 0.5, self.n)
+        return df
+
+    def add_post_treatment_variables(self, df : pd.DataFrame, seed: int = 0) -&gt; pd.DataFrame:
+        df.revenue *= (1-df.churn)
+        return df
+</code></pre>
+<pre><code class="language-python">dgp = dgp_gift(n=100_000)
+df = dgp.generate_data()
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>months</th>
+      <th>rev_old</th>
+      <th>rev_change</th>
+      <th>gift</th>
+      <th>churn</th>
+      <th>revenue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>3.98</td>
+      <td>3.36</td>
+      <td>0.86</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7.28</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>6.28</td>
+      <td>14.41</td>
+      <td>-2.77</td>
+      <td>1</td>
+      <td>0</td>
+      <td>11.60</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>4.62</td>
+      <td>2.89</td>
+      <td>-2.21</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3.59</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3.94</td>
+      <td>0.00</td>
+      <td>-3.26</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2.76</td>
+      <td>3.25</td>
+      <td>-3.43</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5.33</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We have information on <code>100_000</code> customers for which we observe the number of <code>months</code> they have been active customers, the revenue they generated in the last month (<code>rev_old</code>), the change in revenue between the last month and the previous one (<code>rev_change</code>), whether they were randomly sent a <code>gift</code> and the two outcomes of interest: <code>churn</code>, i.e. whether they are not active customers anymore and the <code>revenue</code> they have generated in the current month. We denote the outcomes with the letter <em>Y</em>, the treatment with the letter <em>W</em> and the other variables with the letter <em>X</em>.</p>
+<pre><code class="language-python">Y = ['churn', 'revenue']
+W = 'gift'
+X = ['months', 'rev_old', 'rev_change']
+</code></pre>
+<p><strong>Note</strong> that, for simplicity, we are considering a single-period snapshot of the data and summarizing the panel structure of the data in just a couple of variables. Usually we would have a longer time series but also a longer time horizon for what concerns the outcome (e.g. <a href="https://en.wikipedia.org/wiki/Customer_lifetime_value" target="_blank" rel="noopener">customer lifetime value</a>).</p>
+<p>We can represent the underlying data generating process with the following <strong>Directed Acyclic Graph (DAG)</strong>. Nodes represent variables and arrows represent potential causal relationships. I have highlighted in green the two relationships of interest: the effect of the <code>gift</code> on <code>churn</code> and <code>revenue</code>. Note that <code>churn</code> is related to revenue since churned customers by definition generate zero revenue.</p>
+<pre><code class="language-mermaid">flowchart TD
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:3px;
+classDef empty width:-10px,height:-10px,fill:#000000,stroke-width:0px;
+
+W((1$ gift))
+D1(( ))
+D2(( ))
+Y1((churn))
+Y2((revenue))
+X1((months))
+X2((revenue change))
+X3((revenue old))
+
+W --- D1
+X1 --- D1
+D1 --&gt; Y1
+W --- D2
+X1 --- D2
+D2 --&gt; Y2
+Y1 --&gt; Y2
+X2 --&gt; Y1
+X3 --&gt; Y1
+X3 --&gt; Y2
+
+class W,Y1,Y2,X1,X2,X3 included;
+class D1,D2 empty;
+
+linkStyle 0,2,3,5 stroke:#2db88b,stroke-width:6px;
+linkStyle 1,4,6,7,8,9 stroke:#003f5c,stroke-width:6px;
+</code></pre>
+<p>Importantly, past revenue and the revenue change are predictors of <code>churn</code> and <code>revenue</code> but are not related to our intervention. On the contrary, the intervention affects <code>churn</code> and <code>revenue</code> differentially depending on the customers total active <code>months</code>.</p>
+<p>While simplistic, this data generating process aims at captiring an important <strong>insight</strong>: variables that are good predictors of <code>churn</code> or <code>revenue</code>, are not necessarily variables that predict <code>churn</code> or <code>revenue</code> <strong>lift</strong>. We will see later how this impacts our analysis.</p>
+<p>Let&rsquo;s start first by exploring the data.</p>
+<h2 id="exploratory-data-analysis">Exploratory Data Analysis</h2>
+<p>Let&rsquo;s start with <code>churn</code>. How many customers did the company lose last month?</p>
+<pre><code class="language-python">df.churn.mean()
+</code></pre>
+<pre><code>0.19767
+</code></pre>
+<p>The company lost almost <em>20%</em> of customers last month! Did the <code>gift</code> help in preventing churn?</p>
+<p>We want to compare the churn frequency of customers that received the gift with the churn frequency of customers that did not receive the gift. Since the gift was randomized, the difference-in-means estimator is an unbiased estimator for the <a href="https://en.wikipedia.org/wiki/Average_treatment_effect" target="_blank" rel="noopener">average treatment effect (ATE)</a> of the <code>gift</code> on <code>churn</code>.</p>
+<p>$$
+ATE = \mathbb{E} \Big[ Y \ \Big| \ W = 1 \Big] - \mathbb{E} \Big[ Y \ \Big| \ W = 0 \Big]
+$$</p>
+<p>We compute the difference-in-means estimate by linear regression. We also include other covariates to improve the efficiency of the estimator.</p>
+<pre><code class="language-python">smf.ols(&quot;churn ~ &quot; + W + &quot; + &quot; + &quot; + &quot;.join(X), data=df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+       <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>  <td>    0.3271</td> <td>    0.002</td> <td>  151.440</td> <td> 0.000</td> <td>    0.323</td> <td>    0.331</td>
+</tr>
+<tr>
+  <th>gift</th>       <td>   -0.1173</td> <td>    0.002</td> <td>  -51.521</td> <td> 0.000</td> <td>   -0.122</td> <td>   -0.113</td>
+</tr>
+<tr>
+  <th>months</th>     <td>    0.0050</td> <td>    0.000</td> <td>   21.832</td> <td> 0.000</td> <td>    0.005</td> <td>    0.005</td>
+</tr>
+<tr>
+  <th>rev_old</th>    <td>   -0.0181</td> <td>    0.000</td> <td> -108.061</td> <td> 0.000</td> <td>   -0.018</td> <td>   -0.018</td>
+</tr>
+<tr>
+  <th>rev_change</th> <td>   -0.0497</td> <td>    0.001</td> <td>  -87.412</td> <td> 0.000</td> <td>   -0.051</td> <td>   -0.049</td>
+</tr>
+</table>
+<p>It looks like the <code>gift</code> decreased churn by around <em>11</em> percentage points, i.e. almost one-third of the baseline level of <em>32%</em>! Did it also have an impact on <code>revenue</code>?</p>
+<p>As for churn, we regress <code>revenue</code> on <code>gift</code>, our treatment variable, to estimate the average treatment effect.</p>
+<pre><code class="language-python">smf.ols(&quot;revenue ~ &quot; + W + &quot; + &quot; + &quot; + &quot;.join(X), data=df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+       <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>  <td>    0.3691</td> <td>    0.010</td> <td>   37.910</td> <td> 0.000</td> <td>    0.350</td> <td>    0.388</td>
+</tr>
+<tr>
+  <th>gift</th>       <td>    0.6317</td> <td>    0.010</td> <td>   61.560</td> <td> 0.000</td> <td>    0.612</td> <td>    0.652</td>
+</tr>
+<tr>
+  <th>months</th>     <td>    0.0120</td> <td>    0.001</td> <td>   11.768</td> <td> 0.000</td> <td>    0.010</td> <td>    0.014</td>
+</tr>
+<tr>
+  <th>rev_old</th>    <td>    0.8251</td> <td>    0.001</td> <td> 1092.846</td> <td> 0.000</td> <td>    0.824</td> <td>    0.827</td>
+</tr>
+<tr>
+  <th>rev_change</th> <td>    0.1457</td> <td>    0.003</td> <td>   56.777</td> <td> 0.000</td> <td>    0.141</td> <td>    0.151</td>
+</tr>
+</table>
+<p>It looks like the <code>gift</code> on average increased revenue by <em>0.63\$</em>, which means that it was <strong>not profitable</strong>. Does it mean that we should stop sending gifts to our customers? It depends. In fact, the gift might be effective for certain customer segments. We just need to identify them.</p>
+<h2 id="targeting-policies">Targeting Policies</h2>
+<p>In this section, we will try to understand if there is a data-informed way to send the <code>gift</code> to customers that is profitable. In particular, we will c<strong>compare</strong> different data-informed targeting <strong>policies</strong> with the objective of increasing revenue.</p>
+<p>Throughout this section, we will need some algorithms to either predict <code>revenue</code>, or <code>churn</code>, or the probability of receiving the <code>gift</code>. We use gradient-boosted tree models from the <a href="https://lightgbm.readthedocs.io/en/latest/index.html" target="_blank" rel="noopener"><code>lightgbm</code></a> library  We use the same models for all policies, so that we cannot attribute differences in performance to prediction accuracy.</p>
+<pre><code class="language-python">from lightgbm import LGBMClassifier, LGBMRegressor
+</code></pre>
+<p>To <strong>evaluate</strong> each policy denoted with <em>τ</em>, we compare its profits with the policy <em>Π⁽¹⁾</em>, with its profits without the policy <em>Π⁽⁰⁾</em>, over every single individual, in a separate validation dataset. Note that this is usually not possible, since, for each customer, we only observe one of the two <strong>potential outcomes</strong>, with or without the <code>gift</code>. However, this is synthetic data, so we can do oracle evaluation. If you want to know more about how to evaluate uplift models with real data, I wrote an article about it.</p>
+<p><a href="https://towardsdatascience.com/8a078996a113" target="_blank" rel="noopener">https://towardsdatascience.com/8a078996a113</a></p>
+<p>First of all, let&rsquo;s define profits <em>Π</em> as the net revenue <em>R</em> when the customer does not churn <em>C</em>.
+$$
+\Pi = R (1-C)
+$$</p>
+<p>Therefore, the overall effect on profits for treated individuals is given by the difference between the profits when treated <em>Π⁽¹⁾</em> minus the profits when not treated <em>Π⁽⁰⁾</em>.</p>
+<p>$$
+\tau_{\pi} = R_1 (1 - C_1) - R_0 (1 - C_0)
+$$</p>
+<p>The effect for untreated individuals is zero.</p>
+<pre><code class="language-python">def evaluate_policy(policy):
+    data = dgp.generate_data(seed_data=4, seed_assignment=5, keep_po=True)
+    data['profits'] = (1 - data.churn) * data.revenue
+    baseline = (1-data.churn_c) * data.revenue_c
+    effect = policy(data) * (1-data.churn_t) * (data.revenue_t-cost) + (1-policy(data)) * (1-data.churn_c) * data.revenue_c
+    return np.sum(effect - baseline)
+</code></pre>
+<h3 id="1-target-churning-customers">1. Target Churning Customers</h3>
+<p>A first policy could be to just target <strong>churning customers</strong>. Let&rsquo;s say, we send the <code>gift</code> only to customers with above-average redicted churn.</p>
+<pre><code class="language-python">model_churn = LGBMClassifier().fit(X=df[X], y=df['churn'])
+
+policy_churn = lambda df : (model_churn.predict_proba(df[X])[:,1] &gt; df.churn.mean())
+evaluate_policy(policy_churn)
+</code></pre>
+<pre><code>-5497.46
+</code></pre>
+<p>The policy is not profitable and would lead to an aggregate <strong>loss</strong> of more than <em>5000\$</em>.</p>
+<p>You might think that the problem is the <strong>arbitrary threshold</strong>, but this is not the case. Below I plot the aggregate effect for all possible policy thresholds.</p>
+<pre><code class="language-python">x = np.linspace(0, 1, 100)
+y = [evaluate_policy(lambda df : (model_churn.predict_proba(df[X])[:,1] &gt; k)) for k in x]
+
+fig, ax = plt.subplots(figsize=(10, 3))
+sns.lineplot(x=x, y=y).set(xlabel='Churn Policy Threshold', title='Aggregate Effect');
+ax.axhline(y=0, c='k', lw=3, ls='--');
+</code></pre>
+<p><img src="img/beyond_churn_34_0.png" alt="png"></p>
+<p>As we can see, at best we can make zero losses when we decide not to give the gift to any customer.</p>
+<p>The problem is that the fact that a customer is likely to churn does not imply that the <code>gift</code> will have any impact on their churn probability. The two measures are not completely unrelated (e.g. we cannot decrease the churning probability of customers that have 0% probability of churning), but they are not the same thing.</p>
+<h3 id="2-target-revenue-customers">2. Target revenue customers</h3>
+<p>Let&rsquo;s now try a different policy: we send the gift only to <strong>high-revenue customers</strong>. For example, we might send the gift only to the top-10% of customers by revenue. The idea is that, if the policy indeed decreases churn, these are the customers for whom decreasing churn is more profitable.</p>
+<pre><code class="language-python">model_revenue = LGBMRegressor().fit(X=df[X], y=df['revenue'])
+
+policy_revenue = lambda df : (model_revenue.predict(df[X]) &gt; np.quantile(df.revenue, 0.9))
+evaluate_policy(policy_revenue)
+</code></pre>
+<pre><code>-4730.8200000000015
+</code></pre>
+<p>The policy is again unprofitable, leading to substantial <strong>losses</strong>. As before, this is not a problem of selecting the threshold as we can see in the plot below. The best we can do is set a threshold so high that we do not treat anyone and we make zero profits.</p>
+<pre><code class="language-python">x = np.linspace(0, 100, 100)
+y = [evaluate_policy(lambda df : (model_revenue.predict(df[X]) &gt; k*cost)) for k in x]
+
+fig, ax = plt.subplots(figsize=(10, 3))
+sns.lineplot(x=x, y=y).set(xlabel='Revenue Policy Threshold', title='Aggregate Effect');
+ax.axhline(y=0, c='k', lw=3, ls='--');
+</code></pre>
+<p><img src="img/beyond_churn_40_0.png" alt="png"></p>
+<p>The problem is that, in our setting, the churn probability of high-revenue customers does not decrease enough to make the <code>gift</code> profitable. This is also partially due to the fact, often observed in reality, that high-revenue customers are also the least likely to churn, to begin with.</p>
+<p>Let&rsquo;s now consider a more relevant set of policies: policies based on <strong>uplift</strong>.</p>
+<h3 id="3-target-churn-uplift-customers">3. Target churn uplift customers</h3>
+<p>A more sensible approach would be to target customers whose <code>churn</code> probability decreases the most when receiving the <em>1\$</em> <code>gift</code>. We estimate churn uplift using the <a href="https://arxiv.org/abs/2004.14497" target="_blank" rel="noopener">double-robust estimator</a>, one of the best performing uplift models. If you are unfamiliar with meta-learners, I recommend starting from my introductory article.</p>
+<p><a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">https://towardsdatascience.com/8a9c1e340832</a></p>
+<p>We import the doubly-robust learner from <a href="https://econml.azurewebsites.net/" target="_blank" rel="noopener">econml</a>, a Microsoft library.</p>
+<pre><code class="language-python">from econml.dr import DRLearner
+
+DR_learner_churn = DRLearner(model_regression=LGBMRegressor(), model_propensity=LGBMClassifier(), model_final=LGBMRegressor())
+DR_learner_churn.fit(df['churn'], df[W], X=df[X]);
+</code></pre>
+<p>Now that we have estimated churn uplift, we might be tempted to just target customers with a high negative uplift (negative, since we want to <em>decrease</em> churn). For example, we might send the <code>gift</code> to all customers with an estimated uplift larger than the average churn.</p>
+<pre><code class="language-python">policy_churn_lift = lambda df : DR_learner_churn.effect(df[X]) &lt; - np.mean(df.churn)
+evaluate_policy(policy_churn_lift)
+</code></pre>
+<pre><code>-3925.2400000000002
+</code></pre>
+<p>The policy is still unprofitable, leading to almost <em>4000\$</em> in losses.</p>
+<p>The problem is that we haven&rsquo;t considered the cost of the policy. In fact, decreasing the churn probability is <strong>only profitable for high-revenue customers</strong>. Take the extreme case: avoiding churn of a customer that does not generate any revenue is not worth any intervention.</p>
+<p>Therefore, let&rsquo;s only send the <code>gift</code> to customers whose churn probability weighted by revenue decreases more than the cost of the gift.</p>
+<pre><code class="language-python">model_revenue_1 = LGBMRegressor().fit(X=df.loc[df[W] == 1, X], y=df.loc[df[W] == 1, 'revenue'])
+
+policy_churn_lift = lambda df : - DR_learner_churn.effect(df[X]) * model_revenue_1.predict(df[X]) &gt; cost
+evaluate_policy(policy_churn_lift)
+</code></pre>
+<pre><code>318.03000000000003
+</code></pre>
+<p>This policy is finally profitable!</p>
+<p>However, we still have not considered one channel: the intervention might also affect the revenue of existing customers.</p>
+<h3 id="4-target-revenue-uplift-customers">4. Target revenue uplift customers</h3>
+<p>A symmetric approach to the previous one would be to consider only the impact on <code>revenue</code>, ignoring the impact on churn. We could estimate the <code>revenue</code> uplift for non-churning customers and treat only customers whose incremental effect on revenue, net of churn, is greater than the cost of the <code>gift</code>.</p>
+<pre><code class="language-python">DR_learner_netrevenue = DRLearner(model_regression=LGBMRegressor(), model_propensity=LGBMClassifier(), model_final=LGBMRegressor())
+DR_learner_netrevenue.fit(df.loc[df.churn==0, 'revenue'], df.loc[df.churn==0, W], X=df.loc[df.churn==0, X]);
+model_churn_1 = LGBMClassifier().fit(X=df.loc[df[W] == 1, X], y=df.loc[df[W] == 1, 'churn'])
+
+policy_netrevenue_lift = lambda df : DR_learner_netrevenue.effect(df[X]) * (1-model_churn_1.predict(df[X])) &gt; cost
+evaluate_policy(policy_netrevenue_lift)
+</code></pre>
+<pre><code>50.800000000000004
+</code></pre>
+<p>This policy is profitable as well, but ignores the effect on churn. How do we combine this poilcy with the previous one?</p>
+<h3 id="5-target-revenue-uplift-customers">5. Target revenue uplift customers</h3>
+<p>The best way to efficiently <strong>combine</strong> both the effect on churn and the effect on net revenue, is simply to estimate <strong>total revenue uplift</strong>. The implied optimal policy is to treat customers whose total revenue uplift is greater than the cost of the <code>gift</code>.</p>
+<pre><code class="language-python">DR_learner_revenue = DRLearner(model_regression=LGBMRegressor(), model_propensity=LGBMClassifier(), model_final=LGBMRegressor())
+DR_learner_revenue.fit(df['revenue'], df[W], X=df[X]);
+
+policy_revenue_lift = lambda df : (DR_learner_revenue.effect(df[X]) &gt; cost)
+evaluate_policy(policy_revenue_lift)
+</code></pre>
+<pre><code>2028.2100000000003
+</code></pre>
+<p>It looks like this is by far the best policy, generating an aggregate profit of more than <em>2000\$</em>!</p>
+<p>The result is starking if we compare all the different policies.</p>
+<pre><code class="language-python">policies = [policy_churn, policy_revenue, policy_churn_lift, policy_netrevenue_lift, policy_revenue_lift] 
+df_results = pd.DataFrame()
+df_results['policy'] = ['churn', 'revenue', 'churn_L', 'netrevenue_L', 'revenue_L']
+df_results['value'] = [evaluate_policy(policy) for policy in policies]
+
+fig, ax = plt.subplots()
+sns.barplot(df_results, x='policy', y='value')
+plt.axhline(0, c='k');
+</code></pre>
+<p><img src="img/beyond_churn_60_0.png" alt="png"></p>
+<h2 id="intuition-and-decomposition">Intuition and Decomposition</h2>
+<p>If we compare the different policies, it is clear that targeting high-revenue or high-churn probability customers directly were the <strong>worst choices</strong>. This is not necessarily always the case, but it happened in our simulated data because of two facts that are also common in many real scenarios:</p>
+<ol>
+<li>Revenue and churn probability are negatively correlated</li>
+<li>The effect of the <code>gift</code> on <code>churn</code> (or <code>revenue</code>) was not strongly negatively (or positively for <code>revenue</code>) correlated with the baseline values</li>
+</ol>
+<p>Either one of these two facts can be enough to make targeting revenue or churn a bad strategy. What one should target instead is customers with a high <strong>incremental</strong> effect. And it&rsquo;s best to directly use as outcome the variable of interest, <code>revenue</code> in this case, whenever available.</p>
+<p>To better understand the mechanism, we can <strong>decompose</strong> the aggregate effect of a policy on profits into three parts.</p>
+<p>$$
+\begin{aligned}
+\tau_{\pi} &amp;= R_1 * (1 - C_1) - R_0 * (1 - C_0) = \newline
+&amp;= R_1 * (1 - C_1) - \underbrace{\hat{r}<em>1 * (1 - \hat{c}<em>0) + R_1 * (1 - C_0)}</em>{\text{add and subtract}} - R_0 * (1 - C_0) = \newline
+&amp;= - R_1 * \tau_c + R_1 * (1 - C_0) - R_0 * (1 - C_0) = \newline
+&amp;= - R_1 * \tau_c + \tau_r * (1 - C_0) = \newline
+&amp;= \underbrace{- R_0 * \tau_c}</em>{\text{incremental effect on churn}} + \underbrace{\tau_r * (1 - C_0)}<em>{\text{incremental effect on revenue}} + \underbrace{\tau_r * \tau_c}</em>{\text{interaction effect}}
+\end{aligned}
+$$</p>
+<p>This implies that there are <strong>three channels</strong> that make treating a customer profitable.</p>
+<ol>
+<li>If it&rsquo;s a <em>high-revenue</em> customer and the treatment <em>decreases</em> its churn probability</li>
+<li>If it&rsquo;s a <em>non-churning</em> customer and the treatment <em>increases</em> its revenue</li>
+<li>It the treatment has a strong impact on <em>both</em> its revenue and churn probability</li>
+</ol>
+<p>Targeting by churn uplift exploits only the first channel, targeting by net revenue uplift exploits only the second channel, and targeting by total revenue uplift exploits all three channels, making it the <strong>most effective</strong> method.</p>
+<h3 id="bonus-weighting">Bonus: weighting</h3>
+<p>As highlighted by <a href="https://www.hbs.edu/ris/Publication%20Files/14-020_2d6c9da0-94d3-4dd5-9952-d81feb432f61.pdf" target="_blank" rel="noopener">Lemmens, Gupta (2020)</a>, sometimes it might be worth <strong>weighting</strong> observations when estimating model uplift. In particular, it might be worth giving more weight to observations close to the treatment policy threshold.</p>
+<p>The <strong>idea</strong> is that weighting generally decreases the efficiency of the estimator. However, we are not interested in having correct estimates for all the observations, but rather we are interested in estimating the <strong>policy threshold</strong> correctly. In fact, whether you estimate a net profit of <em>1\$</em> or <em>1000\$</em> it does not matter: the implied policy is the same: send the <code>gift</code>. However, estimating a net profit of <em>1\$</em> rather than <em>-1\$</em> reverses the policy implications. Therefore, a large loss in accuracy away from the threshold sometimes is worth a small gain in accuracy at the threshold.</p>
+<p>Let&rsquo;s try using negative exponential weights, decreasing in distance from the threshold.</p>
+<pre><code class="language-python">DR_learner_revenue_w = DRLearner(model_regression=model_y, model_propensity=model_w, model_final=model_y)
+w = np.exp(1 + np.abs(DR_learner_revenue.effect(df[X]) - cost))
+DR_learner_revenue_w.fit(df['revenue'], df[W], X=df[X], sample_weight=w);
+
+policy_revenue_lift_w = lambda df : (DR_learner_revenue_w.effect(df[X]) &gt; cost)
+evaluate_policy(policy_revenue_lift_w)
+</code></pre>
+<pre><code>---------------------------------------------------------------------------
+
+NameError                                 Traceback (most recent call last)
+
+Cell In[22], line 1
+----&gt; 1 DR_learner_revenue_w = DRLearner(model_regression=model_y, model_propensity=model_w, model_final=model_y)
+      2 w = np.exp(1 + np.abs(DR_learner_revenue.effect(df[X]) - cost))
+      3 DR_learner_revenue_w.fit(df['revenue'], df[W], X=df[X], sample_weight=w);
+
+
+NameError: name 'model_y' is not defined
+</code></pre>
+<p>In our case, weighting is not worth: the implied policy is still profitable, but less than the one obtained with the unweighted model, <em>2028\$</em>.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this article, we have why and how one should go <strong>beyond</strong> churn prediction and churn uplift modeling. In particular, one should concentrate on the final business objective of increasing profitability. This implies shifting the focus from <em>prediction</em> to <em>uplift</em> but also combining churn and revenue into a single outcome.</p>
+<p>An important caveat concerns the dimension of the data available. We have used a toy dataset that highly simplifies the problem in at least <strong>two dimensions</strong>. First of all, backwards, we normally have longer time series that can (and should) be used for both prediction and modeling purposes. Second, forward, one should combine churn with a longer-run estimate of customer profitability, usually referred to as <em>customer lifetime value</em>.</p>
+<h3 id="references">References</h3>
+<ul>
+<li>
+<p>Lemmens, Gupta (2020), <a href="https://www.hbs.edu/ris/Publication%20Files/14-020_2d6c9da0-94d3-4dd5-9952-d81feb432f61.pdf" target="_blank" rel="noopener">&ldquo;Managing Churn to Maximize Profits&rdquo;</a></p>
+</li>
+<li>
+<p>Bonvini, Kennedy, Keele (2021), <a href="https://arxiv.org/abs/2306.17464" target="_blank" rel="noopener">&ldquo;Minimax Optimal Subgroup Identification&rdquo;</a></p>
+</li>
+</ul>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li>
+<p><a href="https://towardsdatascience.com/8a078996a113" target="_blank" rel="noopener">Evaluating Uplift Models</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/8a9c1e340832" target="_blank" rel="noopener">Understanding Meta Learners</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/ed4097dab27a" target="_blank" rel="noopener">Understanding AIPW, the Doubly-Robust Estimator</a></p>
+</li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/beyond_churn.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/beyond_churn.ipynb</a></p>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://matteocourthoud.github.io/post/beyond_churn/&amp;text=Beyond%20Churn%20Prediction%20and%20Churn%20Uplift" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://matteocourthoud.github.io/post/beyond_churn/&amp;t=Beyond%20Churn%20Prediction%20and%20Churn%20Uplift" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Beyond%20Churn%20Prediction%20and%20Churn%20Uplift&amp;body=https://matteocourthoud.github.io/post/beyond_churn/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://matteocourthoud.github.io/post/beyond_churn/&amp;title=Beyond%20Churn%20Prediction%20and%20Churn%20Uplift" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Beyond%20Churn%20Prediction%20and%20Churn%20Uplift%20https://matteocourthoud.github.io/post/beyond_churn/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://t.me/share/url?url=https://matteocourthoud.github.io/post/beyond_churn/&amp;text=%7btext%7d" target="_blank" rel="noopener" class="share-btn-telegram">
+          <i class="fab fa-telegram"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">My research fields are empirical Industrial Organization and Competition Policy. My research interests include the relationship between competition and innovation, big data, artificial intelligence, platform markets, peer to peer services.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.4ea9cc8d09c5c158656ac1a804743b34.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>
