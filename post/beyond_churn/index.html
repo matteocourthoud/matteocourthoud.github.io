@@ -848,7 +848,7 @@
   
   <span class="middot-divider"></span>
   <span class="article-reading-time">
-    15 min read
+    14 min read
   </span>
   
 
@@ -894,41 +894,7 @@
 %config InlineBackend.figure_format = 'retina'
 </code></pre>
 <pre><code class="language-python">from src.utils import *
-from src.dgp import DGP
-</code></pre>
-<pre><code class="language-python">class dgp_gift(DGP):
-    &quot;&quot;&quot;DGP: gift&quot;&quot;&quot;
-    X: list[str] = ['age', 'rev_old', 'rev_change']
-    D: str = 'gift'
-    Y: list[str] = ['churn', 'revenue']
-
-    def generate_baseline(self, seed:int = 0):
-        np.random.seed(seed)
-        months = np.random.exponential(5, self.n)
-        rev_old = np.maximum(0, np.random.exponential(7, self.n) - 2)
-        rev_change = np.random.normal(0, 2, self.n)
-        churn_c = np.random.beta(1 - rev_change*(rev_change&lt;0), 2 + rev_old) &gt; 0.4
-        rev_c = 0.8*rev_old + 0.2*np.maximum(0, np.random.exponential(7, self.n) - 2)
-        df = pd.DataFrame({'months': months, 'rev_old': rev_old, 'rev_change': rev_change,
-                           'churn_c': churn_c, 'revenue_c': rev_c})
-        return df
-
-    def add_treatment_effect(self, df, seed:int = 1):
-        np.random.seed(seed)
-        effect_c = - np.random.binomial(1, 0.3, self.n) * (df.months&lt;7)
-        df['effect_on_churn'] = effect_c * (df.churn_c==1)
-        effect_r = np.random.normal(0.9, 0.5, self.n)* (df.months&gt;3)
-        df['effect_on_revenue'] = np.maximum(-df.revenue_c, effect_r)
-        return df
-
-    def add_assignment(self, df: pd.DataFrame, seed: int = 2) -&gt; pd.DataFrame:
-        np.random.seed(seed)
-        df[self.D] = np.random.binomial(1, 0.5, self.n)
-        return df
-
-    def add_post_treatment_variables(self, df : pd.DataFrame, seed: int = 0) -&gt; pd.DataFrame:
-        df.revenue *= (1-df.churn)
-        return df
+from src.dgp import dgp_gift
 </code></pre>
 <pre><code class="language-python">dgp = dgp_gift(n=100_000)
 df = dgp.generate_data()
@@ -1149,7 +1115,7 @@ fig, ax = plt.subplots(figsize=(10, 3))
 sns.lineplot(x=x, y=y).set(xlabel='Churn Policy Threshold', title='Aggregate Effect');
 ax.axhline(y=0, c='k', lw=3, ls='--');
 </code></pre>
-<p><img src="img/beyond_churn_34_0.png" alt="png"></p>
+<p><img src="img/beyond_churn_33_0.png" alt="png"></p>
 <p>As we can see, at best we can make zero losses when we decide not to give the gift to any customer.</p>
 <p>The problem is that the fact that a customer is likely to churn does not imply that the <code>gift</code> will have any impact on their churn probability. The two measures are not completely unrelated (e.g. we cannot decrease the churning probability of customers that have 0% probability of churning), but they are not the same thing.</p>
 <h3 id="2-target-revenue-customers">2. Target revenue customers</h3>
@@ -1169,7 +1135,7 @@ fig, ax = plt.subplots(figsize=(10, 3))
 sns.lineplot(x=x, y=y).set(xlabel='Revenue Policy Threshold', title='Aggregate Effect');
 ax.axhline(y=0, c='k', lw=3, ls='--');
 </code></pre>
-<p><img src="img/beyond_churn_40_0.png" alt="png"></p>
+<p><img src="img/beyond_churn_39_0.png" alt="png"></p>
 <p>The problem is that, in our setting, the churn probability of high-revenue customers does not decrease enough to make the <code>gift</code> profitable. This is also partially due to the fact, often observed in reality, that high-revenue customers are also the least likely to churn, to begin with.</p>
 <p>Let&rsquo;s now consider a more relevant set of policies: policies based on <strong>uplift</strong>.</p>
 <h3 id="3-target-churn-uplift-customers">3. Target churn uplift customers</h3>
@@ -1232,7 +1198,7 @@ fig, ax = plt.subplots()
 sns.barplot(df_results, x='policy', y='value')
 plt.axhline(0, c='k');
 </code></pre>
-<p><img src="img/beyond_churn_60_0.png" alt="png"></p>
+<p><img src="img/beyond_churn_59_0.png" alt="png"></p>
 <h2 id="intuition-and-decomposition">Intuition and Decomposition</h2>
 <p>If we compare the different policies, it is clear that targeting high-revenue or high-churn probability customers directly were the <strong>worst choices</strong>. This is not necessarily always the case, but it happened in our simulated data because of two facts that are also common in many real scenarios:</p>
 <ol>
@@ -1261,24 +1227,14 @@ $$</p>
 <p>As highlighted by <a href="https://www.hbs.edu/ris/Publication%20Files/14-020_2d6c9da0-94d3-4dd5-9952-d81feb432f61.pdf" target="_blank" rel="noopener">Lemmens, Gupta (2020)</a>, sometimes it might be worth <strong>weighting</strong> observations when estimating model uplift. In particular, it might be worth giving more weight to observations close to the treatment policy threshold.</p>
 <p>The <strong>idea</strong> is that weighting generally decreases the efficiency of the estimator. However, we are not interested in having correct estimates for all the observations, but rather we are interested in estimating the <strong>policy threshold</strong> correctly. In fact, whether you estimate a net profit of <em>1\$</em> or <em>1000\$</em> it does not matter: the implied policy is the same: send the <code>gift</code>. However, estimating a net profit of <em>1\$</em> rather than <em>-1\$</em> reverses the policy implications. Therefore, a large loss in accuracy away from the threshold sometimes is worth a small gain in accuracy at the threshold.</p>
 <p>Let&rsquo;s try using negative exponential weights, decreasing in distance from the threshold.</p>
-<pre><code class="language-python">DR_learner_revenue_w = DRLearner(model_regression=model_y, model_propensity=model_w, model_final=model_y)
+<pre><code class="language-python">DR_learner_revenue_w = DRLearner(model_regression=LGBMRegressor(), model_propensity=LGBMClassifier(), model_final=LGBMRegressor())
 w = np.exp(1 + np.abs(DR_learner_revenue.effect(df[X]) - cost))
 DR_learner_revenue_w.fit(df['revenue'], df[W], X=df[X], sample_weight=w);
 
 policy_revenue_lift_w = lambda df : (DR_learner_revenue_w.effect(df[X]) &gt; cost)
 evaluate_policy(policy_revenue_lift_w)
 </code></pre>
-<pre><code>---------------------------------------------------------------------------
-
-NameError                                 Traceback (most recent call last)
-
-Cell In[22], line 1
-----&gt; 1 DR_learner_revenue_w = DRLearner(model_regression=model_y, model_propensity=model_w, model_final=model_y)
-      2 w = np.exp(1 + np.abs(DR_learner_revenue.effect(df[X]) - cost))
-      3 DR_learner_revenue_w.fit(df['revenue'], df[W], X=df[X], sample_weight=w);
-
-
-NameError: name 'model_y' is not defined
+<pre><code>1398.19
 </code></pre>
 <p>In our case, weighting is not worth: the implied policy is still profitable, but less than the one obtained with the unweighted model, <em>2028\$</em>.</p>
 <h2 id="conclusion">Conclusion</h2>
@@ -1287,10 +1243,13 @@ NameError: name 'model_y' is not defined
 <h3 id="references">References</h3>
 <ul>
 <li>
-<p>Lemmens, Gupta (2020), <a href="https://www.hbs.edu/ris/Publication%20Files/14-020_2d6c9da0-94d3-4dd5-9952-d81feb432f61.pdf" target="_blank" rel="noopener">&ldquo;Managing Churn to Maximize Profits&rdquo;</a></p>
+<p>Kennedy (2022), <a href="https://arxiv.org/abs/2004.14497" target="_blank" rel="noopener">&ldquo;Towards Optimal Doubly Robust Estimation of Heterogeneous Causal Effects&rdquo;</a></p>
 </li>
 <li>
 <p>Bonvini, Kennedy, Keele (2021), <a href="https://arxiv.org/abs/2306.17464" target="_blank" rel="noopener">&ldquo;Minimax Optimal Subgroup Identification&rdquo;</a></p>
+</li>
+<li>
+<p>Lemmens, Gupta (2020), <a href="https://www.hbs.edu/ris/Publication%20Files/14-020_2d6c9da0-94d3-4dd5-9952-d81feb432f61.pdf" target="_blank" rel="noopener">&ldquo;Managing Churn to Maximize Profits&rdquo;</a></p>
 </li>
 </ul>
 <h3 id="related-articles">Related Articles</h3>
