@@ -1,0 +1,1635 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="How to estimate causal effects when you cannot randomize treatment.
+A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to randomization." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/instrumental_variables/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.036b5b2acdb844b842ed3e91242fe237.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/instrumental_variables/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/instrumental_variables/" />
+  <meta property="og:title" content="Instrumental Variables | Matteo Courthoud" />
+  <meta property="og:description" content="How to estimate causal effects when you cannot randomize treatment.
+A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to randomization." /><meta property="og:image" content="https://matteocourthoud.github.io/post/instrumental_variables/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/instrumental_variables/featured.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2023-11-12T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2023-11-12T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/instrumental_variables/"
+  },
+  "headline": "Instrumental Variables",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/instrumental_variables/featured.png"
+  ],
+  
+  "datePublished": "2023-11-12T00:00:00Z",
+  "dateModified": "2023-11-12T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "How to estimate causal effects when you cannot randomize treatment.\nA/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to randomization."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Instrumental Variables | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="b545240fac67a3abd3b78360daaa7410" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#newsletter"><span>Newsletter</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#evaluating-subscription-programs">Evaluating Subscription Programs</a></li>
+    <li><a href="#encouragement-design">Encouragement Design</a></li>
+    <li><a href="#instrumental-variables-iv">Instrumental Variables (IV)</a></li>
+    <li><a href="#iv-extensions">IV Extensions</a></li>
+    <li><a href="#the-limits-of-iv">The Limits of IV</a></li>
+    <li><a href="#conclusion">Conclusion</a>
+      <ul>
+        <li><a href="#references">References</a></li>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="article-container pt-3">
+  <h1>Instrumental Variables</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Nov 12, 2023
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    14 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1726px; max-height: 984px;">
+  <div style="position: relative">
+    <img src="/post/instrumental_variables/featured.png" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p><em>How to estimate causal effects when you cannot randomize treatment.</em></p>
+<p>A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to <strong>randomization</strong>. In fact, by randomly assigning a <strong>treatment</strong> (a drug, ad, product, &hellip;), we are able to compare the <strong>outcome</strong> of interest (a disease, firm revenue, customer satisfaction, &hellip;) across <strong>subjects</strong> (patients, users, customers, &hellip;) and attribute the average difference in outcomes to the causal effect of the treatment.</p>
+<p>However, in many settings, it is <strong>not possible to randomize</strong> the treatment, for either ethical, legal, or practical reasons. One common online setting is on-demand features, such as subscriptions or premium memberships. Other settings include features for which we cannot discriminate customers, like insurance contracts, or features that are so deeply hard-coded that an experiment might not be worth the effort. Can we still do valid causal inference in those settings?</p>
+<p>The answer is yes, thanks to <strong>instrumental variables</strong> and the corresponding experimental design called <strong>encouragement design</strong>. In many of the settings mentioned above, we cannot randomly <em>assign</em> treatment, but we can <em>encourage</em> customers to take it. For example, we can offer a subscription discount or we can change the order in which options are presented. While customers retain the ultimate word on taking the treatment, we are still able to estimate a causal treatment effect. Let&rsquo;s see how.</p>
+<h2 id="evaluating-subscription-programs">Evaluating Subscription Programs</h2>
+<p>In the rest of the article, we are going to use a toy example. Suppose we were a product company starting a weekly <strong>newsletter</strong> to promote product and feature updates. We would like to understand whether the newsletter is worth the effort and whether it is ultimately successful in increasing <strong>sales</strong>. Unfortunately, we cannot run a standard A/B test since we cannot force customers to <strong>subscribe</strong> to the newsletter. Does it mean we cannot evaluate the newsletter? Not exactly.</p>
+<p>Let&rsquo;s assume we have also run an A/B test on a new <strong>notification</strong> on our mobile app that promotes the newsletter. A random sample of our customers has received the notification, while a random sample has not. Perhaps this A/B test was not related to the evaluation of the causal effect of the <strong>newsletter</strong> at all, as it sometimes happens in large companies. However, this is a great opportunity for a data scientist interested in understanding the impact of the newsletter on <strong>sales</strong>.</p>
+<p>Let&rsquo;s first have a look at the data. I import the data-generating process from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py" target="_blank" rel="noopener">src.dgp</a> and some plotting utilities from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py" target="_blank" rel="noopener">src.utils</a>.</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+</code></pre>
+<pre><code class="language-python">from src.utils import *
+from src.dgp import dgp_notification_newsletter
+</code></pre>
+<pre><code class="language-python">dgp = dgp_notification_newsletter(n=10_000)
+df = dgp.generate_data()
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>spend_old</th>
+      <th>notification</th>
+      <th>subscription</th>
+      <th>spend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>9.47</td>
+      <td>0</td>
+      <td>0</td>
+      <td>10.04</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>11.18</td>
+      <td>1</td>
+      <td>1</td>
+      <td>16.49</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>11.52</td>
+      <td>0</td>
+      <td>0</td>
+      <td>9.50</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>9.03</td>
+      <td>1</td>
+      <td>0</td>
+      <td>10.12</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>7.02</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7.18</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>We have information on <em>10,000</em> customers, for whom we observe whether or not they received the <code>notification</code>, whether they <code>subscribed</code> to the newsletter, and how much they <code>spent</code>. Moreover, we also observe how much they spent before the introduction of the subscription program (<code>spent_old</code>). For the rest of the article, we will label these variables as follows:</p>
+<ul>
+<li><code>notification</code>, the <strong>treatment assignment</strong>, <em>Z</em></li>
+<li><code>subscription</code>, the <strong>treatment status</strong>, <em>W</em></li>
+<li><code>spend_old</code>, a <strong>feature</strong> or control variable, <em>X</em></li>
+<li><code>spend</code>, the <strong>outcome</strong>, <em>Y</em></li>
+</ul>
+<p>A <strong>naive approach</strong> would be to compare the difference in <code>spend</code> between customers that <code>subscribed</code> and those who didn&rsquo;t. The corresponding causal object or <em>estimand</em> is</p>
+<p>$$
+\tau_{W \to Y} = \mathbb{E} \Big[ \text{spend} \ \Big| \ \text{subscription} = 1 \Big] - \mathbb{E} \Big[ \text{spend} \ \Big| \ \text{subscription} = 0 \Big]
+$$</p>
+<p>Let&rsquo;s visualize the average <code>spend</code> for the two groups.</p>
+<pre><code class="language-python">def plot_group_comparison(df, x, y, title, xticks):
+    fig, ax = plt.subplots()
+    g = sns.barplot(data=df.sort_values([y, x]), x=x, y=y, ci=None, ax=ax)
+    g.set(ylabel=&quot;&quot;, xlabel=&quot;&quot;)
+    ax.tick_params(axis='x', which='major', labelsize=16)
+    ax.set_xticklabels(xticks)
+    diff = df.loc[df[x]==1, y].mean() - df.loc[df[x]==0, y].mean()
+    plt.suptitle(title)
+    plt.title(f&quot;Difference: {diff:.2f}&quot;, fontsize=16, fontweight=None, y=0.95)
+</code></pre>
+<pre><code class="language-python">plot_group_comparison(df, x=&quot;subscription&quot;, y=&quot;spend&quot;, title=&quot;Spend&quot;, xticks=[&quot;Non-subscriber&quot;, &quot;Subscriber&quot;])
+</code></pre>
+<p><img src="img/instrumental_variables_11_0.png" alt="png"></p>
+<p>Subscribers spend on average <em>11.5$</em> more than non-subscribers. But is it a <strong>causal</strong> effect?</p>
+<p>We can imagine that customers who are more active and more interested in our product will also be more interested in hearing news about it. For example, we can imagine that customers who have more <strong>budget</strong> to spend will also want to spend it better and subscribe to the newsletter.</p>
+<p>We can represent the relationship between the variables in the following Directed Acyclic Graph (DAG). If you never heard of DAGs, I recommend reading my <a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">introductory article</a> first.</p>
+<p><a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">https://towardsdatascience.com/b63dc69e3d8c</a></p>
+<p>In the plot, we represent variables with circles and causal relationships with arrows.</p>
+<pre><code class="language-mermaid">flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+U((U: budget))
+W((W: subscription))
+Y((Y: spend))
+
+U --&gt; W
+U --&gt; Y
+W --&gt; Y
+
+class W,Y included;
+class U unobserved;
+
+linkStyle 0,1 stroke:#ff6e54,stroke-width:4px;
+linkStyle 2 stroke:#003f5c,stroke-width:4px;
+</code></pre>
+<p>Technically speaking, customer&rsquo;s <strong>budget</strong> is an unobservable confounder that opens a spurious path between our treatment, the <code>subscription</code>, and the outcome, customers&rsquo; <code>spend</code>. Because of this, we cannot interpret the difference-in-means estimate of <em>11.5$</em> as causal.</p>
+<p>What can we do?</p>
+<h2 id="encouragement-design">Encouragement Design</h2>
+<p>Unfortunately, we cannot run an A/B test because we cannot force people to subscribe to the newsletter. However, we can <em>encourage</em> people to subscribe. For example, we can send them a mobile <strong>notification</strong> to advertise the newsletter. This setting is called an <strong>encouragement design</strong> since we do not randomize the treatment, but the encouragement. The encouragement, the <code>notification</code> in our setting, is also called <strong>instrumental variable</strong>.</p>
+<p>It&rsquo;s important to stress that, while being randomly assigned, the encouragement does <em>not</em> correspond with the treatment of interest. In fact, some people will <em>not</em> subscribe despite receiving the notification, and some people will subscribe despite  <em>not</em> receiving the notification.</p>
+<p><img src="fig/instrumental_variables1.png" alt="img"></p>
+<p>After adding the encouragement, the <code>notification</code>, the data-generating process can be represented with the following DAG.</p>
+<pre><code class="language-mermaid">flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+U((U: budget))
+Z((Z: notification))
+W((W: subscription))
+Y((Y: spend))
+
+U -.-&gt; W
+U -.-&gt; Y
+Z --&gt; W
+W --&gt; Y
+
+class Z,W,Y included;
+class U unobserved;
+
+linkStyle 0,1 stroke-width:4px;
+linkStyle 2 stroke:#003f5c,stroke-width:4px;
+linkStyle 3 stroke:#2db88b,stroke-width:4px;
+</code></pre>
+<p>Note that now we have closed the open path between <code>subscription</code> and <code>spend</code>. Therefore, we can estimate the causal effect of the subscription on the probability of making a sale. Let&rsquo;s see how.</p>
+<p>First, we would like to understand whether the <code>notification</code> is effective or not. This is often referred to as <strong>strength</strong> of the instrument. Thanks to randomization, we can attribute the average difference in <code>spend</code> between people who received the <code>notification</code> and people who did not, to the treatment itself.</p>
+<p>$$
+\tau_{Z \to Y} = \mathbb{E} \Big[ \text{spend} \ | \ \text{notification} = 1 \Big] - \mathbb{E} \Big[ \text{spend} \ | \ \text{notification} = 0 \Big]
+$$</p>
+<p>Let&rsquo;s visualize the corresponding difference-in-means estimate.</p>
+<pre><code class="language-python">plot_group_comparison(df, x=&quot;notification&quot;, y=&quot;spend&quot;, title=&quot;Spend&quot;, xticks=[&quot;No Notification&quot;, &quot;Notification&quot;])
+</code></pre>
+<p><img src="img/instrumental_variables_22_0.png" alt="png"></p>
+<p>It seems that customers who received the <code>notification</code> spend on average <em>1$</em> more than customers who didn&rsquo;t receive it. This is a sensibly lower number than the <em>11.5$</em> we estimated before.</p>
+<p>However, the effect of the <code>notification</code> on <code>spend</code> is not what we are interested in. We would rather know the effect of the <code>subscription</code> on <code>spend</code>. In fact, not all customers who receive the email subscribe to the newsletter. And vice-versa, some people subscribe to the newsletter even without the notification.</p>
+<p>This means that the effect that we have just computed is <strong>diluted</strong> by the fact that some people do not comply with our incentive, the <code>notification</code>. We have to attribute it <em>only</em> to the customers who changed their minds because of the newsletter. How many are these customers?</p>
+<p>Let&rsquo;s compute the probability of <code>subscription</code>, by treatment group.</p>
+<p>$$
+\tau_{Z \to W} = \mathbb{E} \Big[ \text{subscription} \ | \ \text{notification} = 1 \Big] - \mathbb{E} \Big[ \text{subscription} \ | \ \text{notification} = 0 \Big]
+$$</p>
+<pre><code class="language-python">plot_group_comparison(df, x=&quot;notification&quot;, y=&quot;subscription&quot;, title=&quot;Subscription Probability&quot;, xticks=[&quot;No Notification&quot;, &quot;Notification&quot;])
+</code></pre>
+<p><img src="img/instrumental_variables_24_0.png" alt="png"></p>
+<p>Customers that received the <code>notification</code> have a <em>17%</em> higher <code>subscription</code> probability. In other words, it seems that the <code>notification</code> is able to make <em>17%</em> of our customers change their minds. From the control group, we learned that <em>28%</em> of them would have subscribed anyway, while we were unable to convince the remaining <em>55%</em>.</p>
+<p>We now have all the ingredients we need for our main analysis</p>
+<h2 id="instrumental-variables-iv">Instrumental Variables (IV)</h2>
+<p>In this case, with a binary instrument, the <code>notification</code>, a binary treatment, the <code>subscription</code> decision, and a 50-50 treatment assignment probability, we can get a very simple <strong>intuition</strong> of how instrumental variables work.</p>
+<p>We have four groups of customers, depending on whether they received the notification or not, and wether they subscribed or not.</p>
+<pre><code class="language-python">df.groupby([&quot;notification&quot;, &quot;subscription&quot;]).agg(spend=(&quot;spend&quot;, &quot;sum&quot;), customers=(&quot;spend&quot;, &quot;count&quot;)).iloc[::-1].T.round(0)
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead tr th {
+    text-align: left;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr>
+      <th>notification</th>
+      <th colspan="2" halign="left">1</th>
+      <th colspan="2" halign="left">0</th>
+    </tr>
+    <tr>
+      <th>subscription</th>
+      <th>1</th>
+      <th>0</th>
+      <th>1</th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>spend</th>
+      <td>42643.0</td>
+      <td>19958.0</td>
+      <td>27857.0</td>
+      <td>29566.0</td>
+    </tr>
+    <tr>
+      <th>customers</th>
+      <td>2253.0</td>
+      <td>2747.0</td>
+      <td>1400.0</td>
+      <td>3600.0</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Let&rsquo;s visualize the total spend and the total number of customers within each bucket.</p>
+<p><img src="fig/instrumental_variables2.png" alt="img"></p>
+<p>Comparing treatment (<code>notification</code>) and control group, we see that the notification has generated an increase in <code>spend</code> of <em>5k€</em> (<em>43 + 20 - 28 - 30</em>). In order to recover the causal effect of interest, we just need to attribute the <em>5k€</em> incremental <code>spend</code> to the <em>800</em> (<em>2200 - 1400</em>) customers that decided to <code>subscribe</code> because of the <code>notification</code>. The result is exactly <em>5k€ / 800 = 6€</em> per customer!</p>
+<p><img src="fig/instrumental_variables3.png" alt="img"></p>
+<p>More generally, the IV estimand is given by the <strong>ratio of two causal effects</strong>: the effect of the instrument (or encouragement, or assignment) <em>Z</em>, on the outcome <em>Y</em>, over the effect of the instrument <em>Z</em> on the treatment (or endogenous variable) <em>W</em>.</p>
+<p>$$
+\tau_{IV} = \frac{\tau_{Z \to Y}}{\tau_{Z \to W}} = \frac{\mathbb{E} \Big[ \text{spend} \ | \ \text{notification} = 1 \Big] - \mathbb{E} \Big[ \text{spend} \ | \ \text{notification} = 0 \Big]}{\mathbb{E} \Big[ \text{subscription} \ | \ \text{notification} = 1 \Big] - \mathbb{E} \Big[ \text{subscription} \ | \ \text{notification} = 0 \Big]}
+$$</p>
+<p>To compute the IV estimate we replace the expected values with the empirical averages. In practice, in our case, we just divide the two difference-in-means estimates we computed in the plots in the previous section.</p>
+<pre><code class="language-python">tau_ZY = df.loc[df.notification == 1, &quot;spend&quot;].mean() - df.loc[df.notification == 0, &quot;spend&quot;].mean()
+tau_ZW = df.loc[df.notification == 1, &quot;subscription&quot;].mean() - df.loc[df.notification == 0, &quot;subscription&quot;].mean()
+tau_ZY / tau_ZW
+</code></pre>
+<pre><code>6.070222743259094
+</code></pre>
+<p>Our instrumental variable estimate of the effect of the <code>subscription</code> program on <code>spend</code> is <em>6$</em>, as anticipated in the illustrations above! Note that the math in the illustration works <em>only</em> in the special case of an exact 50-50 assignment.</p>
+<p>More generally, it can be shown that the formula of the IV estimator is given by a ratio of covariances,</p>
+<p>$$
+\tau_{IV} = \frac{\text{Cov} (Z, Y)}{\text{Cov} (Z, W)}
+$$</p>
+<p>or, in matrix notation,</p>
+<p>$$
+\tau_{IV} = \mathbb{E} \big[ ZW \big]^{-1} \mathbb{E} \big[ ZY \big]
+$$</p>
+<h2 id="iv-extensions">IV Extensions</h2>
+<p>What would happen if we had more instruments or other control variables? For example, we could have run other experiments to encourage customers to <code>subscribe</code>. Or, as in our case, we could have other variables that we can add to the model in order to increase prediction accuracy, such as previous spend levels, <code>spend_old</code>. How do we include them in the model?</p>
+<p>The long-story-short is that when we have multiple instruments, the instrumental variable formula can be rewritten as</p>
+<p>$$
+\tau_{2SLS} = \mathbb{E} \big[ \hat{W} \hat{W} \big]^{-1} \mathbb{E} \big[ \hat{W} Y \big]
+$$</p>
+<p>where $\hat{W}$ is the projection of <em>W</em> onto <em>Z</em>, i.e. in practice the predicted treatment status, given the treatment assignment. This prediction step is called the <strong>first stage</strong>. This formula should remind you of the OLS estimator formula. Indeed, this is equivalent to a linear regression of our outcome <em>Y</em> on the predicted treatment <em>W</em>, given the assignment <em>Z</em>. This step is called the <strong>second stage</strong>. Overall, since the estimation procedure can be split into two separate stages, this is referred to as the <strong>Two-Stage Least Squares (2SLS) Estimator</strong>.</p>
+<p>The two-stage formulation particularly evident in the implementation of most IV packages, where we express the treatment as the result of a regression on the instrument. In the <a href="https://bashtage.github.io/linearmodels/iv/iv/linearmodels.iv.model.IV2SLS.html" target="_blank" rel="noopener"><code>IV2SLS</code></a> package this is done by using square brackets.</p>
+<pre><code class="language-python">from linearmodels.iv.model import IV2SLS as iv
+model_iv = iv.from_formula(&quot;spend ~ 1 + [subscription ~ notification]&quot;, data=df).fit()
+model_iv.summary.tables[1]
+</code></pre>
+<table class="simpletable">
+<caption>Parameter Estimates</caption>
+<tr>
+        <td></td>       <th>Parameter</th> <th>Std. Err.</th> <th>T-stat</th> <th>P-value</th> <th>Lower CI</th> <th>Upper CI</th>
+</tr>
+<tr>
+  <th>Intercept</th>     <td>9.7849</td>    <td>0.2083</td>   <td>46.973</td> <td>0.0000</td>   <td>9.3766</td>   <td>10.193</td> 
+</tr>
+<tr>
+  <th>subscription</th>  <td>6.0702</td>    <td>0.5548</td>   <td>10.942</td> <td>0.0000</td>   <td>4.9829</td>   <td>7.1575</td> 
+</tr>
+</table>
+<p>We can verify that this is algebraically equivalent to first regressing <code>subscription</code> on <code>notification</code> and then regressing <code>spend</code> on the predicted <code>subscription</code> probability. Below we run the two regressions and report the estimates from the second stage.</p>
+<pre><code class="language-python">model_1st_stage = smf.ols(&quot;subscription ~ 1 + notification&quot;, data=df).fit()
+df[&quot;subscription_hat&quot;] = model_1st_stage.predict(df)
+model_2nd_stage = smf.ols(&quot;spend ~ 1 + subscription_hat&quot;, data=df).fit()
+model_2nd_stage.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+          <td></td>            <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>        <td>    9.7849</td> <td>    0.298</td> <td>   32.823</td> <td> 0.000</td> <td>    9.201</td> <td>   10.369</td>
+</tr>
+<tr>
+  <th>subscription_hat</th> <td>    6.0702</td> <td>    0.795</td> <td>    7.639</td> <td> 0.000</td> <td>    4.512</td> <td>    7.628</td>
+</tr>
+</table>
+<p>The coefficients are indeed identical!</p>
+<p>Lastly, the two-stage formulation above should also make the inclusion of additional <strong>covariates</strong> quite intuitive. We just add the covariates to both stages.</p>
+<pre><code class="language-python">model_1st_stage = smf.ols(&quot;subscription ~ 1 + spend_old + notification&quot;, data=df).fit()
+df[&quot;subscription_hat&quot;] = model_1st_stage.predict(df)
+model_2nd_stage_x = smf.ols(&quot;spend ~ 1 + spend_old + subscription_hat&quot;, data=df).fit()
+model_2nd_stage_x.summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+          <td></td>            <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th>        <td>    0.3876</td> <td>    0.081</td> <td>    4.811</td> <td> 0.000</td> <td>    0.230</td> <td>    0.546</td>
+</tr>
+<tr>
+  <th>spend_old</th>        <td>    0.9619</td> <td>    0.018</td> <td>   53.210</td> <td> 0.000</td> <td>    0.926</td> <td>    0.997</td>
+</tr>
+<tr>
+  <th>subscription_hat</th> <td>    5.9972</td> <td>    0.317</td> <td>   18.946</td> <td> 0.000</td> <td>    5.377</td> <td>    6.618</td>
+</tr>
+</table>
+<p>We can again verify that the estimated coefficients are identical.</p>
+<pre><code class="language-python">model_iv = iv.from_formula(&quot;spend ~ 1 + spend_old + [subscription ~ notification]&quot;, data=df).fit()
+model_iv.summary.tables[1]
+</code></pre>
+<table class="simpletable">
+<caption>Parameter Estimates</caption>
+<tr>
+        <td></td>       <th>Parameter</th> <th>Std. Err.</th> <th>T-stat</th> <th>P-value</th> <th>Lower CI</th> <th>Upper CI</th>
+</tr>
+<tr>
+  <th>Intercept</th>     <td>0.3876</td>    <td>0.0294</td>   <td>13.177</td> <td>0.0000</td>   <td>0.3299</td>   <td>0.4452</td> 
+</tr>
+<tr>
+  <th>spend_old</th>     <td>0.9619</td>    <td>0.0066</td>   <td>145.03</td> <td>0.0000</td>   <td>0.9489</td>   <td>0.9749</td> 
+</tr>
+<tr>
+  <th>subscription</th>  <td>5.9972</td>    <td>0.1161</td>   <td>51.652</td> <td>0.0000</td>   <td>5.7696</td>   <td>6.2248</td> 
+</tr>
+</table>
+<p>Including previous spend levels in the regression has indeed decreased the standard errors from <em>0.5</em> to <em>0.1</em>.</p>
+<h2 id="the-limits-of-iv">The Limits of IV</h2>
+<p>The main limit of instrumental variables in an experimental setting, as analyzed in this article, is that they estimate a very &ldquo;special&rdquo; causal effect. As we have seen in the previous section, we have to re-scale the total effect by the number of customers who decided to <code>subscribe</code> <em>because of</em> the <code>newsletter</code>. This means that we can estimate the effect only for those customers who <em>complied</em> with our intervention. This set of customers is usually called <strong>compliers</strong> and the corresponding causal effect is called the <strong>Local Average Treatment Effect (LATE)</strong> or <strong>Compliers Average Causal Effect (CACE)</strong>.</p>
+<p>We are unfortunately unable to say anything about customers who subscribed to the <code>newsletter</code> even without the <code>notification</code>, called the <strong>always-takers</strong>, and those that we couldn&rsquo;t convince with the <code>notification</code>, the <strong>never-takers</strong>.</p>
+<p>Another limit of IV concerns its <strong>assumptions</strong>. In the last paragraph, we talked about three groups of customers, the compliers (our favorite one), always-takers, and never-takers. You might have noticed that this characterization implies the existence of a fourth group: the <strong>defiers</strong>. Those are the customers that would have <code>subscribed</code> to the newsletter if we had not received the <code>notification</code>. However, because of the notification, they changed their mind, <em>defying</em> the intent of the instrument.</p>
+<p><img src="fig/instrumental_variables4.png" alt="img"></p>
+<p>In order to be able to draw causal conclusions, we have to assume that there are <strong>no defiers</strong> in the experiment, otherwise our re-scaling would be wrong and our estimates biased.</p>
+<p>Another crucial assumption lurking in the background is what is usually called the <strong>exclusion restriction</strong>. In words, this assumption states that the instrument, the <code>notification</code>, only affects the outcome, <code>spend</code>, through the treatment, the <code>subscription</code>. A potential violation in our setting could be if the notification was <em>waking up</em> sleeping users. Imagine a customer who wanted to make a sale and already added items to the basket, but forgot to checkout. The subscription notification might remind the users to checkout and therefore directly impact <code>spend</code>. As you can imagine, the IV estimate would be biased because we are wrongly attributing some sales to the <code>subscription</code>, while they were a <em>direct</em> effect of the <code>notification</code> itself.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this article, we have introduced <strong>instrumental variables</strong> in an experimental setting. When we cannot randomize the treatment because of ethical, legal or technical constraints, we might still consider randomizing an <strong>incentive</strong> to take up the treatment. This allows us to make causal statements, but only for a subset of the overall population, the <strong>compliers</strong>, i.e. the customers that comply with our incentive and take up the treatment <em>because of</em> the incentive.</p>
+<p>It&rsquo;s important to note that instrumental variables can be also used in <strong>observational settings</strong>. However, in that case, the <strong>exclusion restriction</strong> assumption that we mentioned in the previous section becomes harder to justify. In fact, we need a setting in which our instrument does not affect the outcome through <em>any other</em> channel besides the treatment. Technically, the exclusion restriction assumption is</p>
+<p>$$
+Y_i(W_i = w, Z_i = 1) = Y_i(W_i = w, Z_i = 0) \qquad \forall w, i
+$$</p>
+<p>This assumption is harder to justify when we do not control the design of the encouragement assignment. However, if satisfied, it opens the door to causal inference in completely new settings.</p>
+<h3 id="references">References</h3>
+<ul>
+<li>
+<p>Spotify (2023), <a href="https://engineering.atspotify.com/2023/08/encouragement-designs-and-instrumental-variables-for-a-b-testing/" target="_blank" rel="noopener">Encouragement Designs and Instrumental Variables for A/B Testing</a></p>
+</li>
+<li>
+<p>Goldsmith-Pinkham (2021), <a href="https://www.youtube.com/watch?v=LEAx0He_KBI" target="_blank" rel="noopener">Instrumental Variables</a> video lecture</p>
+</li>
+<li>
+<p>Ding (2023), <a href="https://arxiv.org/abs/2305.18793" target="_blank" rel="noopener">A First Course in Causal Inference</a> notes</p>
+</li>
+</ul>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li>
+<p><a href="https://towardsdatascience.com/b63dc69e3d8c" target="_blank" rel="noopener">DAGs and Control Variables</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/344ac1477699" target="_blank" rel="noopener">Understanding Omitted Variable Bias</a></p>
+</li>
+<li>
+<p><a href="https://towardsdatascience.com/59f801eb3299" target="_blank" rel="noopener">Understanding The Frisch-Waugh-Lovell Theorem</a></p>
+</li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/instrumental_variables.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/instrumental_variables.ipynb</a></p>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">I hold a PhD in economics from the University of Zurich. Now I work at the intersection of economics, data science and statistics. I regularly write about causal inference on <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">Medium</a>.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.c8b7c648795740c04de2ef756725ef48.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

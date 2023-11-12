@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Mon, 09 Oct 2023 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sun, 12 Nov 2023 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -27303,6 +27303,393 @@ Economic Studies&lt;/em&gt; 60 (3): 497–529.&lt;/p&gt;
 Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (5): 1006–24.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Instrumental Variables</title>
+      <link>https://matteocourthoud.github.io/post/instrumental_variables/</link>
+      <pubDate>Sun, 12 Nov 2023 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/instrumental_variables/</guid>
+      <description>&lt;p&gt;&lt;em&gt;How to estimate causal effects when you cannot randomize treatment.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to &lt;strong&gt;randomization&lt;/strong&gt;. In fact, by randomly assigning a &lt;strong&gt;treatment&lt;/strong&gt; (a drug, ad, product, &amp;hellip;), we are able to compare the &lt;strong&gt;outcome&lt;/strong&gt; of interest (a disease, firm revenue, customer satisfaction, &amp;hellip;) across &lt;strong&gt;subjects&lt;/strong&gt; (patients, users, customers, &amp;hellip;) and attribute the average difference in outcomes to the causal effect of the treatment.&lt;/p&gt;
+&lt;p&gt;However, in many settings, it is &lt;strong&gt;not possible to randomize&lt;/strong&gt; the treatment, for either ethical, legal, or practical reasons. One common online setting is on-demand features, such as subscriptions or premium memberships. Other settings include features for which we cannot discriminate customers, like insurance contracts, or features that are so deeply hard-coded that an experiment might not be worth the effort. Can we still do valid causal inference in those settings?&lt;/p&gt;
+&lt;p&gt;The answer is yes, thanks to &lt;strong&gt;instrumental variables&lt;/strong&gt; and the corresponding experimental design called &lt;strong&gt;encouragement design&lt;/strong&gt;. In many of the settings mentioned above, we cannot randomly &lt;em&gt;assign&lt;/em&gt; treatment, but we can &lt;em&gt;encourage&lt;/em&gt; customers to take it. For example, we can offer a subscription discount or we can change the order in which options are presented. While customers retain the ultimate word on taking the treatment, we are still able to estimate a causal treatment effect. Let&amp;rsquo;s see how.&lt;/p&gt;
+&lt;h2 id=&#34;evaluating-subscription-programs&#34;&gt;Evaluating Subscription Programs&lt;/h2&gt;
+&lt;p&gt;In the rest of the article, we are going to use a toy example. Suppose we were a product company starting a weekly &lt;strong&gt;newsletter&lt;/strong&gt; to promote product and feature updates. We would like to understand whether the newsletter is worth the effort and whether it is ultimately successful in increasing &lt;strong&gt;sales&lt;/strong&gt;. Unfortunately, we cannot run a standard A/B test since we cannot force customers to &lt;strong&gt;subscribe&lt;/strong&gt; to the newsletter. Does it mean we cannot evaluate the newsletter? Not exactly.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s assume we have also run an A/B test on a new &lt;strong&gt;notification&lt;/strong&gt; on our mobile app that promotes the newsletter. A random sample of our customers has received the notification, while a random sample has not. Perhaps this A/B test was not related to the evaluation of the causal effect of the &lt;strong&gt;newsletter&lt;/strong&gt; at all, as it sometimes happens in large companies. However, this is a great opportunity for a data scientist interested in understanding the impact of the newsletter on &lt;strong&gt;sales&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s first have a look at the data. I import the data-generating process from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;src.dgp&lt;/a&gt; and some plotting utilities from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/utils.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;src.utils&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.utils import *
+from src.dgp import dgp_notification_newsletter
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_notification_newsletter(n=10_000)
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;spend_old&lt;/th&gt;
+      &lt;th&gt;notification&lt;/th&gt;
+      &lt;th&gt;subscription&lt;/th&gt;
+      &lt;th&gt;spend&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;9.47&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;10.04&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;11.18&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;16.49&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;11.52&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;9.50&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;9.03&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;10.12&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;7.02&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;7.18&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;We have information on &lt;em&gt;10,000&lt;/em&gt; customers, for whom we observe whether or not they received the &lt;code&gt;notification&lt;/code&gt;, whether they &lt;code&gt;subscribed&lt;/code&gt; to the newsletter, and how much they &lt;code&gt;spent&lt;/code&gt;. Moreover, we also observe how much they spent before the introduction of the subscription program (&lt;code&gt;spent_old&lt;/code&gt;). For the rest of the article, we will label these variables as follows:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;notification&lt;/code&gt;, the &lt;strong&gt;treatment assignment&lt;/strong&gt;, &lt;em&gt;Z&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;subscription&lt;/code&gt;, the &lt;strong&gt;treatment status&lt;/strong&gt;, &lt;em&gt;W&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;spend_old&lt;/code&gt;, a &lt;strong&gt;feature&lt;/strong&gt; or control variable, &lt;em&gt;X&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;spend&lt;/code&gt;, the &lt;strong&gt;outcome&lt;/strong&gt;, &lt;em&gt;Y&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;A &lt;strong&gt;naive approach&lt;/strong&gt; would be to compare the difference in &lt;code&gt;spend&lt;/code&gt; between customers that &lt;code&gt;subscribed&lt;/code&gt; and those who didn&amp;rsquo;t. The corresponding causal object or &lt;em&gt;estimand&lt;/em&gt; is&lt;/p&gt;
+&lt;p&gt;$$
+\tau_{W \to Y} = \mathbb{E} \Big[ \text{spend} \ \Big| \ \text{subscription} = 1 \Big] - \mathbb{E} \Big[ \text{spend} \ \Big| \ \text{subscription} = 0 \Big]
+$$&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s visualize the average &lt;code&gt;spend&lt;/code&gt; for the two groups.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_group_comparison(df, x, y, title, xticks):
+    fig, ax = plt.subplots()
+    g = sns.barplot(data=df.sort_values([y, x]), x=x, y=y, ci=None, ax=ax)
+    g.set(ylabel=&amp;quot;&amp;quot;, xlabel=&amp;quot;&amp;quot;)
+    ax.tick_params(axis=&#39;x&#39;, which=&#39;major&#39;, labelsize=16)
+    ax.set_xticklabels(xticks)
+    diff = df.loc[df[x]==1, y].mean() - df.loc[df[x]==0, y].mean()
+    plt.suptitle(title)
+    plt.title(f&amp;quot;Difference: {diff:.2f}&amp;quot;, fontsize=16, fontweight=None, y=0.95)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_group_comparison(df, x=&amp;quot;subscription&amp;quot;, y=&amp;quot;spend&amp;quot;, title=&amp;quot;Spend&amp;quot;, xticks=[&amp;quot;Non-subscriber&amp;quot;, &amp;quot;Subscriber&amp;quot;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/instrumental_variables_11_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Subscribers spend on average &lt;em&gt;11.5$&lt;/em&gt; more than non-subscribers. But is it a &lt;strong&gt;causal&lt;/strong&gt; effect?&lt;/p&gt;
+&lt;p&gt;We can imagine that customers who are more active and more interested in our product will also be more interested in hearing news about it. For example, we can imagine that customers who have more &lt;strong&gt;budget&lt;/strong&gt; to spend will also want to spend it better and subscribe to the newsletter.&lt;/p&gt;
+&lt;p&gt;We can represent the relationship between the variables in the following Directed Acyclic Graph (DAG). If you never heard of DAGs, I recommend reading my &lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;introductory article&lt;/a&gt; first.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://towardsdatascience.com/b63dc69e3d8c&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;In the plot, we represent variables with circles and causal relationships with arrows.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+U((U: budget))
+W((W: subscription))
+Y((Y: spend))
+
+U --&amp;gt; W
+U --&amp;gt; Y
+W --&amp;gt; Y
+
+class W,Y included;
+class U unobserved;
+
+linkStyle 0,1 stroke:#ff6e54,stroke-width:4px;
+linkStyle 2 stroke:#003f5c,stroke-width:4px;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Technically speaking, customer&amp;rsquo;s &lt;strong&gt;budget&lt;/strong&gt; is an unobservable confounder that opens a spurious path between our treatment, the &lt;code&gt;subscription&lt;/code&gt;, and the outcome, customers&amp;rsquo; &lt;code&gt;spend&lt;/code&gt;. Because of this, we cannot interpret the difference-in-means estimate of &lt;em&gt;11.5$&lt;/em&gt; as causal.&lt;/p&gt;
+&lt;p&gt;What can we do?&lt;/p&gt;
+&lt;h2 id=&#34;encouragement-design&#34;&gt;Encouragement Design&lt;/h2&gt;
+&lt;p&gt;Unfortunately, we cannot run an A/B test because we cannot force people to subscribe to the newsletter. However, we can &lt;em&gt;encourage&lt;/em&gt; people to subscribe. For example, we can send them a mobile &lt;strong&gt;notification&lt;/strong&gt; to advertise the newsletter. This setting is called an &lt;strong&gt;encouragement design&lt;/strong&gt; since we do not randomize the treatment, but the encouragement. The encouragement, the &lt;code&gt;notification&lt;/code&gt; in our setting, is also called &lt;strong&gt;instrumental variable&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s important to stress that, while being randomly assigned, the encouragement does &lt;em&gt;not&lt;/em&gt; correspond with the treatment of interest. In fact, some people will &lt;em&gt;not&lt;/em&gt; subscribe despite receiving the notification, and some people will subscribe despite  &lt;em&gt;not&lt;/em&gt; receiving the notification.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;fig/instrumental_variables1.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;After adding the encouragement, the &lt;code&gt;notification&lt;/code&gt;, the data-generating process can be represented with the following DAG.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-mermaid&#34;&gt;flowchart LR
+classDef included fill:#DCDCDC,stroke:#000000,stroke-width:2px;
+classDef excluded fill:#ffffff,stroke:#000000,stroke-width:2px;
+classDef unobserved fill:#ffffff,stroke:#000000,stroke-width:2px,stroke-dasharray: 5 5;
+
+U((U: budget))
+Z((Z: notification))
+W((W: subscription))
+Y((Y: spend))
+
+U -.-&amp;gt; W
+U -.-&amp;gt; Y
+Z --&amp;gt; W
+W --&amp;gt; Y
+
+class Z,W,Y included;
+class U unobserved;
+
+linkStyle 0,1 stroke-width:4px;
+linkStyle 2 stroke:#003f5c,stroke-width:4px;
+linkStyle 3 stroke:#2db88b,stroke-width:4px;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Note that now we have closed the open path between &lt;code&gt;subscription&lt;/code&gt; and &lt;code&gt;spend&lt;/code&gt;. Therefore, we can estimate the causal effect of the subscription on the probability of making a sale. Let&amp;rsquo;s see how.&lt;/p&gt;
+&lt;p&gt;First, we would like to understand whether the &lt;code&gt;notification&lt;/code&gt; is effective or not. This is often referred to as &lt;strong&gt;strength&lt;/strong&gt; of the instrument. Thanks to randomization, we can attribute the average difference in &lt;code&gt;spend&lt;/code&gt; between people who received the &lt;code&gt;notification&lt;/code&gt; and people who did not, to the treatment itself.&lt;/p&gt;
+&lt;p&gt;$$
+\tau_{Z \to Y} = \mathbb{E} \Big[ \text{spend} \ | \ \text{notification} = 1 \Big] - \mathbb{E} \Big[ \text{spend} \ | \ \text{notification} = 0 \Big]
+$$&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s visualize the corresponding difference-in-means estimate.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_group_comparison(df, x=&amp;quot;notification&amp;quot;, y=&amp;quot;spend&amp;quot;, title=&amp;quot;Spend&amp;quot;, xticks=[&amp;quot;No Notification&amp;quot;, &amp;quot;Notification&amp;quot;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/instrumental_variables_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It seems that customers who received the &lt;code&gt;notification&lt;/code&gt; spend on average &lt;em&gt;1$&lt;/em&gt; more than customers who didn&amp;rsquo;t receive it. This is a sensibly lower number than the &lt;em&gt;11.5$&lt;/em&gt; we estimated before.&lt;/p&gt;
+&lt;p&gt;However, the effect of the &lt;code&gt;notification&lt;/code&gt; on &lt;code&gt;spend&lt;/code&gt; is not what we are interested in. We would rather know the effect of the &lt;code&gt;subscription&lt;/code&gt; on &lt;code&gt;spend&lt;/code&gt;. In fact, not all customers who receive the email subscribe to the newsletter. And vice-versa, some people subscribe to the newsletter even without the notification.&lt;/p&gt;
+&lt;p&gt;This means that the effect that we have just computed is &lt;strong&gt;diluted&lt;/strong&gt; by the fact that some people do not comply with our incentive, the &lt;code&gt;notification&lt;/code&gt;. We have to attribute it &lt;em&gt;only&lt;/em&gt; to the customers who changed their minds because of the newsletter. How many are these customers?&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s compute the probability of &lt;code&gt;subscription&lt;/code&gt;, by treatment group.&lt;/p&gt;
+&lt;p&gt;$$
+\tau_{Z \to W} = \mathbb{E} \Big[ \text{subscription} \ | \ \text{notification} = 1 \Big] - \mathbb{E} \Big[ \text{subscription} \ | \ \text{notification} = 0 \Big]
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_group_comparison(df, x=&amp;quot;notification&amp;quot;, y=&amp;quot;subscription&amp;quot;, title=&amp;quot;Subscription Probability&amp;quot;, xticks=[&amp;quot;No Notification&amp;quot;, &amp;quot;Notification&amp;quot;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/instrumental_variables_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Customers that received the &lt;code&gt;notification&lt;/code&gt; have a &lt;em&gt;17%&lt;/em&gt; higher &lt;code&gt;subscription&lt;/code&gt; probability. In other words, it seems that the &lt;code&gt;notification&lt;/code&gt; is able to make &lt;em&gt;17%&lt;/em&gt; of our customers change their minds. From the control group, we learned that &lt;em&gt;28%&lt;/em&gt; of them would have subscribed anyway, while we were unable to convince the remaining &lt;em&gt;55%&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;We now have all the ingredients we need for our main analysis&lt;/p&gt;
+&lt;h2 id=&#34;instrumental-variables-iv&#34;&gt;Instrumental Variables (IV)&lt;/h2&gt;
+&lt;p&gt;In this case, with a binary instrument, the &lt;code&gt;notification&lt;/code&gt;, a binary treatment, the &lt;code&gt;subscription&lt;/code&gt; decision, and a 50-50 treatment assignment probability, we can get a very simple &lt;strong&gt;intuition&lt;/strong&gt; of how instrumental variables work.&lt;/p&gt;
+&lt;p&gt;We have four groups of customers, depending on whether they received the notification or not, and wether they subscribed or not.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df.groupby([&amp;quot;notification&amp;quot;, &amp;quot;subscription&amp;quot;]).agg(spend=(&amp;quot;spend&amp;quot;, &amp;quot;sum&amp;quot;), customers=(&amp;quot;spend&amp;quot;, &amp;quot;count&amp;quot;)).iloc[::-1].T.round(0)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead tr th {
+    text-align: left;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;notification&lt;/th&gt;
+      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;1&lt;/th&gt;
+      &lt;th colspan=&#34;2&#34; halign=&#34;left&#34;&gt;0&lt;/th&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;subscription&lt;/th&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;th&gt;0&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;spend&lt;/th&gt;
+      &lt;td&gt;42643.0&lt;/td&gt;
+      &lt;td&gt;19958.0&lt;/td&gt;
+      &lt;td&gt;27857.0&lt;/td&gt;
+      &lt;td&gt;29566.0&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;customers&lt;/th&gt;
+      &lt;td&gt;2253.0&lt;/td&gt;
+      &lt;td&gt;2747.0&lt;/td&gt;
+      &lt;td&gt;1400.0&lt;/td&gt;
+      &lt;td&gt;3600.0&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;Let&amp;rsquo;s visualize the total spend and the total number of customers within each bucket.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;fig/instrumental_variables2.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Comparing treatment (&lt;code&gt;notification&lt;/code&gt;) and control group, we see that the notification has generated an increase in &lt;code&gt;spend&lt;/code&gt; of &lt;em&gt;5k€&lt;/em&gt; (&lt;em&gt;43 + 20 - 28 - 30&lt;/em&gt;). In order to recover the causal effect of interest, we just need to attribute the &lt;em&gt;5k€&lt;/em&gt; incremental &lt;code&gt;spend&lt;/code&gt; to the &lt;em&gt;800&lt;/em&gt; (&lt;em&gt;2200 - 1400&lt;/em&gt;) customers that decided to &lt;code&gt;subscribe&lt;/code&gt; because of the &lt;code&gt;notification&lt;/code&gt;. The result is exactly &lt;em&gt;5k€ / 800 = 6€&lt;/em&gt; per customer!&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;fig/instrumental_variables3.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;More generally, the IV estimand is given by the &lt;strong&gt;ratio of two causal effects&lt;/strong&gt;: the effect of the instrument (or encouragement, or assignment) &lt;em&gt;Z&lt;/em&gt;, on the outcome &lt;em&gt;Y&lt;/em&gt;, over the effect of the instrument &lt;em&gt;Z&lt;/em&gt; on the treatment (or endogenous variable) &lt;em&gt;W&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+\tau_{IV} = \frac{\tau_{Z \to Y}}{\tau_{Z \to W}} = \frac{\mathbb{E} \Big[ \text{spend} \ | \ \text{notification} = 1 \Big] - \mathbb{E} \Big[ \text{spend} \ | \ \text{notification} = 0 \Big]}{\mathbb{E} \Big[ \text{subscription} \ | \ \text{notification} = 1 \Big] - \mathbb{E} \Big[ \text{subscription} \ | \ \text{notification} = 0 \Big]}
+$$&lt;/p&gt;
+&lt;p&gt;To compute the IV estimate we replace the expected values with the empirical averages. In practice, in our case, we just divide the two difference-in-means estimates we computed in the plots in the previous section.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;tau_ZY = df.loc[df.notification == 1, &amp;quot;spend&amp;quot;].mean() - df.loc[df.notification == 0, &amp;quot;spend&amp;quot;].mean()
+tau_ZW = df.loc[df.notification == 1, &amp;quot;subscription&amp;quot;].mean() - df.loc[df.notification == 0, &amp;quot;subscription&amp;quot;].mean()
+tau_ZY / tau_ZW
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;6.070222743259094
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Our instrumental variable estimate of the effect of the &lt;code&gt;subscription&lt;/code&gt; program on &lt;code&gt;spend&lt;/code&gt; is &lt;em&gt;6$&lt;/em&gt;, as anticipated in the illustrations above! Note that the math in the illustration works &lt;em&gt;only&lt;/em&gt; in the special case of an exact 50-50 assignment.&lt;/p&gt;
+&lt;p&gt;More generally, it can be shown that the formula of the IV estimator is given by a ratio of covariances,&lt;/p&gt;
+&lt;p&gt;$$
+\tau_{IV} = \frac{\text{Cov} (Z, Y)}{\text{Cov} (Z, W)}
+$$&lt;/p&gt;
+&lt;p&gt;or, in matrix notation,&lt;/p&gt;
+&lt;p&gt;$$
+\tau_{IV} = \mathbb{E} \big[ ZW \big]^{-1} \mathbb{E} \big[ ZY \big]
+$$&lt;/p&gt;
+&lt;h2 id=&#34;iv-extensions&#34;&gt;IV Extensions&lt;/h2&gt;
+&lt;p&gt;What would happen if we had more instruments or other control variables? For example, we could have run other experiments to encourage customers to &lt;code&gt;subscribe&lt;/code&gt;. Or, as in our case, we could have other variables that we can add to the model in order to increase prediction accuracy, such as previous spend levels, &lt;code&gt;spend_old&lt;/code&gt;. How do we include them in the model?&lt;/p&gt;
+&lt;p&gt;The long-story-short is that when we have multiple instruments, the instrumental variable formula can be rewritten as&lt;/p&gt;
+&lt;p&gt;$$
+\tau_{2SLS} = \mathbb{E} \big[ \hat{W} \hat{W} \big]^{-1} \mathbb{E} \big[ \hat{W} Y \big]
+$$&lt;/p&gt;
+&lt;p&gt;where $\hat{W}$ is the projection of &lt;em&gt;W&lt;/em&gt; onto &lt;em&gt;Z&lt;/em&gt;, i.e. in practice the predicted treatment status, given the treatment assignment. This prediction step is called the &lt;strong&gt;first stage&lt;/strong&gt;. This formula should remind you of the OLS estimator formula. Indeed, this is equivalent to a linear regression of our outcome &lt;em&gt;Y&lt;/em&gt; on the predicted treatment &lt;em&gt;W&lt;/em&gt;, given the assignment &lt;em&gt;Z&lt;/em&gt;. This step is called the &lt;strong&gt;second stage&lt;/strong&gt;. Overall, since the estimation procedure can be split into two separate stages, this is referred to as the &lt;strong&gt;Two-Stage Least Squares (2SLS) Estimator&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The two-stage formulation particularly evident in the implementation of most IV packages, where we express the treatment as the result of a regression on the instrument. In the &lt;a href=&#34;https://bashtage.github.io/linearmodels/iv/iv/linearmodels.iv.model.IV2SLS.html&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;code&gt;IV2SLS&lt;/code&gt;&lt;/a&gt; package this is done by using square brackets.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from linearmodels.iv.model import IV2SLS as iv
+model_iv = iv.from_formula(&amp;quot;spend ~ 1 + [subscription ~ notification]&amp;quot;, data=df).fit()
+model_iv.summary.tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;caption&gt;Parameter Estimates&lt;/caption&gt;
+&lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;       &lt;th&gt;Parameter&lt;/th&gt; &lt;th&gt;Std. Err.&lt;/th&gt; &lt;th&gt;T-stat&lt;/th&gt; &lt;th&gt;P-value&lt;/th&gt; &lt;th&gt;Lower CI&lt;/th&gt; &lt;th&gt;Upper CI&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;     &lt;td&gt;9.7849&lt;/td&gt;    &lt;td&gt;0.2083&lt;/td&gt;   &lt;td&gt;46.973&lt;/td&gt; &lt;td&gt;0.0000&lt;/td&gt;   &lt;td&gt;9.3766&lt;/td&gt;   &lt;td&gt;10.193&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;subscription&lt;/th&gt;  &lt;td&gt;6.0702&lt;/td&gt;    &lt;td&gt;0.5548&lt;/td&gt;   &lt;td&gt;10.942&lt;/td&gt; &lt;td&gt;0.0000&lt;/td&gt;   &lt;td&gt;4.9829&lt;/td&gt;   &lt;td&gt;7.1575&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;We can verify that this is algebraically equivalent to first regressing &lt;code&gt;subscription&lt;/code&gt; on &lt;code&gt;notification&lt;/code&gt; and then regressing &lt;code&gt;spend&lt;/code&gt; on the predicted &lt;code&gt;subscription&lt;/code&gt; probability. Below we run the two regressions and report the estimates from the second stage.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model_1st_stage = smf.ols(&amp;quot;subscription ~ 1 + notification&amp;quot;, data=df).fit()
+df[&amp;quot;subscription_hat&amp;quot;] = model_1st_stage.predict(df)
+model_2nd_stage = smf.ols(&amp;quot;spend ~ 1 + subscription_hat&amp;quot;, data=df).fit()
+model_2nd_stage.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+          &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;        &lt;td&gt;    9.7849&lt;/td&gt; &lt;td&gt;    0.298&lt;/td&gt; &lt;td&gt;   32.823&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    9.201&lt;/td&gt; &lt;td&gt;   10.369&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;subscription_hat&lt;/th&gt; &lt;td&gt;    6.0702&lt;/td&gt; &lt;td&gt;    0.795&lt;/td&gt; &lt;td&gt;    7.639&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    4.512&lt;/td&gt; &lt;td&gt;    7.628&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The coefficients are indeed identical!&lt;/p&gt;
+&lt;p&gt;Lastly, the two-stage formulation above should also make the inclusion of additional &lt;strong&gt;covariates&lt;/strong&gt; quite intuitive. We just add the covariates to both stages.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model_1st_stage = smf.ols(&amp;quot;subscription ~ 1 + spend_old + notification&amp;quot;, data=df).fit()
+df[&amp;quot;subscription_hat&amp;quot;] = model_1st_stage.predict(df)
+model_2nd_stage_x = smf.ols(&amp;quot;spend ~ 1 + spend_old + subscription_hat&amp;quot;, data=df).fit()
+model_2nd_stage_x.summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+          &lt;td&gt;&lt;/td&gt;            &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;        &lt;td&gt;    0.3876&lt;/td&gt; &lt;td&gt;    0.081&lt;/td&gt; &lt;td&gt;    4.811&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.230&lt;/td&gt; &lt;td&gt;    0.546&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;spend_old&lt;/th&gt;        &lt;td&gt;    0.9619&lt;/td&gt; &lt;td&gt;    0.018&lt;/td&gt; &lt;td&gt;   53.210&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.926&lt;/td&gt; &lt;td&gt;    0.997&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;subscription_hat&lt;/th&gt; &lt;td&gt;    5.9972&lt;/td&gt; &lt;td&gt;    0.317&lt;/td&gt; &lt;td&gt;   18.946&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    5.377&lt;/td&gt; &lt;td&gt;    6.618&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;We can again verify that the estimated coefficients are identical.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model_iv = iv.from_formula(&amp;quot;spend ~ 1 + spend_old + [subscription ~ notification]&amp;quot;, data=df).fit()
+model_iv.summary.tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;caption&gt;Parameter Estimates&lt;/caption&gt;
+&lt;tr&gt;
+        &lt;td&gt;&lt;/td&gt;       &lt;th&gt;Parameter&lt;/th&gt; &lt;th&gt;Std. Err.&lt;/th&gt; &lt;th&gt;T-stat&lt;/th&gt; &lt;th&gt;P-value&lt;/th&gt; &lt;th&gt;Lower CI&lt;/th&gt; &lt;th&gt;Upper CI&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt;     &lt;td&gt;0.3876&lt;/td&gt;    &lt;td&gt;0.0294&lt;/td&gt;   &lt;td&gt;13.177&lt;/td&gt; &lt;td&gt;0.0000&lt;/td&gt;   &lt;td&gt;0.3299&lt;/td&gt;   &lt;td&gt;0.4452&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;spend_old&lt;/th&gt;     &lt;td&gt;0.9619&lt;/td&gt;    &lt;td&gt;0.0066&lt;/td&gt;   &lt;td&gt;145.03&lt;/td&gt; &lt;td&gt;0.0000&lt;/td&gt;   &lt;td&gt;0.9489&lt;/td&gt;   &lt;td&gt;0.9749&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;subscription&lt;/th&gt;  &lt;td&gt;5.9972&lt;/td&gt;    &lt;td&gt;0.1161&lt;/td&gt;   &lt;td&gt;51.652&lt;/td&gt; &lt;td&gt;0.0000&lt;/td&gt;   &lt;td&gt;5.7696&lt;/td&gt;   &lt;td&gt;6.2248&lt;/td&gt; 
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Including previous spend levels in the regression has indeed decreased the standard errors from &lt;em&gt;0.5&lt;/em&gt; to &lt;em&gt;0.1&lt;/em&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;the-limits-of-iv&#34;&gt;The Limits of IV&lt;/h2&gt;
+&lt;p&gt;The main limit of instrumental variables in an experimental setting, as analyzed in this article, is that they estimate a very &amp;ldquo;special&amp;rdquo; causal effect. As we have seen in the previous section, we have to re-scale the total effect by the number of customers who decided to &lt;code&gt;subscribe&lt;/code&gt; &lt;em&gt;because of&lt;/em&gt; the &lt;code&gt;newsletter&lt;/code&gt;. This means that we can estimate the effect only for those customers who &lt;em&gt;complied&lt;/em&gt; with our intervention. This set of customers is usually called &lt;strong&gt;compliers&lt;/strong&gt; and the corresponding causal effect is called the &lt;strong&gt;Local Average Treatment Effect (LATE)&lt;/strong&gt; or &lt;strong&gt;Compliers Average Causal Effect (CACE)&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;We are unfortunately unable to say anything about customers who subscribed to the &lt;code&gt;newsletter&lt;/code&gt; even without the &lt;code&gt;notification&lt;/code&gt;, called the &lt;strong&gt;always-takers&lt;/strong&gt;, and those that we couldn&amp;rsquo;t convince with the &lt;code&gt;notification&lt;/code&gt;, the &lt;strong&gt;never-takers&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Another limit of IV concerns its &lt;strong&gt;assumptions&lt;/strong&gt;. In the last paragraph, we talked about three groups of customers, the compliers (our favorite one), always-takers, and never-takers. You might have noticed that this characterization implies the existence of a fourth group: the &lt;strong&gt;defiers&lt;/strong&gt;. Those are the customers that would have &lt;code&gt;subscribed&lt;/code&gt; to the newsletter if we had not received the &lt;code&gt;notification&lt;/code&gt;. However, because of the notification, they changed their mind, &lt;em&gt;defying&lt;/em&gt; the intent of the instrument.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;fig/instrumental_variables4.png&#34; alt=&#34;img&#34;&gt;&lt;/p&gt;
+&lt;p&gt;In order to be able to draw causal conclusions, we have to assume that there are &lt;strong&gt;no defiers&lt;/strong&gt; in the experiment, otherwise our re-scaling would be wrong and our estimates biased.&lt;/p&gt;
+&lt;p&gt;Another crucial assumption lurking in the background is what is usually called the &lt;strong&gt;exclusion restriction&lt;/strong&gt;. In words, this assumption states that the instrument, the &lt;code&gt;notification&lt;/code&gt;, only affects the outcome, &lt;code&gt;spend&lt;/code&gt;, through the treatment, the &lt;code&gt;subscription&lt;/code&gt;. A potential violation in our setting could be if the notification was &lt;em&gt;waking up&lt;/em&gt; sleeping users. Imagine a customer who wanted to make a sale and already added items to the basket, but forgot to checkout. The subscription notification might remind the users to checkout and therefore directly impact &lt;code&gt;spend&lt;/code&gt;. As you can imagine, the IV estimate would be biased because we are wrongly attributing some sales to the &lt;code&gt;subscription&lt;/code&gt;, while they were a &lt;em&gt;direct&lt;/em&gt; effect of the &lt;code&gt;notification&lt;/code&gt; itself.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this article, we have introduced &lt;strong&gt;instrumental variables&lt;/strong&gt; in an experimental setting. When we cannot randomize the treatment because of ethical, legal or technical constraints, we might still consider randomizing an &lt;strong&gt;incentive&lt;/strong&gt; to take up the treatment. This allows us to make causal statements, but only for a subset of the overall population, the &lt;strong&gt;compliers&lt;/strong&gt;, i.e. the customers that comply with our incentive and take up the treatment &lt;em&gt;because of&lt;/em&gt; the incentive.&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s important to note that instrumental variables can be also used in &lt;strong&gt;observational settings&lt;/strong&gt;. However, in that case, the &lt;strong&gt;exclusion restriction&lt;/strong&gt; assumption that we mentioned in the previous section becomes harder to justify. In fact, we need a setting in which our instrument does not affect the outcome through &lt;em&gt;any other&lt;/em&gt; channel besides the treatment. Technically, the exclusion restriction assumption is&lt;/p&gt;
+&lt;p&gt;$$
+Y_i(W_i = w, Z_i = 1) = Y_i(W_i = w, Z_i = 0) \qquad \forall w, i
+$$&lt;/p&gt;
+&lt;p&gt;This assumption is harder to justify when we do not control the design of the encouragement assignment. However, if satisfied, it opens the door to causal inference in completely new settings.&lt;/p&gt;
+&lt;h3 id=&#34;references&#34;&gt;References&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Spotify (2023), &lt;a href=&#34;https://engineering.atspotify.com/2023/08/encouragement-designs-and-instrumental-variables-for-a-b-testing/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Encouragement Designs and Instrumental Variables for A/B Testing&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Goldsmith-Pinkham (2021), &lt;a href=&#34;https://www.youtube.com/watch?v=LEAx0He_KBI&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Instrumental Variables&lt;/a&gt; video lecture&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Ding (2023), &lt;a href=&#34;https://arxiv.org/abs/2305.18793&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;A First Course in Causal Inference&lt;/a&gt; notes&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/b63dc69e3d8c&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;DAGs and Control Variables&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/344ac1477699&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding Omitted Variable Bias&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/59f801eb3299&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Understanding The Frisch-Waugh-Lovell Theorem&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/instrumental_variables.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/instrumental_variables.ipynb&lt;/a&gt;&lt;/p&gt;
 </description>
     </item>
     
