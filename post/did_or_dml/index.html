@@ -1,0 +1,1790 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Assume parallel trends. DiD nails the ATT. Would a double-machine learning (DML) estimator also be able to recover the ATT? And the ATE and ATC? When should we use DiD if we have DML?" />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/did_or_dml/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.036b5b2acdb844b842ed3e91242fe237.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/did_or_dml/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+    
+  
+  
+  <meta property="twitter:card" content="summary" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/did_or_dml/" />
+  <meta property="og:title" content="Should we ever use DiD? | Matteo Courthoud" />
+  <meta property="og:description" content="Assume parallel trends. DiD nails the ATT. Would a double-machine learning (DML) estimator also be able to recover the ATT? And the ATE and ATC? When should we use DiD if we have DML?" /><meta property="og:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2023-11-20T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2023-11-20T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/did_or_dml/"
+  },
+  "headline": "Should we ever use DiD?",
+  
+  "datePublished": "2023-11-20T00:00:00Z",
+  "dateModified": "2023-11-20T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "Assume parallel trends. DiD nails the ATT. Would a double-machine learning (DML) estimator also be able to recover the ATT? And the ATE and ATC? When should we use DiD if we have DML?"
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Should we ever use DiD? | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="263e8240762dafddad7be9eddc8262a8" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#newsletter"><span>Newsletter</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#data">Data</a></li>
+    <li><a href="#unobservables">Unobservables</a></li>
+    <li><a href="#exploration">Exploration</a></li>
+    <li><a href="#difference-in-differences">Difference-in-Differences</a>
+      <ul>
+        <li><a href="#treatment--control">Treatment / Control</a></li>
+        <li><a href="#before--after">Before / After</a></li>
+        <li><a href="#difference-in-differences-1">Difference-in-Differences</a></li>
+      </ul>
+    </li>
+    <li><a href="#dml">DML</a>
+      <ul>
+        <li><a href="#restrict-sample-to-overlap">Restrict Sample to Overlap</a></li>
+        <li><a href="#winsorize-propensities">Winsorize Propensities</a></li>
+        <li><a href="#first-differences-as-outcomes">First differences as outcomes</a></li>
+        <li><a href="#non-parametric-nuisances">Non-parametric Nuisances</a></li>
+        <li><a href="#how-much-winsorizing">How much winsorizing?</a></li>
+      </ul>
+    </li>
+    <li><a href="#proportional-differences">Proportional Differences</a></li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+<div class="article-container pt-3">
+  <h1>Should we ever use DiD?</h1>
+
+  
+
+  
+    
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Nov 20, 2023
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    11 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+    
+
+
+
+
+
+  
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p>Assume parallel trends. DiD nails the ATT. Would a double-machine learning (DML) estimator also be able to recover the ATT? And the ATE and ATC? When should we use DiD if we have DML?</p>
+<p><strong>TLDR;</strong> I don&rsquo;t see a strong argument for DiD, even with selection of unobservables, if one believes it has enough data to pick the &ldquo;symptoms&rdquo; of the unobservables. DiD only works sensibly better when we don&rsquo;t have enough data to check its assumptions. Does it make it a good scientific method?</p>
+<pre><code class="language-python">%config InlineBackend.figure_format = 'retina'
+</code></pre>
+<pre><code class="language-python">from src.theme import *
+from src.dgp import DGP
+</code></pre>
+<pre><code class="language-python">import numpy as np
+import scipy as sp
+import pandas as pd
+import statsmodels.formula.api as smf
+from lightgbm import LGBMRegressor, LGBMClassifier
+from sklearn.linear_model import LogisticRegressionCV
+from econml.sklearn_extensions.linear_model import WeightedLassoCV
+from econml.dml import CausalForestDML
+</code></pre>
+<h2 id="data">Data</h2>
+<p>Consider a panel of $N$ individuals observed at $T$ periods. Let&rsquo;s call $t_w$ the treatment period, $D_i$ the treatment indicator for individual $i$, and $W_{it} = D_i * (t \geq t_w)$ the treatment indicator for treated individuals after treatment.</p>
+<p>Assume that the outcome model is</p>
+<p>$$
+Y_{it} = \alpha_i + \gamma_t + f(\alpha_i) W_{it} + \epsilon_{it}
+$$</p>
+<p>where $f(\alpha_i)$ is the treatment effect.</p>
+<p>Suppose that consumers select into treatment depending on their expected treatment effect</p>
+<p>$$
+\mathbb{E} [f(\alpha_i)] = f(\alpha_i) + \xi_{i}
+$$</p>
+<pre><code class="language-python">from src.dgp import DGP
+
+class DGPSelectionOnUnobservables(DGP):
+    &quot;&quot;&quot;DGP for selection on unobservables.&quot;&quot;&quot;
+
+    def __init__(self, n: int, t: int):
+        super(DGPSelectionOnUnobservables, self).__init__(
+            n = n,
+            w = &quot;w&quot;,
+            y = [&quot;y&quot;],
+            u = [&quot;type_i&quot;, &quot;shock_t&quot;, &quot;shock_it&quot;, &quot;e&quot;, &quot;tau&quot;],
+        )
+        self.t = t
+
+    def initialize_data(self, seed: int = 0) -&gt; pd.DataFrame:
+        &quot;&quot;&quot;Generates a dataframe with the baseline variables.&quot;&quot;&quot;
+        np.random.seed(seed)
+
+        # Initialize panel data
+        df = pd.DataFrame({
+            &quot;i&quot;: np.repeat(np.arange(0, self.n), self.t),
+            &quot;t&quot;: np.tile(np.arange(0, self.t), self.n),
+            &quot;type_i&quot;: np.repeat(np.random.exponential(4, self.n), self.t),
+            &quot;shock_t&quot;: np.tile(np.random.uniform(0, 2, self.t), self.n),
+            &quot;shock_it&quot;: np.random.normal(0, 0.2, self.n * self.t),
+        })
+        return df.round(2)
+
+    def add_potential_outcomes(self, df: pd.DataFrame, seed: int = 0) -&gt; pd.DataFrame:
+        &quot;&quot;&quot;Adds potential outcomes to the dataframe.&quot;&quot;&quot;                
+        df[&quot;y_w0&quot;] = df[&quot;shock_t&quot;] + df[&quot;type_i&quot;] + df[&quot;shock_it&quot;]
+        df[&quot;tau&quot;] = 3 * (np.sqrt(df[&quot;type_i&quot;]) - 2)
+        df[&quot;y_w1&quot;] = df[&quot;y_w0&quot;] + df[&quot;tau&quot;]
+        return df
+
+    def add_treatment_assignment(self, df: pd.DataFrame, seed: int = 0) -&gt; pd.DataFrame:
+        &quot;&quot;&quot;Adds the treatment assignment variable.&quot;&quot;&quot;
+        df[&quot;e&quot;] = sp.special.expit(df[&quot;tau&quot;])
+        df[&quot;d&quot;] = 1 * (np.repeat(np.random.uniform(0, 1, self.n), self.t) &lt; df[&quot;e&quot;])
+        df[&quot;w&quot;] = df[&quot;d&quot;] * (df[&quot;t&quot;] == (self.t - 1))
+        return df
+
+    def post_treatment_processing(self, df: pd.DataFrame, seed: int = 0):
+        &quot;&quot;&quot;Post-treatment processing: adds a wide version of the data.&quot;&quot;&quot;
+        del df[&quot;w&quot;]
+        df = df.rename(columns={&quot;d&quot;: &quot;w&quot;})
+        dfw = df.copy()        
+        index_cols = [c for c in [&quot;i&quot;, &quot;type_i&quot;, &quot;e&quot;, &quot;w&quot;, &quot;tau&quot;] if c in df.columns]
+        dfw = pd.pivot(dfw, index=index_cols, columns=[&quot;t&quot;]).reset_index()
+        dfw.columns = [&quot;_t&quot;.join([str(c) for c in col if len(str(c))]) for col in dfw.columns]
+        return df, dfw
+</code></pre>
+<p>Assume we have <em>N=10,000</em> individuals over <em>T=2</em> time periods. The first period is pre-treatment and the second period is treatment.</p>
+<p>Let&rsquo;s give a name and functional form to each model component. Let&rsquo;s assume we are an online platform with a subscription program. The outcome is customer spend. The more customers spend, the more the program is beneficial for consumers. Customers have an rough idea of whether the program is good for them and they select into it.</p>
+<ul>
+<li>Customer budget: $\alpha_i \sim \text{Exp}(4)$</li>
+<li>Market-level shocks: $\gamma_t \sim U(0, 2)$</li>
+<li>Noise: $\epsilon_{it} \sim N(0, 0.2)$</li>
+<li>Consumers forecast error: $\xi_{it} \sim\text{T1EV}(0, 1)$</li>
+</ul>
+<p>The treatment effect is given by</p>
+<p>$$
+f(\alpha_i) = 3 * (\sqrt{\alpha_i} - 2)
+$$</p>
+<p>so that the average treatment effect is slightly negative.</p>
+<pre><code class="language-python">dgp = DGPSelectionOnUnobservables(n=10_000, t=2)
+df, dfw = dgp.generate_data(drop_unobservables=False)
+</code></pre>
+<p>This is what the data would look like without the unobservables, in wide format.</p>
+<pre><code class="language-python">_, dfw_u = dgp.generate_data(drop_unobservables=True)
+dfw_u.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>i</th>
+      <th>w</th>
+      <th>y_t0</th>
+      <th>y_t1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>0</td>
+      <td>4.59</td>
+      <td>3.520000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>1</td>
+      <td>6.06</td>
+      <td>6.061607</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2</td>
+      <td>0</td>
+      <td>5.30</td>
+      <td>3.940000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3</td>
+      <td>0</td>
+      <td>4.57</td>
+      <td>3.560000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>4</td>
+      <td>0</td>
+      <td>3.67</td>
+      <td>2.640000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>For each individual, we know their treatment status $w$, the outcome before treatment $y_{t=0}$, and the outcome after treatment $y_{t=1}$.</p>
+<h2 id="unobservables">Unobservables</h2>
+<p>Since customers sort into treatment based on the expected treatment effect, the average treatment effect on the treated, ATT, is positive, while the average treatment effect on the control, ATC, is negative.</p>
+<pre><code class="language-python">def print_true_effects(dfw):
+    print(f&quot;ATE: {dfw.tau.mean():.2f} ± {dfw.tau.std() / np.sqrt(len(dfw)):.2f}&quot;)
+    print(f&quot;ATT: {dfw[dfw.w==1].tau.mean():.2f} ± {dfw[dfw.w==1].tau.std() / np.sqrt(np.sum(dfw.w==1)):.2f}&quot;)
+    print(f&quot;ATC: {dfw[dfw.w==0].tau.mean():.2f} ± {dfw[dfw.w==0].tau.std() / np.sqrt(np.sum(dfw.w==0)):.2f}&quot;)
+</code></pre>
+<pre><code class="language-python">print_true_effects(dfw)
+</code></pre>
+<pre><code>ATE: -0.72 ± 0.03
+ATT: 1.69 ± 0.04
+ATC: -2.28 ± 0.02
+</code></pre>
+<p>We can plot the whole distribution of individual treatment effects.</p>
+<pre><code class="language-python">g = sns.histplot(data=df[df.t==0], x=&quot;tau&quot;, hue=&quot;w&quot;, bins=50);
+g.set(xlabel=&quot;&quot;, title=&quot;Individual Treatment Effects&quot;);
+</code></pre>
+<p><img src="img/did_or_dml_18_0.png" alt="png"></p>
+<p>While individual treatment effects are unobservable, they are reflected in the pre-treatment expenditure levels.</p>
+<pre><code class="language-python">g = sns.histplot(data=df[df.t==0], x=&quot;y_w0&quot;, hue=&quot;w&quot;, bins=50);
+g.set(xlabel=&quot;&quot;, title=&quot;Pre-treatment Expenditure&quot;);
+</code></pre>
+<p><img src="img/did_or_dml_20_0.png" alt="png"></p>
+<p>Types are also reflected in the &ldquo;true&rdquo; propensity scores.</p>
+<pre><code class="language-python">g = sns.histplot(data=dfw, x=&quot;e&quot;, hue=&quot;w&quot;, bins=50);
+g.set(xlabel=&quot;&quot;, title=&quot;'True' Propensity Scores&quot;);
+</code></pre>
+<p><img src="img/did_or_dml_22_0.png" alt="png"></p>
+<h2 id="exploration">Exploration</h2>
+<p>What does the data looks like? Let&rsquo;s plot the outcome distribution across treatment status and time periods.</p>
+<pre><code class="language-python">g = sns.boxplot(data=df, x=&quot;w&quot;, y=&quot;y&quot;, hue=&quot;t&quot;); 
+g.set(xlabel=&quot;&quot;, title=&quot;Outcomes&quot;, xticklabels=[&quot;Control&quot;, &quot;Treatment&quot;]);
+sns.move_legend(g, &quot;upper left&quot;, bbox_to_anchor=(1, 0.6));
+</code></pre>
+<p><img src="img/did_or_dml_25_0.png" alt="png"></p>
+<p>It seems that treated spend more than the control, and the pre-post difference for the control group is negative.</p>
+<h2 id="difference-in-differences">Difference-in-Differences</h2>
+<p>Before jumping to DiD, let&rsquo;s check treatment/control and before/after estimators.</p>
+<h3 id="treatment--control">Treatment / Control</h3>
+<p>The post-treatment treatment/control average outcome difference is very far from any estimand of interest.</p>
+<pre><code class="language-python">smf.ols(&quot;y_t1 ~ 1 + w&quot;, data=dfw).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    2.2393</td> <td>    0.057</td> <td>   39.510</td> <td> 0.000</td> <td>    2.128</td> <td>    2.350</td>
+</tr>
+<tr>
+  <th>w</th>         <td>    6.9789</td> <td>    0.090</td> <td>   77.282</td> <td> 0.000</td> <td>    6.802</td> <td>    7.156</td>
+</tr>
+</table>
+<h3 id="before--after">Before / After</h3>
+<p>The treated before/after average outcome difference is fairly close to the ATT, but still off.</p>
+<pre><code class="language-python">smf.ols(&quot;y ~ 1 + t&quot;, data=df[df.w == 1]).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    8.6691</td> <td>    0.091</td> <td>   95.293</td> <td> 0.000</td> <td>    8.491</td> <td>    8.847</td>
+</tr>
+<tr>
+  <th>t</th>         <td>    0.5491</td> <td>    0.129</td> <td>    4.268</td> <td> 0.000</td> <td>    0.297</td> <td>    0.801</td>
+</tr>
+</table>
+<h3 id="difference-in-differences-1">Difference-in-Differences</h3>
+<p>As expected, the difference-in-differences estimator nails the ATT, with an estimate of exactly <em>1.69€</em>.</p>
+<pre><code class="language-python">smf.ols(&quot;y ~ 1 + t * w&quot;, data=df).fit(cov_type=&quot;cluster&quot;, cov_kwds={&quot;groups&quot;: df.i}).summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    3.3782</td> <td>    0.021</td> <td>  164.162</td> <td> 0.000</td> <td>    3.338</td> <td>    3.419</td>
+</tr>
+<tr>
+  <th>t</th>         <td>   -1.1389</td> <td>    0.004</td> <td> -319.609</td> <td> 0.000</td> <td>   -1.146</td> <td>   -1.132</td>
+</tr>
+<tr>
+  <th>w</th>         <td>    5.2909</td> <td>    0.074</td> <td>   71.815</td> <td> 0.000</td> <td>    5.147</td> <td>    5.435</td>
+</tr>
+<tr>
+  <th>t:w</th>       <td>    1.6880</td> <td>    0.038</td> <td>   44.660</td> <td> 0.000</td> <td>    1.614</td> <td>    1.762</td>
+</tr>
+</table>
+<h2 id="dml">DML</h2>
+<p>What about double machine learning? Let&rsquo;s start with the default nuisance models, <code>LogisticRegressionCV()</code> for the propensity model and <code>WeightedLassoCV()</code> for the outcome model. Note that this is far from an innocuous choice since our outcome model is linear and our propensity model is logit. We are assuming model misspecification away.</p>
+<p>Our only observable is the pre-treatment outcome.</p>
+<pre><code class="language-python">X = dfw[[&quot;y_t0&quot;]]
+w = dfw[&quot;w&quot;]
+y = dfw[&quot;y_t1&quot;]
+</code></pre>
+<pre><code class="language-python">%%capture
+model_cate = CausalForestDML(discrete_treatment=True).fit(X=X, T=w, Y=y)
+</code></pre>
+<p>Let&rsquo;s print ATE, ATT, and ATC. They are wildly off.</p>
+<pre><code class="language-python">def print_model_estimates(model):
+    print(f&quot;ATE: {model.ate_[0]:.2f} ± {2 * model.ate_stderr_[0]:.2f}&quot;)
+    print(f&quot;ATT: {model.att_(T=1)[0]:.2f} ± {2 * model.att_stderr_(T=1)[0]:.2f}&quot;)
+    print(f&quot;ATT: {model.att_(T=0)[0]:.2f} ± {2 * model.att_stderr_(T=0)[0]:.2f}&quot;)
+</code></pre>
+<pre><code class="language-python">print_model_estimates(model_cate)
+</code></pre>
+<pre><code>ATE: 28.22 ± 6.47
+ATT: 74.89 ± 10.30
+ATT: -2.44 ± 1.02
+</code></pre>
+<p>What&rsquo;s the problem? Let&rsquo;s plot the estimated effects against the true ones.</p>
+<pre><code class="language-python">def plot_model_estimates(model, dfw, force45=False):
+    dfw[&quot;tau_hat&quot;] = model.effect(X)
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=dfw, x=&quot;tau&quot;, y=&quot;tau_hat&quot;, ax=ax);
+    lspace = np.linspace(dfw.tau.min(), dfw.tau.max(), 1000)
+    if force45:
+        lspace = np.linspace(dfw.tau_hat.min(), dfw.tau_hat.max(), 1000)
+    g = sns.lineplot(x=lspace, y=lspace, c=&quot;C1&quot;, lw=3, ax=ax);
+    g.set(xlabel=&quot;True Effects&quot;, ylabel=&quot;Estimated Effects&quot;, title=&quot;CATE Model Performance&quot;)
+</code></pre>
+<pre><code class="language-python">plot_model_estimates(model_cate, dfw)
+</code></pre>
+<p><img src="img/did_or_dml_47_0.png" alt="png"></p>
+<p>It seems that we correctly estimate treatment effects for individuals with effects lower than 4.5. And then gradually we wander astray.</p>
+<p>Is it a problem of propensity scores? Yes and no. We are estimating them correctly, but there are too many zeroes and ones.</p>
+<pre><code class="language-python">dfw[&quot;w_hat&quot;] = LogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
+g = sns.histplot(data=dfw, x=&quot;w_hat&quot;, hue=&quot;w&quot;, bins=50);
+g.set(xlabel=&quot;&quot;, title=&quot;Estimated Propensity Scores&quot;);
+</code></pre>
+<p><img src="img/did_or_dml_49_0.png" alt="png"></p>
+<h3 id="restrict-sample-to-overlap">Restrict Sample to Overlap</h3>
+<p>As a first tentative solution, let&rsquo;s restrict the sample to the overlapping sample, in terms of estimated propensity scores.</p>
+<pre><code class="language-python">w_min = np.maximum(dfw.loc[w==1, &quot;w_hat&quot;].min(), dfw.loc[w==0, &quot;w_hat&quot;].min())
+w_max = np.minimum(dfw.loc[w==1, &quot;w_hat&quot;].max(), dfw.loc[w==0, &quot;w_hat&quot;].max())
+</code></pre>
+<pre><code class="language-python">df_overlap = dfw[(dfw.w_hat &gt; w_min) &amp; (dfw.w_hat &lt; w_max)]
+# ATE
+ate_overlap = model_cate.ate_inference(X=df_overlap[[&quot;y_t0&quot;]])
+print(f&quot;ATE: {ate_overlap.mean_point:.2f} ± {2 * ate_overlap.stderr_mean:.2f}&quot;)
+# ATT
+att_overlap = model_cate.ate_inference(X=df_overlap.loc[df_overlap.w==1, [&quot;y_t0&quot;]])
+print(f&quot;ATT: {att_overlap.mean_point:.2f} ± {2 * att_overlap.stderr_mean:.2f}&quot;)
+# ATC
+atc_overlap = model_cate.ate_inference(X=df_overlap.loc[df_overlap.w==0, [&quot;y_t0&quot;]])
+print(f&quot;ATE: {atc_overlap.mean_point:.2f} ± {2 * atc_overlap.stderr_mean:.2f}&quot;)
+</code></pre>
+<pre><code>ATE: -1.15 ± 15.11
+ATT: 0.65 ± 12.59
+ATE: -2.14 ± 16.33
+</code></pre>
+<h3 id="winsorize-propensities">Winsorize Propensities</h3>
+<p>What if instead we winsorized propensity scores?</p>
+<p>Let&rsquo;s write a wrapper around our propensity model <code>LogisticRegressionCV()</code>.</p>
+<pre><code class="language-python">class WinsorizedLogisticRegressionCV():
+    &quot;&quot;&quot;Wrapper around LogisticRegressionCV.&quot;&quot;&quot;
+
+    def __init__(self, p_winsor: float = 0.1):
+        self.model = LogisticRegressionCV()
+        self.p_winsor = p_winsor
+
+    def fit(self, X, y):
+        self.model.fit(X, y)
+        return self
+
+    def predict(self, X):
+        return self.model.predict(X)
+    
+    def predict_proba(self, X):
+        p = self.model.predict_proba(X)
+        return np.maximum(np.minimum(p, 1 - self.p_winsor), self.p_winsor)
+</code></pre>
+<pre><code class="language-python"># Overlap
+dfw[&quot;w_hat_trimmed&quot;] = WinsorizedLogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
+g = sns.histplot(data=dfw, x=&quot;w_hat_trimmed&quot;, hue=&quot;w&quot;, bins=50);
+g.set(title=&quot;Estimated Propensity Scores&quot;, xlabel=&quot;&quot;);
+</code></pre>
+<p><img src="img/did_or_dml_57_0.png" alt="png"></p>
+<pre><code class="language-python">%%capture
+model_trimmed = CausalForestDML(model_t=WinsorizedLogisticRegressionCV(), discrete_treatment=True).fit(X=X, T=w, Y=y)
+</code></pre>
+<pre><code class="language-python">print_model_estimates(model_trimmed)
+</code></pre>
+<pre><code>ATE: -0.77 ± 0.06
+ATT: 0.99 ± 0.07
+ATT: -2.04 ± 0.06
+</code></pre>
+<p>The estimated coefficients are fairly close to the true ones: <em>-0.77€</em> for the ATE (true is <em>-0.72€</em>), <em>0.99€</em> for the ATT (true is <em>1.69€</em>), and <em>-2.04€</em> for the ATC (true is <em>-2.28€</em>).</p>
+<p>If anything, it seems we have some bias towards zero. Let&rsquo;s plot the estimated effects against the true ones.</p>
+<pre><code class="language-python">plot_model_estimates(model_trimmed, dfw)
+</code></pre>
+<p><img src="img/did_or_dml_61_0.png" alt="png"></p>
+<p>It seems that we are only able to estimate treatment effects between <em>-4.5</em> and <em>+3.5</em>.</p>
+<p>Weird? Not at all. It totally makes sense, since this is the area in which we have overlap in terms of treatment effects. In the plot below I plot (again) the distribution of &ldquo;true&rdquo; Treatment effects across treatment groups. I highlight the range <em>-4.5</em> to <em>+3.5</em> with vertical lines.</p>
+<pre><code class="language-python">fig, ax = plt.subplots()
+g = sns.histplot(data=df[df.t==0], x=&quot;tau&quot;, hue=&quot;w&quot;, bins=50);
+g.set(title=&quot;'True' Individual Treatment Effects&quot;, xlabel=&quot;&quot;)
+ax.axvline(x=3.5, c=&quot;k&quot;, lw=2, ls=&quot;--&quot;);
+ax.axvline(x=-4.5, c=&quot;k&quot;, lw=2, ls=&quot;--&quot;);
+</code></pre>
+<p><img src="img/did_or_dml_63_0.png" alt="png"></p>
+<h3 id="first-differences-as-outcomes">First differences as outcomes</h3>
+<p>What if we use first differences as outcomes?</p>
+<pre><code class="language-python">X = dfw[[&quot;y_t0&quot;]]
+w = dfw[&quot;w&quot;]
+y_diff = dfw[&quot;y_t1&quot;] - dfw[&quot;y_t0&quot;]
+</code></pre>
+<pre><code class="language-python">%%capture
+model_diff = CausalForestDML(discrete_treatment=True).fit(X=X, T=w, Y=y_diff)
+</code></pre>
+<p>Estimates are terrible without winsorizing.</p>
+<pre><code class="language-python">print_model_estimates(model_diff)
+</code></pre>
+<pre><code>ATE: 32.42 ± 8.03
+ATT: 86.53 ± 12.78
+ATT: -2.62 ± 1.15
+</code></pre>
+<p>Let&rsquo;s try with winsorization.</p>
+<pre><code class="language-python">%%capture
+model_diff = CausalForestDML(model_t=WinsorizedLogisticRegressionCV(), discrete_treatment=True).fit(X=X, T=w, Y=y_diff)
+</code></pre>
+<p>Estimates are almost exactly identical. It looks like differences in outcomes are not changing much.</p>
+<pre><code class="language-python">print_model_estimates(model_diff)
+</code></pre>
+<pre><code>ATE: -0.78 ± 0.06
+ATT: 0.99 ± 0.07
+ATT: -2.04 ± 0.06
+</code></pre>
+<p>Do they at least help in estimating individual treatment effects? Doesn&rsquo;t look like</p>
+<pre><code class="language-python">plot_model_estimates(model_diff, dfw)
+</code></pre>
+<p><img src="img/did_or_dml_75_0.png" alt="png"></p>
+<h3 id="non-parametric-nuisances">Non-parametric Nuisances</h3>
+<p>Ok, in the previous section we were a bit cheating. What&rsquo;s the point of advocating non-parametric methods if you use linear regression for a linear model and logistic regression for a logistic model?</p>
+<p>Let&rsquo;s repeat the exercise but using boosted regression trees, from the <a href="https://lightgbm.readthedocs.io/en/stable/" target="_blank" rel="noopener">lightGBM</a> package.</p>
+<pre><code class="language-python">%%capture
+model_t = LGBMClassifier(n_estimators=500)
+model_y = LGBMRegressor(n_estimators=500)
+model_lgbm = CausalForestDML(model_t=model_t, model_y=model_y, discrete_treatment=True).fit(X=X, T=w, Y=y)
+</code></pre>
+<pre><code class="language-python">print_model_estimates(model_lgbm)
+</code></pre>
+<pre><code>ATE: 1.13 ± 1.36
+ATT: 1.75 ± 0.38
+ATT: 0.88 ± 1.75
+</code></pre>
+<p>As before, without trimming, we get very weird results. Let&rsquo;s add propensity score trimming.</p>
+<pre><code class="language-python">class WinsorizedLGBMClassifier:
+    &quot;&quot;&quot;Wrapper around LGBMClassifier.&quot;&quot;&quot;
+
+    def __init__(self, p_winsor:float = 0.01, *args, **kwargs):
+        self.model = LGBMClassifier(*args, **kwargs)
+        self.p_winsor = p_winsor
+
+    def fit(self, X, y):
+        self.model.fit(X, y)
+        return self
+
+    def predict(self, X):
+        return self.model.predict(X)
+    
+    def predict_proba(self, X, clip_p=0.025):
+        p = self.model.predict_proba(X)
+        return np.maximum(np.minimum(p, 1 - self.p_winsor), self.p_winsor)
+</code></pre>
+<p>First, let&rsquo;s plot the estimated propensity scores.</p>
+<pre><code class="language-python">%%capture
+dfw[&quot;w_hat_trimmed&quot;] = WinsorizedLGBMClassifier(n_estimators=500).fit(X=X, y=w).predict_proba(X)[:,1]
+</code></pre>
+<pre><code class="language-python"># Overlap
+g = sns.histplot(data=dfw, x=&quot;w_hat_trimmed&quot;, hue=&quot;w&quot;, bins=50);
+g.set(title=&quot;Estimated Propensity Scores&quot;, xlabel=&quot;&quot;);
+</code></pre>
+<p><img src="img/did_or_dml_84_0.png" alt="png"></p>
+<p>The estimated propensity scores are much more &ldquo;binned&rdquo; than their logistic regression equivalent, as expected from a forest method.</p>
+<pre><code class="language-python">%%capture
+model_t = WinsorizedLGBMClassifier(n_estimators=500)
+model_y = LGBMRegressor(n_estimators=500)
+model_lgbm_trimmed = CausalForestDML(model_t=model_t, model_y=model_y, discrete_treatment=True).fit(X=X, T=w, Y=y)
+</code></pre>
+<pre><code class="language-python">print_model_estimates(model_lgbm_trimmed)
+</code></pre>
+<pre><code>ATE: -0.72 ± 0.21
+ATT: 1.42 ± 0.34
+ATT: -2.15 ± 0.27
+</code></pre>
+<p>The estimated coefficients are extremely close to the true ones: true ATE is <em>-0.72€</em>, true ATT is <em>1.69€</em>, true ATC is <em>-2.28€</em>.</p>
+<p>We can plot the true against the estimated treatment effects.</p>
+<pre><code class="language-python">plot_model_estimates(model_trimmed, dfw)
+</code></pre>
+<p><img src="img/did_or_dml_89_0.png" alt="png"></p>
+<h3 id="how-much-winsorizing">How much winsorizing?</h3>
+<p>What exactly is the effect of trimming? Let&rsquo;s plot the estimated ATE, ATT, and ATC for different winsorizing thresholds, from 0, no winsorizing, to 0.5, all predicted probabilities are 0.5.</p>
+<pre><code class="language-python">%%capture
+df_estimates = pd.DataFrame()
+for p_winsor in np.linspace(0.01, 0.5, 45):
+    model_t = WinsorizedLogisticRegressionCV(p_winsor=p_winsor)
+    model_trimmed = CausalForestDML(model_t=model_t, discrete_treatment=True).fit(X=X, T=w, Y=y)
+    temp = pd.DataFrame({
+        &quot;p_winsor&quot;: [p_winsor],
+        &quot;ate&quot;: model_trimmed.ate_,
+        &quot;att&quot;: model_trimmed.att_(T=1),
+        &quot;atc&quot;: model_trimmed.att_(T=0),
+    })
+    df_estimates = pd.concat([df_estimates, temp], ignore_index=True)
+</code></pre>
+<p>It looks like winsorizing biases the estimates towards zero. The less we winsorize, the closer we get to the true values&hellip; until we hit a threshold where we stop having overlap and estimates start jumping around.</p>
+<pre><code class="language-python">fig, ax = plt.subplots()
+for i, estimand in enumerate([&quot;ate&quot;, &quot;att&quot;, &quot;atc&quot;]):
+    g = sns.lineplot(data=df_estimates, x=&quot;p_winsor&quot;, y=estimand, c=f&quot;C{i}&quot;, label=estimand, ax=ax)
+g.set(title=&quot;True and Estimated Effects&quot;, ylim=(-3, 2), ylabel=&quot;&quot;)
+ax.axhline(y=dfw.tau[dfw.w == 1].mean(), ls=&quot;--&quot;, lw=2, c=&quot;k&quot;);
+ax.axhline(y=dfw.tau.mean(), ls=&quot;--&quot;, lw=2, c=&quot;k&quot;);
+ax.axhline(y=dfw.tau[dfw.w == 0].mean(), ls=&quot;--&quot;, lw=2, c=&quot;k&quot;);
+</code></pre>
+<p><img src="img/did_or_dml_94_0.png" alt="png"></p>
+<h2 id="proportional-differences">Proportional Differences</h2>
+<p>Ok, so far we played in DiD home, and DML did not perform too terribly. What if we change the model?</p>
+<p>Consider the case in which market-level shocks are <strong>multiplicative</strong> instead of additive. This is a more realistic case in many applications. The outcome model then becomes.</p>
+<p>$$
+Y_{it} = \gamma_t * (\alpha_i  + f(\alpha_i) W_{it} + \epsilon_{it})
+$$</p>
+<pre><code class="language-python">class DGPSelectionOnUnobservables2(DGPSelectionOnUnobservables):
+
+    def add_potential_outcomes(self, df: pd.DataFrame, seed: int = 0) -&gt; pd.DataFrame:
+        &quot;&quot;&quot;Adds potential outcomes to the dataframe.&quot;&quot;&quot;                
+        df[&quot;y_w0&quot;] = df[&quot;shock_t&quot;] * (df[&quot;type_i&quot;] + df[&quot;shock_it&quot;])
+        df[&quot;tau&quot;] = 0.3 * df[&quot;type_i&quot;]
+        df[&quot;y_w1&quot;] = df[&quot;y_w0&quot;] + df[&quot;tau&quot;]
+        return df
+</code></pre>
+<p>Let&rsquo;s generate the data.</p>
+<pre><code class="language-python">dgp2 = DGPSelectionOnUnobservables2(n=10_000, t=2)
+df2, dfw2 = dgp2.generate_data(drop_unobservables=False)
+</code></pre>
+<p>Print the true treatment effects.</p>
+<pre><code class="language-python">print_true_effects(dfw2)
+</code></pre>
+<pre><code>ATE: 1.19 ± 0.01
+ATT: 1.42 ± 0.02
+ATC: 0.60 ± 0.01
+</code></pre>
+<p>Run difference-in-differences estimator. It is sensibly off. It predicts a negative treatment effect while <em>all</em> individual treatment effects are positive. Mmm</p>
+<pre><code class="language-python">smf.ols(&quot;y ~ 1 + t * w&quot;, data=df2).fit(cov_type=&quot;cluster&quot;, cov_kwds={&quot;groups&quot;: df.i}).summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>    3.0040</td> <td>    0.054</td> <td>   55.545</td> <td> 0.000</td> <td>    2.898</td> <td>    3.110</td>
+</tr>
+<tr>
+  <th>t</th>         <td>   -2.2833</td> <td>    0.041</td> <td>  -55.289</td> <td> 0.000</td> <td>   -2.364</td> <td>   -2.202</td>
+</tr>
+<tr>
+  <th>w</th>         <td>    4.1117</td> <td>    0.094</td> <td>   43.752</td> <td> 0.000</td> <td>    3.927</td> <td>    4.296</td>
+</tr>
+<tr>
+  <th>t:w</th>       <td>   -1.6995</td> <td>    0.060</td> <td>  -28.461</td> <td> 0.000</td> <td>   -1.817</td> <td>   -1.582</td>
+</tr>
+</table>
+<p>What about double machine learning?</p>
+<pre><code class="language-python">%%capture
+model_t = WinsorizedLGBMClassifier(n_estimators=500)
+model_y = LGBMRegressor(n_estimators=500)
+model_trimmed2 = CausalForestDML(model_t=model_t, model_y=model_y, discrete_treatment=True).fit(X=dfw2[[&quot;y_t0&quot;]], T=dfw2[&quot;w&quot;], Y=dfw2[&quot;y_t1&quot;])
+</code></pre>
+<p>The model is doing fairly well! All estimates are fairly close, just a bit downward biased</p>
+<pre><code class="language-python">print_model_estimates(model_trimmed2)
+</code></pre>
+<pre><code>ATE: 1.15 ± 0.04
+ATT: 1.37 ± 0.05
+ATT: 0.55 ± 0.05
+</code></pre>
+<p>It seems that the model is struggling to extrapolate, but overall it does way better than DiD.</p>
+<pre><code class="language-python">plot_model_estimates(model_trimmed2, dfw2)
+</code></pre>
+<p><img src="img/did_or_dml_109_0.png" alt="png"></p>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">I hold a PhD in economics from the University of Zurich. Now I work at the intersection of economics, data science and statistics. I regularly write about causal inference on <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">Medium</a>.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.c8b7c648795740c04de2ef756725ef48.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/</link>
       <atom:link href="https://matteocourthoud.github.io/index.xml" rel="self" type="application/rss+xml" />
     <description>Matteo Courthoud</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sun, 12 Nov 2023 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Mon, 20 Nov 2023 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Matteo Courthoud</title>
@@ -27303,6 +27303,557 @@ Economic Studies&lt;/em&gt; 60 (3): 497–529.&lt;/p&gt;
 Processes.” &lt;em&gt;SIAM Journal on Control and Optimization&lt;/em&gt; 26 (5): 1006–24.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Should we ever use DiD?</title>
+      <link>https://matteocourthoud.github.io/post/did_or_dml/</link>
+      <pubDate>Mon, 20 Nov 2023 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/did_or_dml/</guid>
+      <description>&lt;p&gt;Assume parallel trends. DiD nails the ATT. Would a double-machine learning (DML) estimator also be able to recover the ATT? And the ATE and ATC? When should we use DiD if we have DML?&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;TLDR;&lt;/strong&gt; I don&amp;rsquo;t see a strong argument for DiD, even with selection of unobservables, if one believes it has enough data to pick the &amp;ldquo;symptoms&amp;rdquo; of the unobservables. DiD only works sensibly better when we don&amp;rsquo;t have enough data to check its assumptions. Does it make it a good scientific method?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.theme import *
+from src.dgp import DGP
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
+import scipy as sp
+import pandas as pd
+import statsmodels.formula.api as smf
+from lightgbm import LGBMRegressor, LGBMClassifier
+from sklearn.linear_model import LogisticRegressionCV
+from econml.sklearn_extensions.linear_model import WeightedLassoCV
+from econml.dml import CausalForestDML
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;data&#34;&gt;Data&lt;/h2&gt;
+&lt;p&gt;Consider a panel of $N$ individuals observed at $T$ periods. Let&amp;rsquo;s call $t_w$ the treatment period, $D_i$ the treatment indicator for individual $i$, and $W_{it} = D_i * (t \geq t_w)$ the treatment indicator for treated individuals after treatment.&lt;/p&gt;
+&lt;p&gt;Assume that the outcome model is&lt;/p&gt;
+&lt;p&gt;$$
+Y_{it} = \alpha_i + \gamma_t + f(\alpha_i) W_{it} + \epsilon_{it}
+$$&lt;/p&gt;
+&lt;p&gt;where $f(\alpha_i)$ is the treatment effect.&lt;/p&gt;
+&lt;p&gt;Suppose that consumers select into treatment depending on their expected treatment effect&lt;/p&gt;
+&lt;p&gt;$$
+\mathbb{E} [f(\alpha_i)] = f(\alpha_i) + \xi_{i}
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import DGP
+
+class DGPSelectionOnUnobservables(DGP):
+    &amp;quot;&amp;quot;&amp;quot;DGP for selection on unobservables.&amp;quot;&amp;quot;&amp;quot;
+
+    def __init__(self, n: int, t: int):
+        super(DGPSelectionOnUnobservables, self).__init__(
+            n = n,
+            w = &amp;quot;w&amp;quot;,
+            y = [&amp;quot;y&amp;quot;],
+            u = [&amp;quot;type_i&amp;quot;, &amp;quot;shock_t&amp;quot;, &amp;quot;shock_it&amp;quot;, &amp;quot;e&amp;quot;, &amp;quot;tau&amp;quot;],
+        )
+        self.t = t
+
+    def initialize_data(self, seed: int = 0) -&amp;gt; pd.DataFrame:
+        &amp;quot;&amp;quot;&amp;quot;Generates a dataframe with the baseline variables.&amp;quot;&amp;quot;&amp;quot;
+        np.random.seed(seed)
+
+        # Initialize panel data
+        df = pd.DataFrame({
+            &amp;quot;i&amp;quot;: np.repeat(np.arange(0, self.n), self.t),
+            &amp;quot;t&amp;quot;: np.tile(np.arange(0, self.t), self.n),
+            &amp;quot;type_i&amp;quot;: np.repeat(np.random.exponential(4, self.n), self.t),
+            &amp;quot;shock_t&amp;quot;: np.tile(np.random.uniform(0, 2, self.t), self.n),
+            &amp;quot;shock_it&amp;quot;: np.random.normal(0, 0.2, self.n * self.t),
+        })
+        return df.round(2)
+
+    def add_potential_outcomes(self, df: pd.DataFrame, seed: int = 0) -&amp;gt; pd.DataFrame:
+        &amp;quot;&amp;quot;&amp;quot;Adds potential outcomes to the dataframe.&amp;quot;&amp;quot;&amp;quot;                
+        df[&amp;quot;y_w0&amp;quot;] = df[&amp;quot;shock_t&amp;quot;] + df[&amp;quot;type_i&amp;quot;] + df[&amp;quot;shock_it&amp;quot;]
+        df[&amp;quot;tau&amp;quot;] = 3 * (np.sqrt(df[&amp;quot;type_i&amp;quot;]) - 2)
+        df[&amp;quot;y_w1&amp;quot;] = df[&amp;quot;y_w0&amp;quot;] + df[&amp;quot;tau&amp;quot;]
+        return df
+
+    def add_treatment_assignment(self, df: pd.DataFrame, seed: int = 0) -&amp;gt; pd.DataFrame:
+        &amp;quot;&amp;quot;&amp;quot;Adds the treatment assignment variable.&amp;quot;&amp;quot;&amp;quot;
+        df[&amp;quot;e&amp;quot;] = sp.special.expit(df[&amp;quot;tau&amp;quot;])
+        df[&amp;quot;d&amp;quot;] = 1 * (np.repeat(np.random.uniform(0, 1, self.n), self.t) &amp;lt; df[&amp;quot;e&amp;quot;])
+        df[&amp;quot;w&amp;quot;] = df[&amp;quot;d&amp;quot;] * (df[&amp;quot;t&amp;quot;] == (self.t - 1))
+        return df
+
+    def post_treatment_processing(self, df: pd.DataFrame, seed: int = 0):
+        &amp;quot;&amp;quot;&amp;quot;Post-treatment processing: adds a wide version of the data.&amp;quot;&amp;quot;&amp;quot;
+        del df[&amp;quot;w&amp;quot;]
+        df = df.rename(columns={&amp;quot;d&amp;quot;: &amp;quot;w&amp;quot;})
+        dfw = df.copy()        
+        index_cols = [c for c in [&amp;quot;i&amp;quot;, &amp;quot;type_i&amp;quot;, &amp;quot;e&amp;quot;, &amp;quot;w&amp;quot;, &amp;quot;tau&amp;quot;] if c in df.columns]
+        dfw = pd.pivot(dfw, index=index_cols, columns=[&amp;quot;t&amp;quot;]).reset_index()
+        dfw.columns = [&amp;quot;_t&amp;quot;.join([str(c) for c in col if len(str(c))]) for col in dfw.columns]
+        return df, dfw
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Assume we have &lt;em&gt;N=10,000&lt;/em&gt; individuals over &lt;em&gt;T=2&lt;/em&gt; time periods. The first period is pre-treatment and the second period is treatment.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s give a name and functional form to each model component. Let&amp;rsquo;s assume we are an online platform with a subscription program. The outcome is customer spend. The more customers spend, the more the program is beneficial for consumers. Customers have an rough idea of whether the program is good for them and they select into it.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Customer budget: $\alpha_i \sim \text{Exp}(4)$&lt;/li&gt;
+&lt;li&gt;Market-level shocks: $\gamma_t \sim U(0, 2)$&lt;/li&gt;
+&lt;li&gt;Noise: $\epsilon_{it} \sim N(0, 0.2)$&lt;/li&gt;
+&lt;li&gt;Consumers forecast error: $\xi_{it} \sim\text{T1EV}(0, 1)$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The treatment effect is given by&lt;/p&gt;
+&lt;p&gt;$$
+f(\alpha_i) = 3 * (\sqrt{\alpha_i} - 2)
+$$&lt;/p&gt;
+&lt;p&gt;so that the average treatment effect is slightly negative.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = DGPSelectionOnUnobservables(n=10_000, t=2)
+df, dfw = dgp.generate_data(drop_unobservables=False)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is what the data would look like without the unobservables, in wide format.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;_, dfw_u = dgp.generate_data(drop_unobservables=True)
+dfw_u.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;i&lt;/th&gt;
+      &lt;th&gt;w&lt;/th&gt;
+      &lt;th&gt;y_t0&lt;/th&gt;
+      &lt;th&gt;y_t1&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;4.59&lt;/td&gt;
+      &lt;td&gt;3.520000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;6.06&lt;/td&gt;
+      &lt;td&gt;6.061607&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;5.30&lt;/td&gt;
+      &lt;td&gt;3.940000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;4.57&lt;/td&gt;
+      &lt;td&gt;3.560000&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;3.67&lt;/td&gt;
+      &lt;td&gt;2.640000&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;For each individual, we know their treatment status $w$, the outcome before treatment $y_{t=0}$, and the outcome after treatment $y_{t=1}$.&lt;/p&gt;
+&lt;h2 id=&#34;unobservables&#34;&gt;Unobservables&lt;/h2&gt;
+&lt;p&gt;Since customers sort into treatment based on the expected treatment effect, the average treatment effect on the treated, ATT, is positive, while the average treatment effect on the control, ATC, is negative.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def print_true_effects(dfw):
+    print(f&amp;quot;ATE: {dfw.tau.mean():.2f} ± {dfw.tau.std() / np.sqrt(len(dfw)):.2f}&amp;quot;)
+    print(f&amp;quot;ATT: {dfw[dfw.w==1].tau.mean():.2f} ± {dfw[dfw.w==1].tau.std() / np.sqrt(np.sum(dfw.w==1)):.2f}&amp;quot;)
+    print(f&amp;quot;ATC: {dfw[dfw.w==0].tau.mean():.2f} ± {dfw[dfw.w==0].tau.std() / np.sqrt(np.sum(dfw.w==0)):.2f}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_true_effects(dfw)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;ATE: -0.72 ± 0.03
+ATT: 1.69 ± 0.04
+ATC: -2.28 ± 0.02
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can plot the whole distribution of individual treatment effects.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;g = sns.histplot(data=df[df.t==0], x=&amp;quot;tau&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
+g.set(xlabel=&amp;quot;&amp;quot;, title=&amp;quot;Individual Treatment Effects&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_18_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;While individual treatment effects are unobservable, they are reflected in the pre-treatment expenditure levels.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;g = sns.histplot(data=df[df.t==0], x=&amp;quot;y_w0&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
+g.set(xlabel=&amp;quot;&amp;quot;, title=&amp;quot;Pre-treatment Expenditure&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_20_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Types are also reflected in the &amp;ldquo;true&amp;rdquo; propensity scores.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;g = sns.histplot(data=dfw, x=&amp;quot;e&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
+g.set(xlabel=&amp;quot;&amp;quot;, title=&amp;quot;&#39;True&#39; Propensity Scores&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_22_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;exploration&#34;&gt;Exploration&lt;/h2&gt;
+&lt;p&gt;What does the data looks like? Let&amp;rsquo;s plot the outcome distribution across treatment status and time periods.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;g = sns.boxplot(data=df, x=&amp;quot;w&amp;quot;, y=&amp;quot;y&amp;quot;, hue=&amp;quot;t&amp;quot;); 
+g.set(xlabel=&amp;quot;&amp;quot;, title=&amp;quot;Outcomes&amp;quot;, xticklabels=[&amp;quot;Control&amp;quot;, &amp;quot;Treatment&amp;quot;]);
+sns.move_legend(g, &amp;quot;upper left&amp;quot;, bbox_to_anchor=(1, 0.6));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It seems that treated spend more than the control, and the pre-post difference for the control group is negative.&lt;/p&gt;
+&lt;h2 id=&#34;difference-in-differences&#34;&gt;Difference-in-Differences&lt;/h2&gt;
+&lt;p&gt;Before jumping to DiD, let&amp;rsquo;s check treatment/control and before/after estimators.&lt;/p&gt;
+&lt;h3 id=&#34;treatment--control&#34;&gt;Treatment / Control&lt;/h3&gt;
+&lt;p&gt;The post-treatment treatment/control average outcome difference is very far from any estimand of interest.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;y_t1 ~ 1 + w&amp;quot;, data=dfw).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    2.2393&lt;/td&gt; &lt;td&gt;    0.057&lt;/td&gt; &lt;td&gt;   39.510&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.128&lt;/td&gt; &lt;td&gt;    2.350&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;w&lt;/th&gt;         &lt;td&gt;    6.9789&lt;/td&gt; &lt;td&gt;    0.090&lt;/td&gt; &lt;td&gt;   77.282&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    6.802&lt;/td&gt; &lt;td&gt;    7.156&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;before--after&#34;&gt;Before / After&lt;/h3&gt;
+&lt;p&gt;The treated before/after average outcome difference is fairly close to the ATT, but still off.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;y ~ 1 + t&amp;quot;, data=df[df.w == 1]).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    8.6691&lt;/td&gt; &lt;td&gt;    0.091&lt;/td&gt; &lt;td&gt;   95.293&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    8.491&lt;/td&gt; &lt;td&gt;    8.847&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;t&lt;/th&gt;         &lt;td&gt;    0.5491&lt;/td&gt; &lt;td&gt;    0.129&lt;/td&gt; &lt;td&gt;    4.268&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    0.297&lt;/td&gt; &lt;td&gt;    0.801&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;difference-in-differences-1&#34;&gt;Difference-in-Differences&lt;/h3&gt;
+&lt;p&gt;As expected, the difference-in-differences estimator nails the ATT, with an estimate of exactly &lt;em&gt;1.69€&lt;/em&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;y ~ 1 + t * w&amp;quot;, data=df).fit(cov_type=&amp;quot;cluster&amp;quot;, cov_kwds={&amp;quot;groups&amp;quot;: df.i}).summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;z&lt;/th&gt;      &lt;th&gt;P&gt;|z|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    3.3782&lt;/td&gt; &lt;td&gt;    0.021&lt;/td&gt; &lt;td&gt;  164.162&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    3.338&lt;/td&gt; &lt;td&gt;    3.419&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;t&lt;/th&gt;         &lt;td&gt;   -1.1389&lt;/td&gt; &lt;td&gt;    0.004&lt;/td&gt; &lt;td&gt; -319.609&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.146&lt;/td&gt; &lt;td&gt;   -1.132&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;w&lt;/th&gt;         &lt;td&gt;    5.2909&lt;/td&gt; &lt;td&gt;    0.074&lt;/td&gt; &lt;td&gt;   71.815&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    5.147&lt;/td&gt; &lt;td&gt;    5.435&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;t:w&lt;/th&gt;       &lt;td&gt;    1.6880&lt;/td&gt; &lt;td&gt;    0.038&lt;/td&gt; &lt;td&gt;   44.660&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    1.614&lt;/td&gt; &lt;td&gt;    1.762&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;dml&#34;&gt;DML&lt;/h2&gt;
+&lt;p&gt;What about double machine learning? Let&amp;rsquo;s start with the default nuisance models, &lt;code&gt;LogisticRegressionCV()&lt;/code&gt; for the propensity model and &lt;code&gt;WeightedLassoCV()&lt;/code&gt; for the outcome model. Note that this is far from an innocuous choice since our outcome model is linear and our propensity model is logit. We are assuming model misspecification away.&lt;/p&gt;
+&lt;p&gt;Our only observable is the pre-treatment outcome.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X = dfw[[&amp;quot;y_t0&amp;quot;]]
+w = dfw[&amp;quot;w&amp;quot;]
+y = dfw[&amp;quot;y_t1&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%%capture
+model_cate = CausalForestDML(discrete_treatment=True).fit(X=X, T=w, Y=y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s print ATE, ATT, and ATC. They are wildly off.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def print_model_estimates(model):
+    print(f&amp;quot;ATE: {model.ate_[0]:.2f} ± {2 * model.ate_stderr_[0]:.2f}&amp;quot;)
+    print(f&amp;quot;ATT: {model.att_(T=1)[0]:.2f} ± {2 * model.att_stderr_(T=1)[0]:.2f}&amp;quot;)
+    print(f&amp;quot;ATT: {model.att_(T=0)[0]:.2f} ± {2 * model.att_stderr_(T=0)[0]:.2f}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_model_estimates(model_cate)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;ATE: 28.22 ± 6.47
+ATT: 74.89 ± 10.30
+ATT: -2.44 ± 1.02
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What&amp;rsquo;s the problem? Let&amp;rsquo;s plot the estimated effects against the true ones.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_model_estimates(model, dfw, force45=False):
+    dfw[&amp;quot;tau_hat&amp;quot;] = model.effect(X)
+    fig, ax = plt.subplots()
+    sns.scatterplot(data=dfw, x=&amp;quot;tau&amp;quot;, y=&amp;quot;tau_hat&amp;quot;, ax=ax);
+    lspace = np.linspace(dfw.tau.min(), dfw.tau.max(), 1000)
+    if force45:
+        lspace = np.linspace(dfw.tau_hat.min(), dfw.tau_hat.max(), 1000)
+    g = sns.lineplot(x=lspace, y=lspace, c=&amp;quot;C1&amp;quot;, lw=3, ax=ax);
+    g.set(xlabel=&amp;quot;True Effects&amp;quot;, ylabel=&amp;quot;Estimated Effects&amp;quot;, title=&amp;quot;CATE Model Performance&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_model_estimates(model_cate, dfw)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_47_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It seems that we correctly estimate treatment effects for individuals with effects lower than 4.5. And then gradually we wander astray.&lt;/p&gt;
+&lt;p&gt;Is it a problem of propensity scores? Yes and no. We are estimating them correctly, but there are too many zeroes and ones.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dfw[&amp;quot;w_hat&amp;quot;] = LogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
+g = sns.histplot(data=dfw, x=&amp;quot;w_hat&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
+g.set(xlabel=&amp;quot;&amp;quot;, title=&amp;quot;Estimated Propensity Scores&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_49_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;restrict-sample-to-overlap&#34;&gt;Restrict Sample to Overlap&lt;/h3&gt;
+&lt;p&gt;As a first tentative solution, let&amp;rsquo;s restrict the sample to the overlapping sample, in terms of estimated propensity scores.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;w_min = np.maximum(dfw.loc[w==1, &amp;quot;w_hat&amp;quot;].min(), dfw.loc[w==0, &amp;quot;w_hat&amp;quot;].min())
+w_max = np.minimum(dfw.loc[w==1, &amp;quot;w_hat&amp;quot;].max(), dfw.loc[w==0, &amp;quot;w_hat&amp;quot;].max())
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_overlap = dfw[(dfw.w_hat &amp;gt; w_min) &amp;amp; (dfw.w_hat &amp;lt; w_max)]
+# ATE
+ate_overlap = model_cate.ate_inference(X=df_overlap[[&amp;quot;y_t0&amp;quot;]])
+print(f&amp;quot;ATE: {ate_overlap.mean_point:.2f} ± {2 * ate_overlap.stderr_mean:.2f}&amp;quot;)
+# ATT
+att_overlap = model_cate.ate_inference(X=df_overlap.loc[df_overlap.w==1, [&amp;quot;y_t0&amp;quot;]])
+print(f&amp;quot;ATT: {att_overlap.mean_point:.2f} ± {2 * att_overlap.stderr_mean:.2f}&amp;quot;)
+# ATC
+atc_overlap = model_cate.ate_inference(X=df_overlap.loc[df_overlap.w==0, [&amp;quot;y_t0&amp;quot;]])
+print(f&amp;quot;ATE: {atc_overlap.mean_point:.2f} ± {2 * atc_overlap.stderr_mean:.2f}&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;ATE: -1.15 ± 15.11
+ATT: 0.65 ± 12.59
+ATE: -2.14 ± 16.33
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&#34;winsorize-propensities&#34;&gt;Winsorize Propensities&lt;/h3&gt;
+&lt;p&gt;What if instead we winsorized propensity scores?&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s write a wrapper around our propensity model &lt;code&gt;LogisticRegressionCV()&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;class WinsorizedLogisticRegressionCV():
+    &amp;quot;&amp;quot;&amp;quot;Wrapper around LogisticRegressionCV.&amp;quot;&amp;quot;&amp;quot;
+
+    def __init__(self, p_winsor: float = 0.1):
+        self.model = LogisticRegressionCV()
+        self.p_winsor = p_winsor
+
+    def fit(self, X, y):
+        self.model.fit(X, y)
+        return self
+
+    def predict(self, X):
+        return self.model.predict(X)
+    
+    def predict_proba(self, X):
+        p = self.model.predict_proba(X)
+        return np.maximum(np.minimum(p, 1 - self.p_winsor), self.p_winsor)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Overlap
+dfw[&amp;quot;w_hat_trimmed&amp;quot;] = WinsorizedLogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
+g = sns.histplot(data=dfw, x=&amp;quot;w_hat_trimmed&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
+g.set(title=&amp;quot;Estimated Propensity Scores&amp;quot;, xlabel=&amp;quot;&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_57_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%%capture
+model_trimmed = CausalForestDML(model_t=WinsorizedLogisticRegressionCV(), discrete_treatment=True).fit(X=X, T=w, Y=y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_model_estimates(model_trimmed)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;ATE: -0.77 ± 0.06
+ATT: 0.99 ± 0.07
+ATT: -2.04 ± 0.06
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The estimated coefficients are fairly close to the true ones: &lt;em&gt;-0.77€&lt;/em&gt; for the ATE (true is &lt;em&gt;-0.72€&lt;/em&gt;), &lt;em&gt;0.99€&lt;/em&gt; for the ATT (true is &lt;em&gt;1.69€&lt;/em&gt;), and &lt;em&gt;-2.04€&lt;/em&gt; for the ATC (true is &lt;em&gt;-2.28€&lt;/em&gt;).&lt;/p&gt;
+&lt;p&gt;If anything, it seems we have some bias towards zero. Let&amp;rsquo;s plot the estimated effects against the true ones.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_model_estimates(model_trimmed, dfw)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_61_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It seems that we are only able to estimate treatment effects between &lt;em&gt;-4.5&lt;/em&gt; and &lt;em&gt;+3.5&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Weird? Not at all. It totally makes sense, since this is the area in which we have overlap in terms of treatment effects. In the plot below I plot (again) the distribution of &amp;ldquo;true&amp;rdquo; Treatment effects across treatment groups. I highlight the range &lt;em&gt;-4.5&lt;/em&gt; to &lt;em&gt;+3.5&lt;/em&gt; with vertical lines.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plt.subplots()
+g = sns.histplot(data=df[df.t==0], x=&amp;quot;tau&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
+g.set(title=&amp;quot;&#39;True&#39; Individual Treatment Effects&amp;quot;, xlabel=&amp;quot;&amp;quot;)
+ax.axvline(x=3.5, c=&amp;quot;k&amp;quot;, lw=2, ls=&amp;quot;--&amp;quot;);
+ax.axvline(x=-4.5, c=&amp;quot;k&amp;quot;, lw=2, ls=&amp;quot;--&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_63_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;first-differences-as-outcomes&#34;&gt;First differences as outcomes&lt;/h3&gt;
+&lt;p&gt;What if we use first differences as outcomes?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X = dfw[[&amp;quot;y_t0&amp;quot;]]
+w = dfw[&amp;quot;w&amp;quot;]
+y_diff = dfw[&amp;quot;y_t1&amp;quot;] - dfw[&amp;quot;y_t0&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%%capture
+model_diff = CausalForestDML(discrete_treatment=True).fit(X=X, T=w, Y=y_diff)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Estimates are terrible without winsorizing.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_model_estimates(model_diff)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;ATE: 32.42 ± 8.03
+ATT: 86.53 ± 12.78
+ATT: -2.62 ± 1.15
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s try with winsorization.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%%capture
+model_diff = CausalForestDML(model_t=WinsorizedLogisticRegressionCV(), discrete_treatment=True).fit(X=X, T=w, Y=y_diff)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Estimates are almost exactly identical. It looks like differences in outcomes are not changing much.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_model_estimates(model_diff)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;ATE: -0.78 ± 0.06
+ATT: 0.99 ± 0.07
+ATT: -2.04 ± 0.06
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Do they at least help in estimating individual treatment effects? Doesn&amp;rsquo;t look like&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_model_estimates(model_diff, dfw)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_75_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;non-parametric-nuisances&#34;&gt;Non-parametric Nuisances&lt;/h3&gt;
+&lt;p&gt;Ok, in the previous section we were a bit cheating. What&amp;rsquo;s the point of advocating non-parametric methods if you use linear regression for a linear model and logistic regression for a logistic model?&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s repeat the exercise but using boosted regression trees, from the &lt;a href=&#34;https://lightgbm.readthedocs.io/en/stable/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;lightGBM&lt;/a&gt; package.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%%capture
+model_t = LGBMClassifier(n_estimators=500)
+model_y = LGBMRegressor(n_estimators=500)
+model_lgbm = CausalForestDML(model_t=model_t, model_y=model_y, discrete_treatment=True).fit(X=X, T=w, Y=y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_model_estimates(model_lgbm)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;ATE: 1.13 ± 1.36
+ATT: 1.75 ± 0.38
+ATT: 0.88 ± 1.75
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As before, without trimming, we get very weird results. Let&amp;rsquo;s add propensity score trimming.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;class WinsorizedLGBMClassifier:
+    &amp;quot;&amp;quot;&amp;quot;Wrapper around LGBMClassifier.&amp;quot;&amp;quot;&amp;quot;
+
+    def __init__(self, p_winsor:float = 0.01, *args, **kwargs):
+        self.model = LGBMClassifier(*args, **kwargs)
+        self.p_winsor = p_winsor
+
+    def fit(self, X, y):
+        self.model.fit(X, y)
+        return self
+
+    def predict(self, X):
+        return self.model.predict(X)
+    
+    def predict_proba(self, X, clip_p=0.025):
+        p = self.model.predict_proba(X)
+        return np.maximum(np.minimum(p, 1 - self.p_winsor), self.p_winsor)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;First, let&amp;rsquo;s plot the estimated propensity scores.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%%capture
+dfw[&amp;quot;w_hat_trimmed&amp;quot;] = WinsorizedLGBMClassifier(n_estimators=500).fit(X=X, y=w).predict_proba(X)[:,1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Overlap
+g = sns.histplot(data=dfw, x=&amp;quot;w_hat_trimmed&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
+g.set(title=&amp;quot;Estimated Propensity Scores&amp;quot;, xlabel=&amp;quot;&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_84_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The estimated propensity scores are much more &amp;ldquo;binned&amp;rdquo; than their logistic regression equivalent, as expected from a forest method.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%%capture
+model_t = WinsorizedLGBMClassifier(n_estimators=500)
+model_y = LGBMRegressor(n_estimators=500)
+model_lgbm_trimmed = CausalForestDML(model_t=model_t, model_y=model_y, discrete_treatment=True).fit(X=X, T=w, Y=y)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_model_estimates(model_lgbm_trimmed)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;ATE: -0.72 ± 0.21
+ATT: 1.42 ± 0.34
+ATT: -2.15 ± 0.27
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The estimated coefficients are extremely close to the true ones: true ATE is &lt;em&gt;-0.72€&lt;/em&gt;, true ATT is &lt;em&gt;1.69€&lt;/em&gt;, true ATC is &lt;em&gt;-2.28€&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;We can plot the true against the estimated treatment effects.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_model_estimates(model_trimmed, dfw)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_89_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;how-much-winsorizing&#34;&gt;How much winsorizing?&lt;/h3&gt;
+&lt;p&gt;What exactly is the effect of trimming? Let&amp;rsquo;s plot the estimated ATE, ATT, and ATC for different winsorizing thresholds, from 0, no winsorizing, to 0.5, all predicted probabilities are 0.5.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%%capture
+df_estimates = pd.DataFrame()
+for p_winsor in np.linspace(0.01, 0.5, 45):
+    model_t = WinsorizedLogisticRegressionCV(p_winsor=p_winsor)
+    model_trimmed = CausalForestDML(model_t=model_t, discrete_treatment=True).fit(X=X, T=w, Y=y)
+    temp = pd.DataFrame({
+        &amp;quot;p_winsor&amp;quot;: [p_winsor],
+        &amp;quot;ate&amp;quot;: model_trimmed.ate_,
+        &amp;quot;att&amp;quot;: model_trimmed.att_(T=1),
+        &amp;quot;atc&amp;quot;: model_trimmed.att_(T=0),
+    })
+    df_estimates = pd.concat([df_estimates, temp], ignore_index=True)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It looks like winsorizing biases the estimates towards zero. The less we winsorize, the closer we get to the true values&amp;hellip; until we hit a threshold where we stop having overlap and estimates start jumping around.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig, ax = plt.subplots()
+for i, estimand in enumerate([&amp;quot;ate&amp;quot;, &amp;quot;att&amp;quot;, &amp;quot;atc&amp;quot;]):
+    g = sns.lineplot(data=df_estimates, x=&amp;quot;p_winsor&amp;quot;, y=estimand, c=f&amp;quot;C{i}&amp;quot;, label=estimand, ax=ax)
+g.set(title=&amp;quot;True and Estimated Effects&amp;quot;, ylim=(-3, 2), ylabel=&amp;quot;&amp;quot;)
+ax.axhline(y=dfw.tau[dfw.w == 1].mean(), ls=&amp;quot;--&amp;quot;, lw=2, c=&amp;quot;k&amp;quot;);
+ax.axhline(y=dfw.tau.mean(), ls=&amp;quot;--&amp;quot;, lw=2, c=&amp;quot;k&amp;quot;);
+ax.axhline(y=dfw.tau[dfw.w == 0].mean(), ls=&amp;quot;--&amp;quot;, lw=2, c=&amp;quot;k&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_94_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;proportional-differences&#34;&gt;Proportional Differences&lt;/h2&gt;
+&lt;p&gt;Ok, so far we played in DiD home, and DML did not perform too terribly. What if we change the model?&lt;/p&gt;
+&lt;p&gt;Consider the case in which market-level shocks are &lt;strong&gt;multiplicative&lt;/strong&gt; instead of additive. This is a more realistic case in many applications. The outcome model then becomes.&lt;/p&gt;
+&lt;p&gt;$$
+Y_{it} = \gamma_t * (\alpha_i  + f(\alpha_i) W_{it} + \epsilon_{it})
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;class DGPSelectionOnUnobservables2(DGPSelectionOnUnobservables):
+
+    def add_potential_outcomes(self, df: pd.DataFrame, seed: int = 0) -&amp;gt; pd.DataFrame:
+        &amp;quot;&amp;quot;&amp;quot;Adds potential outcomes to the dataframe.&amp;quot;&amp;quot;&amp;quot;                
+        df[&amp;quot;y_w0&amp;quot;] = df[&amp;quot;shock_t&amp;quot;] * (df[&amp;quot;type_i&amp;quot;] + df[&amp;quot;shock_it&amp;quot;])
+        df[&amp;quot;tau&amp;quot;] = 0.3 * df[&amp;quot;type_i&amp;quot;]
+        df[&amp;quot;y_w1&amp;quot;] = df[&amp;quot;y_w0&amp;quot;] + df[&amp;quot;tau&amp;quot;]
+        return df
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s generate the data.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp2 = DGPSelectionOnUnobservables2(n=10_000, t=2)
+df2, dfw2 = dgp2.generate_data(drop_unobservables=False)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Print the true treatment effects.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_true_effects(dfw2)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;ATE: 1.19 ± 0.01
+ATT: 1.42 ± 0.02
+ATC: 0.60 ± 0.01
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Run difference-in-differences estimator. It is sensibly off. It predicts a negative treatment effect while &lt;em&gt;all&lt;/em&gt; individual treatment effects are positive. Mmm&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;y ~ 1 + t * w&amp;quot;, data=df2).fit(cov_type=&amp;quot;cluster&amp;quot;, cov_kwds={&amp;quot;groups&amp;quot;: df.i}).summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;z&lt;/th&gt;      &lt;th&gt;P&gt;|z|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    3.0040&lt;/td&gt; &lt;td&gt;    0.054&lt;/td&gt; &lt;td&gt;   55.545&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.898&lt;/td&gt; &lt;td&gt;    3.110&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;t&lt;/th&gt;         &lt;td&gt;   -2.2833&lt;/td&gt; &lt;td&gt;    0.041&lt;/td&gt; &lt;td&gt;  -55.289&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -2.364&lt;/td&gt; &lt;td&gt;   -2.202&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;w&lt;/th&gt;         &lt;td&gt;    4.1117&lt;/td&gt; &lt;td&gt;    0.094&lt;/td&gt; &lt;td&gt;   43.752&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    3.927&lt;/td&gt; &lt;td&gt;    4.296&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;t:w&lt;/th&gt;       &lt;td&gt;   -1.6995&lt;/td&gt; &lt;td&gt;    0.060&lt;/td&gt; &lt;td&gt;  -28.461&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.817&lt;/td&gt; &lt;td&gt;   -1.582&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;What about double machine learning?&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%%capture
+model_t = WinsorizedLGBMClassifier(n_estimators=500)
+model_y = LGBMRegressor(n_estimators=500)
+model_trimmed2 = CausalForestDML(model_t=model_t, model_y=model_y, discrete_treatment=True).fit(X=dfw2[[&amp;quot;y_t0&amp;quot;]], T=dfw2[&amp;quot;w&amp;quot;], Y=dfw2[&amp;quot;y_t1&amp;quot;])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The model is doing fairly well! All estimates are fairly close, just a bit downward biased&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_model_estimates(model_trimmed2)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;ATE: 1.15 ± 0.04
+ATT: 1.37 ± 0.05
+ATT: 0.55 ± 0.05
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It seems that the model is struggling to extrapolate, but overall it does way better than DiD.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_model_estimates(model_trimmed2, dfw2)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/did_or_dml_109_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 </description>
     </item>
     
