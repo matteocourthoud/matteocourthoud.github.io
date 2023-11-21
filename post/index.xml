@@ -34,16 +34,17 @@ from econml.sklearn_extensions.linear_model import WeightedLassoCV
 from econml.dml import CausalForestDML
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&#34;data&#34;&gt;Data&lt;/h2&gt;
-&lt;p&gt;Consider a panel of $N$ individuals observed at $T$ periods. Let&amp;rsquo;s call $t_w$ the treatment period, $D_i$ the treatment indicator for individual $i$, and $W_{it} = D_i * (t \geq t_w)$ the treatment indicator for treated individuals after treatment.&lt;/p&gt;
-&lt;p&gt;Assume that the outcome model is&lt;/p&gt;
+&lt;p&gt;Consider a panel of $N$ individuals observed at $T$ periods. There is no staggered adoption. All treated individuals are treated at the same time. Let&amp;rsquo;s call $t_w$ the treatment period, $D_i$ the treatment indicator for individual $i$, and $W_{it} = D_i *  \mathbb{I}(t \geq t_w)$ the treatment indicator for treated individuals after treatment.&lt;/p&gt;
+&lt;p&gt;Assume that the outcome model is a classic panel data model, with individual unobservables (types) $\alpha_i$, time unobservables $\gamma_t$ (aggregate shocks), and further mean-zero noise $\epsilon_{it}$. Treatment effects $f(\alpha_i)$ are heterogeneous and depend on the unobservable types. Since we have a single post-treatment period, they don&amp;rsquo;t vary over time, but they easily could.&lt;/p&gt;
 &lt;p&gt;$$
 Y_{it} = \alpha_i + \gamma_t + f(\alpha_i) W_{it} + \epsilon_{it}
 $$&lt;/p&gt;
-&lt;p&gt;where $f(\alpha_i)$ is the treatment effect.&lt;/p&gt;
-&lt;p&gt;Suppose that consumers select into treatment depending on their expected treatment effect&lt;/p&gt;
+&lt;p&gt;Suppose that individuals select into treatment depending on their expected treatment effect&lt;/p&gt;
 &lt;p&gt;$$
-\mathbb{E} [f(\alpha_i)] = f(\alpha_i) + \xi_{i}
+D_{it} = \mathbb{I} \Big( \mathbb{E} [f(\alpha_i)] &amp;gt; 0 \Big) \qquad \text{ where } \qquad \mathbb{E} [f(\alpha_i)] = f(\alpha_i) + \xi_{i}
 $$&lt;/p&gt;
+&lt;p&gt;and $\xi_{i}$ is some other mean-zero noise.&lt;/p&gt;
+&lt;p&gt;I write the data-generating process below. You can find the underlying &lt;code&gt;DGP&lt;/code&gt; class &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.dgp import DGP
 
 class DGPSelectionOnUnobservables(DGP):
@@ -97,7 +98,7 @@ class DGPSelectionOnUnobservables(DGP):
         return df, dfw
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Assume we have &lt;em&gt;N=10,000&lt;/em&gt; individuals over &lt;em&gt;T=2&lt;/em&gt; time periods. The first period is pre-treatment and the second period is treatment.&lt;/p&gt;
-&lt;p&gt;Let&amp;rsquo;s give a name and functional form to each model component. Let&amp;rsquo;s assume we are an online platform with a subscription program. The outcome is customer spend. The more customers spend, the more the program is beneficial for consumers. Customers have an rough idea of whether the program is good for them and they select into it.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s give a &lt;strong&gt;name and functional form&lt;/strong&gt; to each model component. Let&amp;rsquo;s assume we are an online platform with a subscription program. The outcome is customer spend. The more customers spend, the more the program is beneficial for consumers. Customers have an rough idea of whether the program is good for them and they select into it.&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Customer budget: $\alpha_i \sim \text{Exp}(4)$&lt;/li&gt;
 &lt;li&gt;Market-level shocks: $\gamma_t \sim U(0, 2)$&lt;/li&gt;
