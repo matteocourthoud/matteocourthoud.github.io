@@ -340,10 +340,10 @@
     
       <meta
         property="article:published_time"
-        content="2023-11-20T00:00:00&#43;00:00"
+        content="2023-11-21T00:00:00&#43;00:00"
       />
     
-    <meta property="article:modified_time" content="2023-11-20T00:00:00&#43;00:00">
+    <meta property="article:modified_time" content="2023-11-21T00:00:00&#43;00:00">
   
 
   
@@ -372,8 +372,8 @@
   },
   "headline": "Should we ever use DiD?",
   
-  "datePublished": "2023-11-20T00:00:00Z",
-  "dateModified": "2023-11-20T00:00:00Z",
+  "datePublished": "2023-11-21T00:00:00Z",
+  "dateModified": "2023-11-21T00:00:00Z",
   
   "publisher": {
     "@type": "Organization",
@@ -873,7 +873,7 @@
     
       
     
-    Nov 20, 2023
+    Nov 21, 2023
   </span>
   
 
@@ -1401,7 +1401,7 @@ $$</p>
     def add_potential_outcomes(self, df: pd.DataFrame, seed: int = 0) -&gt; pd.DataFrame:
         &quot;&quot;&quot;Adds potential outcomes to the dataframe.&quot;&quot;&quot;                
         df[&quot;y_w0&quot;] = df[&quot;shock_t&quot;] * (df[&quot;type_i&quot;] + df[&quot;shock_it&quot;])
-        df[&quot;tau&quot;] = 0.3 * df[&quot;type_i&quot;]
+        df[&quot;tau&quot;] = 3 * (np.sqrt(df[&quot;type_i&quot;]) - 2)
         df[&quot;y_w1&quot;] = df[&quot;y_w0&quot;] + df[&quot;tau&quot;]
         return df
 </code></pre>
@@ -1412,9 +1412,9 @@ df2, dfw2 = dgp2.generate_data(drop_unobservables=False)
 <p>Print the true treatment effects.</p>
 <pre><code class="language-python">print_true_effects(dfw2)
 </code></pre>
-<pre><code>ATE: 1.19 ± 0.01
-ATT: 1.42 ± 0.02
-ATC: 0.60 ± 0.01
+<pre><code>ATE: -0.72 ± 0.03
+ATT: 1.69 ± 0.04
+ATC: -2.28 ± 0.02
 </code></pre>
 <p>Run difference-in-differences estimator. It is sensibly off. It predicts a negative treatment effect while <em>all</em> individual treatment effects are positive. Mmm</p>
 <pre><code class="language-python">smf.ols(&quot;y ~ 1 + t * w&quot;, data=df2).fit(cov_type=&quot;cluster&quot;, cov_kwds={&quot;groups&quot;: df.i}).summary().tables[1]
@@ -1424,16 +1424,16 @@ ATC: 0.60 ± 0.01
       <td></td>         <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Intercept</th> <td>    3.0040</td> <td>    0.054</td> <td>   55.545</td> <td> 0.000</td> <td>    2.898</td> <td>    3.110</td>
+  <th>Intercept</th> <td>    2.8173</td> <td>    0.031</td> <td>   91.270</td> <td> 0.000</td> <td>    2.757</td> <td>    2.878</td>
 </tr>
 <tr>
-  <th>t</th>         <td>   -2.2833</td> <td>    0.041</td> <td>  -55.289</td> <td> 0.000</td> <td>   -2.364</td> <td>   -2.202</td>
+  <th>t</th>         <td>   -2.1408</td> <td>    0.024</td> <td>  -90.664</td> <td> 0.000</td> <td>   -2.187</td> <td>   -2.094</td>
 </tr>
 <tr>
-  <th>w</th>         <td>    4.1117</td> <td>    0.094</td> <td>   43.752</td> <td> 0.000</td> <td>    3.927</td> <td>    4.296</td>
+  <th>w</th>         <td>    7.9364</td> <td>    0.111</td> <td>   71.815</td> <td> 0.000</td> <td>    7.720</td> <td>    8.153</td>
 </tr>
 <tr>
-  <th>t:w</th>       <td>   -1.6995</td> <td>    0.060</td> <td>  -28.461</td> <td> 0.000</td> <td>   -1.817</td> <td>   -1.582</td>
+  <th>t:w</th>       <td>   -4.3450</td> <td>    0.051</td> <td>  -85.224</td> <td> 0.000</td> <td>   -4.445</td> <td>   -4.245</td>
 </tr>
 </table>
 <p>What about double machine learning?</p>
@@ -1445,9 +1445,9 @@ model_trimmed2 = CausalForestDML(model_t=model_t, model_y=model_y, discrete_trea
 <p>The model is doing fairly well! All estimates are fairly close, just a bit downward biased</p>
 <pre><code class="language-python">print_model_estimates(model_trimmed2)
 </code></pre>
-<pre><code>ATE: 1.15 ± 0.04
-ATT: 1.37 ± 0.05
-ATT: 0.55 ± 0.05
+<pre><code>ATE: -0.59 ± 0.14
+ATT: 1.82 ± 0.22
+ATT: -1.94 ± 0.18
 </code></pre>
 <p>It seems that the model is struggling to extrapolate, but overall it does way better than DiD.</p>
 <pre><code class="language-python">plot_model_estimates(model_trimmed2, dfw2)

@@ -5,7 +5,7 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Mon, 20 Nov 2023 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 21 Nov 2023 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
@@ -15,7 +15,7 @@
     <item>
       <title>Should we ever use DiD?</title>
       <link>https://matteocourthoud.github.io/post/did_or_dml/</link>
-      <pubDate>Mon, 20 Nov 2023 00:00:00 +0000</pubDate>
+      <pubDate>Tue, 21 Nov 2023 00:00:00 +0000</pubDate>
       <guid>https://matteocourthoud.github.io/post/did_or_dml/</guid>
       <description>&lt;p&gt;Assume parallel trends. DiD nails the ATT. Would a double-machine learning (DML) estimator also be able to recover the ATT? And the ATE and ATC? When should we use DiD if we have DML?&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;TLDR;&lt;/strong&gt; I don&amp;rsquo;t see a strong argument for DiD, even with selection of unobservables, if one believes it has enough data to pick the &amp;ldquo;symptoms&amp;rdquo; of the unobservables. DiD only works sensibly better when we don&amp;rsquo;t have enough data to check its assumptions. Does it make it a good scientific method?&lt;/p&gt;
@@ -508,7 +508,7 @@ $$&lt;/p&gt;
     def add_potential_outcomes(self, df: pd.DataFrame, seed: int = 0) -&amp;gt; pd.DataFrame:
         &amp;quot;&amp;quot;&amp;quot;Adds potential outcomes to the dataframe.&amp;quot;&amp;quot;&amp;quot;                
         df[&amp;quot;y_w0&amp;quot;] = df[&amp;quot;shock_t&amp;quot;] * (df[&amp;quot;type_i&amp;quot;] + df[&amp;quot;shock_it&amp;quot;])
-        df[&amp;quot;tau&amp;quot;] = 0.3 * df[&amp;quot;type_i&amp;quot;]
+        df[&amp;quot;tau&amp;quot;] = 3 * (np.sqrt(df[&amp;quot;type_i&amp;quot;]) - 2)
         df[&amp;quot;y_w1&amp;quot;] = df[&amp;quot;y_w0&amp;quot;] + df[&amp;quot;tau&amp;quot;]
         return df
 &lt;/code&gt;&lt;/pre&gt;
@@ -519,9 +519,9 @@ df2, dfw2 = dgp2.generate_data(drop_unobservables=False)
 &lt;p&gt;Print the true treatment effects.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_true_effects(dfw2)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;ATE: 1.19 ± 0.01
-ATT: 1.42 ± 0.02
-ATC: 0.60 ± 0.01
+&lt;pre&gt;&lt;code&gt;ATE: -0.72 ± 0.03
+ATT: 1.69 ± 0.04
+ATC: -2.28 ± 0.02
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Run difference-in-differences estimator. It is sensibly off. It predicts a negative treatment effect while &lt;em&gt;all&lt;/em&gt; individual treatment effects are positive. Mmm&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;y ~ 1 + t * w&amp;quot;, data=df2).fit(cov_type=&amp;quot;cluster&amp;quot;, cov_kwds={&amp;quot;groups&amp;quot;: df.i}).summary().tables[1]
@@ -531,16 +531,16 @@ ATC: 0.60 ± 0.01
       &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;z&lt;/th&gt;      &lt;th&gt;P&gt;|z|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    3.0040&lt;/td&gt; &lt;td&gt;    0.054&lt;/td&gt; &lt;td&gt;   55.545&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.898&lt;/td&gt; &lt;td&gt;    3.110&lt;/td&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;    2.8173&lt;/td&gt; &lt;td&gt;    0.031&lt;/td&gt; &lt;td&gt;   91.270&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    2.757&lt;/td&gt; &lt;td&gt;    2.878&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;t&lt;/th&gt;         &lt;td&gt;   -2.2833&lt;/td&gt; &lt;td&gt;    0.041&lt;/td&gt; &lt;td&gt;  -55.289&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -2.364&lt;/td&gt; &lt;td&gt;   -2.202&lt;/td&gt;
+  &lt;th&gt;t&lt;/th&gt;         &lt;td&gt;   -2.1408&lt;/td&gt; &lt;td&gt;    0.024&lt;/td&gt; &lt;td&gt;  -90.664&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -2.187&lt;/td&gt; &lt;td&gt;   -2.094&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;w&lt;/th&gt;         &lt;td&gt;    4.1117&lt;/td&gt; &lt;td&gt;    0.094&lt;/td&gt; &lt;td&gt;   43.752&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    3.927&lt;/td&gt; &lt;td&gt;    4.296&lt;/td&gt;
+  &lt;th&gt;w&lt;/th&gt;         &lt;td&gt;    7.9364&lt;/td&gt; &lt;td&gt;    0.111&lt;/td&gt; &lt;td&gt;   71.815&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;    7.720&lt;/td&gt; &lt;td&gt;    8.153&lt;/td&gt;
 &lt;/tr&gt;
 &lt;tr&gt;
-  &lt;th&gt;t:w&lt;/th&gt;       &lt;td&gt;   -1.6995&lt;/td&gt; &lt;td&gt;    0.060&lt;/td&gt; &lt;td&gt;  -28.461&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -1.817&lt;/td&gt; &lt;td&gt;   -1.582&lt;/td&gt;
+  &lt;th&gt;t:w&lt;/th&gt;       &lt;td&gt;   -4.3450&lt;/td&gt; &lt;td&gt;    0.051&lt;/td&gt; &lt;td&gt;  -85.224&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -4.445&lt;/td&gt; &lt;td&gt;   -4.245&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;p&gt;What about double machine learning?&lt;/p&gt;
@@ -552,9 +552,9 @@ model_trimmed2 = CausalForestDML(model_t=model_t, model_y=model_y, discrete_trea
 &lt;p&gt;The model is doing fairly well! All estimates are fairly close, just a bit downward biased&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print_model_estimates(model_trimmed2)
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;ATE: 1.15 ± 0.04
-ATT: 1.37 ± 0.05
-ATT: 0.55 ± 0.05
+&lt;pre&gt;&lt;code&gt;ATE: -0.59 ± 0.14
+ATT: 1.82 ± 0.22
+ATT: -1.94 ± 0.18
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;It seems that the model is struggling to extrapolate, but overall it does way better than DiD.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_model_estimates(model_trimmed2, dfw2)
