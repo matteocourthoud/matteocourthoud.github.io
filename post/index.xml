@@ -308,17 +308,17 @@ ATT: -2.44 ± 1.02
 &lt;p&gt;&lt;img src=&#34;img/did_or_dml_47_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;p&gt;It seems that we correctly estimate treatment effects for individuals with effects lower than 4.5. And then gradually we wander astray.&lt;/p&gt;
 &lt;p&gt;Is it a problem of propensity scores? Yes and no. We are estimating them correctly, but there are too many zeroes and ones.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dfw[&amp;quot;w_hat&amp;quot;] = LogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
-g = sns.histplot(data=dfw, x=&amp;quot;w_hat&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dfw[&amp;quot;e_hat&amp;quot;] = LogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
+g = sns.histplot(data=dfw, x=&amp;quot;e_hat&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
 g.set(xlabel=&amp;quot;&amp;quot;, title=&amp;quot;Estimated Propensity Scores&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/did_or_dml_49_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
 &lt;h3 id=&#34;restrict-sample-to-overlap&#34;&gt;Restrict Sample to Overlap&lt;/h3&gt;
 &lt;p&gt;As a first tentative solution, let&amp;rsquo;s restrict the sample to the overlapping sample, in terms of estimated propensity scores.&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;w_min = np.maximum(dfw.loc[w==1, &amp;quot;w_hat&amp;quot;].min(), dfw.loc[w==0, &amp;quot;w_hat&amp;quot;].min())
-w_max = np.minimum(dfw.loc[w==1, &amp;quot;w_hat&amp;quot;].max(), dfw.loc[w==0, &amp;quot;w_hat&amp;quot;].max())
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;e_min = np.maximum(dfw.loc[w==1, &amp;quot;e_hat&amp;quot;].min(), dfw.loc[w==0, &amp;quot;e_hat&amp;quot;].min())
+e_max = np.minimum(dfw.loc[w==1, &amp;quot;e_hat&amp;quot;].max(), dfw.loc[w==0, &amp;quot;e_hat&amp;quot;].max())
 &lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_overlap = dfw[(dfw.w_hat &amp;gt; w_min) &amp;amp; (dfw.w_hat &amp;lt; w_max)]
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_overlap = dfw[(dfw.e_hat &amp;gt; e_min) &amp;amp; (dfw.e_hat &amp;lt; e_max)]
 # ATE
 ate_overlap = model_cate.ate_inference(X=df_overlap[[&amp;quot;y_t0&amp;quot;]])
 print(f&amp;quot;ATE: {ate_overlap.mean_point:.2f} ± {2 * ate_overlap.stderr_mean:.2f}&amp;quot;)
@@ -355,8 +355,8 @@ ATE: -2.14 ± 16.33
         return np.maximum(np.minimum(p, 1 - self.p_winsor), self.p_winsor)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Overlap
-dfw[&amp;quot;w_hat_trimmed&amp;quot;] = WinsorizedLogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
-g = sns.histplot(data=dfw, x=&amp;quot;w_hat_trimmed&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
+dfw[&amp;quot;e_hat_trimmed&amp;quot;] = WinsorizedLogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
+g = sns.histplot(data=dfw, x=&amp;quot;e_hat_trimmed&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
 g.set(title=&amp;quot;Estimated Propensity Scores&amp;quot;, xlabel=&amp;quot;&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/did_or_dml_57_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
@@ -449,10 +449,10 @@ ATT: 0.88 ± 1.75
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;First, let&amp;rsquo;s plot the estimated propensity scores.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%%capture
-dfw[&amp;quot;w_hat_trimmed&amp;quot;] = WinsorizedLGBMClassifier(n_estimators=500).fit(X=X, y=w).predict_proba(X)[:,1]
+dfw[&amp;quot;e_hat_trimmed&amp;quot;] = WinsorizedLGBMClassifier(n_estimators=500).fit(X=X, y=w).predict_proba(X)[:,1]
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Overlap
-g = sns.histplot(data=dfw, x=&amp;quot;w_hat_trimmed&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
+g = sns.histplot(data=dfw, x=&amp;quot;e_hat_trimmed&amp;quot;, hue=&amp;quot;w&amp;quot;, bins=50);
 g.set(title=&amp;quot;Estimated Propensity Scores&amp;quot;, xlabel=&amp;quot;&amp;quot;);
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;&lt;img src=&#34;img/did_or_dml_84_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;

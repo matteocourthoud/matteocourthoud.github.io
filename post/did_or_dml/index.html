@@ -1201,17 +1201,17 @@ ATT: -2.44 ± 1.02
 <p><img src="img/did_or_dml_47_0.png" alt="png"></p>
 <p>It seems that we correctly estimate treatment effects for individuals with effects lower than 4.5. And then gradually we wander astray.</p>
 <p>Is it a problem of propensity scores? Yes and no. We are estimating them correctly, but there are too many zeroes and ones.</p>
-<pre><code class="language-python">dfw[&quot;w_hat&quot;] = LogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
-g = sns.histplot(data=dfw, x=&quot;w_hat&quot;, hue=&quot;w&quot;, bins=50);
+<pre><code class="language-python">dfw[&quot;e_hat&quot;] = LogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
+g = sns.histplot(data=dfw, x=&quot;e_hat&quot;, hue=&quot;w&quot;, bins=50);
 g.set(xlabel=&quot;&quot;, title=&quot;Estimated Propensity Scores&quot;);
 </code></pre>
 <p><img src="img/did_or_dml_49_0.png" alt="png"></p>
 <h3 id="restrict-sample-to-overlap">Restrict Sample to Overlap</h3>
 <p>As a first tentative solution, let&rsquo;s restrict the sample to the overlapping sample, in terms of estimated propensity scores.</p>
-<pre><code class="language-python">w_min = np.maximum(dfw.loc[w==1, &quot;w_hat&quot;].min(), dfw.loc[w==0, &quot;w_hat&quot;].min())
-w_max = np.minimum(dfw.loc[w==1, &quot;w_hat&quot;].max(), dfw.loc[w==0, &quot;w_hat&quot;].max())
+<pre><code class="language-python">e_min = np.maximum(dfw.loc[w==1, &quot;e_hat&quot;].min(), dfw.loc[w==0, &quot;e_hat&quot;].min())
+e_max = np.minimum(dfw.loc[w==1, &quot;e_hat&quot;].max(), dfw.loc[w==0, &quot;e_hat&quot;].max())
 </code></pre>
-<pre><code class="language-python">df_overlap = dfw[(dfw.w_hat &gt; w_min) &amp; (dfw.w_hat &lt; w_max)]
+<pre><code class="language-python">df_overlap = dfw[(dfw.e_hat &gt; e_min) &amp; (dfw.e_hat &lt; e_max)]
 # ATE
 ate_overlap = model_cate.ate_inference(X=df_overlap[[&quot;y_t0&quot;]])
 print(f&quot;ATE: {ate_overlap.mean_point:.2f} ± {2 * ate_overlap.stderr_mean:.2f}&quot;)
@@ -1248,8 +1248,8 @@ ATE: -2.14 ± 16.33
         return np.maximum(np.minimum(p, 1 - self.p_winsor), self.p_winsor)
 </code></pre>
 <pre><code class="language-python"># Overlap
-dfw[&quot;w_hat_trimmed&quot;] = WinsorizedLogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
-g = sns.histplot(data=dfw, x=&quot;w_hat_trimmed&quot;, hue=&quot;w&quot;, bins=50);
+dfw[&quot;e_hat_trimmed&quot;] = WinsorizedLogisticRegressionCV().fit(X=X, y=w).predict_proba(X)[:,1]
+g = sns.histplot(data=dfw, x=&quot;e_hat_trimmed&quot;, hue=&quot;w&quot;, bins=50);
 g.set(title=&quot;Estimated Propensity Scores&quot;, xlabel=&quot;&quot;);
 </code></pre>
 <p><img src="img/did_or_dml_57_0.png" alt="png"></p>
@@ -1342,10 +1342,10 @@ ATT: 0.88 ± 1.75
 </code></pre>
 <p>First, let&rsquo;s plot the estimated propensity scores.</p>
 <pre><code class="language-python">%%capture
-dfw[&quot;w_hat_trimmed&quot;] = WinsorizedLGBMClassifier(n_estimators=500).fit(X=X, y=w).predict_proba(X)[:,1]
+dfw[&quot;e_hat_trimmed&quot;] = WinsorizedLGBMClassifier(n_estimators=500).fit(X=X, y=w).predict_proba(X)[:,1]
 </code></pre>
 <pre><code class="language-python"># Overlap
-g = sns.histplot(data=dfw, x=&quot;w_hat_trimmed&quot;, hue=&quot;w&quot;, bins=50);
+g = sns.histplot(data=dfw, x=&quot;e_hat_trimmed&quot;, hue=&quot;w&quot;, bins=50);
 g.set(title=&quot;Estimated Propensity Scores&quot;, xlabel=&quot;&quot;);
 </code></pre>
 <p><img src="img/did_or_dml_84_0.png" alt="png"></p>
