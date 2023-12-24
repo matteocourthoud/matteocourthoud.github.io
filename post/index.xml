@@ -5,12 +5,303 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 21 Nov 2023 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sun, 24 Dec 2023 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://matteocourthoud.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>Understanding Group Sequential Testing</title>
+      <link>https://matteocourthoud.github.io/post/group_sequential_testing/</link>
+      <pubDate>Sun, 24 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/group_sequential_testing/</guid>
+      <description>&lt;p&gt;&lt;em&gt;How to run valid experiments with less observations.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to &lt;strong&gt;randomization&lt;/strong&gt;. In fact, by randomly assigning a &lt;strong&gt;treatment&lt;/strong&gt; (a drug, ad, product, &amp;hellip;), we are able to compare the &lt;strong&gt;outcome&lt;/strong&gt; of interest (a disease, firm revenue, customer satisfaction, &amp;hellip;) across &lt;strong&gt;subjects&lt;/strong&gt; (patients, users, customers, &amp;hellip;) and attribute the average difference in outcomes to the causal effect of the treatment.&lt;/p&gt;
+&lt;p&gt;The implementation of an A/B test is usually not instantaneous, especially in online settings. Often users are treated &lt;strong&gt;live&lt;/strong&gt; or in &lt;strong&gt;batches&lt;/strong&gt;. In these settings, one can look at the data before the data collection is completed, one or multiple times. This phenomenon is called &lt;strong&gt;peeking&lt;/strong&gt;. While looking is not problematic, it is tempting to draw conclusion from these intermediate results. However, using standard testing procedures when peeking can lead to &lt;strong&gt;misleading conclusions&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;solution&lt;/strong&gt; to peeking is to adjust our testing procedure accordingly. The most famous and traditional approach is the so-called &lt;strong&gt;Sequential Probability Ratio Test (SPRT)&lt;/strong&gt;, which dates back to the Second World War. If you want to know more about the test and its fascinating history, I wrote a blog post about it.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/954506cec665&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://towardsdatascience.com/954506cec665&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;The main &lt;strong&gt;advantage&lt;/strong&gt; of the Sequential Probability Ratio Test (SPRT) is that it guarantees the smallest possible sample size, given a target confidence level and power. However, the &lt;strong&gt;main problem&lt;/strong&gt; with the SPRT is that it might continue indefinitely.&lt;/p&gt;
+&lt;p&gt;As you can imagine, this is a non-irrelevant problem in an applied setting with deadlines and budget constraints. In this article, we will explore an &lt;strong&gt;alternative method&lt;/strong&gt; that allows &lt;em&gt;any&lt;/em&gt; amount of intermediate peeks at the data, at &lt;em&gt;any&lt;/em&gt; point of the data collection: &lt;strong&gt;Group Sequential Testing&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;simulation&#34;&gt;Simulation&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from src.theme import *
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
+import pandas as pd
+import scipy as sp
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;K = 10_000
+mu = 1
+sigma = 5.644
+alpha = 0.05
+beta = 0.8
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;experiment&#34;&gt;Experiment&lt;/h2&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;ppf = sp.stats.norm(0, 1).ppf
+cdf = sp.stats.norm(0, 1).cdf
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;z_alpha = ppf(1 - alpha/2)
+z_beta = ppf(beta)
+N = int((2 * sigma * (z_alpha + z_beta) / mu)**2)
+N
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;1000
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.random.seed(2)
+obs = np.random.normal(mu, sigma, size=(N, K))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;peeking&#34;&gt;Peeking&lt;/h2&gt;
+&lt;p&gt;What happens if we &lt;strong&gt;peek&lt;/strong&gt; at the data, &lt;strong&gt;before the end&lt;/strong&gt; of the experiment?&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s suppose for example that we have a look at the data every 50 observations. One reason could be that the data arrives in batches, or that we peek every day as soon as we start working.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N_peek = np.arange(100, N+1, 50, dtype=int)
+N_peek
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;array([ 100,  150,  200,  250,  300,  350,  400,  450,  500,  550,  600,
+        650,  700,  750,  800,  850,  900,  950, 1000])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Looking at the data of course is not a problem &lt;em&gt;per-se&lt;/em&gt;. However, we might be tempted to draw conclusions given what we observe. Suppose that our &lt;em&gt;naive&lt;/em&gt; experimentation platform continuously reports the latest average, standard deviation and confidence interval, where the confidence interval is simply computed as&lt;/p&gt;
+&lt;p&gt;$$
+\text{CI}_n = \Big [ \hat{\mu}&lt;em&gt;n - z&lt;/em&gt;{1-\alpha/2} \frac{\hat{\sigma}_n}{\sqrt{n}} \quad ; \quad \hat{\mu}&lt;em&gt;n - z&lt;/em&gt;{1-\alpha/2} \frac{\hat{\sigma}_n}{\sqrt{n}} \Big]
+$$&lt;/p&gt;
+&lt;p&gt;where &lt;em&gt;n&lt;/em&gt; is the number of samples, &lt;em&gt;μ̂ₙ&lt;/em&gt; is the estimated sample average after &lt;em&gt;n&lt;/em&gt; samples, &lt;em&gt;σ̂ₙ&lt;/em&gt; is the estimated standard deviation after &lt;em&gt;n&lt;/em&gt; samples, &lt;em&gt;α&lt;/em&gt; is the significance level, and &lt;em&gt;z&lt;/em&gt; is the &lt;em&gt;1-α/2&lt;/em&gt; quantile of a standard normal distribution.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def select_alpha_naive(n, N, N_peek, alpha):
+    return alpha
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s compute the intervals at each point in time, for &lt;em&gt;K&lt;/em&gt; different simulations.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def compute_intervals(select_alpha, obs, N_peek, alpha=0.05):
+    # Compute rolling mean and standard deviation
+    N, K = np.shape(obs)
+    ns = np.reshape(np.arange(1, N+1), (-1, 1))
+    means = np.cumsum(obs, axis=0) / ns
+    stdevs = np.sqrt(np.cumsum((obs - means)**2, axis=0) / ns)
+
+    # Compute intervals at each peeking time
+    df_intervals = pd.DataFrame({&amp;quot;k&amp;quot;: range(K)})
+    df_intervals[&amp;quot;rejected_0&amp;quot;] = False
+    df_intervals[&amp;quot;rejected_1&amp;quot;] = False
+    for t, n in enumerate(N_peek):
+        df_intervals[f&amp;quot;mean{n}&amp;quot;] = means[n-1, :]
+        df_intervals[f&amp;quot;width{n}&amp;quot;] = ppf(1 - select_alpha(n, N, N_peek, alpha)/2) * stdevs[n-1, :] / np.sqrt(n)
+        df_intervals[f&amp;quot;lowerb{n}&amp;quot;] = means[n-1, :] - df_intervals[f&amp;quot;width{n}&amp;quot;]
+        df_intervals[f&amp;quot;upperb{n}&amp;quot;] = means[n-1, :] + df_intervals[f&amp;quot;width{n}&amp;quot;]
+        df_intervals[f&amp;quot;coverage{n}&amp;quot;] = (df_intervals[f&amp;quot;lowerb{n}&amp;quot;] &amp;lt;= mu) &amp;amp; (df_intervals[f&amp;quot;upperb{n}&amp;quot;] &amp;gt;= mu)
+        df_intervals[&amp;quot;rejected_0&amp;quot;] = df_intervals[&amp;quot;rejected_0&amp;quot;] | (df_intervals[f&amp;quot;lowerb{n}&amp;quot;] &amp;gt;= 0) | (df_intervals[f&amp;quot;upperb{n}&amp;quot;] &amp;lt;= 0)
+        df_intervals[f&amp;quot;power{n}&amp;quot;] = df_intervals[&amp;quot;rejected_0&amp;quot;]
+        df_intervals[&amp;quot;rejected_1&amp;quot;] = df_intervals[&amp;quot;rejected_1&amp;quot;] | ~df_intervals[f&amp;quot;coverage{n}&amp;quot;]
+        df_intervals[f&amp;quot;falsep{n}&amp;quot;] = df_intervals[&amp;quot;rejected_1&amp;quot;]
+    return df_intervals
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dfi_naive = compute_intervals(select_alpha_naive, obs, N_peek)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What do these averages and confidence intervals look over time? In the figure below, I plot the cumulative average over the data collection, together with the confidence intervals at each peeking time.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_peeking(dfi, obs, k=1):
+    ns = np.reshape(np.arange(1, N+1), (-1, 1))
+    means = np.cumsum(obs, axis=0) / ns
+    # Plot
+    fig, ax = plt.subplots()
+    for n in N_peek:
+        ax.errorbar(x=[n-1], y=dfi[f&amp;quot;mean{n}&amp;quot;][k], yerr=dfi[f&amp;quot;width{n}&amp;quot;][k], 
+                    c=&amp;quot;C1&amp;quot;, lw=0, elinewidth=2, capsize=6, marker=&amp;quot;o&amp;quot;, markersize=6)
+    sns.lineplot(x=range(30, N), y=means[:,k][30:], lw=3, ax=ax);
+    ax.axhline(y=0, lw=1)
+    ax.set(xlim=(20, N+10), title=&amp;quot;Average Effect and Confidence Intervals&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_peeking(dfi_naive, obs)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_24_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, the first &lt;em&gt;7&lt;/em&gt; times we look at the data the confidence intervals cross the zero line and hence we do not reject the null hypothesis of zero mean. However, in the fourth look at the data, at &lt;em&gt;450&lt;/em&gt; observations, the confidence interval does not cross the zero line and hence we reject the null hypothesis of no effect.&lt;/p&gt;
+&lt;p&gt;The problem of this procedure is very similar to &lt;strong&gt;multiple hypothesis testing&lt;/strong&gt;: we are building the confidence intervals for a single look at the data and therefore a single decision. Here instead we are making multiple decisions.&lt;/p&gt;
+&lt;p&gt;What are the &lt;strong&gt;consequences&lt;/strong&gt; of peeking? Let&amp;rsquo;s have a look at what would happen if we were to repeat this experiment multiple times. We will now plot the confidence intervals for 100 iterations at three different points in time: after &lt;em&gt;200&lt;/em&gt;, &lt;em&gt;400&lt;/em&gt; and &lt;em&gt;600&lt;/em&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N_plot = [200, 400, 600]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_intervals(dfi, N_plot, power_coverage: str):
+    fig, (axes) = plt.subplots(1, len(N_plot))
+    x = 0 if power_coverage == &amp;quot;power&amp;quot; else mu
+    df_short = dfi.iloc[:100, :].copy()
+    
+    # Plot intervals
+    for k, i, ax in zip(range(len(N_plot)), N_plot, axes):
+        # Plot intervals
+        ax.errorbar(x=df_short[f&amp;quot;mean{i}&amp;quot;], y=df_short[&amp;quot;k&amp;quot;], xerr=df_short[f&amp;quot;width{i}&amp;quot;], 
+                     fmt=&amp;quot;&amp;quot;, lw=0, alpha=0.3, elinewidth=1)
+        ax.axvline(x=x, lw=1, ls=&amp;quot;--&amp;quot;, c=&amp;quot;k&amp;quot;)
+    
+        # Add wrong intervals
+        temp = df_short.loc[df_short[f&amp;quot;{power_coverage}{i}&amp;quot;] == False]
+        ax.errorbar(x=temp[f&amp;quot;mean{i}&amp;quot;], y=temp[&amp;quot;k&amp;quot;], xerr=temp[f&amp;quot;width{i}&amp;quot;], 
+                     fmt=&amp;quot;&amp;quot;, lw=0, alpha=1, elinewidth=2)
+    
+        # Rest
+        ax.set(xlim=(-0.2, 2.2))
+        ax.set_title(f&amp;quot;n = {i}&amp;quot;, pad=10)
+        ax.title.set_size(14)
+        if k &amp;gt; 0:
+            ax.set_yticks([])
+    plt.suptitle(power_coverage.capitalize(), y=1.01);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The first thing that we are going to inspect is &lt;strong&gt;coverage&lt;/strong&gt;: do the confidence intervals actually &lt;em&gt;cover&lt;/em&gt; the true treatment effect, as they are supposed to? I highlight the confidence intervals that don&amp;rsquo;t.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_intervals(dfi_naive, N_plot, &amp;quot;coverage&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_29_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It seems that our coverage is fine at each point in time. We have, respectively, 5, 2, and 3 cases out of 100 in which the interval does not cover the true treatment effect. This is expected since our &lt;em&gt;confidence level&lt;/em&gt; &lt;em&gt;α=5%&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Next, we investigate &lt;strong&gt;power&lt;/strong&gt;: the ability of our estimator to detect an effect when there is indeed one. Remember that power is always relative to the effect size. However, we did our power calculations using the true effect so we expect the experiment to have the excepted power of &lt;em&gt;1-β=80%&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Note that since we are peeking, we reject the null as soon as one test is significant. Therefore, in our case, power at a specific point in time is the probability of rejecting the null hypothesis with that test or &lt;em&gt;any&lt;/em&gt; of the previous ones.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_intervals(dfi_naive, N_plot, &amp;quot;power&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_31_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;As we can see, at 83 observations we reject the null hypothesis already in 83 simulations out of 100. This suggests that At 183 and 283 observations we reject the null hypothesis in all simulations.&lt;/p&gt;
+&lt;p&gt;It seems that so far everything is going great: our intervals cover the true effect and reject the null hypothesis even faster&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def check_performance(dfi):
+    df_perf = dfi[list(dfi.filter(regex=&amp;quot;coverage|power|falsep&amp;quot;))].copy()
+    df_perf[&amp;quot;idx&amp;quot;] = 1
+    df_perf = df_perf.groupby(&amp;quot;idx&amp;quot;, as_index=False).mean()
+    df_perf = pd.wide_to_long(df_perf, stubnames=[&amp;quot;coverage&amp;quot;, &amp;quot;power&amp;quot;, &amp;quot;falsep&amp;quot;], i=&amp;quot;idx&amp;quot;, j=&amp;quot;n&amp;quot;).reset_index().drop(columns=&amp;quot;idx&amp;quot;)
+    return df_perf
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_coverage_power(dfi, alpha=0.05, beta=0.8):
+    df_perf = check_performance(dfi)
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(14, 3))
+    
+    # Plot Coverage
+    sns.lineplot(df_perf, x=&amp;quot;n&amp;quot;, y=&amp;quot;coverage&amp;quot;, c=&amp;quot;C0&amp;quot;, ax=ax1)
+    ax1.axhline(y=1-alpha, ls=&amp;quot;--&amp;quot;, lw=2, c=&amp;quot;C0&amp;quot;)
+    ax1.set(title=&amp;quot;Coverage&amp;quot;, ylabel=&amp;quot;&amp;quot;, ylim=(0.89, 1.01))
+    
+    # Plot power
+    sns.lineplot(df_perf, x=&amp;quot;n&amp;quot;, y=&amp;quot;power&amp;quot;, c=&amp;quot;C1&amp;quot;, ax=ax2)
+    ax2.axhline(y=beta, ls=&amp;quot;--&amp;quot;, lw=2, c=&amp;quot;C1&amp;quot;)
+    ax2.set(title=&amp;quot;Power&amp;quot;, ylabel=&amp;quot;&amp;quot;, ylim=(0.5, 1.05))
+
+    # Plot false positives
+    sns.lineplot(df_perf, x=&amp;quot;n&amp;quot;, y=&amp;quot;falsep&amp;quot;, c=&amp;quot;C2&amp;quot;, ax=ax3)
+    ax3.axhline(y=alpha, ls=&amp;quot;--&amp;quot;, lw=2, c=&amp;quot;C2&amp;quot;)
+    ax3.set(title=&amp;quot;False Rejections&amp;quot;, ylabel=&amp;quot;&amp;quot;, ylim=(-0.01, 0.24))
+
+    n_min_power = df_perf.loc[df_perf.power &amp;gt;= 0.8, &amp;quot;n&amp;quot;].values[0]
+    print(&amp;quot;Min power at n =&amp;quot;, n_min_power)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_coverage_power(dfi_naive)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Min power at n = 250
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_35_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h2 id=&#34;constant-corrections&#34;&gt;Constant Corrections&lt;/h2&gt;
+&lt;h3 id=&#34;bonferroni-correction&#34;&gt;Bonferroni Correction&lt;/h3&gt;
+&lt;p&gt;Since the peeking problem is close to multiple hypothesis testing, we can start by applying the same solution.&lt;/p&gt;
+&lt;p&gt;The simplest way to account for multiple hypothesis testing is the so-called &lt;strong&gt;Bonferroni correction&lt;/strong&gt;. The idea is simple: decrease the significance level &lt;em&gt;α&lt;/em&gt; proportionally to the number of looks. In particular, instead of using the same &lt;em&gt;α&lt;/em&gt; for each look, we use instead
+$$
+\alpha_{\text{Bonferroni}} = \frac{\alpha}{P}
+$$&lt;/p&gt;
+&lt;p&gt;where &lt;em&gt;P&lt;/em&gt; is the number of times we plan to peek.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def select_alpha_bonferroni(n, N, N_peek, alpha):
+    P = len(N_peek)
+    return alpha / P
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;How does Bonferroni correction perform in terms of &lt;strong&gt;coverage&lt;/strong&gt;? Let&amp;rsquo;s plot the confidence intervals for three peeking stages: after &lt;em&gt;200&lt;/em&gt;, &lt;em&gt;400&lt;/em&gt;, and &lt;em&gt;600&lt;/em&gt; observations are collected. Note that these correspond to the &lt;em&gt;3rd&lt;/em&gt;, &lt;em&gt;7th&lt;/em&gt; and &lt;em&gt;11th&lt;/em&gt; peek at the data, respectively.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dfi_bonferroni = compute_intervals(select_alpha_bonferroni, obs, N_peek)
+plot_intervals(dfi_bonferroni, N_plot, &amp;quot;coverage&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_41_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Coverage looks great! Only once at &lt;em&gt;n=200&lt;/em&gt; one interval did not cover the true value &lt;em&gt;μ=1&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;While this might appear comforting at first, it should actually raise an eyebrow. In fact, with a significance level &lt;em&gt;α=0.05&lt;/em&gt; we expect a coverage of &lt;em&gt;95%&lt;/em&gt;. A higher coverage will most likely come at the expense of &lt;strong&gt;power&lt;/strong&gt;. Let&amp;rsquo;s have a look.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_intervals(dfi_bonferroni, N_plot, &amp;quot;power&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_43_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The test is clearly underpowered at &lt;em&gt;n=200&lt;/em&gt;, while it is very close to the target power of &lt;em&gt;1-β=80%&lt;/em&gt; at &lt;em&gt;n=400&lt;/em&gt;. At &lt;em&gt;n=600&lt;/em&gt; we have almost 100% power.&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s plot not coverage, power, and false positive rate over &lt;em&gt;K=10,000&lt;/em&gt; simulations.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_coverage_power(dfi_bonferroni)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Min power at n = 450
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_45_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Coverage is great, power is above target starting at &lt;em&gt;n=450&lt;/em&gt; observations, and the false rejection rate is always below the target &lt;em&gt;5%&lt;/em&gt;. Amazing&amp;hellip; right?&lt;/p&gt;
+&lt;p&gt;Yes, everything looks good indeed, but maybe &lt;strong&gt;too good&lt;/strong&gt;, in the sense that there is clearly room for improvement. Given such high coverage and low false rejection rate, there is room for improvement: the results suggest that we could have shorter confidence intervals and higher power, without dropping below &lt;em&gt;95%&lt;/em&gt; coverage or above &lt;em&gt;5%&lt;/em&gt; false rejection rate. How?&lt;/p&gt;
+&lt;p&gt;The Bonferroni correction has &lt;strong&gt;two drawbacks&lt;/strong&gt;. First of all, it is known to be very &lt;strong&gt;conservative&lt;/strong&gt;. Second, it was &lt;strong&gt;not designed for sequential testing&lt;/strong&gt;, but rather for multiple hypotesis testing.&lt;/p&gt;
+&lt;h3 id=&#34;corrections&#34;&gt;Corrections&lt;/h3&gt;
+&lt;p&gt;The first version of &lt;strong&gt;Bonferroni&amp;rsquo;s correction for sequential testing&lt;/strong&gt; was &lt;a href=&#34;https://www.jstor.org/stable/2335684&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Pocock (1977)&lt;/a&gt;. The idea of both corrections was to divide the significance level &lt;em&gt;α&lt;/em&gt; by a lower number than &lt;em&gt;P&lt;/em&gt;, to increase power while keeping high coverage and low false positive rate. The values are found through a numeric algorithm that takes as input the significance level &lt;em&gt;α&lt;/em&gt; and the total number of peeks &lt;em&gt;P&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;The second version was from &lt;a href=&#34;https://www.jstor.org/stable/2530245&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;O’Brien, Fleming (1979)&lt;/a&gt;. Their idea was to adapt the width of the confidence interval not only to the significance level &lt;em&gt;α&lt;/em&gt; and the total number of peeks &lt;em&gt;P&lt;/em&gt;, but the individual peek &lt;em&gt;p&lt;/em&gt;. However, one drawback of the O’Brien-Fleming procedure is that it requires planning the number of peeks &lt;em&gt;P&lt;/em&gt; in advance and the individual peeks to be uniformly distributed across the sample.&lt;/p&gt;
+&lt;p&gt;In a sense, these corrections allow for &lt;strong&gt;planned peeking&lt;/strong&gt;, but what about random unplanned peeking, as it is often the case in practice?&lt;/p&gt;
+&lt;h2 id=&#34;group-sequential-testing&#34;&gt;Group Sequential Testing&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.jstor.org/stable/2336502&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Lan, DeMets (1983)&lt;/a&gt; noticed that the important thing in peeking is not &lt;em&gt;how much&lt;/em&gt; you peek, but rather &lt;em&gt;when&lt;/em&gt; you peek. The main idea of &lt;strong&gt;Group Sequential Testing (GST)&lt;/strong&gt; is to allow for peeking at any point in time, and correct the significance level for the peeking point in time in the data collection process, &lt;em&gt;t = n/N&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;The moving part of group sequential testing is the so-called &lt;strong&gt;alpha spending function&lt;/strong&gt; that determines how to correct the significance level &lt;em&gt;α&lt;/em&gt;, given peeking time &lt;em&gt;t&lt;/em&gt;. In the rest of the article we are going to review two alpha spending functions that approximate the corrections of &lt;a href=&#34;https://www.jstor.org/stable/2335684&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Pocock (1977)&lt;/a&gt; and &lt;a href=&#34;https://www.jstor.org/stable/2530245&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;O’Brien, Fleming (1979)&lt;/a&gt;, respectively.&lt;/p&gt;
+&lt;h3 id=&#34;gst-pocock-approximation&#34;&gt;GST Pocock Approximation&lt;/h3&gt;
+&lt;p&gt;The first alpha-spending function is an approximation of &lt;a href=&#34;https://www.jstor.org/stable/2335684&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Pocock (1977)&lt;/a&gt; and is given by&lt;/p&gt;
+&lt;p&gt;$$
+f(\alpha, t) = \alpha \ln \big( 1 + (e - 1) t \big)
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def select_alpha_gst_pocock(n, N, N_peek, alpha):
+    t = n / N
+    return alpha * np.log(1 + (np.exp(1) - 1) * t)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s see how group sequential testing using Pocock&amp;rsquo;s alpha spending function works.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dfi_gst_pocock = compute_intervals(select_alpha_gst_pocock, obs, N_peek)
+plot_coverage_power(dfi_gst_pocock)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Min power at n = 300
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_55_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;h3 id=&#34;gst-obrien--fleming-approximation&#34;&gt;GST O’Brien &amp;amp; Fleming Approximation&lt;/h3&gt;
+&lt;p&gt;The second alpha-spending function is an approximation of &lt;a href=&#34;https://www.jstor.org/stable/2530245&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;O’Brien, Fleming (1979)&lt;/a&gt; and is given by&lt;/p&gt;
+&lt;p&gt;$$
+f(\alpha, t) = 4 - 4 \Phi \Big( \Phi^{-1} \big(1 - \alpha/4 \big) / \sqrt{t} \Big)
+$$&lt;/p&gt;
+&lt;p&gt;where &lt;em&gt;Φ&lt;/em&gt; is the cumulative distribution function (CDF) of a standard normal distribution.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def select_alpha_gst_obrien_fleming(n, N, N_peek, alpha):
+    t = n / N
+    return 4 - 4 * cdf(ppf(1 - alpha/4) / np.sqrt(t))
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&amp;rsquo;s see how it performs over &lt;em&gt;K=10,000&lt;/em&gt; simulations.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dfi_obrien_fleming = compute_intervals(select_alpha_gst_obrien_fleming, obs, N_peek)
+plot_coverage_power(dfi_obrien_fleming)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Min power at n = 500
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_60_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;It seems that the O’Brien and Fleming approximation is more conservative than Pocoks, reaching &lt;em&gt;80%&lt;/em&gt; power only at &lt;em&gt;500&lt;/em&gt; observations, but keeping the false rejection rate lower.&lt;/p&gt;
+&lt;h2 id=&#34;alpha-spending-trade-off&#34;&gt;Alpha Spending Trade-off&lt;/h2&gt;
+&lt;p&gt;Before concluding, it is worth having a look at the peeking trade-offs. We have introduced a method that allows us to do valid inference while peeking any number of times, whenever we feel like. But &lt;strong&gt;should we peek&lt;/strong&gt;?&lt;/p&gt;
+&lt;p&gt;In the figure below, I plot the testing performance when we &lt;strong&gt;increase the peeking frequency&lt;/strong&gt; to 10 observations.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N_peek_10 = np.arange(10, N+1, 10, dtype=int)
+dfi_obrien_fleming_10 = compute_intervals(select_alpha_gst_obrien_fleming, obs, N_peek_10)
+plot_coverage_power(dfi_obrien_fleming_10)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Min power at n = 470
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_64_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The advantage is that now we need &lt;em&gt;470&lt;/em&gt; observations to reach a power level of &lt;em&gt;80%&lt;/em&gt;, but this comes at the cost of a higher false rejection rate.&lt;/p&gt;
+&lt;p&gt;What if instead we &lt;strong&gt;reduced the peeking frequency&lt;/strong&gt;? In the figure below, I plot the results when peeking every 200 observations.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;N_peek_200 = np.arange(200, N+1, 200, dtype=int)
+dfi_obrien_fleming_200 = compute_intervals(select_alpha_gst_obrien_fleming, obs, N_peek_200)
+plot_coverage_power(dfi_obrien_fleming_200)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;Min power at n = 600
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/group_sequential_testing_66_1.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;From the figure, we see the opposite result: we now need more observations to reach &lt;em&gt;80%&lt;/em&gt; power (&lt;em&gt;600&lt;/em&gt; instead of &lt;em&gt;500&lt;/em&gt;), but the false rejection rate barely crosses the &lt;em&gt;5%&lt;/em&gt; threshold.&lt;/p&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this article, we have explored &lt;strong&gt;group sequential testing&lt;/strong&gt;, a procedure to do valid inference when peeking during an A/B test, any number of times, and at any point during the experiment. We have also seen how peeking does not come for free. The main &lt;strong&gt;trade-off&lt;/strong&gt; is that the more we peek, the earlier we can stop an experiment but also the higher the false rejection rate.&lt;/p&gt;
+&lt;p&gt;There are at least a couple of topics I have not mentioned in the article, not to make it too long. The first one is &lt;strong&gt;bias&lt;/strong&gt;. Sequential tests can easily introduce bias since early stopping could be due to either a low variance or a large effect. Because of the second, sequential tests can often lead to the &lt;em&gt;overestimation&lt;/em&gt; of treatment effects. This phenomenon is often called the &lt;em&gt;winner&amp;rsquo;s curse&lt;/em&gt; and typically occurs when the study is underpowered, which is often the case at the early peeking stages. One solution is to design a &lt;strong&gt;beta spending&lt;/strong&gt; function.&lt;/p&gt;
+&lt;p&gt;The second topic that I didn&amp;rsquo;t cover is what is called &lt;strong&gt;stopping for futility&lt;/strong&gt;. In the examples of this article, we stopped experiments early if we got a statistically significant estimate. However, peeking can also inform a different stopping rule: stopping because it becomes extremely unlikely that continuing the test can produce significant results.&lt;/p&gt;
+&lt;p&gt;The last topic I have not covered (yet) is not to do &lt;strong&gt;power analysis&lt;/strong&gt; with sequential testing. In the example above we ran the power analysis assuming no peeking. However, given that we knew we would have peeked, we could have anticipated the need for a smaller sample. A closely related topic is &lt;strong&gt;optimal peeking&lt;/strong&gt;. Once you decided to peek, when should you do it?&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Lakens, Pahlke, Wassmer (2021). &lt;a href=&#34;https://osf.io/preprints/psyarxiv/x4azm&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Group Sequential Designs: A Tutorial&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Lan, DeMets (1983). &lt;a href=&#34;https://academic.oup.com/biomet/article-abstract/70/3/659/247777&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Discrete Sequential Boundaries for Clinical Trials&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Spotify (2023). &lt;a href=&#34;https://engineering.atspotify.com/2023/03/choosing-sequential-testing-framework-comparisons-and-discussions/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Choosing a Sequential Testing Framework&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/954506cec665&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;Experiments, Peeking, and Optimal Stopping&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/instrumental_variables.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/instrumental_variables.ipynb&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Should we ever use DiD?</title>
