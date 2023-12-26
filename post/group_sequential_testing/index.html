@@ -931,12 +931,12 @@ A/B tests are the golden standard of causal inference because they allow us to m
           <div class="article-style" align="justify">
             <p><em>How to run valid experiments, with unplanned peeking and early stopping.</em></p>
 <p>A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to <strong>randomization</strong>. In fact, by randomly assigning a <strong>treatment</strong> (a drug, ad, product, &hellip;), we are able to compare the <strong>outcome</strong> of interest (a disease, firm revenue, customer satisfaction, &hellip;) across <strong>subjects</strong> (patients, users, customers, &hellip;) and attribute the average difference in outcomes to the causal effect of the treatment.</p>
-<p>The implementation of an A/B test is usually not instantaneous, especially in online settings. Often users are treated <strong>live</strong> or in <strong>batches</strong>. In these settings, one can look at the data before the data collection is completed, one or multiple times. This phenomenon is called <strong>peeking</strong>. While looking is not problematic in itself, with looking comes the temptation to draw conclusions from intermediate results. However, using standard testing procedures when peeking can lead to <strong>misleading conclusions</strong>.</p>
-<p>The <strong>solution</strong> to peeking is to adjust our testing procedure accordingly. The most famous and traditional approach is the so-called <strong>Sequential Probability Ratio Test (SPRT)</strong>, which dates back to the Second World War. If you want to know more about the test and its fascinating history, I wrote a blog post about it.</p>
+<p>The implementation of an A/B test is usually not instantaneous, especially in online settings. Often users are treated <strong>live</strong> or in <strong>batches</strong>. In these settings, one can look at the data before the data collection is completed, one or multiple times. This phenomenon is called <strong>peeking</strong>. While looking is not problematic in itself, using standard testing procedures when peeking can lead to <strong>misleading conclusions</strong>.</p>
+<p>The <strong>solution</strong> to peeking is to adjust the testing procedure accordingly. The most famous and traditional approach is the so-called <strong>Sequential Probability Ratio Test (SPRT)</strong>, which dates back to the Second World War. If you want to know more about the test and its fascinating history, I wrote a blog post about it.</p>
 <p><a href="https://towardsdatascience.com/954506cec665" target="_blank" rel="noopener">https://towardsdatascience.com/954506cec665</a></p>
-<p>The main <strong>advantage</strong> of the Sequential Probability Ratio Test (SPRT) is that it guarantees the smallest possible sample size, given a target confidence level and power. However, the <strong>main problem</strong> with the SPRT is that it might continue indefinitely. As you can imagine, this is a non-irrelevant problem in an applied setting with deadlines and budget constraints. In this article, we will explore an <strong>alternative method</strong> that allows <em>any</em> amount of intermediate peeks at the data, at <em>any</em> point of the data collection: <strong>Group Sequential Testing</strong>.</p>
+<p>The main <strong>advantage</strong> of the Sequential Probability Ratio Test (SPRT) is that it guarantees the smallest possible sample size, given a target confidence level and power. However, the <strong>main problem</strong> with the SPRT is that it might continue indefinitely. This is a non-irrelevant problem in an applied setting with deadlines and budget constraints. In this article, we will explore an <strong>alternative method</strong> that allows <em>any</em> amount of intermediate peeks at the data, at <em>any</em> point of the data collection: <strong>Group Sequential Testing</strong>.</p>
 <h2 id="simulation">Simulation</h2>
-<p>Let&rsquo;s start with some simulated <strong>data</strong>. To keep the code as light as possible, I will abstract away from the experimental setting, and directly work with data coming out of a <strong>normal distribution</strong>. However, you can think of it as the distribution of the average treatment effect in a standard A/B test. The normal distribution is an asymptotic approximation based on the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem" target="_blank" rel="noopener">central limit theorem</a>.</p>
+<p>Let&rsquo;s start with some simulated <strong>data</strong>. To keep the code as light as possible, I will abstract away from the experimental setting, and directly work with data coming out of a <strong>normal distribution</strong>. However, we can think of it as the distribution of the average treatment effect in a standard A/B test. The normal distribution is an asymptotic approximation based on the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem" target="_blank" rel="noopener">central limit theorem</a>.</p>
 <p>Before generating the data,  I import the relevant libraries and my plotting theme from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/theme.py" target="_blank" rel="noopener">src.theme</a>.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
@@ -946,11 +946,11 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 </code></pre>
-<p>Let&rsquo;s assume the true data generating process is indeed a normal distribution with <strong>mean</strong> <em>μ=1</em> and <strong>standard deviation</strong> <em>σ=5.644</em>. In the context of an A/B test, ou can think of this as a positive average treatment effect with standard deviation more than 5 times larger than the effect.</p>
+<p>Let&rsquo;s assume the true data generating process is indeed a normal distribution with <strong>mean</strong> <em>μ=1</em> and <strong>standard deviation</strong> <em>σ=5.644</em>. In the context of an A/B test, we can think of this as a positive average treatment effect with standard deviation more than 5 times larger than the effect.</p>
 <pre><code class="language-python">mu = 1
 sigma = 5.644
 </code></pre>
-<p>We would like to build a two-sided test with <em>95%</em> confidence and <em>80%</em> power. Therefore our false positive error rate will be <em>α=0.05</em> and our false negative error rate will be <em>β=0.2</em>.</p>
+<p>We would like to build a two-sided test with <em>95%</em> confidence and <em>80%</em> power. Therefore our target false positive error rate will be <em>α=0.05</em> and our target false negative error rate will be <em>β=0.2</em>.</p>
 <pre><code class="language-python">alpha = 0.05
 beta = 0.2
 </code></pre>
@@ -958,7 +958,7 @@ beta = 0.2
 <p>$$
 N = \Big( 2 \sigma  \frac{ z_{1-\alpha/2} + z_{1-\beta} }{ \mu } \Big)^2
 $$</p>
-<p>where <em>z</em>s are the quantiles of a standard normal distribution, evaluated at <em>1-α/2</em> and <em>1-β</em>, respectively.</p>
+<p>where <em>z</em> are the quantiles of a standard normal distribution, evaluated at <em>1-α/2</em> and <em>1-β</em>.</p>
 <pre><code class="language-python">ppf = sp.stats.norm(0, 1).ppf
 cdf = sp.stats.norm(0, 1).cdf
 z_alpha = ppf(1 - alpha/2)
@@ -984,9 +984,9 @@ N_peek
 <pre><code>array([ 100,  150,  200,  250,  300,  350,  400,  450,  500,  550,  600,
         650,  700,  750,  800,  850,  900,  950, 1000])
 </code></pre>
-<p>Looking at the data of course is not a problem <em>per-se</em>. However, we might be tempted to <strong>draw conclusions</strong>, given what we observe. Suppose that our <em>naive</em> experimentation platform continuously reports the latest average, standard deviation and confidence interval, where the confidence interval is simply computed as</p>
+<p>Looking at the data of course is not a problem <em>per-se</em>. However, we might be tempted to <strong>draw conclusions</strong>, given what we observe. Suppose that our <em>naive</em> experimentation platform continuously reports the latest average, standard deviation and confidence interval, where the confidence interval is computed as</p>
 <p>$$
-\text{CI}_n = \Big [ \hat{\mu}<em>n - z</em>{1-\alpha/2} \frac{\hat{\sigma}_n}{\sqrt{n}} \quad ; \quad \hat{\mu}<em>n - z</em>{1-\alpha/2} \frac{\hat{\sigma}_n}{\sqrt{n}} \Big]
+\text{CI} _ n = \Big [ \hat{\mu} _ n - z _ {1 - \alpha / 2} \frac{ \hat{\sigma} _ n }{\sqrt{n}} \quad ; \quad \hat{\mu} _ n - z _ {1-\alpha / 2} \frac{ \hat{\sigma} _ n}{\sqrt{n}} \Big]
 $$</p>
 <p>where <em>n</em> is the number of samples, <em>μ̂ₙ</em> is the estimated sample average after <em>n</em> samples, <em>σ̂ₙ</em> is the estimated standard deviation after <em>n</em> samples, <em>α</em> is the significance level, and <em>z</em> is the <em>1-α/2</em> quantile of a standard normal distribution.</p>
 <pre><code class="language-python">def select_alpha_naive(n, N, N_peek, alpha):
@@ -1037,8 +1037,8 @@ $$</p>
 <pre><code class="language-python">plot_peeking(dfi_naive, obs)
 </code></pre>
 <p><img src="img/group_sequential_testing_28_0.png" alt="png"></p>
-<p>As we can see, the first <em>7</em> times we look at the data the confidence intervals cross the zero line and hence we do not reject the null hypothesis of zero mean. I have highlighted these confidence intervals in orange. However, in the fourth look at the data, at <em>450</em> observations, the confidence interval does not cross the zero line and hence we <strong>reject the null hypothesis</strong> of no effect and we stop the experiment.</p>
-<p>The problem of this procedure is very similar to <strong>multiple hypothesis testing</strong>: we are building the confidence intervals for a single look at the data and therefore a <em>single</em> decision, but instead we are making <em>multiple</em> decisions. In fact we have <em>decided</em> not to stop the experiment before reaching <em>450</em> observations and we have stopped it at <em>450</em>.</p>
+<p>As we can see, the first seven times we look at the data the confidence intervals cross the zero line and hence we do not reject the null hypothesis of zero mean. I have highlighted these confidence intervals in orange. However, at the eighth look at the data, at <em>450</em> observations, the confidence interval does not cross the zero line and hence we <strong>reject the null hypothesis</strong> of no effect and we stop the experiment.</p>
+<p>The problem of this procedure is very similar to <strong>multiple hypothesis testing</strong>: we are building the confidence intervals for a single look at the data and therefore a <em>single</em> decision, but instead we are making <em>multiple</em> decisions. In fact, we have <em>decided</em> not to stop the experiment seven times before reaching <em>450</em> observations and we have stopped it at <em>450</em>.</p>
 <p>What are the <strong>consequences</strong> of peeking and early stopping? Let&rsquo;s have a look at what would happen if we were to repeat this experiment multiple times. We will now plot the confidence intervals for <em>100</em> different simulations at three different points in time: after <em>200</em>, <em>400</em> and <em>600</em> observations are collected. Note that these correspond to the <em>3rd</em>, <em>7th</em> and <em>11th</em> peek at the data, respectively.</p>
 <pre><code class="language-python">N_plot = [200, 400, 600]
 </code></pre>
@@ -1071,9 +1071,9 @@ $$</p>
 <pre><code class="language-python">plot_intervals(dfi_naive, N_plot, &quot;coverage&quot;)
 </code></pre>
 <p><img src="img/group_sequential_testing_33_0.png" alt="png"></p>
-<p>It seems that our coverage is fine at each point in time. We have, respectively, <em>2</em>, <em>6</em>, and <em>2</em> simulations out of <em>100</em> in which the interval does not cover the true treatment effect, <em>μ=1</em>. This is expected since our <em>confidence level</em> <em>α=5%</em> and therefore we expect <em>on average</em> that <em>8</em> intervals out of <em>100</em> do not cover the true treatment effect.</p>
-<p>Next, we investigate <strong>power</strong>: the ability of our estimator to detect an effect when there is indeed one. Remember that power is always <em>relative</em> to the effect size. However, we did our power calculations using the true effect so we expect the experiment to have the excepted power of <em>1-β=80%</em>.</p>
-<p>Note that, since we are peeking, reject the null hypothesis and stop the experiment <em>as soon as</em> one test is significant. Therefore, in our case, power at a specific point in time is the probability of rejecting the null hypothesis with that test or <em>any</em> of the previous ones.</p>
+<p>It seems that our coverage is fine at each point in time. We have, respectively, <em>2</em>, <em>6</em>, and <em>2</em> simulations out of <em>100</em> in which the interval does not cover the true treatment effect, <em>μ=1</em>. This is expected since our confidence level is <em>5%</em> and therefore we expect <em>on average</em> that <em>5</em> intervals out of <em>100</em> do not cover the true treatment effect.</p>
+<p>Next, we investigate <strong>power</strong>: the ability of our estimator to detect an effect when there is indeed one. Remember that power is always <em>relative</em> to the effect size. However, we did our power calculations using the true effect so we expect the experiment to have the expected power of <em>80%</em>.</p>
+<p>Note that, since we are peeking, we reject the null hypothesis and stop the experiment <em>as soon as</em> one test is significant. Therefore, in our case, power at a specific point in time is the probability of rejecting the null hypothesis with that test or <em>any</em> of the previous ones.</p>
 <pre><code class="language-python">plot_intervals(dfi_naive, N_plot, &quot;power&quot;)
 </code></pre>
 <p><img src="img/group_sequential_testing_35_0.png" alt="png"></p>
@@ -1110,7 +1110,7 @@ $$</p>
 <pre><code class="language-python">plot_coverage_power(dfi_naive)
 </code></pre>
 <p><img src="img/group_sequential_testing_40_0.png" alt="png"></p>
-<p>Coverage seems indeed fair, if anything lightly lower than the <em>95%</em> target. Power is above <em>80%</em> starting at around <em>250</em> observations, confirming our previous insight. However, the false rejection rate is way higher than the target <em>5%</em>. This means that when the null hypothesis is true, we reject it more often than we should.</p>
+<p>Coverage seems to be on target. Power is above <em>80%</em> starting at around <em>250</em> observations, confirming our previous insight. However, the false rejection rate is way higher than the target <em>5%</em>. This means that when the null hypothesis is true, we reject it more often than we should.</p>
 <p>The last thing we want to check is whether the experiment is indeed shorter on average, and by how much. Let&rsquo;s compute the <strong>average experiment length</strong>, in terms of number of observations.</p>
 <pre><code class="language-python">print(f&quot;Average length: n = {dfi_naive.length.mean():.0f}&quot;, )
 </code></pre>
@@ -1119,10 +1119,10 @@ $$</p>
 <p>On average we need just <em>177</em> observations to reach a concusion! However, because of the high false rejection rate, these might be the <strong>wrong conclusions</strong>.</p>
 <p>What can we do to solve this issue? We need to build confidence intervals that take into account that we are doing multiple testing in sequence.</p>
 <h2 id="alpha-corrections">Alpha Corrections</h2>
-<p>In this section, we will explore a first set of corrections that modify the <em>α</em> value used to compute the confidence intervals in order to take into account for peeking and eaerly stopping.</p>
+<p>In this section, we will explore a first set of corrections that modify the <em>α</em> value used to compute the confidence intervals in order to take into account peeking and early stopping.</p>
 <h3 id="bonferroni-correction">Bonferroni Correction</h3>
 <p>Since the peeking problem is similar to multiple hypothesis testing, we can start by applying the same solution.</p>
-<p>The simplest way to account for multiple hypothesis testing is the so-called <strong>Bonferroni correction</strong>. The idea is simple: decrease the significance level <em>α</em> proportionally to the number of looks. In particular, instead of using the same <em>α</em> for each look, we use
+<p>The simplest way to account for multiple hypothesis testing is the so-called <a href="https://en.wikipedia.org/wiki/Bonferroni_correction" target="_blank" rel="noopener"><strong>Bonferroni correction</strong></a>. The idea is simple: decrease the significance level <em>α</em> proportionally to the number of looks. In particular, instead of using the same <em>α</em> for each look, we use
 $$
 \alpha_{\text{Bonferroni}} = \frac{\alpha}{P}
 $$</p>
@@ -1151,8 +1151,8 @@ plot_intervals(dfi_bonferroni, N_plot, &quot;coverage&quot;)
 </code></pre>
 <pre><code>Average length: n = 317
 </code></pre>
-<p>The average experiment length is <em>317</em> observations, higher than the naive testing procedure, but still sensibly lower than the <em>1000</em> observations without peeking.</p>
-<p>So, everything looks good, but maybe <strong>too good</strong>, in the sense that there is clearly room for improvement. Given such high coverage and low false rejection rate, the results suggest that we could have shorter confidence intervals and hence higher power and lower experiment length, without dropping below <em>95%</em> coverage or above <em>5%</em> false rejection rate. How?</p>
+<p>The average experiment length is <em>317</em> observations, higher than the naive testing procedure, but still sensibly lower than the <em>1000</em> observations required without peeking.</p>
+<p>It seems that everything looks good, maybe even <strong>too good</strong>. Indeed, there might be room for improvement. Given such high coverage and low false rejection rate, the results suggest that we could have shorter confidence intervals and hence higher power and lower experiment length, without dropping below <em>95%</em> coverage or above <em>5%</em> false rejection rate. How?</p>
 <p>The Bonferroni correction has <strong>two drawbacks</strong>. First, it was <strong>not designed for sequential testing</strong>, but rather for multiple hypothesis testing. Second, even for multiple hypothesis testing, it is known to be very <strong>conservative</strong>.</p>
 <h3 id="corrections">Corrections</h3>
 <p>A first version of <strong>Bonferroni&rsquo;s correction for sequential testing</strong> was <a href="https://www.jstor.org/stable/2335684" target="_blank" rel="noopener">Pocock (1977)</a>. The idea was to take into account the <strong>sequential</strong> nature of testing which generates a very specific correlation structure between the test statistics. Thanks to this insight, Pocock was able to use a corrected <em>α</em> value that was in between the naive <em>α</em> and Bonferroni&rsquo;s <em>α/P</em>. A larger <em>α</em> than Benferroni implies higher power while keeping high coverage and a low false positive rate. The values are found through a numeric algorithm that takes as input the significance level <em>α</em> and the total number of peeks <em>P</em>.</p>
@@ -1178,12 +1178,12 @@ plot_coverage_power(dfi_gst_pocock)
 </code></pre>
 <p><img src="img/group_sequential_testing_66_0.png" alt="png"></p>
 <p>As we noted before, coverage converges to the target coverage and the number of observations increases. The experiment seems also to be better powered than using Bonferroni&rsquo;s correction, but the false rejection rate increases above the target <em>5%</em> if the experiment runs too long.</p>
-<p>What about the expected experiment length?</p>
+<p>What about the average experiment length?</p>
 <pre><code class="language-python">print(f&quot;Average length: n = {dfi_gst_pocock.length.mean():.0f}&quot;, )
 </code></pre>
 <pre><code>Average length: n = 229
 </code></pre>
-<p>The expected length in indeed lower than Boferroni, with an average of <em>229</em> observations instead of <em>317</em>.</p>
+<p>The average experiment length in indeed lower than Boferroni, with an average of <em>229</em> observations instead of <em>317</em>.</p>
 <h3 id="gst-obrien--fleming-approximation">GST O’Brien &amp; Fleming Approximation</h3>
 <p>The second alpha-spending function is an approximation of <a href="https://www.jstor.org/stable/2530245" target="_blank" rel="noopener">O’Brien, Fleming (1979)</a> and is given by</p>
 <p>$$
@@ -1204,7 +1204,7 @@ plot_coverage_power(dfi_gst_obrien_fleming)
 </code></pre>
 <pre><code>Average length: n = 414
 </code></pre>
-<p>The expected length is actually higher than Boferroni, with an average of <em>414</em> observations instead of <em>317</em>. However, it can be lowered by decreasing the parameter <em>ρ</em> in the correction formula. Let&rsquo;s use for example <em>ρ=0.5</em> which corresponds to <a href="https://www.jstor.org/stable/2531959" target="_blank" rel="noopener">Wang, Tsiatis (1987)</a> correction.</p>
+<p>The average experiment length is actually higher than Boferroni, with an average of <em>414</em> observations instead of <em>317</em>. However, it can be lowered by decreasing the parameter <em>ρ</em> in the correction formula. Let&rsquo;s use for example <em>ρ=0.5</em> which corresponds to <a href="https://www.jstor.org/stable/2531959" target="_blank" rel="noopener">Wang, Tsiatis (1987)</a> correction.</p>
 <pre><code class="language-python">dfi_gst_obrien_fleming_05 = compute_intervals(select_alpha_gst_obrien_fleming, obs, N_peek, rho=0.5)
 print(f&quot;Average length: n = {dfi_gst_obrien_fleming_05.length.mean():.0f}&quot;, )
 </code></pre>
@@ -1230,7 +1230,7 @@ dfi_gst_200 = compute_intervals(select_alpha_gst_pocock, obs, N_peek_200)
 plot_coverage_power(dfi_gst_200)
 </code></pre>
 <p><img src="img/group_sequential_testing_86_0.png" alt="png"></p>
-<p>From the figure, we see the opposite result: power and false rejections have decreased. On the other hand, we now need on average <em>313</em> observations to reach a conclusion instead of <em>229</em>.</p>
+<p>From the figure, we see the opposite result: power and false rejections have decreased. On the other hand, we now need on average <em>311</em> observations to reach a conclusion instead of <em>229</em>.</p>
 <pre><code class="language-python">print(f&quot;Average length: n = {dfi_gst_200.length.mean():.0f}&quot;, )
 </code></pre>
 <pre><code>Average length: n = 311
