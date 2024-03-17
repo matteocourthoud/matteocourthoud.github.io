@@ -922,9 +922,9 @@ A/B tests are the golden standard of causal inference because they allow us to m
             <p><em>What to do when the unit of observation differs from the unit of randomization</em></p>
 <p>A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to <strong>randomization</strong>. In fact, by randomly assigning a <strong>treatment</strong> (a drug, ad, product, &hellip;), we are able to compare the <strong>outcome</strong> of interest (a disease, firm revenue, customer satisfaction, &hellip;) across <strong>subjects</strong> (patients, users, customers, &hellip;) and attribute the average difference in outcomes to the causal effect of the treatment.</p>
 <p>Sometimes it happens that the <strong>unit of treatment assignment differs from the unit of observation</strong>. In other words, we do not take the decision on whether to treat every single observation independently, but rather in groups. For example, we might decide to treat all customers in a certain region while observing outcomes at the customer level, or treat all articles of a certain brand, while observing outcomes at the article level. Usually this happens because of practical constraints. In the first example, the so-called <em>geo-experiments</em>, it happens because we are unable to track users because of cookie deprecations.</p>
-<p>When this happens, treatment effects are <strong>not independent</strong> across observations anymore. In fact, if a customer in a region is treated, also other customers in the same region will be treated. If an article of a brand is not treated, also other articles of the same brand will be treated. As a consequence, we have to take that into account when doing inference: computing standard errors, confidence intervals and p-values. In this article, we will explore how to do that using <strong>cluster-robust standard errors</strong>.</p>
+<p>When this happens, treatment effects are <strong>not independent</strong> across observations anymore. In fact, if a customer in a region is treated, also other customers in the same region will be treated. If an article of a brand is not treated, also other articles of the same brand will not be treated. When doing inference, we have to take this dependence into account: standard errors, confidence intervals, and p-values should be adjusted. In this article, we will explore how to do that using <strong>cluster-robust standard errors</strong>.</p>
 <h2 id="customers-orders-and-standard-errors">Customers, Orders, and Standard Errors</h2>
-<p>Imagine you were an online platform and you are intrested in increasing sales. You just had a great idea: showing a <strong>carousel of related articles</strong> at checkout to incentivize customer to add other articles to their basket. In order to understand whether the carousel increases sales, you decide to AB test it. In principle, you coud just decide for every order whether to display the carousel or not, at random. However, this would give customers an inconsistent experience, potentially harming their customer experience. Therefore, you decide to randomize the treatment assignment, the carousel, at the customer level. To treated customers, you show the carousel on every order, and to control customer you never show the carousel.</p>
+<p>Imagine you were an online platform and you are intrested in increasing sales. You just had a great idea: showing a <strong>carousel of related articles</strong> at checkout to incentivize customer to add other articles to their basket. In order to understand whether the carousel increases sales, you decide to AB test it. In principle, you coud just decide for every order whether to display the carousel or not, at random. However, this would give customers an inconsistent experience, potentially harming the business. Therefore, you decide to randomize the treatment assignment, the carousel, at the customer level. To treated customers, you show the carousel on every order, and to control customer you never show the carousel.</p>
 <p>I import the data-generating process (dgp) from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp_collection.py" target="_blank" rel="noopener">src.dgp_collection</a> and the plotting theme from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/theme.py" target="_blank" rel="noopener">src.theme</a>.</p>
 <pre><code class="language-python">%matplotlib inline
 %config InlineBackend.figure_format = 'retina'
@@ -1024,19 +1024,19 @@ smf.ols(&quot;revenue ~ carousel&quot;, data=df).fit().summary().tables[1]
 <p>Are the reported <strong>standard errors correct</strong>? How can we &ldquo;check&rdquo; it and what can we do about it?</p>
 <h2 id="standard-errors">Standard Errors</h2>
 <p>Which standard errors are &ldquo;correct&rdquo;?</p>
-<p>The answer to this question depends on what we consider <em>random</em> and what we consider <em>fixed</em>. In the frequentist sense, standard errors measure uncertainty across &ldquo;states of the world&rdquo; or &ldquo;parallel universes&rdquo; that would have happened if we had seen a different realization of the random part of the data-generating process.</p>
-<p>In this particular case, there is one variable that is uncontroversial random: the treatment <strong>assignment</strong>, in fact, we randomized it ourselves. Not only that, we also know <em>how</em> it is random: each customer had a 50% chance of seeing the <code>new_ui</code> and a 50% chance of seeing the old one.</p>
+<p>The answer to this question depends on what we consider <strong>random</strong> and what we consider <strong>fixed</strong>. In the frequentist sense, standard errors measure uncertainty across &ldquo;states of the world&rdquo; or &ldquo;parallel universes&rdquo; that would have happened if we had seen a different realization of the random part of the data-generating process.</p>
+<p>In this particular case, there is one variable that is uncontroversially random: the treatment <strong>assignment</strong>, in fact, we randomized it ourselves. Not only that, we also know <em>how</em> it is random: each customer had a 50% chance of seeing the <code>carousel</code> and a 50% chance of not seeing it.</p>
 <p>Therefore, we would like our estimated standard errors to measure the variation in estimated treatment effects across alternative treatment assignments. This is normally an <strong>abstract</strong> concept since we cannot re-run the exact same experiment. However, we can in our case, since we are in a simulated environment.</p>
-<p>The <code>DGP</code> class has a <code>evaluate_f_redrawing_assignment</code> function that allows us to evaluate a function of the data <em>f(X)</em> by re-sampling the data drawing different treatment assignments. The function we want to evaluate the our linear regression for treatment effect estimation.</p>
+<p>The <code>DGP</code> class has a <code>evaluate_f_redrawing_assignment</code> function that allows us to evaluate a function of the data <em>f(X)</em> by re-sampling the data drawing different treatment assignments. The function we want to evaluate is our linear regression for treatment effect estimation.</p>
 <pre><code class="language-python">def estimate_treatment_effect(df):
     reg = smf.ols(&quot;revenue ~ carousel&quot;, data=df).fit()
     return reg.params[&quot;carousel&quot;], reg.bse[&quot;carousel&quot;]
 </code></pre>
-<p>Now we repeat the treatment effect estimation over <em>1000</em> different random assignments.</p>
+<p>We repeat the treatment effect estimation over <em>1000</em> different random assignments.</p>
 <pre><code class="language-python">n_draws = 1_000
 ols_coeff = dgp.evaluate_f_redrawing_assignment(f=estimate_treatment_effect, n_draws=n_draws)
 </code></pre>
-<p>What is the <strong>distribution</strong> of OLS coefficients? In the figure below, we plot the distribution of the estimated coefficients and estimated standard errors. On the plot of the estimated standard errors, we also report a vertical line with the standard deviation of the estimated coefficients across simulations.</p>
+<p>In the figure below, we plot the <strong>distribution</strong> of the estimated OLS coefficients and standard errors. In the plot of the estimated standard errors (on the right), we also report a vertical line with the standard deviation of the estimated coefficients across simulations (on the left).</p>
 <pre><code class="language-python">def plot_coefficients(coeffs):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
     
@@ -1056,11 +1056,11 @@ ols_coeff = dgp.evaluate_f_redrawing_assignment(f=estimate_treatment_effect, n_d
 <pre><code class="language-python">plot_coefficients(ols_coeff)
 </code></pre>
 <p><img src="img/clustering_19_0.png" alt="png"></p>
-<p>The average coefficient is virtually zero since the estimator. Indeed, the true treatment effect is zero. However, the standard deviations of the estimated coefficients is  is <em>2.536</em>, fairly different from the estimated standard deviation of <em>0.576</em> we got from the linear regression. This coefficient would have implied a <em>p-value</em> of around <em>0.5</em>, extremely far from any statistical significance threshold. On the right panel, we see that this is not by chance: standard OLS consistently <strong>underestimates</strong> the variability of the coefficient by around 5 times.</p>
+<p>The average coefficient is very close to zero. Indeed, the true treatment effect is zero. However, the standard deviations of the estimated coefficients is  is <em>2.536</em>, fairly different from the estimated standard deviation of <em>0.576</em> we got from the linear regression table. This standard deviation would have implied a <em>p-value</em> of around <em>0.5</em>, extremely far from any statistical significance threshold. On the right panel, we see that this is not by chance: standard OLS consistently <strong>underestimates</strong> the variability of the coefficient by around 5 times.</p>
 <p>Could have we <strong>detected</strong> this issue in reality, without the possibility or re-randomizing the treatment assignment? Yes, by <strong>bootstrapping</strong> standard errors. If you never heard of bootstrapping, I wrote an article about it, and an interesting technique to make bootstrapping faster: the bayesian bootstrap.</p>
 <p><a href="https://towardsdatascience.com/the-bayesian-bootstrap-6ca4a1d45148" target="_blank" rel="noopener">https://towardsdatascience.com/the-bayesian-bootstrap-6ca4a1d45148</a></p>
 <p>Bootstrapping essentially consists in drawing <strong>samples</strong> of the data <strong>with replacement</strong>, and re-computing the target statistics across bootstrapped samples. We can then estimate its standard deviation by simply computing the standard deviation fo the statistics across samples.</p>
-<p>In this case, it&rsquo;s important to draw the samples <strong>consistently</strong> with the data generating process: by customer and not by order.</p>
+<p>In this case, it&rsquo;s important to sample the data <strong>consistently</strong> with the data generating process: by customer and not by order.</p>
 <pre><code class="language-python">boot_estimates = []
 customers = df.customer_id.unique()
 for k in range(1000):
@@ -1070,15 +1070,15 @@ for k in range(1000):
     reg = smf.ols(&quot;revenue ~ carousel&quot;, data=df_boot).fit()
     boot_estimates += [(reg.params[&quot;carousel&quot;], reg.bse[&quot;carousel&quot;])]
 </code></pre>
-<p>In the figure below, we plot again the distribution of estimated coefficients and standard errors. The standard errors are still wrong, but the distribution of bootstrap estimates has a standard deviation of <em>2.465</em>, very close to the simulated value of <em>2.536</em>.</p>
+<p>In the figure below, we plot the distribution of estimated coefficients and standard errors. The standard errors are still wrong, but the distribution of bootstrap estimates has a standard deviation of <em>2.465</em>, very close to the simulated value of <em>2.536</em>.</p>
 <pre><code class="language-python">plot_coefficients(boot_estimates)
 </code></pre>
 <p><img src="img/clustering_25_0.png" alt="png"></p>
 <p>Note that in order to use bootstrapping to detect the issue in the linear regression standard errors, one would have needed to be <em>aware</em> that assignment was at the customer level. Bootstrapping the data at the order level would have still underestimated the standard errors.</p>
 <h2 id="clustered-standard-errors">Clustered Standard Errors</h2>
 <p>What&rsquo;s the problem with the standard errors reported in the linear regression table?</p>
-<p>The problem is that the standard formula to compute standard errors in linear regression (more on the math later) assumes that observations are independent and identically distributed, i.i.d.. However, in our case, the <strong>independence</strong> assumption is <strong>not satisfied</strong>. Why?</p>
-<p>In our example, the unit of treatment assignment, a <code>customer</code> is different from the unit of observation, an <code>order</code>. This is a problem because under different treatment assignments, all orders of a certain customer are treated or not. They move in blocks and it cannot happen that two orders of the same customer are split across control and treatment group. The consequence of orders &ldquo;moving in blocks&rdquo; is that there is more variability in our estimates than we might have if orders were moving independently. Intuitively, there is less <em>balance</em> between the two groups, on average. As a consequence, standard errors computed assuming independence typically <strong>underestimate</strong> the actual variability of the estimator.</p>
+<p>The problem is that the usual formula to compute standard errors in linear regression (more on the math later) assumes that observations are independent and identically distributed, i.i.d.. However, in our case, the <strong>independence</strong> assumption is <strong>not satisfied</strong>. Why?</p>
+<p>In our example, the unit of treatment assignment, a <code>customer</code> is different from the unit of observation, an <code>order</code>. This is a problem because under different treatment assignments, all orders of a certain customer are either treated or not. They move in blocks and it cannot happen that two orders of the same customer are split across control and treatment group. The consequence of orders &ldquo;moving in blocks&rdquo; is that there is more variability in our estimates than we might have if orders were moving independently. Intuitively, there is less <em>balance</em> between the two groups, on average. As a consequence, standard errors computed assuming independence typically <strong>underestimate</strong> the actual variability of the estimator.</p>
 <p>Is there a solution? Yes!</p>
 <p>The solution is to use the so-called <a href="https://en.wikipedia.org/wiki/Clustered_standard_errors" target="_blank" rel="noopener">cluster-robust standard errors</a> that allow observations to be correlated within a cluster of observations, a <code>customer</code> in our case. Cluster-robust standard errors are usually very simple to implement and available in all statistical packages. With <code>statsmodels</code> we have to specify that the covariance type is <code>cluster</code> and that the groups are by <code>customer</code>.</p>
 <pre><code class="language-python">smf.ols(&quot;revenue ~ carousel&quot;, data=df).fit(cov_type='cluster', cov_kwds={'groups': df[&quot;customer_id&quot;]}).summary().tables[1]
@@ -1097,12 +1097,12 @@ for k in range(1000):
 <p>The estimated cluster-robust standard error is equal to <code>2.471</code>, extremely close to the simulated standard error of <code>2.536</code>. Note that the estimated coefficient has not changed (<code>-1.6292</code> as before).</p>
 <p>How do cluster-robust standard errors work? We dig deeper in the math in the next section.</p>
 <h2 id="some-math">Some Math</h2>
-<p>How are standard errors computed in linear regression? The general formula of the variance of the OLS estimator is
+<p>The general formula of the variance of the OLS estimator is
 $$
 \text{Var}(\hat \beta) = (X&rsquo;X)^{-1} X&rsquo; \epsilon \epsilon&rsquo; X (X&rsquo;X)^{-1}
 $$</p>
-<p>The <strong>key component</strong> of this formula is the central matrix <em>n × n</em> matrix <em>Ω = ε ε&rsquo;</em>. It is key because it is the only object that we need to estimate in order to compute the variance of the OLS estimator.</p>
-<p>At first, it could be very tempting to just estimate <em>Ω</em> using the regression residuals <em>e = y - ŷ</em>. However, the problem is that by construction the product of <em>X</em> and <em>e</em> is zero, and therefore the estimated variance would be zero</p>
+<p>where <em>X</em> are the regression covariates, and <em>ε</em> are the residuals. The <strong>key component</strong> of this formula is the central matrix <em>n × n</em> matrix <em>Ω = ε ε&rsquo;</em>, where <em>n</em> is the number of observations. It is key because it is the only object that we need to estimate in order to compute the variance of the OLS estimator.</p>
+<p>At first, it could be very tempting to just estimate <em>Ω</em> using the regression residuals <em>e = y - ŷ</em>, where <em>y</em> is the vector of outcomes, and <em>ŷ</em> are the regression predictions. However, the problem is that by construction the product of <em>X</em> and <em>e</em> is zero, and therefore the estimated variance would be zero</p>
 <pre><code class="language-python">X.T @ e
 </code></pre>
 <pre><code>array([[5.72555336e-11],
@@ -1112,11 +1112,11 @@ $$</p>
 $$
 \Omega =
 \begin{bmatrix}
-\sigma^2 &amp; 0 &amp; \dots &amp; 0 &amp; 0 \
-0 &amp; \sigma^2 &amp; \dots &amp; 0 &amp; 0 \
-\vdots &amp; &amp; \ddots &amp;  &amp; \vdots \
-0 &amp; 0 &amp; &hellip; &amp; \sigma^2 &amp; 0 \
-0 &amp; 0 &amp; &hellip; &amp; 0 &amp; \sigma^2 \
+\sigma^2 &amp; 0 &amp; \dots &amp; 0 &amp; 0 \newline
+0 &amp; \sigma^2 &amp; \dots &amp; 0 &amp; 0 \newline
+\vdots &amp; &amp; \ddots &amp;  &amp; \vdots \newline
+0 &amp; 0 &amp; &hellip; &amp; \sigma^2 &amp; 0 \newline
+0 &amp; 0 &amp; &hellip; &amp; 0 &amp; \sigma^2 \newline
 \end{bmatrix} = \sigma^2 I_n
 $$</p>
 <p>where <em>Iₙ</em> is the <a href="https://en.wikipedia.org/wiki/Identity_matrix" target="_blank" rel="noopener">identity matrix</a> of dimension <em>n</em>.</p>
