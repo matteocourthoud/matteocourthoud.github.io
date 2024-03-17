@@ -249,10 +249,10 @@ $$&lt;/p&gt;
 \Omega =
 \begin{bmatrix}
 \sigma^2_1 &amp;amp; 0 &amp;amp; \dots &amp;amp; 0 &amp;amp; 0 \newline
-0 &amp;amp; \sigma^2_2 &amp;amp; \dots &amp;amp; 0 &amp;amp; 0 \newline
+0 &amp;amp; \sigma^2_2 &amp;amp;  &amp;amp; 0 &amp;amp; 0 \newline
 \vdots &amp;amp; &amp;amp; \ddots &amp;amp;  &amp;amp; \vdots \newline
-0 &amp;amp; 0 &amp;amp; &amp;hellip; &amp;amp; \sigma^2_{n-1} &amp;amp; 0 \newline
-0 &amp;amp; 0 &amp;amp; &amp;hellip; &amp;amp; 0 &amp;amp; \sigma^2_n \newline
+0 &amp;amp; 0 &amp;amp;  &amp;amp; \sigma^2_{n-1} &amp;amp; 0 \newline
+0 &amp;amp; 0 &amp;amp; \dots &amp;amp; 0 &amp;amp; \sigma^2_n \newline
 \end{bmatrix}
 $$&lt;/p&gt;
 &lt;p&gt;Under heteroscedasticity the formula of the variance of the OLS estimator does not simplify anymore.&lt;/p&gt;
@@ -262,8 +262,8 @@ np.sqrt(inv(X.T @ X) @ X.T @ Sigma @ X @ inv(X.T @ X))[1,1]
 &lt;pre&gt;&lt;code&gt;0.5757989320663413
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;In our case, the estimated standard error under heteroskedasticity is virtually the same: &lt;code&gt;0.576&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;In certain scenarios, even the heteroscedasticity assumption can be too restrictive, in case observations are correlated and regression residuals are not independent. In that case, we might want to allow certain off-diagonal elements of the &lt;em&gt;Ω&lt;/em&gt; matrix to be different from zero. But which ones?&lt;/p&gt;
-&lt;p&gt;In many settings, including our example, it is reasonable to assume that observations are correlated within cluster, but with the same within-cluster variance. For example, if clusters are couples of observations, the &lt;em&gt;Ω&lt;/em&gt; matrix takes the following form.
+&lt;p&gt;In certain scenarios, even the heteroscedasticity assumption can be &lt;strong&gt;too restrictive&lt;/strong&gt;, in case observations are correlated and regression residuals are not independent. In that case, we might want to allow certain off-diagonal elements of the &lt;em&gt;Ω&lt;/em&gt; matrix to be different from zero. But which ones?&lt;/p&gt;
+&lt;p&gt;In many settings, including our example, it is reasonable to assume that observations are correlated within certain clusters, but with the same within-cluster variance. For example, if clusters are couples of observations, the &lt;em&gt;Ω&lt;/em&gt; matrix takes the following form.
 $$
 \Omega =
 \begin{bmatrix}
@@ -272,8 +272,8 @@ $$
 0 &amp;amp; 0 &amp;amp; \epsilon_3^2 &amp;amp; \sigma^2_{34} &amp;amp; &amp;amp; 0 &amp;amp; 0 \newline
 0 &amp;amp; 0 &amp;amp; \sigma^2_{34} &amp;amp; \epsilon_3^2 &amp;amp; &amp;amp; 0 &amp;amp; 0 \newline
 \vdots &amp;amp; &amp;amp; &amp;amp; &amp;amp; \ddots &amp;amp;  &amp;amp; \vdots \newline
-0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0 &amp;amp; &amp;hellip; &amp;amp; \epsilon_{n-1}^2 &amp;amp; \sigma^2_{n-1,n} \newline
-0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0 &amp;amp; &amp;hellip; &amp;amp; \sigma^2_{n-1,n} &amp;amp; \epsilon_n^2 \newline
+0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0 &amp;amp;  &amp;amp; \epsilon_{n-1}^2 &amp;amp; \sigma^2_{n-1,n} \newline
+0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0 &amp;amp; \dots &amp;amp; \sigma^2_{n-1,n} &amp;amp; \epsilon_n^2 \newline
 \end{bmatrix}
 $$&lt;/p&gt;
 &lt;p&gt;We can now compute the estimated standard errors under cluster-robustness.&lt;/p&gt;
@@ -293,11 +293,11 @@ $$&lt;/p&gt;
 $$
 \hat{\text{Var}}(\hat{\beta}) = \sum_{i} \epsilon_i^2
 $$&lt;/p&gt;
-&lt;p&gt;At the other extreme instead, if observations are &lt;strong&gt;extremely correlated&lt;/strong&gt;, the residuals in the same clusters will be very similar, and the estimated variance will be close to the sum of all the cross-products, for each cluster.
+&lt;p&gt;At the other extreme instead, if observations are &lt;strong&gt;extremely correlated&lt;/strong&gt;, the residuals in the same cluster will be very similar, and the estimated variance will be close to the sum of all the cross-products, for each cluster.
 $$
 \hat{\text{Var}}(\hat{\beta}) = \sum_{g} n_g^2 \epsilon_g^2
 $$&lt;/p&gt;
-&lt;p&gt;Note that this is exactly the estimated variance you would have obtained by running the analysis as the cluster level, in our case aggregating the orders at the customer level.&lt;/p&gt;
+&lt;p&gt;Note that this is exactly the estimated variance you would have obtained by running the analysis at the cluster level, in our case aggregating the orders at the customer level.&lt;/p&gt;
 &lt;p&gt;This means that, in practice, if your unit of assignment is different from the unit of observations, your &lt;strong&gt;effective sample size&lt;/strong&gt; will be somewhere in between your actual sample size, and the number of clusters (customers in our example). In other words, you have less observations than the rows in your data. Whether you are closer to one extreme or the other it depends on the degree of &lt;em&gt;between-clusters&lt;/em&gt; correlation relative to the &lt;em&gt;within-cluster&lt;/em&gt; correlation of the residuals.&lt;/p&gt;
 &lt;p&gt;We can now &lt;strong&gt;verify&lt;/strong&gt; this intuition using our data-generating process. Let&amp;rsquo;s first scale down the &lt;em&gt;within-cluster&lt;/em&gt; variance of the residuals to zero.&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_carousel(n=n, w=&amp;quot;carousel&amp;quot;, y=[&amp;quot;revenue&amp;quot;])
@@ -364,7 +364,7 @@ df = dgp.generate_data()
 &lt;/tr&gt;
 &lt;/table&gt;
 &lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;In this article, we have seen the importance of &lt;strong&gt;cluster-robust standard errors&lt;/strong&gt; and when they are relevant in randomized experiments. If you assign treatment at a higher level than your unit of observation, this generates correlation across the treatment effects of your observations and computing standard errors using the usual formula that assumes independence usually underestimates the true variance of the estimator. We explore two solutions: cluster-robust standard errors and bootstrapped standard errors at the unit of assignment.&lt;/p&gt;
+&lt;p&gt;In this article, we have seen the importance of &lt;strong&gt;cluster-robust standard errors&lt;/strong&gt; and when they are relevant in randomized experiments. If you assign treatment at a higher level than your unit of observation, this generates correlation across the treatment effects of your observations and computing standard errors using the usual formula that assumes independence can severely underestimate the true variance of the estimator. We explore two solutions: cluster-robust standard errors and bootstrapped standard errors at the unit of assignment.&lt;/p&gt;
 &lt;p&gt;A third conservative solution is to &lt;strong&gt;aggregate the data&lt;/strong&gt; at the unit of observation. This would give conservative estimates of the standard errors, in presence of additional non-linear covariates. We would also need to use regression weights if we have different number of observations per cluster.&lt;/p&gt;
 &lt;p&gt;An important advantage of cluster-robust standard errors is that they are larger that the usual standard errors only if there is indeed dependence across observations. As we have seen in the last section, if observations are only mildly correlated across clusters, the cluster-robust standard errors will be extremely similar.&lt;/p&gt;
 &lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
