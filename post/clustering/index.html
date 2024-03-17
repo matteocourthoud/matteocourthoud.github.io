@@ -1,0 +1,1621 @@
+<!DOCTYPE html><html lang="en-us" >
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  
+  
+  
+    <meta name="generator" content="Wowchemy 5.1.0 for Hugo" />
+  
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  
+
+  
+  
+  
+    
+  
+  <meta name="description" content="What to do when the unit of observation differs from the unit of randomization
+A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to randomization." />
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://matteocourthoud.github.io/post/clustering/" />
+
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  
+
+  
+  
+  
+    <meta name="theme-color" content="#003f5c" />
+  
+
+  
+  
+    
+    <script src="/js/mathjax-config.js"></script>
+  
+
+  
+  
+  
+  
+    
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha256-FMvZuGapsJLjouA6k7Eo2lusoAX9i0ShlWFG6qt7SLc=" crossorigin="anonymous">
+
+    
+    
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/github.min.css" crossorigin="anonymous" title="hl-light" media="print" onload="this.media='all'">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" media="print" onload="this.media='all'" disabled>
+        
+      
+    
+
+    
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" integrity="sha512-1xoFisiGdy9nvho8EgXuXvnpR5GAMSjFwp40gSRE3NwdUdIMIKuPa7bqoUhLD0O/5tPNhteAsE5XyyMi5reQVA==" crossorigin="anonymous" media="print" onload="this.media='all'">
+    
+
+    
+
+    
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" integrity="" crossorigin="anonymous" async></script>
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+      
+      
+
+      
+      
+
+      
+    
+  
+
+  
+  
+  
+    
+      
+      <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&family=Source+Sans+Pro:wght@200;300;400;700&display=swap" media="print" onload="this.media='all'">
+    
+  
+
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="/css/wowchemy.036b5b2acdb844b842ed3e91242fe237.css" />
+
+  
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-144780600-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+      dataLayer.push(arguments);
+  }
+
+  function trackOutboundLink(url, target) {
+    gtag('event', 'click', {
+         'event_category': 'outbound',
+         'event_label': url,
+         'transport_type': 'beacon',
+         'event_callback': function () {
+           if (target !== '_blank') {
+             document.location = url;
+           }
+         }
+    });
+    console.debug("Outbound link clicked: " + url);
+  }
+
+  function onClickCallback(event) {
+    if ((event.target.tagName !== 'A') || (event.target.host === window.location.host)) {
+      return;
+    }
+    trackOutboundLink(event.target, event.target.getAttribute('target'));  
+  }
+
+  gtag('js', new Date());
+  gtag('config', 'UA-144780600-1', { 'anonymize_ip': true });
+  gtag('set', {'cookie_flags': 'SameSite=None;Secure'});
+
+  
+  document.addEventListener('click', onClickCallback, false);
+</script>
+
+
+  
+
+  
+
+  
+
+
+
+
+  
+  
+  
+
+  
+
+  
+    <link rel="manifest" href="/index.webmanifest" />
+  
+
+  <link rel="icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_32x32_fill_lanczos_center_3.png" />
+  <link rel="apple-touch-icon" type="image/png" href="/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_180x180_fill_lanczos_center_3.png" />
+
+  <link rel="canonical" href="https://matteocourthoud.github.io/post/clustering/" />
+
+  
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <meta property="twitter:card" content="summary_large_image" />
+  
+  <meta property="og:site_name" content="Matteo Courthoud" />
+  <meta property="og:url" content="https://matteocourthoud.github.io/post/clustering/" />
+  <meta property="og:title" content="Clustering Standard Errors in AB Tests | Matteo Courthoud" />
+  <meta property="og:description" content="What to do when the unit of observation differs from the unit of randomization
+A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to randomization." /><meta property="og:image" content="https://matteocourthoud.github.io/post/clustering/featured.png" />
+    <meta property="twitter:image" content="https://matteocourthoud.github.io/post/clustering/featured.png" /><meta property="og:locale" content="en-us" />
+  
+    
+      <meta
+        property="article:published_time"
+        content="2024-03-17T00:00:00&#43;00:00"
+      />
+    
+    <meta property="article:modified_time" content="2024-03-17T00:00:00&#43;00:00">
+  
+
+  
+
+
+    
+
+
+
+
+
+
+  
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://matteocourthoud.github.io/post/clustering/"
+  },
+  "headline": "Clustering Standard Errors in AB Tests",
+  
+  "image": [
+    "https://matteocourthoud.github.io/post/clustering/featured.png"
+  ],
+  
+  "datePublished": "2024-03-17T00:00:00Z",
+  "dateModified": "2024-03-17T00:00:00Z",
+  
+  "publisher": {
+    "@type": "Organization",
+    "name": "Matteo Courthoud",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_192x192_fill_lanczos_center_3.png"
+    }
+  },
+  "description": "What to do when the unit of observation differs from the unit of randomization\nA/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to randomization."
+}
+</script>
+
+  
+
+  
+
+  
+  
+  
+  
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.js" integrity="sha256-5VhCqFam2Cn+yjw61zbBNrbHVJ6SRydPeKopYlngbiQ=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.1/cookieconsent.min.css" integrity="sha256-zQ0LblD/Af8vOppw18+2anxsuaz3pWYyVWi+bTvTH8Q=" crossorigin="anonymous">
+  
+  <script>
+  window.addEventListener("load", function(){
+    window.cookieconsent.initialise({
+      "palette": {
+        "popup": {
+          "background": "#003f5c",
+          "text": "rgb(255, 255, 255)"
+        },
+        "button": {
+          "background": "rgb(255, 255, 255)",
+          "text": "#003f5c"
+        }
+      },
+      "theme": "classic",
+      "content": {
+        "message": "This website uses cookies to ensure you get the best experience on our website.",
+        "dismiss": "Got it!",
+        "link": "Learn more",
+        "href": "/privacy/"
+      }
+    })});
+  </script>
+
+
+  
+
+
+
+
+
+  <title>Clustering Standard Errors in AB Tests | Matteo Courthoud</title>
+</head>
+
+
+<body id="top" data-spy="scroll" data-offset="70" data-target="#TableOfContents" class="page-wrapper   " data-wc-page-id="f690d29d5dda7502485745cfeee9f80f" >
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <script src="/js/wowchemy-init.min.66d3e0fff6d32c4ece05adee927fbd96.js"></script>
+
+  
+
+
+<aside class="search-modal" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#" aria-label="Close"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        <input name="q" id="search-query" placeholder="Search..." autocapitalize="off"
+        autocomplete="off" autocorrect="off" spellcheck="false" type="search" class="form-control"
+        aria-label="Search...">
+        
+      </div>
+
+      
+      
+
+      
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+
+  <div class="page-header">
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar navbar-expand-lg navbar-light compensate-for-scrollbar" id="navbar-main">
+  <div class="container-xl">
+
+    
+    <div class="d-none d-lg-inline-flex">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    <button type="button" class="navbar-toggler" data-toggle="collapse"
+            data-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span><i class="fas fa-bars"></i></span>
+    </button>
+    
+
+    
+    <div class="navbar-brand-mobile-wrapper d-inline-flex d-lg-none">
+      <a class="navbar-brand" href="/">Matteo Courthoud</a>
+    </div>
+    
+
+    
+    
+    <div class="navbar-collapse main-menu-item collapse justify-content-end" id="navbar-content">
+
+      
+      <ul class="navbar-nav d-md-inline-flex">
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#about"><span>Home</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#posts"><span>Posts</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#newsletter"><span>Newsletter</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#projects"><span>Research</span></a>
+        </li>
+
+        
+        
+
+        
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"><span>Courses</span><span class="caret"></span>
+          </a>
+          <div class="dropdown-menu">
+            
+              <a class="dropdown-item" href="/course/ml-econ/"><span>Machine Learning for Economics</span></a>
+            
+              <a class="dropdown-item" href="/course/data-science/"><span>Data Science with Python</span></a>
+            
+              <a class="dropdown-item" href="/course/empirical-io/"><span>PhD Industrial Organization</span></a>
+            
+              <a class="dropdown-item" href="/course/metrics/"><span>PhD Econometrics</span></a>
+            
+              <a class="dropdown-item" href="https://pp4rs.github.io/"><span>Programming Practices for Research</span></a>
+            
+          </div>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/cv"><span>CV</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+
+        
+        
+        
+        
+
+        
+          
+            
+            
+          
+          
+            
+            
+            
+              
+            
+            
+          
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/#contact"><span>Contact</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+      </ul>
+    </div>
+
+    <ul class="nav-icons navbar-nav flex-row ml-auto d-flex pl-md-2">
+
+      
+      
+        
+      
+
+      
+      
+
+      
+      
+
+      
+      
+
+    </ul>
+
+  </div>
+</nav>
+
+
+  </div>
+
+  <div class="page-body">
+    <div class="container-fluid docs">
+  <div class="row">
+
+    <div class="col-xl-2 col-lg-2 d-none d-xl-block d-lg-block empty">
+    </div>
+
+    <div class="col-2 col-xl-2 col-lg-2 d-none d-lg-block docs-toc">
+      <ul class="nav toc-top">
+        <li><a href="#" id="back_to_top" class="docs-toc-title">Contents</a></li>
+      </ul>
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#customers-orders-and-standard-errors">Customers, Orders, and Standard Errors</a></li>
+    <li><a href="#standard-errors">Standard Errors</a></li>
+    <li><a href="#clustered-standard-errors">Clustered Standard Errors</a></li>
+    <li><a href="#some-math">Some Math</a></li>
+    <li><a href="#intuition">Intuition</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+    <li><a href="#references">References</a>
+      <ul>
+        <li><a href="#related-articles">Related Articles</a></li>
+        <li><a href="#code">Code</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+
+    <main class="col-xl-8 col-lg-8 docs-content" role="main">
+        <article class="article">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<div class="article-container pt-3">
+  <h1>Clustering Standard Errors in AB Tests</h1>
+
+  
+
+  
+
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+    
+    Mar 17, 2024
+  </span>
+  
+
+  
+
+  
+  <span class="middot-divider"></span>
+  <span class="article-reading-time">
+    15 min read
+  </span>
+  
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+
+</div>
+
+  
+
+
+
+
+
+</div>
+
+
+<div class="article-header article-container featured-image-wrapper mt-4 mb-4" style="max-width: 1590px; max-height: 964px;">
+  <div style="position: relative">
+    <img src="/post/clustering/featured.png" alt="" class="featured-image">
+    
+  </div>
+</div>
+
+
+        <div class="article-container">
+          <div class="article-style" align="justify">
+            <p><em>What to do when the unit of observation differs from the unit of randomization</em></p>
+<p>A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to <strong>randomization</strong>. In fact, by randomly assigning a <strong>treatment</strong> (a drug, ad, product, &hellip;), we are able to compare the <strong>outcome</strong> of interest (a disease, firm revenue, customer satisfaction, &hellip;) across <strong>subjects</strong> (patients, users, customers, &hellip;) and attribute the average difference in outcomes to the causal effect of the treatment.</p>
+<p>Sometimes it happens that the <strong>unit of treatment assignment differs from the unit of observation</strong>. In other words, we do not take the decision on whether to treat every single observation independently, but rather in groups. For example, we might decide to treat all customers in a certain region while observing outcomes at the customer level, or treat all articles of a certain brand, while observing outcomes at the article level. Usually this happens because of practical constraints. In the first example, the so-called <em>geo-experiments</em>, it happens because we are unable to track users because of cookie deprecations.</p>
+<p>When this happens, treatment effects are <strong>not independent</strong> across observations anymore. In fact, if a customer in a region is treated, also other customers in the same region will be treated. If an article of a brand is not treated, also other articles of the same brand will be treated. As a consequence, we have to take that into account when doing inference: computing standard errors, confidence intervals and p-values. In this article, we will explore how to do that using <strong>cluster-robust standard errors</strong>.</p>
+<h2 id="customers-orders-and-standard-errors">Customers, Orders, and Standard Errors</h2>
+<p>Imagine you were an online platform and you are intrested in increasing sales. You just had a great idea: showing a <strong>carousel of related articles</strong> at checkout to incentivize customer to add other articles to their basket. In order to understand whether the carousel increases sales, you decide to AB test it. In principle, you coud just decide for every order whether to display the carousel or not, at random. However, this would give customers an inconsistent experience, potentially harming their customer experience. Therefore, you decide to randomize the treatment assignment, the carousel, at the customer level. To treated customers, you show the carousel on every order, and to control customer you never show the carousel.</p>
+<p>I import the data-generating process (dgp) from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp_collection.py" target="_blank" rel="noopener">src.dgp_collection</a> and the plotting theme from <a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/theme.py" target="_blank" rel="noopener">src.theme</a>.</p>
+<pre><code class="language-python">%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+</code></pre>
+<pre><code class="language-python">import numpy as np
+from numpy.linalg import inv
+import pandas as pd
+
+from src.theme import *
+from src.dgp_collection import dgp_carousel
+</code></pre>
+<p>We generate simulated data for <code>3000</code> orders, from <code>100</code> customers. For each order, we observe the <code>order_id</code> which is also the dataset index, the <code>customer_id</code> of the customer who placed the order, whether the <code>carousel</code> was displayed at checkout - the treatment - and the order <code>revenue</code> - the outcome of interest.</p>
+<pre><code class="language-python">n = 3000
+dgp = dgp_carousel(n=n, w=&quot;carousel&quot;, y=[&quot;revenue&quot;])
+df = dgp.generate_data()
+df.head()
+</code></pre>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<pre><code>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</code></pre>
+<p></style></p>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>order_id</th>
+      <th>customer_id</th>
+      <th>carousel</th>
+      <th>revenue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1755</td>
+      <td>58</td>
+      <td>1</td>
+      <td>52.61</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>527</td>
+      <td>17</td>
+      <td>0</td>
+      <td>44.19</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>595</td>
+      <td>19</td>
+      <td>0</td>
+      <td>73.04</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2027</td>
+      <td>67</td>
+      <td>0</td>
+      <td>65.54</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>366</td>
+      <td>12</td>
+      <td>0</td>
+      <td>62.57</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Since treatment was randomized, we can estimate the <strong>average treatment effect</strong> comparing the average revenue of treated orders against the average revenue of control (not treated) orders. Randomization ensures that treated and untreated orders are comparable on average, except for the treatment itself, and therefore we can attribute any observable difference to the causal effect of the treatment. We can estimate the difference-in-means using linear regression, by regressing <code>revenue</code> on the <code>carousel</code> dummy variable. The reported OLS coefficient is the estimated average treatment effect.</p>
+<pre><code class="language-python">import statsmodels.formula.api as smf
+smf.ols(&quot;revenue ~ carousel&quot;, data=df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>   61.6361</td> <td>    0.382</td> <td>  161.281</td> <td> 0.000</td> <td>   60.887</td> <td>   62.385</td>
+</tr>
+<tr>
+  <th>carousel</th>  <td>   -1.6292</td> <td>    0.576</td> <td>   -2.828</td> <td> 0.005</td> <td>   -2.759</td> <td>   -0.500</td>
+</tr>
+</table>
+<p>It seems that including the <code>carousel</code> decreased <code>revenue</code> by <code>-1.63€</code> per order. The treatment effect seems to be statistically significant at the <em>1%</em> level since the reported p-value is <code>0.005</code>. However, this is <strong>not a standard AB test</strong>, since we didn&rsquo;t randomize each single order, but rather customers. Two orders placed by the same customer couldn&rsquo;t go to different treatment groups. Because of this, our treatment effects across observations are correlated, while we computed our standard errors assuming that they are independent.</p>
+<p>Are the reported <strong>standard errors correct</strong>? How can we &ldquo;check&rdquo; it and what can we do about it?</p>
+<h2 id="standard-errors">Standard Errors</h2>
+<p>Which standard errors are &ldquo;correct&rdquo;?</p>
+<p>The answer to this question depends on what we consider <em>random</em> and what we consider <em>fixed</em>. In the frequentist sense, standard errors measure uncertainty across &ldquo;states of the world&rdquo; or &ldquo;parallel universes&rdquo; that would have happened if we had seen a different realization of the random part of the data-generating process.</p>
+<p>In this particular case, there is one variable that is uncontroversial random: the treatment <strong>assignment</strong>, in fact, we randomized it ourselves. Not only that, we also know <em>how</em> it is random: each customer had a 50% chance of seeing the <code>new_ui</code> and a 50% chance of seeing the old one.</p>
+<p>Therefore, we would like our estimated standard errors to measure the variation in estimated treatment effects across alternative treatment assignments. This is normally an <strong>abstract</strong> concept since we cannot re-run the exact same experiment. However, we can in our case, since we are in a simulated environment.</p>
+<p>The <code>DGP</code> class has a <code>evaluate_f_redrawing_assignment</code> function that allows us to evaluate a function of the data <em>f(X)</em> by re-sampling the data drawing different treatment assignments. The function we want to evaluate the our linear regression for treatment effect estimation.</p>
+<pre><code class="language-python">def estimate_treatment_effect(df):
+    reg = smf.ols(&quot;revenue ~ carousel&quot;, data=df).fit()
+    return reg.params[&quot;carousel&quot;], reg.bse[&quot;carousel&quot;]
+</code></pre>
+<p>Now we repeat the treatment effect estimation over <em>1000</em> different random assignments.</p>
+<pre><code class="language-python">n_draws = 1_000
+ols_coeff = dgp.evaluate_f_redrawing_assignment(f=estimate_treatment_effect, n_draws=n_draws)
+</code></pre>
+<p>What is the <strong>distribution</strong> of OLS coefficients? In the figure below, we plot the distribution of the estimated coefficients and estimated standard errors. On the plot of the estimated standard errors, we also report a vertical line with the standard deviation of the estimated coefficients across simulations.</p>
+<pre><code class="language-python">def plot_coefficients(coeffs):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+    
+    # Estimates
+    coeffs_est = list(zip(*coeffs))[0]
+    sns.histplot(coeffs_est, color=&quot;C1&quot;, ax=ax1)
+    ax1.set(title=f&quot;Distribution of estimated coefficients&quot;)
+    ax1.legend([f&quot;Average: {np.mean(coeffs_est):.3f}\nStd. Dev: {np.std(coeffs_est):.3f}&quot;]);
+
+    # Standsed error
+    coeffs_std = list(zip(*coeffs))[1]
+    sns.histplot(coeffs_std, color=&quot;C0&quot;, ax=ax2)
+    ax2.set(title=f&quot;Distribution of estimated std. errors&quot;)
+    ax2.legend([f&quot;Average: {np.mean(coeffs_std):.3f}\nStd. Dev: {np.std(coeffs_std):.3f}&quot;]);
+    ax2.axvline(np.std(coeffs_est), lw=2, ls=&quot;--&quot;, c=&quot;C1&quot;)
+</code></pre>
+<pre><code class="language-python">plot_coefficients(ols_coeff)
+</code></pre>
+<p><img src="img/clustering_19_0.png" alt="png"></p>
+<p>The average coefficient is virtually zero since the estimator. Indeed, the true treatment effect is zero. However, the standard deviations of the estimated coefficients is  is <em>2.536</em>, fairly different from the estimated standard deviation of <em>0.576</em> we got from the linear regression. This coefficient would have implied a <em>p-value</em> of around <em>0.5</em>, extremely far from any statistical significance threshold. On the right panel, we see that this is not by chance: standard OLS consistently <strong>underestimates</strong> the variability of the coefficient by around 5 times.</p>
+<p>Could have we <strong>detected</strong> this issue in reality, without the possibility or re-randomizing the treatment assignment? Yes, by <strong>bootstrapping</strong> standard errors. If you never heard of bootstrapping, I wrote an article about it, and an interesting technique to make bootstrapping faster: the bayesian bootstrap.</p>
+<p><a href="https://towardsdatascience.com/the-bayesian-bootstrap-6ca4a1d45148" target="_blank" rel="noopener">https://towardsdatascience.com/the-bayesian-bootstrap-6ca4a1d45148</a></p>
+<p>Bootstrapping essentially consists in drawing <strong>samples</strong> of the data <strong>with replacement</strong>, and re-computing the target statistics across bootstrapped samples. We can then estimate its standard deviation by simply computing the standard deviation fo the statistics across samples.</p>
+<p>In this case, it&rsquo;s important to draw the samples <strong>consistently</strong> with the data generating process: by customer and not by order.</p>
+<pre><code class="language-python">boot_estimates = []
+customers = df.customer_id.unique()
+for k in range(1000):
+    np.random.seed(k)
+    boot_customers = np.random.choice(customers, size=len(customers), replace=True)
+    df_boot = pd.concat([df[df.customer_id == id] for id in boot_customers])
+    reg = smf.ols(&quot;revenue ~ carousel&quot;, data=df_boot).fit()
+    boot_estimates += [(reg.params[&quot;carousel&quot;], reg.bse[&quot;carousel&quot;])]
+</code></pre>
+<p>In the figure below, we plot again the distribution of estimated coefficients and standard errors. The standard errors are still wrong, but the distribution of bootstrap estimates has a standard deviation of <em>2.465</em>, very close to the simulated value of <em>2.536</em>.</p>
+<pre><code class="language-python">plot_coefficients(boot_estimates)
+</code></pre>
+<p><img src="img/clustering_25_0.png" alt="png"></p>
+<p>Note that in order to use bootstrapping to detect the issue in the linear regression standard errors, one would have needed to be <em>aware</em> that assignment was at the customer level. Bootstrapping the data at the order level would have still underestimated the standard errors.</p>
+<h2 id="clustered-standard-errors">Clustered Standard Errors</h2>
+<p>What&rsquo;s the problem with the standard errors reported in the linear regression table?</p>
+<p>The problem is that the standard formula to compute standard errors in linear regression (more on the math later) assumes that observations are independent and identically distributed, i.i.d.. However, in our case, the <strong>independence</strong> assumption is <strong>not satisfied</strong>. Why?</p>
+<p>In our example, the unit of treatment assignment, a <code>customer</code> is different from the unit of observation, an <code>order</code>. This is a problem because under different treatment assignments, all orders of a certain customer are treated or not. They move in blocks and it cannot happen that two orders of the same customer are split across control and treatment group. The consequence of orders &ldquo;moving in blocks&rdquo; is that there is more variability in our estimates than we might have if orders were moving independently. Intuitively, there is less <em>balance</em> between the two groups, on average. As a consequence, standard errors computed assuming independence typically <strong>underestimate</strong> the actual variability of the estimator.</p>
+<p>Is there a solution? Yes!</p>
+<p>The solution is to use the so-called <a href="https://en.wikipedia.org/wiki/Clustered_standard_errors" target="_blank" rel="noopener">cluster-robust standard errors</a> that allow observations to be correlated within a cluster of observations, a <code>customer</code> in our case. Cluster-robust standard errors are usually very simple to implement and available in all statistical packages. With <code>statsmodels</code> we have to specify that the covariance type is <code>cluster</code> and that the groups are by <code>customer</code>.</p>
+<pre><code class="language-python">smf.ols(&quot;revenue ~ carousel&quot;, data=df).fit(cov_type='cluster', cov_kwds={'groups': df[&quot;customer_id&quot;]}).summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>   61.6361</td> <td>    1.639</td> <td>   37.606</td> <td> 0.000</td> <td>   58.424</td> <td>   64.848</td>
+</tr>
+<tr>
+  <th>carousel</th>  <td>   -1.6292</td> <td>    2.471</td> <td>   -0.659</td> <td> 0.510</td> <td>   -6.473</td> <td>    3.214</td>
+</tr>
+</table>
+<p>The estimated cluster-robust standard error is equal to <code>2.471</code>, extremely close to the simulated standard error of <code>2.536</code>. Note that the estimated coefficient has not changed (<code>-1.6292</code> as before).</p>
+<p>How do cluster-robust standard errors work? We dig deeper in the math in the next section.</p>
+<h2 id="some-math">Some Math</h2>
+<p>How are standard errors computed in linear regression? The general formula of the variance of the OLS estimator is
+$$
+\text{Var}(\hat \beta) = (X&rsquo;X)^{-1} X&rsquo; \epsilon \epsilon&rsquo; X (X&rsquo;X)^{-1}
+$$</p>
+<p>The <strong>key component</strong> of this formula is the central matrix <em>n × n</em> matrix <em>Ω = ε ε&rsquo;</em>. It is key because it is the only object that we need to estimate in order to compute the variance of the OLS estimator.</p>
+<p>At first, it could be very tempting to just estimate <em>Ω</em> using the regression residuals <em>e = y - ŷ</em>. However, the problem is that by construction the product of <em>X</em> and <em>e</em> is zero, and therefore the estimated variance would be zero</p>
+<pre><code class="language-python">X.T @ e
+</code></pre>
+<pre><code>array([[5.72555336e-11],
+       [6.68904931e-11]])
+</code></pre>
+<p>The most simplifying assumption is called <a href="https://en.wikipedia.org/wiki/Homoscedasticity_and_heteroscedasticity" target="_blank" rel="noopener"><strong>homoscedasticity</strong></a>: regression residuals are independent of each other and they all have the same variance. In practice, homoscedasticity implies that the <em>Ω</em> matrix is that it is diagonal with the same number in each cell:
+$$
+\Omega =
+\begin{bmatrix}
+\sigma^2 &amp; 0 &amp; \dots &amp; 0 &amp; 0 \
+0 &amp; \sigma^2 &amp; \dots &amp; 0 &amp; 0 \
+\vdots &amp; &amp; \ddots &amp;  &amp; \vdots \
+0 &amp; 0 &amp; &hellip; &amp; \sigma^2 &amp; 0 \
+0 &amp; 0 &amp; &hellip; &amp; 0 &amp; \sigma^2 \
+\end{bmatrix} = \sigma^2 I_n
+$$</p>
+<p>where <em>Iₙ</em> is the <a href="https://en.wikipedia.org/wiki/Identity_matrix" target="_blank" rel="noopener">identity matrix</a> of dimension <em>n</em>.</p>
+<p>Under homoscedasticity, the residual matrix simplifies to
+$$
+\text{Var}(\hat \beta) = (X&rsquo;X)^{-1} X&rsquo; \sigma^2 I_n X (X&rsquo;X)^{-1} = \sigma^2 (X&rsquo;X)^{-1} X&rsquo; X (X&rsquo;X)^{-1} = \sigma^2 (X&rsquo;X)^{-1}
+$$</p>
+<p>and it&rsquo;s estimated by plugging-in the variance of the residuals</p>
+<pre><code class="language-python">y_hat = X @ inv(X.T @ X) @ (X.T @ y)
+e = y - y_hat
+np.var(e)
+</code></pre>
+<pre><code>245.20230307247473
+</code></pre>
+<p>So the estimated variance of the OLS estimator is given by
+$$
+\hat{\text{Var}}(\hat \beta) = \text{Var}(\hat \epsilon) (X&rsquo;X)^{-1}
+$$</p>
+<pre><code class="language-python">np.var(e) * inv(X.T @ X)
+</code></pre>
+<pre><code>array([[ 0.14595375, -0.14595375],
+       [-0.14595375,  0.33171307]])
+</code></pre>
+<p>And the estimated standard error is just the squared root of the bottom-right value.</p>
+<pre><code class="language-python">np.sqrt(np.var(e) * inv(X.T @ X))[1,1]
+</code></pre>
+<pre><code>0.5759453727032665
+</code></pre>
+<p>The computed standard error is indeed the same that was reported before in the linear regression table, <code>0.576</code>.</p>
+<p>Homoscedasticity is a very restrictive assumption and it is always relaxed, allowing residual variances to be independent of each other. This assumption is called <strong>heteroscedasticity</strong>.</p>
+<p>$$
+\Omega =
+\begin{bmatrix}
+\sigma^2_1 &amp; 0 &amp; \dots &amp; 0 &amp; 0 \
+0 &amp; \sigma^2_2 &amp; \dots &amp; 0 &amp; 0 \
+\vdots &amp; &amp; \ddots &amp;  &amp; \vdots \
+0 &amp; 0 &amp; &hellip; &amp; \sigma^2_{n-1} &amp; 0 \
+0 &amp; 0 &amp; &hellip; &amp; 0 &amp; \sigma^2_n \
+\end{bmatrix}
+$$</p>
+<p>Under heteroscedasticity the formula of the variance of the OLS estimator does not simplify anymore.</p>
+<pre><code class="language-python">Sigma = np.eye(len(df)) * (e @ e.T)
+np.sqrt(inv(X.T @ X) @ X.T @ Sigma @ X @ inv(X.T @ X))[1,1]
+</code></pre>
+<pre><code>0.5757989320663413
+</code></pre>
+<p>In our case, the estimated standard error under heteroskedasticity is virtually the same: <code>0.576</code>.</p>
+<p>In certain scenarios, even the heteroscedasticity assumption can be too restrictive, in case observations are correlated and regression residuals are not independent. In that case, we might want to allow certain off-diagonal elements of the <em>Ω</em> matrix to be different from zero. But which ones?</p>
+<p>In many settings, including our example, it is reasonable to assume that observations are correlated within cluster, but with the same within-cluster variance. For example, if clusters are couples of observations, the <em>Ω</em> matrix takes the following form.
+$$
+\Omega =
+\begin{bmatrix}
+\epsilon_1^2 &amp; \epsilon_1 \epsilon_2 &amp; 0 &amp; 0 &amp; \dots &amp; 0 &amp; 0 \
+\epsilon_1 \epsilon_2 &amp; \epsilon_2^2 &amp; 0 &amp; 0 &amp; &amp; 0 &amp; 0 \
+0 &amp; 0 &amp; \epsilon_3^2 &amp; \sigma^2_{34} &amp; &amp; 0 &amp; 0 \
+0 &amp; 0 &amp; \sigma^2_{34} &amp; \epsilon_3^2 &amp; &amp; 0 &amp; 0 \
+\vdots &amp; &amp; &amp; &amp; \ddots &amp;  &amp; \vdots \
+0 &amp; 0 &amp; 0 &amp; 0 &amp; &hellip; &amp; \epsilon_{n-1}^2 &amp; \sigma^2_{n-1,n} \
+0 &amp; 0 &amp; 0 &amp; 0 &amp; &hellip; &amp; \sigma^2_{n-1,n} &amp; \epsilon_n^2 \
+\end{bmatrix}
+$$</p>
+<p>We can now compute the estimated standard errors under cluster-robustness.</p>
+<pre><code class="language-python">customer_id = df[[&quot;customer_id&quot;]].values
+Sigma = (customer_id == customer_id.T) * (e @ e.T)
+np.sqrt(inv(X.T @ X) @ X.T @ Sigma @ X @ inv(X.T @ X))[1,1]
+</code></pre>
+<pre><code>2.458350214507729
+</code></pre>
+<p>We get indeed the same number reported in the linear regression table. But what&rsquo;s the <strong>intuition</strong> behind this formula?</p>
+<h2 id="intuition">Intuition</h2>
+<p>To get an intuition for the estimated standard erorrs, imagine that we had a simple regression model with a single covariate: a constant. In that case, the estimated cluster-robust variance of the OLS estimator is just the sum of all the cross-products of residuals within each cluster.
+$$
+\hat{\text{Var}}(\hat{\beta}) = \sum_{g=1}^G \sum_{i=1}^{n_g} \sum_{j=1}^{n_g} \epsilon_i, \epsilon_j
+$$</p>
+<p>where <em>g</em> indexes clusters, and <em>ng</em> is the number of observations within cluster <em>g</em>. If observations are <strong>independent</strong>, the expected value of the product of the residuals of different observations is zero <em>𝔼[εᵢεⱼ]=0</em> and the estimated variance will be close to the sum of the squared residuals.
+$$
+\hat{\text{Var}}(\hat{\beta}) = \sum_{i} \epsilon_i^2
+$$</p>
+<p>At the other extreme instead, if observations are <strong>extremely correlated</strong>, the residuals in the same clusters will be very similar, and the estimated variance will be close to the sum of all the cross-products, for each cluster.
+$$
+\hat{\text{Var}}(\hat{\beta}) = \sum_{g} n_g^2 \epsilon_g^2
+$$</p>
+<p>Note that this is exactly the estimated variance you would have obtained by running the analysis as the cluster level, in our case aggregating the orders at the customer level.</p>
+<p>This means that, in practice, if your unit of assignment is different from the unit of observations, your <strong>effective sample size</strong> will be somewhere in between your actual sample size, and the number of clusters (customers in our example). In other words, you have less observations than the rows in your data. Whether you are closer to one extreme or the other it depends on the degree of <em>between-clusters</em> correlation relative to the <em>within-cluster</em> correlation of the residuals.</p>
+<p>We can now <strong>verify</strong> this intuition using our data-generating process. Let&rsquo;s first scale down the <em>within-cluster</em> variance of the residuals to zero.</p>
+<pre><code class="language-python">dgp = dgp_carousel(n=n, w=&quot;carousel&quot;, y=[&quot;revenue&quot;])
+dgp.revenue_per_customer_std = 0
+df = dgp.generate_data()
+</code></pre>
+<p>Now unadjusted and clustered standard errors should be the same, and they are indeed fairly close.</p>
+<pre><code class="language-python">smf.ols(&quot;revenue ~ carousel&quot;, data=df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>   50.1235</td> <td>    0.243</td> <td>  206.431</td> <td> 0.000</td> <td>   49.647</td> <td>   50.600</td>
+</tr>
+<tr>
+  <th>carousel</th>  <td>    0.0525</td> <td>    0.366</td> <td>    0.144</td> <td> 0.886</td> <td>   -0.665</td> <td>    0.770</td>
+</tr>
+</table>
+<pre><code class="language-python">smf.ols(&quot;revenue ~ carousel&quot;, data=df).fit(cov_type='cluster', cov_kwds={'groups': df[&quot;customer_id&quot;]}).summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>   50.1235</td> <td>    0.189</td> <td>  264.655</td> <td> 0.000</td> <td>   49.752</td> <td>   50.495</td>
+</tr>
+<tr>
+  <th>carousel</th>  <td>    0.0525</td> <td>    0.343</td> <td>    0.153</td> <td> 0.878</td> <td>   -0.620</td> <td>    0.725</td>
+</tr>
+</table>
+<p>Now let&rsquo;s scale the cross-cluster variance to zero.</p>
+<pre><code class="language-python">dgp = dgp_carousel(n=n, w=&quot;carousel&quot;, y=[&quot;revenue&quot;])
+dgp.revenue_std = 0
+df = dgp.generate_data()
+</code></pre>
+<p>In this case, all the variance is at the cluster level, hence the difference between standard and clustered standard errors will be even more stark.</p>
+<pre><code class="language-python">smf.ols(&quot;revenue ~ carousel&quot;, data=df).fit().summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>   61.5123</td> <td>    0.295</td> <td>  208.376</td> <td> 0.000</td> <td>   60.934</td> <td>   62.091</td>
+</tr>
+<tr>
+  <th>carousel</th>  <td>   -1.6812</td> <td>    0.445</td> <td>   -3.778</td> <td> 0.000</td> <td>   -2.554</td> <td>   -0.809</td>
+</tr>
+</table>
+<pre><code class="language-python">smf.ols(&quot;revenue ~ carousel&quot;, data=df).fit(cov_type='cluster', cov_kwds={'groups': df[&quot;customer_id&quot;]}).summary().tables[1]
+</code></pre>
+<table class="simpletable">
+<tr>
+      <td></td>         <th>coef</th>     <th>std err</th>      <th>z</th>      <th>P>|z|</th>  <th>[0.025</th>    <th>0.975]</th>  
+</tr>
+<tr>
+  <th>Intercept</th> <td>   61.5123</td> <td>    1.671</td> <td>   36.806</td> <td> 0.000</td> <td>   58.237</td> <td>   64.788</td>
+</tr>
+<tr>
+  <th>carousel</th>  <td>   -1.6812</td> <td>    2.430</td> <td>   -0.692</td> <td> 0.489</td> <td>   -6.444</td> <td>    3.081</td>
+</tr>
+</table>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this article, we have seen the importance of <strong>cluster-robust standard errors</strong> and when they are relevant in randomized experiments. If you assign treatment at a higher level than your unit of observation, this generates correlation across the treatment effects of your observations and computing standard errors using the usual formula that assumes independence usually underestimates the true variance of the estimator. We explore two solutions: cluster-robust standard errors and bootstrapped standard errors at the unit of assignment.</p>
+<p>A third conservative solution is to <strong>aggregate the data</strong> at the unit of observation. This would give conservative estimates of the standard errors, in presence of additional non-linear covariates. We would also need to use regression weights if we have different number of observations per cluster.</p>
+<p>An important advantage of cluster-robust standard errors is that they are larger that the usual standard errors only if there is indeed dependence across observations. As we have seen in the last section, if observations are only mildly correlated across clusters, the cluster-robust standard errors will be extremely similar.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>A. Abadie, S. Athey, G. W. Imbens, J. M. Wooldridge (2023), <a href="https://academic.oup.com/qje/article/138/1/1/6750017" target="_blank" rel="noopener">When Should You Adjust Standard Errors for Clustering?</a>.</li>
+</ul>
+<h3 id="related-articles">Related Articles</h3>
+<ul>
+<li><a href="https://towardsdatascience.com/6ca4a1d45148" target="_blank" rel="noopener">The Bayesian Bootstrap</a></li>
+</ul>
+<h3 id="code">Code</h3>
+<p>You can find the original Jupyter Notebook here:</p>
+<p><a href="https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/clustering.ipynb" target="_blank" rel="noopener">https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/clustering.ipynb</a></p>
+<pre><code class="language-python">
+</code></pre>
+<pre><code class="language-python">
+</code></pre>
+
+          </div>
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+  
+  
+    
+  
+  
+  
+  <div class="media author-card content-widget-hr">
+    
+      
+      <a href="https://matteocourthoud.github.io/"><img class="avatar mr-3 avatar-circle" src="/author/avatar_hu365eedc833ccd5578a90de7c849ec45e_385094_270x270_fill_q75_lanczos_center.jpg" alt=""></a>
+    
+
+    <div class="media-body">
+      <h5 class="card-title"><a href="https://matteocourthoud.github.io/"></a></h5>
+      
+      <p class="card-text">I hold a PhD in economics from the University of Zurich. Now I work at the intersection of economics, data science and statistics. I regularly write about causal inference on <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">Medium</a>.</p>
+      <ul class="network-icon" aria-hidden="true">
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://medium.com/@matteo.courthoud" target="_blank" rel="noopener">
+        <i class="fab fa-medium"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://www.linkedin.com/in/matteo-courthoud-7335198a/" target="_blank" rel="noopener">
+        <i class="fab fa-linkedin"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://twitter.com/MatteoCourthoud/" target="_blank" rel="noopener">
+        <i class="fab fa-twitter"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://github.com/matteocourthoud" target="_blank" rel="noopener">
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  
+    
+    
+    
+      
+    
+    
+    
+    
+    
+      
+    
+    <li>
+      <a href="https://open.spotify.com/user/1180947523" target="_blank" rel="noopener">
+        <i class="fab fa-spotify"></i>
+      </a>
+    </li>
+  
+</ul>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+        </div>
+        </article>
+    </main>
+  </div>
+</div>
+  </div>
+
+  <div class="page-footer">
+    
+    
+    <div class="container">
+      <footer class="site-footer">
+
+  
+
+  
+  <p class="powered-by">
+    
+      <a href="/privacy/">Privacy Policy</a>
+    
+    
+       &middot; 
+      <a href="/terms/">Terms</a>
+    
+  </p>
+  
+
+  
+
+  
+  
+
+
+
+
+
+
+
+</footer>
+
+    </div>
+    
+  </div>
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/instant.page/5.1.0/instantpage.min.js" integrity="sha512-1+qUtKoh9XZW7j+6LhRMAyOrgSQKenQ4mluTR+cvxXjP1Z54RxZuzstR/H9kgPXQsVB8IW7DMDFUJpzLjvhGSQ==" crossorigin="anonymous"></script>
+
+      
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      
+
+      
+      
+
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.8.4/mermaid.min.js" integrity="sha512-as1BF4+iHZ3BVO6LLDQ7zrbvTXM+c/1iZ1qII/c3c4L8Rn5tHLpFUtpaEtBNS92f+xGsCzsD7b62XP3XYap6oA==" crossorigin="anonymous" title="mermaid"></script>
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/highlight.min.js" integrity="sha512-TDKKr+IvoqZnPzc3l35hdjpHD0m+b2EC2SrLEgKDRWpxf2rFCxemkgvJ5kfU48ip+Y+m2XVKyOCD85ybtlZDmw==" crossorigin="anonymous"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/r.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/python.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.0/languages/julia.min.js"></script>
+        
+      
+
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js" integrity="sha512-SeiQaaDh73yrb56sTW/RgVdi/mMqNeM2oBwubFHagc5BkixSpP1fvqF47mKzPGWYSSy4RwbBunrJBQ4Co8fRWA==" crossorigin="anonymous"></script>
+    
+
+    
+    
+
+    
+    
+    
+      
+      <script id="search-hit-fuse-template" type="text/x-template">
+        <div class="search-hit" id="summary-{{key}}">
+          <div class="search-hit-content">
+            <div class="search-hit-name">
+              <a href="{{relpermalink}}">{{title}}</a>
+              <div class="article-metadata search-hit-type">{{type}}</div>
+              <p class="search-hit-description">{{snippet}}</p>
+            </div>
+          </div>
+        </div>
+      </script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.2.1/fuse.min.js" integrity="sha256-VzgmKYmhsGNNN4Ph1kMW+BjoYJM2jV5i4IlFoeZA9XI=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+      
+    
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    <script src="/js/bootstrap.bundle.min.6aed84840afc03ab4d5750157f69c120.js"></script>
+
+    
+    
+      
+      
+      
+      
+      
+      
+      
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+      
+      
+    
+    
+    <script src="/en/js/wowchemy.min.c8b7c648795740c04de2ef756725ef48.js"></script>
+
+    
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
+
+
+</body>
+</html>

@@ -5,12 +5,385 @@
     <link>https://matteocourthoud.github.io/post/</link>
       <atom:link href="https://matteocourthoud.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <description>Posts</description>
-    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Tue, 26 Dec 2023 00:00:00 +0000</lastBuildDate>
+    <generator>Wowchemy (https://wowchemy.com)</generator><language>en-us</language><copyright>Theme edited by Matteo Courthoud© - Want to have a similar website? [Guide here](https://matteocourthoud.github.io/post/website/).</copyright><lastBuildDate>Sun, 17 Mar 2024 00:00:00 +0000</lastBuildDate>
     <image>
       <url>https://matteocourthoud.github.io/media/icon_hu03e9b3967b83fd39296ec9da5ff1ea05_201175_512x512_fill_lanczos_center_3.png</url>
       <title>Posts</title>
       <link>https://matteocourthoud.github.io/post/</link>
     </image>
+    
+    <item>
+      <title>Clustering Standard Errors in AB Tests</title>
+      <link>https://matteocourthoud.github.io/post/clustering/</link>
+      <pubDate>Sun, 17 Mar 2024 00:00:00 +0000</pubDate>
+      <guid>https://matteocourthoud.github.io/post/clustering/</guid>
+      <description>&lt;p&gt;&lt;em&gt;What to do when the unit of observation differs from the unit of randomization&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;A/B tests are the golden standard of causal inference because they allow us to make valid causal statements under minimal assumptions, thanks to &lt;strong&gt;randomization&lt;/strong&gt;. In fact, by randomly assigning a &lt;strong&gt;treatment&lt;/strong&gt; (a drug, ad, product, &amp;hellip;), we are able to compare the &lt;strong&gt;outcome&lt;/strong&gt; of interest (a disease, firm revenue, customer satisfaction, &amp;hellip;) across &lt;strong&gt;subjects&lt;/strong&gt; (patients, users, customers, &amp;hellip;) and attribute the average difference in outcomes to the causal effect of the treatment.&lt;/p&gt;
+&lt;p&gt;Sometimes it happens that the &lt;strong&gt;unit of treatment assignment differs from the unit of observation&lt;/strong&gt;. In other words, we do not take the decision on whether to treat every single observation independently, but rather in groups. For example, we might decide to treat all customers in a certain region while observing outcomes at the customer level, or treat all articles of a certain brand, while observing outcomes at the article level. Usually this happens because of practical constraints. In the first example, the so-called &lt;em&gt;geo-experiments&lt;/em&gt;, it happens because we are unable to track users because of cookie deprecations.&lt;/p&gt;
+&lt;p&gt;When this happens, treatment effects are &lt;strong&gt;not independent&lt;/strong&gt; across observations anymore. In fact, if a customer in a region is treated, also other customers in the same region will be treated. If an article of a brand is not treated, also other articles of the same brand will be treated. As a consequence, we have to take that into account when doing inference: computing standard errors, confidence intervals and p-values. In this article, we will explore how to do that using &lt;strong&gt;cluster-robust standard errors&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id=&#34;customers-orders-and-standard-errors&#34;&gt;Customers, Orders, and Standard Errors&lt;/h2&gt;
+&lt;p&gt;Imagine you were an online platform and you are intrested in increasing sales. You just had a great idea: showing a &lt;strong&gt;carousel of related articles&lt;/strong&gt; at checkout to incentivize customer to add other articles to their basket. In order to understand whether the carousel increases sales, you decide to AB test it. In principle, you coud just decide for every order whether to display the carousel or not, at random. However, this would give customers an inconsistent experience, potentially harming their customer experience. Therefore, you decide to randomize the treatment assignment, the carousel, at the customer level. To treated customers, you show the carousel on every order, and to control customer you never show the carousel.&lt;/p&gt;
+&lt;p&gt;I import the data-generating process (dgp) from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/dgp_collection.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;src.dgp_collection&lt;/a&gt; and the plotting theme from &lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/src/theme.py&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;src.theme&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;%matplotlib inline
+%config InlineBackend.figure_format = &#39;retina&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
+from numpy.linalg import inv
+import pandas as pd
+
+from src.theme import *
+from src.dgp_collection import dgp_carousel
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We generate simulated data for &lt;code&gt;3000&lt;/code&gt; orders, from &lt;code&gt;100&lt;/code&gt; customers. For each order, we observe the &lt;code&gt;order_id&lt;/code&gt; which is also the dataset index, the &lt;code&gt;customer_id&lt;/code&gt; of the customer who placed the order, whether the &lt;code&gt;carousel&lt;/code&gt; was displayed at checkout - the treatment - and the order &lt;code&gt;revenue&lt;/code&gt; - the outcome of interest.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;n = 3000
+dgp = dgp_carousel(n=n, w=&amp;quot;carousel&amp;quot;, y=[&amp;quot;revenue&amp;quot;])
+df = dgp.generate_data()
+df.head()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+&lt;pre&gt;&lt;code&gt;.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;/style&gt;&lt;/p&gt;
+&lt;table border=&#34;1&#34; class=&#34;dataframe&#34;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&#34;text-align: right;&#34;&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;order_id&lt;/th&gt;
+      &lt;th&gt;customer_id&lt;/th&gt;
+      &lt;th&gt;carousel&lt;/th&gt;
+      &lt;th&gt;revenue&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1755&lt;/td&gt;
+      &lt;td&gt;58&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;52.61&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;527&lt;/td&gt;
+      &lt;td&gt;17&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;44.19&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;595&lt;/td&gt;
+      &lt;td&gt;19&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;73.04&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;2027&lt;/td&gt;
+      &lt;td&gt;67&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;65.54&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;366&lt;/td&gt;
+      &lt;td&gt;12&lt;/td&gt;
+      &lt;td&gt;0&lt;/td&gt;
+      &lt;td&gt;62.57&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;p&gt;Since treatment was randomized, we can estimate the &lt;strong&gt;average treatment effect&lt;/strong&gt; comparing the average revenue of treated orders against the average revenue of control (not treated) orders. Randomization ensures that treated and untreated orders are comparable on average, except for the treatment itself, and therefore we can attribute any observable difference to the causal effect of the treatment. We can estimate the difference-in-means using linear regression, by regressing &lt;code&gt;revenue&lt;/code&gt; on the &lt;code&gt;carousel&lt;/code&gt; dummy variable. The reported OLS coefficient is the estimated average treatment effect.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import statsmodels.formula.api as smf
+smf.ols(&amp;quot;revenue ~ carousel&amp;quot;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;   61.6361&lt;/td&gt; &lt;td&gt;    0.382&lt;/td&gt; &lt;td&gt;  161.281&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   60.887&lt;/td&gt; &lt;td&gt;   62.385&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;carousel&lt;/th&gt;  &lt;td&gt;   -1.6292&lt;/td&gt; &lt;td&gt;    0.576&lt;/td&gt; &lt;td&gt;   -2.828&lt;/td&gt; &lt;td&gt; 0.005&lt;/td&gt; &lt;td&gt;   -2.759&lt;/td&gt; &lt;td&gt;   -0.500&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;It seems that including the &lt;code&gt;carousel&lt;/code&gt; decreased &lt;code&gt;revenue&lt;/code&gt; by &lt;code&gt;-1.63€&lt;/code&gt; per order. The treatment effect seems to be statistically significant at the &lt;em&gt;1%&lt;/em&gt; level since the reported p-value is &lt;code&gt;0.005&lt;/code&gt;. However, this is &lt;strong&gt;not a standard AB test&lt;/strong&gt;, since we didn&amp;rsquo;t randomize each single order, but rather customers. Two orders placed by the same customer couldn&amp;rsquo;t go to different treatment groups. Because of this, our treatment effects across observations are correlated, while we computed our standard errors assuming that they are independent.&lt;/p&gt;
+&lt;p&gt;Are the reported &lt;strong&gt;standard errors correct&lt;/strong&gt;? How can we &amp;ldquo;check&amp;rdquo; it and what can we do about it?&lt;/p&gt;
+&lt;h2 id=&#34;standard-errors&#34;&gt;Standard Errors&lt;/h2&gt;
+&lt;p&gt;Which standard errors are &amp;ldquo;correct&amp;rdquo;?&lt;/p&gt;
+&lt;p&gt;The answer to this question depends on what we consider &lt;em&gt;random&lt;/em&gt; and what we consider &lt;em&gt;fixed&lt;/em&gt;. In the frequentist sense, standard errors measure uncertainty across &amp;ldquo;states of the world&amp;rdquo; or &amp;ldquo;parallel universes&amp;rdquo; that would have happened if we had seen a different realization of the random part of the data-generating process.&lt;/p&gt;
+&lt;p&gt;In this particular case, there is one variable that is uncontroversial random: the treatment &lt;strong&gt;assignment&lt;/strong&gt;, in fact, we randomized it ourselves. Not only that, we also know &lt;em&gt;how&lt;/em&gt; it is random: each customer had a 50% chance of seeing the &lt;code&gt;new_ui&lt;/code&gt; and a 50% chance of seeing the old one.&lt;/p&gt;
+&lt;p&gt;Therefore, we would like our estimated standard errors to measure the variation in estimated treatment effects across alternative treatment assignments. This is normally an &lt;strong&gt;abstract&lt;/strong&gt; concept since we cannot re-run the exact same experiment. However, we can in our case, since we are in a simulated environment.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;DGP&lt;/code&gt; class has a &lt;code&gt;evaluate_f_redrawing_assignment&lt;/code&gt; function that allows us to evaluate a function of the data &lt;em&gt;f(X)&lt;/em&gt; by re-sampling the data drawing different treatment assignments. The function we want to evaluate the our linear regression for treatment effect estimation.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def estimate_treatment_effect(df):
+    reg = smf.ols(&amp;quot;revenue ~ carousel&amp;quot;, data=df).fit()
+    return reg.params[&amp;quot;carousel&amp;quot;], reg.bse[&amp;quot;carousel&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we repeat the treatment effect estimation over &lt;em&gt;1000&lt;/em&gt; different random assignments.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;n_draws = 1_000
+ols_coeff = dgp.evaluate_f_redrawing_assignment(f=estimate_treatment_effect, n_draws=n_draws)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What is the &lt;strong&gt;distribution&lt;/strong&gt; of OLS coefficients? In the figure below, we plot the distribution of the estimated coefficients and estimated standard errors. On the plot of the estimated standard errors, we also report a vertical line with the standard deviation of the estimated coefficients across simulations.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def plot_coefficients(coeffs):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+    
+    # Estimates
+    coeffs_est = list(zip(*coeffs))[0]
+    sns.histplot(coeffs_est, color=&amp;quot;C1&amp;quot;, ax=ax1)
+    ax1.set(title=f&amp;quot;Distribution of estimated coefficients&amp;quot;)
+    ax1.legend([f&amp;quot;Average: {np.mean(coeffs_est):.3f}\nStd. Dev: {np.std(coeffs_est):.3f}&amp;quot;]);
+
+    # Standsed error
+    coeffs_std = list(zip(*coeffs))[1]
+    sns.histplot(coeffs_std, color=&amp;quot;C0&amp;quot;, ax=ax2)
+    ax2.set(title=f&amp;quot;Distribution of estimated std. errors&amp;quot;)
+    ax2.legend([f&amp;quot;Average: {np.mean(coeffs_std):.3f}\nStd. Dev: {np.std(coeffs_std):.3f}&amp;quot;]);
+    ax2.axvline(np.std(coeffs_est), lw=2, ls=&amp;quot;--&amp;quot;, c=&amp;quot;C1&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_coefficients(ols_coeff)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/clustering_19_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The average coefficient is virtually zero since the estimator. Indeed, the true treatment effect is zero. However, the standard deviations of the estimated coefficients is  is &lt;em&gt;2.536&lt;/em&gt;, fairly different from the estimated standard deviation of &lt;em&gt;0.576&lt;/em&gt; we got from the linear regression. This coefficient would have implied a &lt;em&gt;p-value&lt;/em&gt; of around &lt;em&gt;0.5&lt;/em&gt;, extremely far from any statistical significance threshold. On the right panel, we see that this is not by chance: standard OLS consistently &lt;strong&gt;underestimates&lt;/strong&gt; the variability of the coefficient by around 5 times.&lt;/p&gt;
+&lt;p&gt;Could have we &lt;strong&gt;detected&lt;/strong&gt; this issue in reality, without the possibility or re-randomizing the treatment assignment? Yes, by &lt;strong&gt;bootstrapping&lt;/strong&gt; standard errors. If you never heard of bootstrapping, I wrote an article about it, and an interesting technique to make bootstrapping faster: the bayesian bootstrap.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/the-bayesian-bootstrap-6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://towardsdatascience.com/the-bayesian-bootstrap-6ca4a1d45148&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Bootstrapping essentially consists in drawing &lt;strong&gt;samples&lt;/strong&gt; of the data &lt;strong&gt;with replacement&lt;/strong&gt;, and re-computing the target statistics across bootstrapped samples. We can then estimate its standard deviation by simply computing the standard deviation fo the statistics across samples.&lt;/p&gt;
+&lt;p&gt;In this case, it&amp;rsquo;s important to draw the samples &lt;strong&gt;consistently&lt;/strong&gt; with the data generating process: by customer and not by order.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;boot_estimates = []
+customers = df.customer_id.unique()
+for k in range(1000):
+    np.random.seed(k)
+    boot_customers = np.random.choice(customers, size=len(customers), replace=True)
+    df_boot = pd.concat([df[df.customer_id == id] for id in boot_customers])
+    reg = smf.ols(&amp;quot;revenue ~ carousel&amp;quot;, data=df_boot).fit()
+    boot_estimates += [(reg.params[&amp;quot;carousel&amp;quot;], reg.bse[&amp;quot;carousel&amp;quot;])]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In the figure below, we plot again the distribution of estimated coefficients and standard errors. The standard errors are still wrong, but the distribution of bootstrap estimates has a standard deviation of &lt;em&gt;2.465&lt;/em&gt;, very close to the simulated value of &lt;em&gt;2.536&lt;/em&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;plot_coefficients(boot_estimates)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;img/clustering_25_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Note that in order to use bootstrapping to detect the issue in the linear regression standard errors, one would have needed to be &lt;em&gt;aware&lt;/em&gt; that assignment was at the customer level. Bootstrapping the data at the order level would have still underestimated the standard errors.&lt;/p&gt;
+&lt;h2 id=&#34;clustered-standard-errors&#34;&gt;Clustered Standard Errors&lt;/h2&gt;
+&lt;p&gt;What&amp;rsquo;s the problem with the standard errors reported in the linear regression table?&lt;/p&gt;
+&lt;p&gt;The problem is that the standard formula to compute standard errors in linear regression (more on the math later) assumes that observations are independent and identically distributed, i.i.d.. However, in our case, the &lt;strong&gt;independence&lt;/strong&gt; assumption is &lt;strong&gt;not satisfied&lt;/strong&gt;. Why?&lt;/p&gt;
+&lt;p&gt;In our example, the unit of treatment assignment, a &lt;code&gt;customer&lt;/code&gt; is different from the unit of observation, an &lt;code&gt;order&lt;/code&gt;. This is a problem because under different treatment assignments, all orders of a certain customer are treated or not. They move in blocks and it cannot happen that two orders of the same customer are split across control and treatment group. The consequence of orders &amp;ldquo;moving in blocks&amp;rdquo; is that there is more variability in our estimates than we might have if orders were moving independently. Intuitively, there is less &lt;em&gt;balance&lt;/em&gt; between the two groups, on average. As a consequence, standard errors computed assuming independence typically &lt;strong&gt;underestimate&lt;/strong&gt; the actual variability of the estimator.&lt;/p&gt;
+&lt;p&gt;Is there a solution? Yes!&lt;/p&gt;
+&lt;p&gt;The solution is to use the so-called &lt;a href=&#34;https://en.wikipedia.org/wiki/Clustered_standard_errors&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;cluster-robust standard errors&lt;/a&gt; that allow observations to be correlated within a cluster of observations, a &lt;code&gt;customer&lt;/code&gt; in our case. Cluster-robust standard errors are usually very simple to implement and available in all statistical packages. With &lt;code&gt;statsmodels&lt;/code&gt; we have to specify that the covariance type is &lt;code&gt;cluster&lt;/code&gt; and that the groups are by &lt;code&gt;customer&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;revenue ~ carousel&amp;quot;, data=df).fit(cov_type=&#39;cluster&#39;, cov_kwds={&#39;groups&#39;: df[&amp;quot;customer_id&amp;quot;]}).summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;z&lt;/th&gt;      &lt;th&gt;P&gt;|z|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;   61.6361&lt;/td&gt; &lt;td&gt;    1.639&lt;/td&gt; &lt;td&gt;   37.606&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   58.424&lt;/td&gt; &lt;td&gt;   64.848&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;carousel&lt;/th&gt;  &lt;td&gt;   -1.6292&lt;/td&gt; &lt;td&gt;    2.471&lt;/td&gt; &lt;td&gt;   -0.659&lt;/td&gt; &lt;td&gt; 0.510&lt;/td&gt; &lt;td&gt;   -6.473&lt;/td&gt; &lt;td&gt;    3.214&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;The estimated cluster-robust standard error is equal to &lt;code&gt;2.471&lt;/code&gt;, extremely close to the simulated standard error of &lt;code&gt;2.536&lt;/code&gt;. Note that the estimated coefficient has not changed (&lt;code&gt;-1.6292&lt;/code&gt; as before).&lt;/p&gt;
+&lt;p&gt;How do cluster-robust standard errors work? We dig deeper in the math in the next section.&lt;/p&gt;
+&lt;h2 id=&#34;some-math&#34;&gt;Some Math&lt;/h2&gt;
+&lt;p&gt;How are standard errors computed in linear regression? The general formula of the variance of the OLS estimator is
+$$
+\text{Var}(\hat \beta) = (X&amp;rsquo;X)^{-1} X&amp;rsquo; \epsilon \epsilon&amp;rsquo; X (X&amp;rsquo;X)^{-1}
+$$&lt;/p&gt;
+&lt;p&gt;The &lt;strong&gt;key component&lt;/strong&gt; of this formula is the central matrix &lt;em&gt;n × n&lt;/em&gt; matrix &lt;em&gt;Ω = ε ε&amp;rsquo;&lt;/em&gt;. It is key because it is the only object that we need to estimate in order to compute the variance of the OLS estimator.&lt;/p&gt;
+&lt;p&gt;At first, it could be very tempting to just estimate &lt;em&gt;Ω&lt;/em&gt; using the regression residuals &lt;em&gt;e = y - ŷ&lt;/em&gt;. However, the problem is that by construction the product of &lt;em&gt;X&lt;/em&gt; and &lt;em&gt;e&lt;/em&gt; is zero, and therefore the estimated variance would be zero&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X.T @ e
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;array([[5.72555336e-11],
+       [6.68904931e-11]])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The most simplifying assumption is called &lt;a href=&#34;https://en.wikipedia.org/wiki/Homoscedasticity_and_heteroscedasticity&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;&lt;strong&gt;homoscedasticity&lt;/strong&gt;&lt;/a&gt;: regression residuals are independent of each other and they all have the same variance. In practice, homoscedasticity implies that the &lt;em&gt;Ω&lt;/em&gt; matrix is that it is diagonal with the same number in each cell:
+$$
+\Omega =
+\begin{bmatrix}
+\sigma^2 &amp;amp; 0 &amp;amp; \dots &amp;amp; 0 &amp;amp; 0 \
+0 &amp;amp; \sigma^2 &amp;amp; \dots &amp;amp; 0 &amp;amp; 0 \
+\vdots &amp;amp; &amp;amp; \ddots &amp;amp;  &amp;amp; \vdots \
+0 &amp;amp; 0 &amp;amp; &amp;hellip; &amp;amp; \sigma^2 &amp;amp; 0 \
+0 &amp;amp; 0 &amp;amp; &amp;hellip; &amp;amp; 0 &amp;amp; \sigma^2 \
+\end{bmatrix} = \sigma^2 I_n
+$$&lt;/p&gt;
+&lt;p&gt;where &lt;em&gt;Iₙ&lt;/em&gt; is the &lt;a href=&#34;https://en.wikipedia.org/wiki/Identity_matrix&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;identity matrix&lt;/a&gt; of dimension &lt;em&gt;n&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Under homoscedasticity, the residual matrix simplifies to
+$$
+\text{Var}(\hat \beta) = (X&amp;rsquo;X)^{-1} X&amp;rsquo; \sigma^2 I_n X (X&amp;rsquo;X)^{-1} = \sigma^2 (X&amp;rsquo;X)^{-1} X&amp;rsquo; X (X&amp;rsquo;X)^{-1} = \sigma^2 (X&amp;rsquo;X)^{-1}
+$$&lt;/p&gt;
+&lt;p&gt;and it&amp;rsquo;s estimated by plugging-in the variance of the residuals&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;y_hat = X @ inv(X.T @ X) @ (X.T @ y)
+e = y - y_hat
+np.var(e)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;245.20230307247473
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;So the estimated variance of the OLS estimator is given by
+$$
+\hat{\text{Var}}(\hat \beta) = \text{Var}(\hat \epsilon) (X&amp;rsquo;X)^{-1}
+$$&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.var(e) * inv(X.T @ X)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;array([[ 0.14595375, -0.14595375],
+       [-0.14595375,  0.33171307]])
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the estimated standard error is just the squared root of the bottom-right value.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;np.sqrt(np.var(e) * inv(X.T @ X))[1,1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.5759453727032665
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The computed standard error is indeed the same that was reported before in the linear regression table, &lt;code&gt;0.576&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Homoscedasticity is a very restrictive assumption and it is always relaxed, allowing residual variances to be independent of each other. This assumption is called &lt;strong&gt;heteroscedasticity&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;$$
+\Omega =
+\begin{bmatrix}
+\sigma^2_1 &amp;amp; 0 &amp;amp; \dots &amp;amp; 0 &amp;amp; 0 \
+0 &amp;amp; \sigma^2_2 &amp;amp; \dots &amp;amp; 0 &amp;amp; 0 \
+\vdots &amp;amp; &amp;amp; \ddots &amp;amp;  &amp;amp; \vdots \
+0 &amp;amp; 0 &amp;amp; &amp;hellip; &amp;amp; \sigma^2_{n-1} &amp;amp; 0 \
+0 &amp;amp; 0 &amp;amp; &amp;hellip; &amp;amp; 0 &amp;amp; \sigma^2_n \
+\end{bmatrix}
+$$&lt;/p&gt;
+&lt;p&gt;Under heteroscedasticity the formula of the variance of the OLS estimator does not simplify anymore.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;Sigma = np.eye(len(df)) * (e @ e.T)
+np.sqrt(inv(X.T @ X) @ X.T @ Sigma @ X @ inv(X.T @ X))[1,1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;0.5757989320663413
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In our case, the estimated standard error under heteroskedasticity is virtually the same: &lt;code&gt;0.576&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;In certain scenarios, even the heteroscedasticity assumption can be too restrictive, in case observations are correlated and regression residuals are not independent. In that case, we might want to allow certain off-diagonal elements of the &lt;em&gt;Ω&lt;/em&gt; matrix to be different from zero. But which ones?&lt;/p&gt;
+&lt;p&gt;In many settings, including our example, it is reasonable to assume that observations are correlated within cluster, but with the same within-cluster variance. For example, if clusters are couples of observations, the &lt;em&gt;Ω&lt;/em&gt; matrix takes the following form.
+$$
+\Omega =
+\begin{bmatrix}
+\epsilon_1^2 &amp;amp; \epsilon_1 \epsilon_2 &amp;amp; 0 &amp;amp; 0 &amp;amp; \dots &amp;amp; 0 &amp;amp; 0 \
+\epsilon_1 \epsilon_2 &amp;amp; \epsilon_2^2 &amp;amp; 0 &amp;amp; 0 &amp;amp; &amp;amp; 0 &amp;amp; 0 \
+0 &amp;amp; 0 &amp;amp; \epsilon_3^2 &amp;amp; \sigma^2_{34} &amp;amp; &amp;amp; 0 &amp;amp; 0 \
+0 &amp;amp; 0 &amp;amp; \sigma^2_{34} &amp;amp; \epsilon_3^2 &amp;amp; &amp;amp; 0 &amp;amp; 0 \
+\vdots &amp;amp; &amp;amp; &amp;amp; &amp;amp; \ddots &amp;amp;  &amp;amp; \vdots \
+0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0 &amp;amp; &amp;hellip; &amp;amp; \epsilon_{n-1}^2 &amp;amp; \sigma^2_{n-1,n} \
+0 &amp;amp; 0 &amp;amp; 0 &amp;amp; 0 &amp;amp; &amp;hellip; &amp;amp; \sigma^2_{n-1,n} &amp;amp; \epsilon_n^2 \
+\end{bmatrix}
+$$&lt;/p&gt;
+&lt;p&gt;We can now compute the estimated standard errors under cluster-robustness.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;customer_id = df[[&amp;quot;customer_id&amp;quot;]].values
+Sigma = (customer_id == customer_id.T) * (e @ e.T)
+np.sqrt(inv(X.T @ X) @ X.T @ Sigma @ X @ inv(X.T @ X))[1,1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;2.458350214507729
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We get indeed the same number reported in the linear regression table. But what&amp;rsquo;s the &lt;strong&gt;intuition&lt;/strong&gt; behind this formula?&lt;/p&gt;
+&lt;h2 id=&#34;intuition&#34;&gt;Intuition&lt;/h2&gt;
+&lt;p&gt;To get an intuition for the estimated standard erorrs, imagine that we had a simple regression model with a single covariate: a constant. In that case, the estimated cluster-robust variance of the OLS estimator is just the sum of all the cross-products of residuals within each cluster.
+$$
+\hat{\text{Var}}(\hat{\beta}) = \sum_{g=1}^G \sum_{i=1}^{n_g} \sum_{j=1}^{n_g} \epsilon_i, \epsilon_j
+$$&lt;/p&gt;
+&lt;p&gt;where &lt;em&gt;g&lt;/em&gt; indexes clusters, and &lt;em&gt;ng&lt;/em&gt; is the number of observations within cluster &lt;em&gt;g&lt;/em&gt;. If observations are &lt;strong&gt;independent&lt;/strong&gt;, the expected value of the product of the residuals of different observations is zero &lt;em&gt;𝔼[εᵢεⱼ]=0&lt;/em&gt; and the estimated variance will be close to the sum of the squared residuals.
+$$
+\hat{\text{Var}}(\hat{\beta}) = \sum_{i} \epsilon_i^2
+$$&lt;/p&gt;
+&lt;p&gt;At the other extreme instead, if observations are &lt;strong&gt;extremely correlated&lt;/strong&gt;, the residuals in the same clusters will be very similar, and the estimated variance will be close to the sum of all the cross-products, for each cluster.
+$$
+\hat{\text{Var}}(\hat{\beta}) = \sum_{g} n_g^2 \epsilon_g^2
+$$&lt;/p&gt;
+&lt;p&gt;Note that this is exactly the estimated variance you would have obtained by running the analysis as the cluster level, in our case aggregating the orders at the customer level.&lt;/p&gt;
+&lt;p&gt;This means that, in practice, if your unit of assignment is different from the unit of observations, your &lt;strong&gt;effective sample size&lt;/strong&gt; will be somewhere in between your actual sample size, and the number of clusters (customers in our example). In other words, you have less observations than the rows in your data. Whether you are closer to one extreme or the other it depends on the degree of &lt;em&gt;between-clusters&lt;/em&gt; correlation relative to the &lt;em&gt;within-cluster&lt;/em&gt; correlation of the residuals.&lt;/p&gt;
+&lt;p&gt;We can now &lt;strong&gt;verify&lt;/strong&gt; this intuition using our data-generating process. Let&amp;rsquo;s first scale down the &lt;em&gt;within-cluster&lt;/em&gt; variance of the residuals to zero.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_carousel(n=n, w=&amp;quot;carousel&amp;quot;, y=[&amp;quot;revenue&amp;quot;])
+dgp.revenue_per_customer_std = 0
+df = dgp.generate_data()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now unadjusted and clustered standard errors should be the same, and they are indeed fairly close.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;revenue ~ carousel&amp;quot;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;   50.1235&lt;/td&gt; &lt;td&gt;    0.243&lt;/td&gt; &lt;td&gt;  206.431&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   49.647&lt;/td&gt; &lt;td&gt;   50.600&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;carousel&lt;/th&gt;  &lt;td&gt;    0.0525&lt;/td&gt; &lt;td&gt;    0.366&lt;/td&gt; &lt;td&gt;    0.144&lt;/td&gt; &lt;td&gt; 0.886&lt;/td&gt; &lt;td&gt;   -0.665&lt;/td&gt; &lt;td&gt;    0.770&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;revenue ~ carousel&amp;quot;, data=df).fit(cov_type=&#39;cluster&#39;, cov_kwds={&#39;groups&#39;: df[&amp;quot;customer_id&amp;quot;]}).summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;z&lt;/th&gt;      &lt;th&gt;P&gt;|z|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;   50.1235&lt;/td&gt; &lt;td&gt;    0.189&lt;/td&gt; &lt;td&gt;  264.655&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   49.752&lt;/td&gt; &lt;td&gt;   50.495&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;carousel&lt;/th&gt;  &lt;td&gt;    0.0525&lt;/td&gt; &lt;td&gt;    0.343&lt;/td&gt; &lt;td&gt;    0.153&lt;/td&gt; &lt;td&gt; 0.878&lt;/td&gt; &lt;td&gt;   -0.620&lt;/td&gt; &lt;td&gt;    0.725&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;p&gt;Now let&amp;rsquo;s scale the cross-cluster variance to zero.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dgp = dgp_carousel(n=n, w=&amp;quot;carousel&amp;quot;, y=[&amp;quot;revenue&amp;quot;])
+dgp.revenue_std = 0
+df = dgp.generate_data()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In this case, all the variance is at the cluster level, hence the difference between standard and clustered standard errors will be even more stark.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;revenue ~ carousel&amp;quot;, data=df).fit().summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;t&lt;/th&gt;      &lt;th&gt;P&gt;|t|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;   61.5123&lt;/td&gt; &lt;td&gt;    0.295&lt;/td&gt; &lt;td&gt;  208.376&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   60.934&lt;/td&gt; &lt;td&gt;   62.091&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;carousel&lt;/th&gt;  &lt;td&gt;   -1.6812&lt;/td&gt; &lt;td&gt;    0.445&lt;/td&gt; &lt;td&gt;   -3.778&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   -2.554&lt;/td&gt; &lt;td&gt;   -0.809&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;smf.ols(&amp;quot;revenue ~ carousel&amp;quot;, data=df).fit(cov_type=&#39;cluster&#39;, cov_kwds={&#39;groups&#39;: df[&amp;quot;customer_id&amp;quot;]}).summary().tables[1]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table class=&#34;simpletable&#34;&gt;
+&lt;tr&gt;
+      &lt;td&gt;&lt;/td&gt;         &lt;th&gt;coef&lt;/th&gt;     &lt;th&gt;std err&lt;/th&gt;      &lt;th&gt;z&lt;/th&gt;      &lt;th&gt;P&gt;|z|&lt;/th&gt;  &lt;th&gt;[0.025&lt;/th&gt;    &lt;th&gt;0.975]&lt;/th&gt;  
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;Intercept&lt;/th&gt; &lt;td&gt;   61.5123&lt;/td&gt; &lt;td&gt;    1.671&lt;/td&gt; &lt;td&gt;   36.806&lt;/td&gt; &lt;td&gt; 0.000&lt;/td&gt; &lt;td&gt;   58.237&lt;/td&gt; &lt;td&gt;   64.788&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th&gt;carousel&lt;/th&gt;  &lt;td&gt;   -1.6812&lt;/td&gt; &lt;td&gt;    2.430&lt;/td&gt; &lt;td&gt;   -0.692&lt;/td&gt; &lt;td&gt; 0.489&lt;/td&gt; &lt;td&gt;   -6.444&lt;/td&gt; &lt;td&gt;    3.081&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;conclusion&#34;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;In this article, we have seen the importance of &lt;strong&gt;cluster-robust standard errors&lt;/strong&gt; and when they are relevant in randomized experiments. If you assign treatment at a higher level than your unit of observation, this generates correlation across the treatment effects of your observations and computing standard errors using the usual formula that assumes independence usually underestimates the true variance of the estimator. We explore two solutions: cluster-robust standard errors and bootstrapped standard errors at the unit of assignment.&lt;/p&gt;
+&lt;p&gt;A third conservative solution is to &lt;strong&gt;aggregate the data&lt;/strong&gt; at the unit of observation. This would give conservative estimates of the standard errors, in presence of additional non-linear covariates. We would also need to use regression weights if we have different number of observations per cluster.&lt;/p&gt;
+&lt;p&gt;An important advantage of cluster-robust standard errors is that they are larger that the usual standard errors only if there is indeed dependence across observations. As we have seen in the last section, if observations are only mildly correlated across clusters, the cluster-robust standard errors will be extremely similar.&lt;/p&gt;
+&lt;h2 id=&#34;references&#34;&gt;References&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;A. Abadie, S. Athey, G. W. Imbens, J. M. Wooldridge (2023), &lt;a href=&#34;https://academic.oup.com/qje/article/138/1/1/6750017&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;When Should You Adjust Standard Errors for Clustering?&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;related-articles&#34;&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://towardsdatascience.com/6ca4a1d45148&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;The Bayesian Bootstrap&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;code&#34;&gt;Code&lt;/h3&gt;
+&lt;p&gt;You can find the original Jupyter Notebook here:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/clustering.ipynb&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;https://github.com/matteocourthoud/Blog-Posts/blob/main/notebooks/clustering.ipynb&lt;/a&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>Understanding Group Sequential Testing</title>
